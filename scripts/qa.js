@@ -117,6 +117,14 @@ if (fs.existsSync(traceabilityPath)) {
     if (!Array.isArray(record.sources) || !Array.isArray(record.decisions) || !Array.isArray(record.openQuestions)) {
       problems.push(`public/data/section-traceability.json: missing linked record arrays for ${record.id || "unknown"}`);
     }
+    if (!Array.isArray(record.claims) || !record.claims.length) {
+      problems.push(`public/data/section-traceability.json: missing claim trace records for ${record.id || "unknown"}`);
+    }
+    for (const claim of record.claims || []) {
+      if (!claim.title || !claim.body) {
+        problems.push(`public/data/section-traceability.json: malformed claim trace for ${record.id || "unknown"}`);
+      }
+    }
   }
 }
 
