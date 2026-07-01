@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://thecitizenaudit.org/</loc></url>
-  <url><loc>https://thecitizenaudit.org/audit.html</loc></url>
-  <url><loc>https://thecitizenaudit.org/sources.html</loc></url>
-  <url><loc>https://thecitizenaudit.org/explorer.html</loc></url>
-  <url><loc>https://thecitizenaudit.org/methodology.html</loc></url>
-  <url><loc>https://thecitizenaudit.org/downloads.html</loc></url>
-  <url><loc>https://thecitizenaudit.org/press.html</loc></url>
-  <url><loc>https://thecitizenaudit.org/corrections.html</loc></url>
+<url><loc>https://thecitizenaudit.org/</loc></url>
+<url><loc>https://thecitizenaudit.org/audit.html</loc></url>
+<url><loc>https://thecitizenaudit.org/sources.html</loc></url>
+<url><loc>https://thecitizenaudit.org/explorer.html</loc></url>
+<url><loc>https://thecitizenaudit.org/methodology.html</loc></url>
+<url><loc>https://thecitizenaudit.org/downloads.html</loc></url>
+<url><loc>https://thecitizenaudit.org/press.html</loc></url>
+<url><loc>https://thecitizenaudit.org/corrections.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-01-executive-summary.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-02-definitions-methodology.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-03-international-assistance.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-04-ukraine-israel-examples.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-05-military-aid.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-06-refugee-resettlement.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-07-medicaid-emergency-medical.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-08-food-assistance.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-09-cash-welfare-income.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-10-federal-housing.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-11-education-public-services.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-12-state-administered-federal-dollars.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-13-programs-without-citizenship-breakouts.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-14-conservative-total.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-15-what-is-missing.html</loc></url>
+<url><loc>https://thecitizenaudit.org/audit/section-16-final-argument.html</loc></url>
 </urlset>
