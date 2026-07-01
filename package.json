@@ -6,7 +6,7 @@
     "build:publication": "node scripts/build-publication-assets.js && node scripts/build-traceability-data.js",
     "build:traceability": "node scripts/build-traceability-data.js",
     "qa": "node scripts/qa.js",
-    "deploy": "wrangler deploy"
+    "deploy": "npm run build:publication && wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "latest"
