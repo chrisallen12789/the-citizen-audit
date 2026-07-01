@@ -127,6 +127,153 @@ const sectionEnhancements = {
   }
 };
 
+const traceabilityRecords = [
+  {
+    id: "Section 1",
+    title: "Executive Summary",
+    url: "/audit/section-01-executive-summary.html",
+    summary: "Basis-segregated summary of measurable lanes and permanent limitations.",
+    sources: ["S-038", "S-039", "S-040", "S-073"],
+    decisions: ["D-001", "D-020"],
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+  },
+  {
+    id: "Section 2",
+    title: "Definitions and Methodology",
+    url: "/audit/section-02-definitions-methodology.html",
+    summary: "Primary legal and accounting definitions that bind the rest of the publication.",
+    sources: ["S-002", "S-003", "S-004", "S-005", "S-006"],
+    decisions: ["D-001", "D-005", "D-012"],
+    openQuestions: ["A-002"]
+  },
+  {
+    id: "Section 3",
+    title: "International Assistance",
+    url: "/audit/section-03-international-assistance.html",
+    summary: "Aggregate foreign-assistance obligations and disbursements with unresolved capture share.",
+    sources: ["S-001", "S-038", "S-039", "S-040", "S-042", "S-043"],
+    decisions: ["D-013", "D-014", "D-017"],
+    openQuestions: ["A-001", "A-003", "A-004", "A-005"]
+  },
+  {
+    id: "Section 4",
+    title: "Ukraine and Israel Examples",
+    url: "/audit/section-04-ukraine-israel-examples.html",
+    summary: "Illustrative, non-additive examples showing stage differences and beneficiary-chain complexity.",
+    sources: ["S-043", "S-044", "S-045", "S-046", "S-047", "S-048", "S-049"],
+    decisions: ["D-013", "D-017", "D-018", "D-019"],
+    openQuestions: ["A-006", "A-007", "A-008", "A-009", "A-010", "A-011", "A-012"]
+  },
+  {
+    id: "Section 5",
+    title: "Military Aid",
+    url: "/audit/section-05-military-aid.html",
+    summary: "NET-NEW military lanes separated from already-counted foreign assistance and non-taxpayer flows.",
+    sources: ["S-043", "S-050", "S-051", "S-052", "S-053", "S-054", "S-055", "S-056", "S-057", "S-058", "S-059"],
+    decisions: ["D-012", "D-017", "D-019", "D-020"],
+    openQuestions: ["A-013", "A-014", "A-015", "A-016", "A-017"]
+  },
+  {
+    id: "Section 6",
+    title: "Refugee Resettlement",
+    url: "/audit/section-06-refugee-resettlement.html",
+    summary: "ORR lane with visible accounts but unresolved entrant-versus-provider and outlay splits.",
+    sources: ["S-060", "S-061", "S-062", "S-063", "S-070", "S-071"],
+    decisions: ["D-013", "D-014", "D-021"],
+    openQuestions: ["A-018", "A-019", "A-020", "A-021"]
+  },
+  {
+    id: "Section 7",
+    title: "Emergency Medical",
+    url: "/audit/section-07-medicaid-emergency-medical.html",
+    summary: "Published emergency Medicaid figure with unresolved federal-only share and status isolation limits.",
+    sources: ["S-003", "S-064", "S-065", "S-078", "S-079", "S-080"],
+    decisions: ["D-021"],
+    openQuestions: ["A-022", "A-023", "A-024", "A-037"]
+  },
+  {
+    id: "Section 8",
+    title: "Food Assistance",
+    url: "/audit/section-08-food-assistance.html",
+    summary: "SNAP eligibility and participation composition without a publishable noncitizen dollar breakout.",
+    sources: ["S-002", "S-003", "S-004", "S-074"],
+    decisions: ["D-021"],
+    openQuestions: ["A-025", "A-026"]
+  },
+  {
+    id: "Section 9",
+    title: "Cash Welfare / Income",
+    url: "/audit/section-09-cash-welfare-income.html",
+    summary: "SSI is measurable on a published point-in-time basis while TANF and tax credits remain routed to Section 13.",
+    sources: ["S-072", "S-073", "S-075", "S-076"],
+    decisions: ["D-001", "D-021"],
+    openQuestions: ["A-027", "A-028", "A-029"]
+  },
+  {
+    id: "Section 10",
+    title: "Federal Housing",
+    url: "/audit/section-10-federal-housing.html",
+    summary: "Housing rules strongly constrain ineligible use, but no clean eligible-noncitizen outlay is published.",
+    sources: ["S-067", "S-068", "S-077"],
+    decisions: ["D-021"],
+    openQuestions: ["A-030", "A-031"]
+  },
+  {
+    id: "Section 11",
+    title: "Education / Public Services",
+    url: "/audit/section-11-education-public-services.html",
+    summary: "K-12 is status-blind under law and federal student-aid data are not published by eligible-noncitizen status.",
+    sources: ["S-069"],
+    decisions: ["D-021"],
+    openQuestions: ["A-032", "A-033"]
+  },
+  {
+    id: "Section 12",
+    title: "State-Administered Federal Dollars",
+    url: "/audit/section-12-state-administered-federal-dollars.html",
+    summary: "Non-additive reconciliation lens showing where status detail disappears in state-administered federal streams.",
+    sources: [],
+    decisions: ["D-020", "D-021"],
+    openQuestions: ["A-034"]
+  },
+  {
+    id: "Section 13",
+    title: "Programs Without Citizenship Breakouts",
+    url: "/audit/section-13-programs-without-citizenship-breakouts.html",
+    summary: "Central gap register for programs where the public record does not support a defensible noncitizen figure.",
+    sources: [],
+    decisions: ["D-021"],
+    openQuestions: ["A-023", "A-024", "A-025", "A-026", "A-027", "A-029", "A-030", "A-032", "A-033", "A-034", "A-035", "A-036"]
+  },
+  {
+    id: "Section 14",
+    title: "Conservative Total",
+    url: "/audit/section-14-conservative-total.html",
+    summary: "Basis-segregated set of subtotals built to a frozen blueprint rather than a blended grand total.",
+    sources: ["S-038", "S-055", "S-058", "S-064", "S-073"],
+    decisions: ["D-014", "D-020", "D-022", "D-023"],
+    openQuestions: ["A-017", "A-018", "A-037"]
+  },
+  {
+    id: "Section 15",
+    title: "What Is Missing",
+    url: "/audit/section-15-what-is-missing.html",
+    summary: "Named limitations and transparency failures carried into the locked publication without manufactured certainty.",
+    sources: [],
+    decisions: ["D-024"],
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+  },
+  {
+    id: "Section 16",
+    title: "Final Argument",
+    url: "/audit/section-16-final-argument.html",
+    summary: "Closing synthesis bounded by the same basis rules, evidence hierarchy, and unresolved limits as the rest of v1.0.",
+    sources: ["S-064", "S-073", "S-074"],
+    decisions: ["D-020", "D-025"],
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+  }
+];
+
 function ensureTraceDrawer() {
   if (document.querySelector("[data-trace-drawer]")) return;
   const drawer = document.createElement("aside");
@@ -165,6 +312,58 @@ function filterList(input) {
     const haystack = (row.getAttribute("data-search") || row.textContent || "").toLowerCase();
     row.style.display = haystack.includes(query) ? "block" : "none";
   });
+}
+
+function renderTagLinks(ids, basePath) {
+  if (!ids.length) return "<span class='empty-state'>None linked yet</span>";
+  return ids
+    .map((id) => `<a class="tag" href="${basePath}${id.toLowerCase()}.html">${id}</a>`)
+    .join(" ");
+}
+
+function renderTraceabilityExplorer() {
+  const input = document.querySelector("[data-traceability-search]");
+  const grid = document.querySelector("[data-traceability-grid]");
+  if (!input || !grid) return;
+
+  const render = () => {
+    const query = (input.value || "").toLowerCase().trim();
+    const matches = !query
+      ? traceabilityRecords
+      : traceabilityRecords.filter((record) =>
+          [
+            record.id,
+            record.title,
+            record.summary,
+            record.sources.join(" "),
+            record.decisions.join(" "),
+            record.openQuestions.join(" ")
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(query)
+        );
+
+    grid.innerHTML = matches.length
+      ? matches
+          .map(
+            (record) => `<article class="card stack">
+              <div>
+                <p class="row-kicker">${record.id}</p>
+                <h3 class="row-title"><a href="${record.url}">${record.title}</a></h3>
+              </div>
+              <p>${record.summary}</p>
+              <p><strong>Sources</strong><br>${renderTagLinks(record.sources, "/sources/")}</p>
+              <p><strong>Decisions</strong><br>${renderTagLinks(record.decisions, "/decision-log/")}</p>
+              <p><strong>Open Questions</strong><br>${renderTagLinks(record.openQuestions, "/open-questions/")}</p>
+            </article>`
+          )
+          .join("")
+      : "<p class='empty-state'>No traceability record matched that filter.</p>";
+  };
+
+  render();
+  input.addEventListener("input", render);
 }
 
 function calcDollar() {
@@ -312,6 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ensureTraceDrawer();
   injectVerificationPanel();
   calcDollar();
+  renderTraceabilityExplorer();
   document.querySelectorAll("[data-filter-input]").forEach(filterList);
   if (document.querySelector("[data-publication-search]")) {
     const params = new URLSearchParams(location.search);

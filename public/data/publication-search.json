@@ -1,73 +1,360 @@
 [
   {
     "type": "Source",
+    "id": "S-001",
+    "title": "CRS IF10183",
+    "url": "/sources/s-001.html",
+    "text": "Corroborating conduit for the Section 3 FY2023 foreign-assistance obligations total of approximately $99.9B. Section 1 Section 3 Corroborates the published FY2023 foreign-assistance obligations figure used in Section 3. Supports the audit's separation between obligations and disbursements. "
+  },
+  {
+    "type": "Source",
     "id": "S-002",
-    "title": "8 U.S.C. Sec. 1641",
+    "title": "8 U.S.C. Sec. 1641(b)",
     "url": "/sources/s-002.html",
-    "text": "Qualified alien definition used to separate lawful immigration categories in domestic-benefit analysis. Section 2 Defines qualified-alien categories used throughout domestic eligibility analysis. Supports the category-separation rule used in the methodology section. "
+    "text": "Qualified-alien definition used throughout the domestic eligibility framework. Section 2 Section 8 Section 9 Defines the lawful-status categories used in domestic-program analysis. Supports the rule against collapsing different immigration-status categories into one figure. "
   },
   {
     "type": "Source",
     "id": "S-003",
     "title": "8 U.S.C. Sec. 1611",
     "url": "/sources/s-003.html",
-    "text": "Federal public-benefit restrictions for non-qualified aliens, including the emergency-medical exception structure. Section 2 Section 7 Section 8 Supports the ineligibility baseline for undocumented immigrants in most federal public-benefit programs. Frames the emergency-medical exception carried into the Medicaid analysis. A-037"
+    "text": "Federal public-benefit restriction baseline for non-qualified aliens, including the emergency-medical exception structure. Section 2 Section 7 Section 8 Section 9 Supports the default ineligibility baseline for undocumented immigrants in most federal benefits. Provides the emergency-medical exception framework carried into Section 7. A-037"
   },
   {
     "type": "Source",
     "id": "S-004",
     "title": "8 U.S.C. Sec. 1613",
     "url": "/sources/s-004.html",
-    "text": "Five-year bar for many federal means-tested public benefits used in domestic program scope analysis. Section 2 Supports the methodology distinction between qualified categories and waiting-period limits. "
+    "text": "Five-year bar and related exceptions for federal means-tested public benefits. Section 2 Section 8 Section 9 Supports the methodology distinction between qualified categories and waiting-period restrictions. "
   },
   {
     "type": "Source",
     "id": "S-005",
-    "title": "GAO Budget Glossary",
+    "title": "GAO Budget Glossary (GAO-05-734SP)",
     "url": "/sources/s-005.html",
-    "text": "Primary budget-accounting terminology for appropriation, obligation, outlay, and related measure-separation rules. Section 2 Supports the rule that appropriation, obligation, and outlay are different accounting states. Supports the anti-mixing rule used across all totals. "
+    "text": "Primary budget-accounting terminology for appropriation, obligation, outlay, and number-type separation. Section 2 Section 3 Defines appropriation, obligation, and budget authority for the audit's accounting rules. Supports the rule that unlike number types cannot be merged. "
   },
   {
     "type": "Source",
     "id": "S-006",
-    "title": "CBO Common Budgetary Terms",
+    "title": "CBO Common Budgetary Terms Explained",
     "url": "/sources/s-006.html",
-    "text": "Budgetary terminology used to corroborate measure definitions and keep figure types separated. Section 2 Reinforces the methodology rule against mixing budget authority, obligations, outlays, and estimates. "
+    "text": "Companion budgetary definitions used to corroborate number-type discipline throughout the publication. Section 2 Reinforces the audit's separation of appropriations, obligations, outlays, and projections. "
   },
   {
     "type": "Source",
     "id": "S-038",
     "title": "ForeignAssistance.gov financial datasets",
     "url": "/sources/s-038.html",
-    "text": "Primary aggregate dataset for foreign-assistance obligations and disbursements used in Section 3. Section 1 Section 3 Supports the approximately $99.9B FY2023 obligations figure. Supports the approximately $71.9B FY2023 disbursements figure when read alongside agency-published foreign-assistance data. Supports the rule that obligations and disbursements are different measures. A-005"
+    "text": "Primary aggregate dataset for foreign-assistance obligations and disbursements used in Section 3. Section 1 Section 3 Section 6 Supports the FY2023 obligations figure of approximately $99.9B. Supports the FY2023 disbursements figure of approximately $71.9B. Supports the FY2024 obligations figure of approximately $85.8B and later reported-to-date figures. A-005"
   },
   {
     "type": "Source",
     "id": "S-039",
-    "title": "State/USAID foreign-assistance budget data",
+    "title": "Pew foreign-aid reporting summary",
     "url": "/sources/s-039.html",
-    "text": "Supporting published foreign-assistance data used to corroborate disbursement totals and agency composition. Section 3 Corroborates FY2023 disbursement levels and agency composition in the international-assistance lane. A-005"
+    "text": "Corroborating conduit for FY2023 foreign-assistance disbursements, agency composition, and military-share context. Section 3 Corroborates the FY2023 disbursement total near $71.9B. Corroborates agency and military-share breakdowns used in Section 3. A-005"
   },
   {
     "type": "Source",
     "id": "S-040",
-    "title": "Foreign-aid reporting under the Foreign Aid Transparency and Accountability Act",
+    "title": "USAFacts foreign-aid reporting summary",
     "url": "/sources/s-040.html",
-    "text": "Published reporting lane used to frame FY2024 and to-date later-year obligations in the international-assistance section. Section 3 Supports the use of published assistance-reporting channels as the aggregate record of reference for Section 3. A-005"
+    "text": "Corroborating conduit for later-year obligations in the international-assistance lane. Section 3 Corroborates approximately $85.8B FY2024 obligations and the lower-confidence FY2025 to-date and FY2026 to-date figures. A-005"
+  },
+  {
+    "type": "Source",
+    "id": "S-042",
+    "title": "State Supplementary Tables FY2025",
+    "url": "/sources/s-042.html",
+    "text": "Account-level foreign-assistance tables retained for next-pass pulls and account composition checks. Section 3 Supports account-level breakdowns behind the international-assistance universe. "
   },
   {
     "type": "Source",
     "id": "S-043",
     "title": "CRS IF11437",
     "url": "/sources/s-043.html",
-    "text": "Context source used to distinguish taxpayer-funded assistance from allied-funded foreign military sales. Section 5 Supports exclusion of foreign-funded sales from taxpayer totals in the military-aid lane. A-017"
+    "text": "Used to distinguish taxpayer-funded military aid from allied-funded foreign military sales. Section 3 Section 4 Section 5 Supports exclusion of allied-funded FMS from taxpayer totals. Supports the Section 3 to Section 5 netting rule around military-aid overlap. A-017"
+  },
+  {
+    "type": "Source",
+    "id": "S-044",
+    "title": "UkraineOversight.gov",
+    "url": "/sources/s-044.html",
+    "text": "Primary oversight source for Ukraine appropriated-versus-disbursed context used in the illustrative Section 4 lane. Section 4 Supports the publication's Ukraine stage and delivery-context framing without making Section 4 additive to the totals. "
+  },
+  {
+    "type": "Source",
+    "id": "S-045",
+    "title": "State Department Ukraine/Israel aid reporting",
+    "url": "/sources/s-045.html",
+    "text": "Primary State reporting used in the illustrative Section 4 examples for identifiable aid flows. Section 4 Section 5 Supports identifiable Ukraine and Israel aid lines discussed in Section 4. "
+  },
+  {
+    "type": "Source",
+    "id": "S-046",
+    "title": "GAO drawdown valuation reporting",
+    "url": "/sources/s-046.html",
+    "text": "Used for the reported drawdown overvaluation issue and to keep transfer value separate from replacement appropriations. Section 4 Section 5 Supports the GAO-reported drawdown misvaluation issue. Supports excluding drawdown transfer value from net-new taxpayer replacement totals. "
+  },
+  {
+    "type": "Source",
+    "id": "S-047",
+    "title": "CEPR Ukraine valuation context",
+    "url": "/sources/s-047.html",
+    "text": "Retained as disconfirming or bounding context for delivered-value discussions in Section 4. Section 4 Provides lower-bound contextual estimates for value reaching Ukraine without being adopted as the canonical total. "
+  },
+  {
+    "type": "Source",
+    "id": "S-048",
+    "title": "Council on Foreign Relations aid tracker context",
+    "url": "/sources/s-048.html",
+    "text": "Used as contextual corroboration for Section 4's illustrative examples. Section 4 Corroborates broad Ukraine and Israel aid-stage context without serving as the primary figure source. "
+  },
+  {
+    "type": "Source",
+    "id": "S-049",
+    "title": "CRS RL33222",
+    "url": "/sources/s-049.html",
+    "text": "Primary congressional source for Israel FMF, missile-defense, and OSP context used in Section 4. Section 4 Supports the identifiable Israel FMF and missile-defense appropriations discussed in Section 4. Supports the offshore-procurement share used in the Article 15 beneficiary discussion. "
+  },
+  {
+    "type": "Source",
+    "id": "S-050",
+    "title": "DSCA SAMM and related security-cooperation materials",
+    "url": "/sources/s-050.html",
+    "text": "Program framework source for marginal or pending security-cooperation lanes surrounding Section 5 Block B. Section 5 Supports scoping and exclusion treatment for marginal security-cooperation mechanisms around the recurring annual lane. "
+  },
+  {
+    "type": "Source",
+    "id": "S-051",
+    "title": "State FMTR",
+    "url": "/sources/s-051.html",
+    "text": "Foreign Military Training Report used as supporting context in the military-aid lane. Section 5 Supports military-assistance program context and classification in Section 5. "
+  },
+  {
+    "type": "Source",
+    "id": "S-052",
+    "title": "CRS IF12040",
+    "url": "/sources/s-052.html",
+    "text": "Component-level CRS source for Ukraine security-assistance figures used in Section 5 reconciliation. Section 5 Supports the component-level USAI and PDA-replacement reconciliation in Section 5. "
+  },
+  {
+    "type": "Source",
+    "id": "S-053",
+    "title": "CRS IN12453",
+    "url": "/sources/s-053.html",
+    "text": "CRS source for cumulative PDA replacement and related Ukraine security-assistance figures. Section 5 Supports the cumulative PDA-replacement appropriation and obligation figures used in Block A. "
+  },
+  {
+    "type": "Source",
+    "id": "S-054",
+    "title": "CRS R48182",
+    "url": "/sources/s-054.html",
+    "text": "CRS source for USAI and related Ukraine military-assistance figures used in Block A. Section 5 Supports the USAI available and obligated figures used in the Block A subtotal. "
+  },
+  {
+    "type": "Source",
+    "id": "S-055",
+    "title": "GAO-23-105842",
+    "url": "/sources/s-055.html",
+    "text": "Primary source for the Section 333 Build Partner Capacity historical figure used in the recurring annual lane. Section 5 Section 14 Supports the approximately $5.6B FY2018-2022 Section 333 figure and the annualized recurring lane near $1.1B. "
+  },
+  {
+    "type": "Source",
+    "id": "S-056",
+    "title": "GAO-24-107232",
+    "url": "/sources/s-056.html",
+    "text": "GAO source for the FY2022-2023 subset of PDA replacement figures retained in reconciliation. Section 5 Supports the narrower FY2022-2023 subset retained alongside the larger cumulative PDA replacement total. "
+  },
+  {
+    "type": "Source",
+    "id": "S-057",
+    "title": "DoD / DSCA infographic",
+    "url": "/sources/s-057.html",
+    "text": "DoD summary used to verify separation between USAI and PDA replacement lines in Section 5. Section 5 Supports the non-overlap of USAI and PDA replacement lines. Supports the cumulative military-assistance line items used in Block A. "
+  },
+  {
+    "type": "Source",
+    "id": "S-058",
+    "title": "DoD CTEF J-Books",
+    "url": "/sources/s-058.html",
+    "text": "Primary source for the Counter-ISIS Train and Equip Fund figure used in the recurring annual lane. Section 5 Section 14 Supports the approximately $0.5B recurring annual CTEF lane. "
+  },
+  {
+    "type": "Source",
+    "id": "S-059",
+    "title": "10 U.S.C. Sec. 333",
+    "url": "/sources/s-059.html",
+    "text": "Statutory authority for the Section 333 Build Partner Capacity lane. Section 5 Supports the legal basis and lane identity for Section 333 funding in Section 5. "
+  },
+  {
+    "type": "Source",
+    "id": "S-060",
+    "title": "ORR program documents",
+    "url": "/sources/s-060.html",
+    "text": "Program documents used to identify ORR base program lines such as RSS and T&MS in Section 6. Section 6 Section 14 Supports the FY2024 base figures for Refugee Support Services and Transitional and Medical Services. Supports the program-level structure of the ORR lane. A-018"
+  },
+  {
+    "type": "Source",
+    "id": "S-061",
+    "title": "ORR entrant-assistance program materials",
+    "url": "/sources/s-061.html",
+    "text": "Supporting ORR materials for entrant cash, medical, or service pathways discussed in Section 6. Section 6 Supports the routed treatment of entrant-directed cash and medical assistance inside the ORR lane. A-018"
+  },
+  {
+    "type": "Source",
+    "id": "S-062",
+    "title": "USAspending account 075-1503",
+    "url": "/sources/s-062.html",
+    "text": "Federal account reference for Refugee and Entrant Assistance used to anchor the Section 6 lane. Section 6 Section 14 Supports the identification of Refugee and Entrant Assistance as the central federal account in Section 6. A-018"
+  },
+  {
+    "type": "Source",
+    "id": "S-063",
+    "title": "ORR service-delivery and provider-route materials",
+    "url": "/sources/s-063.html",
+    "text": "Supporting ORR material for provider, state, and voluntary-agency delivery pathways in Section 6. Section 6 Supports the conclusion that a large share of ORR dollars is routed through states, operators, and voluntary agencies rather than directly as cash. A-018"
+  },
+  {
+    "type": "Source",
+    "id": "S-064",
+    "title": "KFF emergency Medicaid analysis",
+    "url": "/sources/s-064.html",
+    "text": "Corroborating source for the Section 7 emergency Medicaid figure and the provider-capture framing. Section 7 Section 14 Section 16 Corroborates the approximately $3.8B FY2023 emergency Medicaid figure. Supports the explanation that emergency Medicaid reimburses hospitals rather than paying cash to patients. A-037"
+  },
+  {
+    "type": "Source",
+    "id": "S-065",
+    "title": "CMS-64 / MACPAC emergency Medicaid reporting",
+    "url": "/sources/s-065.html",
+    "text": "Primary source of record for the Section 7 emergency Medicaid figure. Section 7 Supports the approximately $3.8B FY2023 emergency Medicaid figure on a federal-plus-state basis. A-037"
+  },
+  {
+    "type": "Source",
+    "id": "S-067",
+    "title": "CRS R46462",
+    "url": "/sources/s-067.html",
+    "text": "Primary structural source for housing-program eligibility, Section 214 limits, and status-verification rules. Section 10 Supports the claim that major HUD rental-assistance programs are limited to citizens and eligible noncitizens under Section 214. "
+  },
+  {
+    "type": "Source",
+    "id": "S-068",
+    "title": "HUD program guidance",
+    "url": "/sources/s-068.html",
+    "text": "HUD guidance used alongside CRS to explain proration and status-verification rules in Section 10. Section 10 Supports proration treatment under mixed-status housing households and the exclusion of ineligible members. "
+  },
+  {
+    "type": "Source",
+    "id": "S-069",
+    "title": "Plyler / federal education-aid legal framework",
+    "url": "/sources/s-069.html",
+    "text": "Primary legal framework for status-blind K-12 access and federal student-aid eligibility boundaries used in Section 11. Section 11 Supports the claim that K-12 schooling is status-blind under Plyler v. Doe. Supports the claim that undocumented students are barred from federal student aid while eligible noncitizen breakout data is not published. "
+  },
+  {
+    "type": "Source",
+    "id": "S-070",
+    "title": "CRS R47936",
+    "url": "/sources/s-070.html",
+    "text": "Appropriations source for Refugee and Entrant Assistance and related ORR emergency funding in Section 6. Section 6 Section 14 Supports the approximately $4.2B FY2023 emergency-designated Refugee and Entrant Assistance figure. Supports the approximately $481M FY2024 emergency appropriation figure. A-018"
+  },
+  {
+    "type": "Source",
+    "id": "S-071",
+    "title": "ORR / HHS additional resettlement support materials",
+    "url": "/sources/s-071.html",
+    "text": "Supporting ORR documentation used to map the service and provider structure of Section 6. Section 6 Supports the ownership map that keeps ORR-routed assistance inside Section 6 rather than duplicating it elsewhere. A-018"
+  },
+  {
+    "type": "Source",
+    "id": "S-072",
+    "title": "SSA SSI program totals",
+    "url": "/sources/s-072.html",
+    "text": "Primary SSI program totals used in Section 9 for the overall payment baseline and average payment amount. Section 9 Supports approximately $61B in SSI total payments in FY/CY2023. Supports the average monthly SSI payment baseline used in the Section 9 calculation. A-028"
   },
   {
     "type": "Source",
     "id": "S-073",
-    "title": "SSA primary noncitizen SSI data",
+    "title": "SSA noncitizen SSI data",
     "url": "/sources/s-073.html",
-    "text": "Primary data for noncitizen SSI recipient counts and average payments used in Section 9. Section 1 Section 9 Supports the published noncitizen SSI recipient count of 365,714 in December 2021. Supports the computed approximately $2.21B annualized SSI amount on the Dec. 2021 basis. A-028"
+    "text": "Primary source for the noncitizen SSI recipient count used in Section 9. Section 1 Section 9 Section 14 Supports the published noncitizen SSI recipient count of 365,714 in December 2021. Supports the computed approximately $2.21B annualized SSI line on the December 2021 basis. A-028"
+  },
+  {
+    "type": "Source",
+    "id": "S-074",
+    "title": "USDA-FNS SNAP characteristics data",
+    "url": "/sources/s-074.html",
+    "text": "Primary SNAP program and participant-composition data used in Section 8. Section 8 Section 16 Supports the FY2023 SNAP participation figures used in Section 8. Supports the composition finding that approximately 89.4 percent of participants are U.S.-born citizens and approximately 3.3 percent are other noncitizens. "
+  },
+  {
+    "type": "Source",
+    "id": "S-075",
+    "title": "ACF TANF totals and characteristics",
+    "url": "/sources/s-075.html",
+    "text": "Published TANF totals and characteristics used only to frame why TANF remains largely routed to Section 13. Section 9 Supports the claim that TANF totals are published but noncitizen-attributable benefit dollars are not cleanly isolated. "
+  },
+  {
+    "type": "Source",
+    "id": "S-076",
+    "title": "Cato SIPP-modeled welfare context",
+    "url": "/sources/s-076.html",
+    "text": "Directional, non-canonical context retained in Section 9 but not adopted as a Total A figure. Section 9 Provides modeled context for noncitizen welfare use while remaining outside the audit's adopted topline because of scope and methodology mismatches. "
+  },
+  {
+    "type": "Source",
+    "id": "S-077",
+    "title": "HUD ineligible-tenant reporting",
+    "url": "/sources/s-077.html",
+    "text": "Closest primary figure used in Section 10 for ineligible individuals inside assisted housing structures. Section 10 Supports the heavily caveated closest primary housing figure discussed in Section 10. "
+  },
+  {
+    "type": "Source",
+    "id": "S-078",
+    "title": "CBO emergency Medicaid cost reporting",
+    "url": "/sources/s-078.html",
+    "text": "CBO time-window context for emergency Medicaid, retained in reconciliation but not as a competing annual figure. Section 7 Supports the publication's time-window reconciliation showing why multi-year CBO totals do not compete with the FY2023 figure. A-037"
+  },
+  {
+    "type": "Source",
+    "id": "S-079",
+    "title": "House Budget Committee emergency Medicaid context",
+    "url": "/sources/s-079.html",
+    "text": "Subset-period emergency Medicaid context retained in Table 14-H reconciliation. Section 7 Supports the claim that larger emergency Medicaid numbers cited elsewhere are different-period figures rather than contradictions of the FY2023 annual figure. A-037"
+  },
+  {
+    "type": "Source",
+    "id": "S-080",
+    "title": "CBO immigration-surge projection context",
+    "url": "/sources/s-080.html",
+    "text": "Forward-looking context explicitly kept out of adopted totals because it is a projection and includes out-of-scope categories. Section 7 Supports the publication's explicit distinction between current-year measured figures and future projections. "
+  },
+  {
+    "type": "Open question",
+    "id": "A-001",
+    "title": "ForeignAssistance.gov live sum and version date",
+    "url": "/open-questions/a-001.html",
+    "text": "Section 3 relies on published aggregate foreign-assistance reporting, but the live-sum and version-stamp execution path still needs a fully pinned primary extraction record. Appendix A carries this as the primary-execution item behind the international-assistance aggregate. A version-stamped primary extraction from ForeignAssistance.gov showing the live sum and retrieval date used for the locked figure. Section 3 S-038"
+  },
+  {
+    "type": "Open question",
+    "id": "A-002",
+    "title": "GAO budget-glossary edition",
+    "url": "/open-questions/a-002.html",
+    "text": "If a superseding GAO glossary materially changed an adopted accounting definition, the methodology notes would need to carry that custody update explicitly. The audit uses GAO-05-734SP and flags the edition-confirmation question instead of silently assuming there is no later definitional change. Confirmation that no later GAO budget-glossary edition changes the adopted definitions used in the publication. Section 2 Section 3 S-005 S-006"
+  },
+  {
+    "type": "Open question",
+    "id": "A-003",
+    "title": "Post-2025 USAID-State administering offices",
+    "url": "/open-questions/a-003.html",
+    "text": "The 2025 realignment creates a continuity problem when later-year international-assistance reporting is compared to prior administrative structures. Section 3 carries the post-2025 office realignment as a reporting discontinuity rather than pretending the series is perfectly continuous. A reconciled post-2025 administrative mapping that ties later reporting offices back to the pre-realignment foreign-assistance series. Section 3 S-040 S-042"
+  },
+  {
+    "type": "Open question",
+    "id": "A-004",
+    "title": "IMF budget-scoring treatment",
+    "url": "/open-questions/a-004.html",
+    "text": "International financial institution support can score differently from direct grant aid, so IMF-related treatment affects scope discipline in the international-assistance universe. The publication flags IMF scoring treatment instead of assuming a simple add-or-exclude rule where the budget basis may differ. A primary budget-scoring record clarifying how the relevant IMF support should be treated on the audit's chosen basis. Section 3 "
   },
   {
     "type": "Open question",
@@ -78,73 +365,332 @@
   },
   {
     "type": "Open question",
+    "id": "A-006",
+    "title": "Ukraine stage figures from the primary portal",
+    "url": "/open-questions/a-006.html",
+    "text": "Ukraine assistance is often quoted across incompatible stages, so a primary stage-by-stage portal view is necessary to keep appropriation, obligation, disbursement, and delivery claims distinct. Section 4 confirms the structural stage gap but still notes that dynamic portal extraction was not fully captured in the locked artifact path. A stable primary-portal extract that shows Ukraine aid by stage using consistent definitions. Section 4 S-044 S-045"
+  },
+  {
+    "type": "Open question",
+    "id": "A-007",
+    "title": "PDA valuation treatment",
+    "url": "/open-questions/a-007.html",
+    "text": "Presidential Drawdown Authority values can diverge from replacement cost, and valuation ambiguity can create false inflation if the wrong measure is reused elsewhere. The publication treats drawdown value and replacement appropriation separately and carries the valuation problem as a reporting-quality issue. Primary valuation documentation clarifying the exact basis used for PDA transfer values in the compared reporting streams. Section 4 S-046 S-053 S-054"
+  },
+  {
+    "type": "Open question",
+    "id": "A-008",
+    "title": "Ukraine grant-versus-loan treatment",
+    "url": "/open-questions/a-008.html",
+    "text": "Some Ukraine support is repayable or collateralized, so grant-versus-loan treatment changes what can be treated as direct transferred value. Section 4 flags the issue and avoids flattening repayable or collateralized support into simple grant totals. A primary classification record separating grant-value support from loans, guarantees, or other repayable structures. Section 4 S-044 S-045"
+  },
+  {
+    "type": "Open question",
+    "id": "A-009",
+    "title": "Israel FMF/MOU staging details",
+    "url": "/open-questions/a-009.html",
+    "text": "Israel aid lines are cleaner than Ukraine's, but stage discipline still matters when distinguishing base MOU commitments from supplemental appropriations and execution status. Section 4 confirms the main Israel statutory lines while carrying narrower staging details as a residual verification item. A fully staged primary record that ties MOU, supplemental, and execution-state views into one reference chain. Section 4 S-049"
+  },
+  {
+    "type": "Open question",
+    "id": "A-010",
+    "title": "Capture share for Ukraine and Israel military aid",
+    "url": "/open-questions/a-010.html",
+    "text": "Gross military-aid figures do not equal value ultimately reaching the foreign recipient because replenishment, U.S. manufacturing, and domestic capture can absorb a large share. The publication keeps Total B open for these military cases rather than inventing a capture rate. Program-level evidence showing what share of military-aid appropriations and obligations is captured in the United States versus reaching the foreign recipient. Section 4 Section 5 S-043 S-047 S-049 S-057"
+  },
+  {
+    "type": "Open question",
+    "id": "A-011",
+    "title": "Israel OSP share",
+    "url": "/open-questions/a-011.html",
+    "text": "The offshore-procurement share affects how much FMF can be spent in Israel rather than on U.S. defense articles. Section 4 uses the published OSP framing but flags the exact current share as an open verification item. A current primary record for the exact OSP share and its implementation window. Section 4 S-049"
+  },
+  {
+    "type": "Open question",
+    "id": "A-012",
+    "title": "Israel 2024 supplemental obligated-versus-outlaid status",
+    "url": "/open-questions/a-012.html",
+    "text": "Appropriation alone does not show execution stage, and the 2024 supplemental should not be narrated as outlaid if only obligated or appropriated. The publication keeps the stage distinction explicit and records the unresolved execution-state detail as an open item. Primary execution reporting showing whether the relevant supplemental amount is appropriated, obligated, or outlaid. Section 4 S-045 S-049"
+  },
+  {
+    "type": "Open question",
+    "id": "A-013",
+    "title": "DoD execution-level annual figures for Section 333, CTEF, and ASFF",
+    "url": "/open-questions/a-013.html",
+    "text": "The recurring military lane is built from annual programs, so execution-level figures matter for staying on the right basis and year. Section 5 carries approximate recurring figures while noting that exact current-year execution detail is still incomplete. Primary DoD execution-level annual figures for Section 333, CTEF, and related annual security-cooperation programs. Section 5 S-055 S-058 S-059"
+  },
+  {
+    "type": "Open question",
+    "id": "A-014",
+    "title": "EDA marginal taxpayer cost versus acquisition value",
+    "url": "/open-questions/a-014.html",
+    "text": "Excess Defense Articles can be described by acquisition value or marginal taxpayer cost, and the distinction affects whether any figure belongs in a transfer total. The publication leaves EDA as a marginal or pending item instead of forcing a misleading value into the annual military lane. A primary cost treatment record showing the marginal taxpayer cost basis for EDA transfers. Section 5 S-050"
+  },
+  {
+    "type": "Open question",
+    "id": "A-015",
+    "title": "WRSA transferred value versus retained U.S.-owned stock",
+    "url": "/open-questions/a-015.html",
+    "text": "War Reserve Stockpiles for Allies can blur the line between transferred value and still-U.S.-owned stock, which affects whether a taxpayer transfer has actually occurred. Section 5 leaves WRSA out of the adopted subtotal until a defensible transfer-value basis is available. A primary record separating transferred WRSA value from stock that remains U.S.-owned or merely positioned. Section 5 S-050"
+  },
+  {
+    "type": "Open question",
+    "id": "A-016",
+    "title": "SDAF revolving treatment",
+    "url": "/open-questions/a-016.html",
+    "text": "The Special Defense Acquisition Fund could look like an added military-aid pool if its revolving nature is ignored. Appendix A marks this resolved: SDAF is revolving, nets to approximately $0 in the audit frame, and is excluded from adopted totals. No further record needed for v1.0; carried as resolved in the register. Section 5 "
+  },
+  {
+    "type": "Open question",
     "id": "A-017",
     "title": "Cross-section harmonization between foreign-assistance and military-aid lanes",
     "url": "/open-questions/a-017.html",
-    "text": "Section 3 uses single-year obligations while Section 5 uses cumulative multi-year military lanes, so a blended headline would overstate precision. The site preserves separate lanes and explicitly forbids a synthetic grand total. A lawful harmonization method that keeps measure type, period, and duplication risks separated. Section 5 S-043"
+    "text": "Section 3 uses single-year obligations while Section 5 uses cumulative multi-year military lanes, so a blended headline would overstate precision. Appendix A marks this resolved into lanes: the platform preserves basis-segregated subtotals instead of forcing a synthetic grand total. A lawful harmonization method that keeps measure type, period, and duplication risks separated. Section 5 S-043"
   },
   {
     "type": "Open question",
     "id": "A-018",
     "title": "ORR consolidated outlay and recipient/provider split",
     "url": "/open-questions/a-018.html",
-    "text": "The refugee-resettlement lane is routed through states, voluntary agencies, and providers, but the public record does not cleanly isolate value reaching entrants. Section 6 names the program and the gap, but leaves Total B unresolved. Public ORR outlay reporting that isolates entrant-directed value versus provider or operator capture. Section 1 Section 6 "
+    "text": "The refugee-resettlement lane is routed through states, voluntary agencies, and providers, but the public record does not cleanly isolate value reaching entrants. Section 6 names the program and the gap, but leaves Total B unresolved. Public ORR outlay reporting that isolates entrant-directed value versus provider or operator capture. Section 1 Section 6 S-060 S-062 S-070"
+  },
+  {
+    "type": "Open question",
+    "id": "A-019",
+    "title": "ORR entrant-versus-provider split",
+    "url": "/open-questions/a-019.html",
+    "text": "A large share of ORR funds flows to states, voluntary agencies, and shelter operators rather than directly as cash to entrants. Section 6 states that the entrant-versus-provider split is unpublished and therefore leaves Total B materially below but not measurable from the public record. Program-level public reporting that separates entrant-directed value from provider, operator, and administrative capture. Section 6 S-060 S-061 S-063"
+  },
+  {
+    "type": "Open question",
+    "id": "A-020",
+    "title": "UC in-scope versus custodial share",
+    "url": "/open-questions/a-020.html",
+    "text": "The Unaccompanied Children program dominates ORR spending, but its custodial and support components are not cleanly partitioned for this audit's beneficiary logic. Section 6 carries UC's dominance openly while leaving the in-scope beneficiary split unresolved. A public breakout distinguishing the UC share that should count as entrant-directed support from custodial or operator-heavy expenditures. Section 6 S-060 S-070"
+  },
+  {
+    "type": "Open question",
+    "id": "A-021",
+    "title": "Afghan and Ukrainian parolee supplemental amounts",
+    "url": "/open-questions/a-021.html",
+    "text": "Supplemental entrant populations can change ORR composition materially, but the public record does not fully isolate the amounts attributable to those parolee cohorts. Section 6 keeps the parolee supplements visible as a data-gap item rather than allocating them heuristically. Public ORR reporting that isolates Afghan and Ukrainian parolee supplemental amounts on the same basis as the main ORR lane. Section 6 S-061 S-071"
+  },
+  {
+    "type": "Open question",
+    "id": "A-022",
+    "title": "CMS-64 emergency Medicaid federal share by year",
+    "url": "/open-questions/a-022.html",
+    "text": "The publication has a published emergency Medicaid total, but the federal-only share by year is needed for a cleaner federal total. The item is carried in the register with MACPAC and CBO corroboration but without the federal-only annual breakout. A year-specific CMS-64-based federal-share breakout for emergency Medicaid. Section 7 S-065 S-078"
+  },
+  {
+    "type": "Open question",
+    "id": "A-023",
+    "title": "Eligible-immigrant Medicaid outlay",
+    "url": "/open-questions/a-023.html",
+    "text": "Eligible-immigrant Medicaid spending may be material, but the public record does not publish a clean status-based outlay line for that population. Section 7 routes this gap to Section 13 rather than fabricating a status-based Medicaid figure. A published eligible-immigrant Medicaid outlay series on a federal basis. Section 7 S-065"
+  },
+  {
+    "type": "Open question",
+    "id": "A-024",
+    "title": "Reconcile House Budget and CBO figures versus KFF $3.8B",
+    "url": "/open-questions/a-024.html",
+    "text": "Large emergency Medicaid figures from different sources can look contradictory unless their time windows are made explicit. Appendix A marks this reconciled: the figures rest on the same dataset family but different time windows, as shown in Table 14-H. No additional v1.0 record is needed beyond the time-window explanation already carried in the publication. Section 7 S-064 S-078 S-079"
+  },
+  {
+    "type": "Open question",
+    "id": "A-025",
+    "title": "SNAP noncitizen participant share and benefit attribution",
+    "url": "/open-questions/a-025.html",
+    "text": "Participant composition is published, but a benefit-dollar breakout net of citizen children is not, and multiplying the participation share by the total would be prohibited modeling. Section 8 publishes the participation mix and explicitly routes the missing dollar attribution to Section 13. A published SNAP spending breakout isolating noncitizen-attributable benefits net of citizen-child portions. Section 8 S-074"
+  },
+  {
+    "type": "Open question",
+    "id": "A-026",
+    "title": "WIC and school-meals status-neutrality",
+    "url": "/open-questions/a-026.html",
+    "text": "Programs without status conditions may be legally or operationally unable to generate a noncitizen-specific spending line. The publication treats these programs as unresolved Section 13 gaps rather than inferring a noncitizen share. A lawful published record showing whether any status-based breakout exists for these status-neutral nutrition programs. Section 8 "
+  },
+  {
+    "type": "Open question",
+    "id": "A-027",
+    "title": "TANF eligible-noncitizen share net of ORR",
+    "url": "/open-questions/a-027.html",
+    "text": "TANF is heavily citizen-child-dominated and can overlap with ORR-routed assistance, so the noncitizen share cannot be cleanly derived from published totals. Section 9 fences ORR-routed support back to Section 6 and sends the unresolved TANF share question to Section 13. A published TANF breakout for eligible noncitizen benefits net of ORR-routed assistance. Section 9 S-075"
   },
   {
     "type": "Open question",
     "id": "A-028",
     "title": "SSI point-in-time basis versus annual flow basis",
     "url": "/open-questions/a-028.html",
-    "text": "The SSI figure is computed from a published December 2021 basis, which is strong for that point in time but not a full annual transactional ledger. Section 9 keeps the figure labeled on its Dec. 2021 basis and avoids overstating it as a harmonized annual program total. A published annual SSI spending breakout for noncitizen recipients or a fully reconciled monthly series. Section 1 Section 9 S-073"
+    "text": "The SSI figure is computed from a published December 2021 basis, which is strong for that point in time but not a full annual transactional ledger. Section 9 keeps the figure labeled on its Dec. 2021 basis and avoids overstating it as a harmonized annual program total. A published annual SSI spending breakout for noncitizen recipients or a fully reconciled monthly series. Section 1 Section 9 S-072 S-073"
+  },
+  {
+    "type": "Open question",
+    "id": "A-029",
+    "title": "ACTC/CTC via ITIN and citizen-child share",
+    "url": "/open-questions/a-029.html",
+    "text": "Tax-credit flows can involve ITIN filers and citizen children, which makes noncitizen-specific attribution impossible without a published IRS breakout. Section 9 names the gap and routes it to Section 13 instead of deriving a figure from mixed-status tax filing patterns. An IRS-published breakout isolating ACTC or CTC amounts attributable to the noncitizen population without citizen-child overlap. Section 9 "
+  },
+  {
+    "type": "Open question",
+    "id": "A-030",
+    "title": "HUD eligible-noncitizen prorated outlay",
+    "url": "/open-questions/a-030.html",
+    "text": "Housing assistance is already screened for ineligible members, but a clean eligible-noncitizen spending line is still not published. Section 10 documents the structural rules and closest figure, then routes the missing noncitizen-specific outlay to Section 13. A HUD-published outlay breakout for eligible noncitizen housing assistance after proration and citizen-member separation. Section 10 S-067 S-068 S-077"
+  },
+  {
+    "type": "Open question",
+    "id": "A-031",
+    "title": "No-verification grant housing programs",
+    "url": "/open-questions/a-031.html",
+    "text": "Grant-funded housing programs that do not verify immigration status cannot easily produce a status-based spending breakout. Section 10 marks these programs as unresolved rather than assigning them a modeled share. A published program-level record showing whether any status breakout exists inside no-verification housing grants. Section 10 S-067 S-068"
+  },
+  {
+    "type": "Open question",
+    "id": "A-032",
+    "title": "Federal K-12 noncitizen spending",
+    "url": "/open-questions/a-032.html",
+    "text": "K-12 schooling is constitutionally status-blind, so the public record may not be able to produce a status-based federal spending line at all. Section 11 treats this as a legal collection limit rather than a simple missing dataset. No ordinary status-based spending dataset is expected; any lawful resolution would need to respect Plyler's status-collection limits. Section 11 S-069"
+  },
+  {
+    "type": "Open question",
+    "id": "A-033",
+    "title": "Eligible-noncitizen federal student aid",
+    "url": "/open-questions/a-033.html",
+    "text": "Undocumented students are barred from federal aid, but eligible-noncitizen aid is still not published as a separate spending line. Section 11 names the eligibility boundary clearly and routes the missing eligible-noncitizen spending breakout to Section 13. A Department of Education breakout isolating federal student-aid amounts for eligible noncitizens. Section 11 S-069"
+  },
+  {
+    "type": "Open question",
+    "id": "A-034",
+    "title": "CCDF, SSBG, CSBG, and LIHEAP no-breakout",
+    "url": "/open-questions/a-034.html",
+    "text": "State-administered federal streams can lose citizenship detail in the federal-state-local chain, preventing a clean noncitizen spending breakout. Section 12 documents the reconciliation role and routes these no-breakout programs into the Section 13 gap register. Published program breakouts showing whether any of these state-administered federal streams isolate status-level spending. Section 12 Section 13 "
+  },
+  {
+    "type": "Open question",
+    "id": "A-035",
+    "title": "Per-program responsible agency for missing status data",
+    "url": "/open-questions/a-035.html",
+    "text": "Readers need to know which agency would have to publish a missing status-based breakout before a gap can ever be resolved. Section 13 frames this as part of the gap register rather than pretending every missing line has the same administrative owner. A program-by-program ownership map tying each missing breakout to the responsible federal reporting agency. Section 13 "
+  },
+  {
+    "type": "Open question",
+    "id": "A-036",
+    "title": "Whether Class C or D modeled estimates exist as bounded context only",
+    "url": "/open-questions/a-036.html",
+    "text": "Modeled or secondary estimates may exist for some gaps, but using them as adopted totals would violate the audit's evidence hierarchy unless they are clearly bounded as context only. Section 13 leaves this open instead of backfilling opaque programs with secondary modeled estimates. A bounded inventory of Class C or D estimates that can be published as context without replacing missing primary evidence. Section 13 S-076"
   },
   {
     "type": "Open question",
     "id": "A-037",
     "title": "Federal-only emergency Medicaid share",
     "url": "/open-questions/a-037.html",
-    "text": "The site can publish the federal-plus-state emergency Medicaid figure used in the locked section, but not the federal-only share needed for a cleaner federal total. The limitation is carried forward explicitly in the Executive Summary and Section 7. A public federal-only emergency Medicaid spending breakout for the same period and population basis. Section 1 Section 7 S-003"
+    "text": "The site can publish the federal-plus-state emergency Medicaid figure used in the locked section, but not the federal-only share needed for a cleaner federal total. The limitation is carried forward explicitly in the Executive Summary and Section 7. A public federal-only emergency Medicaid spending breakout for the same period and population basis. Section 1 Section 7 S-003 S-064 S-065 S-078 S-079"
   },
   {
     "type": "Decision",
-    "id": "gross-not-net",
+    "id": "D-001",
     "title": "Gross, not net",
-    "url": "/decision-log.html",
-    "text": "The web edition preserves the audit rule that figures represent gross money directed toward non-U.S. recipients or non-citizens, not net fiscal impact after taxes. Methodology Section 1 Section 2"
+    "url": "/decision-log/d-001.html",
+    "text": "Every adopted figure is gross money directed toward non-U.S. recipients or noncitizens. The audit does not offset those figures against taxes paid or any net-fiscal-impact model. Section 1 Section 2 Section 9"
   },
   {
     "type": "Decision",
-    "id": "no-grand-total",
+    "id": "D-005",
+    "title": "Status categories are never collapsed",
+    "url": "/decision-log/d-005.html",
+    "text": "Lawful permanent residents, refugees, asylees, parolees, temporary statuses, and undocumented persons are analytically distinct categories and are never merged into one undifferentiated headline. Section 2"
+  },
+  {
+    "type": "Decision",
+    "id": "D-012",
+    "title": "Number type and resource category are recorded separately",
+    "url": "/decision-log/d-012.html",
+    "text": "Each figure keeps both its number type and its resource category visible. Drawdown transfer value, replacement appropriations, obligations, outlays, and program authorities are tracked as different things. Section 2 Section 5"
+  },
+  {
+    "type": "Decision",
+    "id": "D-013",
+    "title": "Universe-of-programs completeness artifact",
+    "url": "/decision-log/d-013.html",
+    "text": "Sections with broad program scope publish their universe explicitly, including residual or immaterial lines, so no material account is silently dropped from the research frame. Section 3 Section 4 Section 6"
+  },
+  {
+    "type": "Decision",
+    "id": "D-014",
+    "title": "The Two Running Totals",
+    "url": "/decision-log/d-014.html",
+    "text": "The audit preserves two permanent running concepts: Total A for gross directed resources and Total B for estimated value ultimately reaching the non-U.S. recipient after U.S.-captured share. They are never merged. Section 3 Section 14"
+  },
+  {
+    "type": "Decision",
+    "id": "D-017",
+    "title": "Section 3 to Section 5 netting rule",
+    "url": "/decision-log/d-017.html",
+    "text": "Military-aid lines already embedded in the foreign-assistance aggregate are counted once. Section 5 aggregates only NET-NEW military lanes and excludes allied-funded FMS, DCS, and other non-taxpayer or already-counted amounts. Section 3 Section 4 Section 5 Section 14"
+  },
+  {
+    "type": "Decision",
+    "id": "D-018",
+    "title": "Research docket publication rule",
+    "url": "/decision-log/d-018.html",
+    "text": "Illustrative sections may publish their search path, source classes, and unresolved pulls so readers can see what was investigated even when those sections are non-additive. Section 4"
+  },
+  {
+    "type": "Decision",
+    "id": "D-019",
+    "title": "Standardized key-findings opening",
+    "url": "/decision-log/d-019.html",
+    "text": "Certain locked sections begin with a standardized key-findings block that summarizes already-established evidence without introducing new evidence or new methodology in the summary itself. Section 4 Section 5"
+  },
+  {
+    "type": "Decision",
+    "id": "D-020",
     "title": "No blended grand total",
-    "url": "/decision-log.html",
-    "text": "The platform keeps incompatible bases separate and does not synthesize one headline total from disbursements, obligations, cumulative military lanes, and federal-plus-state figures. Section 1 Section 3 Section 5 Section 14 placeholder"
+    "url": "/decision-log/d-020.html",
+    "text": "Where lane subtotals sit on incompatible bases such as disbursement versus obligation, annual versus cumulative, or federal versus federal-plus-state, the rigorous output is a set of basis-segregated subtotals rather than one synthetic total. Section 1 Section 5 Section 12 Section 14 Section 16"
   },
   {
     "type": "Decision",
-    "id": "no-population-modeling",
-    "title": "No population-share modeling",
-    "url": "/decision-log.html",
-    "text": "Where a federal program does not publish a citizenship-status spending breakout, the site records the gap instead of allocating dollars from population share. Methodology Section 8 Section 9 Section 13 placeholder"
+    "id": "D-021",
+    "title": "Ownership map for domestic sections",
+    "url": "/decision-log/d-021.html",
+    "text": "Domestic federal dollars are owned by one canonical section so routed programs are not counted twice. ORR, Medicaid, TANF-related pathways, and state-administered lenses keep their owning section explicit. Section 6 Section 7 Section 8 Section 9 Section 10 Section 11 Section 12 Section 13"
   },
   {
     "type": "Decision",
-    "id": "citizen-child-exclusion",
-    "title": "Citizen-child exclusion",
-    "url": "/decision-log.html",
-    "text": "Benefits paid for U.S.-citizen children in mixed-status households remain excluded from non-citizen spending totals. Section 1 Methodology Section 8"
+    "id": "D-022",
+    "title": "Section 14 blueprint frozen",
+    "url": "/decision-log/d-022.html",
+    "text": "The conservative-total section is built to a fixed blueprint that preserves lane separation, forbids invented gap estimates, and requires reproducibility from the locked source sections. Section 14"
   },
   {
     "type": "Decision",
-    "id": "recipient-vs-beneficiary",
-    "title": "Recipient separated from economic beneficiary",
-    "url": "/decision-log.html",
-    "text": "The publication distinguishes the direct recipient of federal spending from the economic beneficiary that ultimately captures value, especially in provider-heavy or contractor-heavy lanes. Section 2 Section 5 Section 6 Section 7"
+    "id": "D-023",
+    "title": "Section 14 locked",
+    "url": "/decision-log/d-023.html",
+    "text": "After the blueprint was populated and checked, Section 14 was locked as the publication's conservative set-of-subtotals representation. Section 14"
   },
   {
     "type": "Decision",
-    "id": "drawdown-replacement-separation",
-    "title": "Drawdown value separated from replacement cost",
-    "url": "/decision-log.html",
-    "text": "Military drawdown transfer values are not treated as the same thing as taxpayer replacement appropriations, preventing duplicate counting. Section 2 Section 5"
+    "id": "D-024",
+    "title": "Section 15 locked",
+    "url": "/decision-log/d-024.html",
+    "text": "The limitations section was locked to carry forward the publication's missing-record constraints without backfilling them with modeled certainty. Section 15"
+  },
+  {
+    "type": "Decision",
+    "id": "D-025",
+    "title": "Section 16 locked",
+    "url": "/decision-log/d-025.html",
+    "text": "The final argument was locked after assembly so the publication's closing synthesis reflects the same basis-separation and limitation rules as the rest of Version 1.0. Section 16"
+  },
+  {
+    "type": "Decision",
+    "id": "D-026",
+    "title": "Repository completion assembly",
+    "url": "/decision-log/d-026.html",
+    "text": "Repository completion for Version 1.0 means the locked sections, appendices, source library, and decision log are assembled as publication assets without rewriting the underlying analytical conclusions. Appendix A Appendix B Repository assets"
   },
   {
     "type": "Section",

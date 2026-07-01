@@ -249,11 +249,13 @@ function renderOpenQuestionDetail(item) {
 function renderDecisionLog() {
   const decisions = publication.decisions
     .map(
-      (item) => `<article class="source-row">
+      (item) => `<article class="source-row" data-filterable data-search="${escapeHtml(
+        [item.id, item.title, item.body, item.references.join(" ")].join(" ")
+      )}">
         <div class="source-row-head">
           <div>
-            <p class="row-kicker">Web-extracted methodology decision</p>
-            <h2 class="row-title">${escapeHtml(item.title)}</h2>
+            <p class="row-kicker">Canonical methodology decision</p>
+            <h2 class="row-title"><a href="/decision-log/${item.slug}.html">${escapeHtml(item.id)} - ${escapeHtml(item.title)}</a></h2>
           </div>
         </div>
         <p>${escapeHtml(item.body)}</p>
@@ -262,9 +264,17 @@ function renderDecisionLog() {
     )
     .join("");
 
-  const body = `<section class="panel">
+  const body = `<div class="actions">
+      <a class="button primary" href="/sources.html">Source library</a>
+      <a class="button" href="/search.html">Search the publication</a>
+    </div>
+    <label class="search-wrap">
+      <span class="sr-only">Search decision log</span>
+      <input class="search" data-filter-input data-filter-target="[data-filterable]" placeholder="Search decision IDs, rules, or section references">
+    </label>
+    <section class="panel">
       <h2>Decision-log status</h2>
-      <p>The repository currently does not include the canonical PDF asset or an extracted numbered D-001 through D-026 decision register. This page therefore publishes only the binding methodology decisions that are already visible in converted web sections and preserves the official numbering by not inventing replacement IDs.</p>
+      <p>This release publishes the numbered canonical decisions that are explicitly visible in the v1.0 publication text now converted into the repository. Each record captures the rule as published without rewriting the audit's conclusions.</p>
     </section>
     <section class="panel stack">${decisions}</section>`;
 
@@ -273,9 +283,38 @@ function renderDecisionLog() {
     description: "Current methodology decision log for The Citizen Audit.",
     eyebrow: "Decision Log",
     heading: "Decision Log",
-    lede: "Methodology decisions belong in public, even when the full numbered register still needs canonical-asset extraction.",
+    lede: "Methodology decisions belong in public, and the numbered rules visible in Version 1.0 now have their own web records.",
     body,
-    footerLabel: "Decision log - extracted web-visible rules"
+    footerLabel: "Decision log - canonical numbered rules"
+  });
+}
+
+function renderDecisionDetail(item) {
+  const body = `<div class="actions">
+      <a class="button" href="/decision-log.html">Back to decision log</a>
+      <a class="button" href="/search.html?q=${encodeURIComponent(item.id)}">Search related records</a>
+    </div>
+    <section class="panel">
+      <h2>Published rule</h2>
+      <p>${escapeHtml(item.body)}</p>
+      <div class="meta-grid">
+        <p><strong>Decision ID:</strong> ${escapeHtml(item.id)}</p>
+        <p><strong>References:</strong> ${escapeHtml(item.references.join(", "))}</p>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Why this page exists</h2>
+      <p>This record makes the numbered methodology rule addressable in the web edition so sources, sections, and future traceability features can point back to the same canonical decision.</p>
+    </section>`;
+
+  return layout({
+    title: `${item.id} | The Citizen Audit`,
+    description: `${item.id} decision-log entry for The Citizen Audit.`,
+    eyebrow: "Decision Record",
+    heading: `${item.id} - ${item.title}`,
+    lede: "Decision records preserve the publication's binding methodological rules in one addressable location.",
+    body,
+    footerLabel: `${item.id} - decision record`
   });
 }
 
@@ -447,9 +486,9 @@ function buildSearchIndex() {
   for (const decision of publication.decisions) {
     items.push({
       type: "Decision",
-      id: decision.slug,
+      id: decision.id,
       title: decision.title,
-      url: "/decision-log.html",
+      url: `/decision-log/${decision.slug}.html`,
       text: [decision.body, decision.references.join(" ")].join(" ")
     });
   }
@@ -517,6 +556,9 @@ function build() {
     writeFile(`open-questions/${item.slug}.html`, renderOpenQuestionDetail(item));
   }
   writeFile("decision-log.html", renderDecisionLog());
+  for (const decision of publication.decisions) {
+    writeFile(`decision-log/${decision.slug}.html`, renderDecisionDetail(decision));
+  }
   writeFile("release-notes.html", renderReleasePage("release-notes"));
   writeFile("version-history.html", renderReleasePage("version-history"));
   writeFile("changelog.html", renderReleasePage("changelog"));
