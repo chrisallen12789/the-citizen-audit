@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const publication = require("./publication-data");
 const sectionTraceClaims = require("./section-trace-claims");
+const sourceCitationMetadata = require("./source-citation-metadata");
 
 const root = path.resolve(__dirname, "..");
 const publicDir = path.join(root, "public");
@@ -26,6 +27,7 @@ function buildManifest() {
   const searchIndex = readJson("data/publication-search.json", []);
   const traceability = readJson("data/section-traceability.json", { records: [] });
   const claimTraceCount = Object.values(sectionTraceClaims).reduce((sum, claims) => sum + claims.length, 0);
+  const citationRecords = Object.keys(sourceCitationMetadata).length;
 
   return {
     name: "The Citizen Audit",
@@ -33,13 +35,15 @@ function buildManifest() {
     generatedAt: "deterministic-build",
     generators: [
       "scripts/build-publication-assets.js",
+      "scripts/apply-source-citation-metadata.js",
       "scripts/build-traceability-data.js",
       "scripts/build-search-index.js",
       "scripts/build-manifest.js"
     ],
     sourceData: [
       "scripts/publication-data.js",
-      "scripts/section-trace-claims.js"
+      "scripts/section-trace-claims.js",
+      "scripts/source-citation-metadata.js"
     ],
     qa: [
       "scripts/assert-search-source-of-truth.js",
@@ -48,6 +52,7 @@ function buildManifest() {
     counts: {
       htmlFiles: countHtmlFiles(publicDir),
       sources: publication.sources.length,
+      sourceCitationMetadataRecords: citationRecords,
       openQuestions: publication.openQuestions.length,
       decisions: publication.decisions.length,
       releases: publication.releases.length,
@@ -61,6 +66,7 @@ function buildManifest() {
       "Version 1.0 analytical conclusions remain locked unless explicitly revised in a later edition.",
       "Search index is generated after publication assets and traceability data.",
       "Traceability data is generated from repository-backed structured data.",
+      "Source citation metadata is rendered explicitly, including pending URL-normalization status.",
       "Open questions remain visible instead of being estimated into false precision."
     ]
   };
