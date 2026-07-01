@@ -50,6 +50,28 @@ function evidenceFor(sourceCount, decisionCount, openQuestionCount) {
     : "Generated from publication-data.js; linked evidence records have not yet been attached.";
 }
 
+function linkedIds(ids, basePath) {
+  return ids.map((id) => `<a href='${basePath}${id.toLowerCase()}.html'>${id}</a>`).join(", ");
+}
+
+function claimRecordsForSection(sectionId, sources, decisions, openQuestions) {
+  const decisionIds = uniq(decisions.map((decision) => decision.id));
+  const openQuestionIds = uniq(openQuestions.map((question) => question.id));
+  return sources.flatMap((source) =>
+    (source.claims || []).map((claim, index) => ({
+      title: `${source.id} supports ${sectionId}`,
+      body: `<p>${claim}</p><p><strong>Source:</strong> <a href='/sources/${source.slug}.html'>${source.id} - ${source.title}</a></p>${
+        decisionIds.length ? `<p><strong>Related decisions:</strong> ${linkedIds(decisionIds, "/decision-log/")}</p>` : ""
+      }${
+        openQuestionIds.length ? `<p><strong>Open questions:</strong> ${linkedIds(openQuestionIds, "/open-questions/")}</p>` : ""
+      }`,
+      sourceId: source.id,
+      sourceTitle: source.title,
+      claimIndex: index
+    }))
+  );
+}
+
 function buildTraceabilityData() {
   const records = sectionTitles.map(([id, title, url]) => {
     const sources = recordsFor(id, publication.sources);
@@ -58,12 +80,12 @@ function buildTraceabilityData() {
     const sourceIds = uniq(sources.map((source) => source.id));
     const decisionIds = uniq(decisions.map((decision) => decision.id));
     const openQuestionIds = uniq(openQuestions.map((question) => question.id));
-    const sourceClaims = sources.flatMap((source) => source.claims || []).slice(0, 5);
+    const claimRecords = claimRecordsForSection(id, sources, decisions, openQuestions);
     return {
       id,
       title,
       url,
-      summary: sourceClaims[0] || evidenceFor(sourceIds.length, decisionIds.length, openQuestionIds.length),
+      summary: claimRecords[0]?.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || evidenceFor(sourceIds.length, decisionIds.length, openQuestionIds.length),
       sources: sourceIds,
       decisions: decisionIds,
       openQuestions: openQuestionIds,
@@ -71,17 +93,20 @@ function buildTraceabilityData() {
         confidence: confidenceFor(sourceIds.length, openQuestionIds.length),
         evidence: evidenceFor(sourceIds.length, decisionIds.length, openQuestionIds.length)
       },
-      claims: sourceClaims.map((claim, index) => ({
+      claims: claimRecords.map((claim, index) => ({
         index,
-        title: `Trace ${id} claim ${index + 1}`,
-        body: `<p>${claim}</p>`
+        title: claim.title,
+        body: claim.body,
+        sourceId: claim.sourceId,
+        sourceTitle: claim.sourceTitle,
+        claimIndex: claim.claimIndex
       }))
     };
   });
 
   return {
     generatedFrom: "scripts/publication-data.js",
-    generatedAt: new Date().toISOString(),
+    generatedAt: "deterministic-build",
     records
   };
 }
