@@ -1,0 +1,11 @@
+{
+  "name": "the-citizen-audit",
+  "version": "0.1.0",
+  "private": false,
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}
