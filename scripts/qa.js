@@ -93,12 +93,30 @@ const requiredFiles = [
   "public/changelog.html",
   "public/audit/appendix-a-open-questions.html",
   "public/audit/appendix-b-transparency-scorecard.html",
-  "public/data/publication-search.json"
+  "public/data/publication-search.json",
+  "public/data/section-traceability.json"
 ];
 
 for (const relative of requiredFiles) {
   if (!fs.existsSync(path.join(root, relative))) {
     problems.push(`${relative}: required generated file missing`);
+  }
+}
+
+const traceabilityPath = path.join(root, "public/data/section-traceability.json");
+if (fs.existsSync(traceabilityPath)) {
+  const traceability = JSON.parse(fs.readFileSync(traceabilityPath, "utf8"));
+  const records = Array.isArray(traceability.records) ? traceability.records : [];
+  if (records.length < 16) {
+    problems.push("public/data/section-traceability.json: expected at least 16 section records");
+  }
+  for (const record of records) {
+    if (!record.id || !record.url || !record.verification) {
+      problems.push(`public/data/section-traceability.json: malformed section record ${record.id || "unknown"}`);
+    }
+    if (!Array.isArray(record.sources) || !Array.isArray(record.decisions) || !Array.isArray(record.openQuestions)) {
+      problems.push(`public/data/section-traceability.json: missing linked record arrays for ${record.id || "unknown"}`);
+    }
   }
 }
 
