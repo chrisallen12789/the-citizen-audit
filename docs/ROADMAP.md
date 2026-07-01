@@ -17,6 +17,7 @@ Latest branch progress:
 - Source Library expanded to 47 canonical `S-xxx` records currently visible in the converted v1.0 publication.
 - Decision Log expanded to 15 numbered canonical `D-xxx` records with individual detail pages.
 - Open Question coverage expanded to one page for every `A-001` through `A-037` register entry, including carried and resolved items.
+- Explorer upgraded into an initial claim-to-source traceability surface linking sections to source, decision, and open-question records.
 - Client-side publication search, release-history pages, and verification-layer generation scripts are live.
 
 ## Release 0.3: Full v1.0 web conversion
