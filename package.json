@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
-    "build:publication": "node scripts/build-publication-assets.js && node scripts/build-traceability-data.js && node scripts/build-search-index.js && node scripts/build-manifest.js && node scripts/build-status-page.js",
+    "build:publication": "node scripts/build-publication-assets.js && node scripts/apply-source-citation-metadata.js && node scripts/build-traceability-data.js && node scripts/build-search-index.js && node scripts/build-manifest.js && node scripts/build-status-page.js",
     "build:traceability": "node scripts/build-traceability-data.js",
     "build:search": "node scripts/build-search-index.js",
     "build:manifest": "node scripts/build-manifest.js",
