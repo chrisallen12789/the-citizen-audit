@@ -135,7 +135,8 @@ const traceabilityRecords = [
     summary: "Basis-segregated summary of measurable lanes and permanent limitations.",
     sources: ["S-038", "S-039", "S-040", "S-073"],
     decisions: ["D-001", "D-020"],
-    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"],
+    relatedSections: ["Section 3", "Section 5", "Section 7", "Section 9", "Section 14"]
   },
   {
     id: "Section 2",
@@ -144,7 +145,8 @@ const traceabilityRecords = [
     summary: "Primary legal and accounting definitions that bind the rest of the publication.",
     sources: ["S-002", "S-003", "S-004", "S-005", "S-006"],
     decisions: ["D-001", "D-005", "D-012"],
-    openQuestions: ["A-002"]
+    openQuestions: ["A-002"],
+    relatedSections: ["Section 1", "Section 3", "Section 5", "Section 8", "Section 9"]
   },
   {
     id: "Section 3",
@@ -153,7 +155,8 @@ const traceabilityRecords = [
     summary: "Aggregate foreign-assistance obligations and disbursements with unresolved capture share.",
     sources: ["S-001", "S-038", "S-039", "S-040", "S-042", "S-043"],
     decisions: ["D-013", "D-014", "D-017"],
-    openQuestions: ["A-001", "A-003", "A-004", "A-005"]
+    openQuestions: ["A-001", "A-003", "A-004", "A-005"],
+    relatedSections: ["Section 1", "Section 4", "Section 5", "Section 6", "Section 14"]
   },
   {
     id: "Section 4",
@@ -162,7 +165,8 @@ const traceabilityRecords = [
     summary: "Illustrative, non-additive examples showing stage differences and beneficiary-chain complexity.",
     sources: ["S-043", "S-044", "S-045", "S-046", "S-047", "S-048", "S-049"],
     decisions: ["D-013", "D-017", "D-018", "D-019"],
-    openQuestions: ["A-006", "A-007", "A-008", "A-009", "A-010", "A-011", "A-012"]
+    openQuestions: ["A-006", "A-007", "A-008", "A-009", "A-010", "A-011", "A-012"],
+    relatedSections: ["Section 3", "Section 5", "Section 14"]
   },
   {
     id: "Section 5",
@@ -171,7 +175,8 @@ const traceabilityRecords = [
     summary: "NET-NEW military lanes separated from already-counted foreign assistance and non-taxpayer flows.",
     sources: ["S-043", "S-050", "S-051", "S-052", "S-053", "S-054", "S-055", "S-056", "S-057", "S-058", "S-059"],
     decisions: ["D-012", "D-017", "D-019", "D-020"],
-    openQuestions: ["A-013", "A-014", "A-015", "A-016", "A-017"]
+    openQuestions: ["A-013", "A-014", "A-015", "A-016", "A-017"],
+    relatedSections: ["Section 1", "Section 3", "Section 4", "Section 14"]
   },
   {
     id: "Section 6",
@@ -180,7 +185,8 @@ const traceabilityRecords = [
     summary: "ORR lane with visible accounts but unresolved entrant-versus-provider and outlay splits.",
     sources: ["S-060", "S-061", "S-062", "S-063", "S-070", "S-071"],
     decisions: ["D-013", "D-014", "D-021"],
-    openQuestions: ["A-018", "A-019", "A-020", "A-021"]
+    openQuestions: ["A-018", "A-019", "A-020", "A-021"],
+    relatedSections: ["Section 3", "Section 7", "Section 9", "Section 12", "Section 14"]
   },
   {
     id: "Section 7",
@@ -189,7 +195,8 @@ const traceabilityRecords = [
     summary: "Published emergency Medicaid figure with unresolved federal-only share and status isolation limits.",
     sources: ["S-003", "S-064", "S-065", "S-078", "S-079", "S-080"],
     decisions: ["D-021"],
-    openQuestions: ["A-022", "A-023", "A-024", "A-037"]
+    openQuestions: ["A-022", "A-023", "A-024", "A-037"],
+    relatedSections: ["Section 1", "Section 6", "Section 12", "Section 13", "Section 14"]
   },
   {
     id: "Section 8",
@@ -198,7 +205,8 @@ const traceabilityRecords = [
     summary: "SNAP eligibility and participation composition without a publishable noncitizen dollar breakout.",
     sources: ["S-002", "S-003", "S-004", "S-074"],
     decisions: ["D-021"],
-    openQuestions: ["A-025", "A-026"]
+    openQuestions: ["A-025", "A-026"],
+    relatedSections: ["Section 2", "Section 9", "Section 13", "Section 16"]
   },
   {
     id: "Section 9",
@@ -207,7 +215,8 @@ const traceabilityRecords = [
     summary: "SSI is measurable on a published point-in-time basis while TANF and tax credits remain routed to Section 13.",
     sources: ["S-072", "S-073", "S-075", "S-076"],
     decisions: ["D-001", "D-021"],
-    openQuestions: ["A-027", "A-028", "A-029"]
+    openQuestions: ["A-027", "A-028", "A-029"],
+    relatedSections: ["Section 1", "Section 6", "Section 8", "Section 13", "Section 14"]
   },
   {
     id: "Section 10",
@@ -216,7 +225,8 @@ const traceabilityRecords = [
     summary: "Housing rules strongly constrain ineligible use, but no clean eligible-noncitizen outlay is published.",
     sources: ["S-067", "S-068", "S-077"],
     decisions: ["D-021"],
-    openQuestions: ["A-030", "A-031"]
+    openQuestions: ["A-030", "A-031"],
+    relatedSections: ["Section 12", "Section 13", "Section 16"]
   },
   {
     id: "Section 11",
@@ -225,7 +235,8 @@ const traceabilityRecords = [
     summary: "K-12 is status-blind under law and federal student-aid data are not published by eligible-noncitizen status.",
     sources: ["S-069"],
     decisions: ["D-021"],
-    openQuestions: ["A-032", "A-033"]
+    openQuestions: ["A-032", "A-033"],
+    relatedSections: ["Section 12", "Section 13"]
   },
   {
     id: "Section 12",
@@ -234,7 +245,8 @@ const traceabilityRecords = [
     summary: "Non-additive reconciliation lens showing where status detail disappears in state-administered federal streams.",
     sources: [],
     decisions: ["D-020", "D-021"],
-    openQuestions: ["A-034"]
+    openQuestions: ["A-034"],
+    relatedSections: ["Section 6", "Section 7", "Section 10", "Section 11", "Section 13"]
   },
   {
     id: "Section 13",
@@ -243,7 +255,8 @@ const traceabilityRecords = [
     summary: "Central gap register for programs where the public record does not support a defensible noncitizen figure.",
     sources: [],
     decisions: ["D-021"],
-    openQuestions: ["A-023", "A-024", "A-025", "A-026", "A-027", "A-029", "A-030", "A-032", "A-033", "A-034", "A-035", "A-036"]
+    openQuestions: ["A-023", "A-024", "A-025", "A-026", "A-027", "A-029", "A-030", "A-032", "A-033", "A-034", "A-035", "A-036"],
+    relatedSections: ["Section 7", "Section 8", "Section 9", "Section 10", "Section 11", "Section 12"]
   },
   {
     id: "Section 14",
@@ -252,7 +265,8 @@ const traceabilityRecords = [
     summary: "Basis-segregated set of subtotals built to a frozen blueprint rather than a blended grand total.",
     sources: ["S-038", "S-055", "S-058", "S-064", "S-073"],
     decisions: ["D-014", "D-020", "D-022", "D-023"],
-    openQuestions: ["A-017", "A-018", "A-037"]
+    openQuestions: ["A-017", "A-018", "A-037"],
+    relatedSections: ["Section 1", "Section 3", "Section 5", "Section 6", "Section 7", "Section 9"]
   },
   {
     id: "Section 15",
@@ -261,7 +275,8 @@ const traceabilityRecords = [
     summary: "Named limitations and transparency failures carried into the locked publication without manufactured certainty.",
     sources: [],
     decisions: ["D-024"],
-    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"],
+    relatedSections: ["Section 13", "Section 14", "Section 16"]
   },
   {
     id: "Section 16",
@@ -270,9 +285,14 @@ const traceabilityRecords = [
     summary: "Closing synthesis bounded by the same basis rules, evidence hierarchy, and unresolved limits as the rest of v1.0.",
     sources: ["S-064", "S-073", "S-074"],
     decisions: ["D-020", "D-025"],
-    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"],
+    relatedSections: ["Section 1", "Section 8", "Section 10", "Section 14", "Section 15"]
   }
 ];
+
+const traceabilityByPath = Object.fromEntries(
+  traceabilityRecords.map((record) => [record.url, record])
+);
 
 function ensureTraceDrawer() {
   if (document.querySelector("[data-trace-drawer]")) return;
@@ -318,6 +338,17 @@ function renderTagLinks(ids, basePath) {
   if (!ids.length) return "<span class='empty-state'>None linked yet</span>";
   return ids
     .map((id) => `<a class="tag" href="${basePath}${id.toLowerCase()}.html">${id}</a>`)
+    .join(" ");
+}
+
+function renderSectionLinks(sectionIds) {
+  if (!sectionIds.length) return "<span class='empty-state'>No section links published yet</span>";
+  return sectionIds
+    .map((sectionId) => {
+      const record = traceabilityRecords.find((item) => item.id === sectionId);
+      if (!record) return "";
+      return `<a class="tag" href="${record.url}">${record.id}</a>`;
+    })
     .join(" ");
 }
 
@@ -395,8 +426,11 @@ function calcDollar() {
 
 function injectVerificationPanel() {
   const config = sectionEnhancements[location.pathname];
+  const traceRecord = traceabilityByPath[location.pathname];
   const actions = document.querySelector(".actions");
-  if (!config || !actions || document.querySelector("[data-verification-panel]")) return;
+  if (!actions || document.querySelector("[data-verification-panel]")) return;
+
+  if (!config && !traceRecord) return;
 
   const panel = document.createElement("section");
   panel.className = "panel verification";
@@ -404,33 +438,43 @@ function injectVerificationPanel() {
   panel.innerHTML = `<div>
       <p class="row-kicker">Verification metadata</p>
       <h2>Inspect this section before trusting its headline.</h2>
-      <p><strong>Confidence:</strong> ${config.verification.confidence}</p>
-      <p><strong>Evidence posture:</strong> ${config.verification.evidence}</p>
+      <p><strong>Confidence:</strong> ${
+        config?.verification.confidence || "Structured traceability published; section-specific confidence note not yet expanded."
+      }</p>
+      <p><strong>Evidence posture:</strong> ${
+        config?.verification.evidence || traceRecord?.summary || "Repository-backed section traceability record."
+      }</p>
       <p class="note">The platform exposes the current repository-backed traceability layer without altering the locked section text.</p>
     </div>
     <div class="stack">
       <p><strong>Linked source IDs</strong><br>${
-        config.verification.sources.length
-          ? config.verification.sources
+        (config?.verification.sources || traceRecord?.sources || []).length
+          ? (config?.verification.sources || traceRecord?.sources || [])
               .map((id) => `<a class="tag" href="/sources/${id.toLowerCase()}.html">${id}</a>`)
               .join(" ")
           : "None linked yet"
       }</p>
       <p><strong>Open questions</strong><br>${
-        config.verification.openQuestions.length
-          ? config.verification.openQuestions
+        (config?.verification.openQuestions || traceRecord?.openQuestions || []).length
+          ? (config?.verification.openQuestions || traceRecord?.openQuestions || [])
               .map(
                 (id) => `<a class="tag" href="/open-questions/${id.toLowerCase()}.html">${id}</a>`
               )
               .join(" ")
           : "No section-level open question linked"
       }</p>
-      <p><strong>More context</strong><br><a class="button subtle" href="/decision-log.html">Decision log</a> <a class="button subtle" href="/search.html">Search</a></p>
+      <p><strong>Decision links</strong><br>${
+        traceRecord ? renderTagLinks(traceRecord.decisions, "/decision-log/") : "<span class='empty-state'>No decision links published yet</span>"
+      }</p>
+      <p><strong>Related sections</strong><br>${
+        traceRecord ? renderSectionLinks(traceRecord.relatedSections || []) : "<span class='empty-state'>No related-section map published yet</span>"
+      }</p>
+      <p><strong>More context</strong><br><a class="button subtle" href="/explorer.html">Traceability explorer</a> <a class="button subtle" href="/search.html">Search</a></p>
     </div>`;
   actions.insertAdjacentElement("afterend", panel);
 
   const claims = document.querySelectorAll(".claim");
-  config.claims.forEach((claim) => {
+  (config?.claims || []).forEach((claim) => {
     const target = claims[claim.index];
     if (!target || target.querySelector("[data-trace-title]")) return;
     const button = document.createElement("button");
