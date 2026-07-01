@@ -6,7 +6,7 @@
     "build:publication": "node scripts/build-publication-assets.js && node scripts/build-traceability-data.js && node scripts/build-search-index.js",
     "build:traceability": "node scripts/build-traceability-data.js",
     "build:search": "node scripts/build-search-index.js",
-    "qa": "node scripts/qa.js",
+    "qa": "node scripts/assert-search-source-of-truth.js && node scripts/qa.js",
     "deploy": "npm run build:publication && wrangler deploy"
   },
   "devDependencies": {
