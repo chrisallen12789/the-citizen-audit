@@ -48,6 +48,7 @@ const strictMetaFiles = new Set([
   "public/open-questions.html",
   "public/decision-log.html",
   "public/search.html",
+  "public/status.html",
   "public/release-notes.html",
   "public/version-history.html",
   "public/changelog.html",
@@ -88,6 +89,7 @@ const requiredFiles = [
   "public/open-questions.html",
   "public/decision-log.html",
   "public/search.html",
+  "public/status.html",
   "public/release-notes.html",
   "public/version-history.html",
   "public/changelog.html",
@@ -165,6 +167,16 @@ if (fs.existsSync(manifestPath)) {
   }
   if (!manifest.counts || manifest.counts.sectionTraceRecords < 16 || manifest.counts.searchClaimTraceRecords < 16) {
     problems.push("public/data/build-manifest.json: manifest counts do not reflect current verification layer");
+  }
+}
+
+const statusPath = path.join(root, "public/status.html");
+if (fs.existsSync(statusPath)) {
+  const statusHtml = fs.readFileSync(statusPath, "utf8");
+  for (const requiredText of ["Build Status", "View raw manifest", "Generated counts", "Locked-edition invariants"]) {
+    if (!statusHtml.includes(requiredText)) {
+      problems.push(`public/status.html: missing expected status text ${requiredText}`);
+    }
   }
 }
 
