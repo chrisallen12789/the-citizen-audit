@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const publication = require("./publication-data");
+const sectionTraceClaims = require("./section-trace-claims");
 
 const root = path.resolve(__dirname, "..");
 const publicDir = path.join(root, "public");
@@ -54,7 +55,7 @@ function linkedIds(ids, basePath) {
   return ids.map((id) => `<a href='${basePath}${id.toLowerCase()}.html'>${id}</a>`).join(", ");
 }
 
-function claimRecordsForSection(sectionId, sources, decisions, openQuestions) {
+function generatedClaimRecordsForSection(sectionId, sources, decisions, openQuestions) {
   const decisionIds = uniq(decisions.map((decision) => decision.id));
   const openQuestionIds = uniq(openQuestions.map((question) => question.id));
   return sources.flatMap((source) =>
@@ -70,6 +71,20 @@ function claimRecordsForSection(sectionId, sources, decisions, openQuestions) {
       claimIndex: index
     }))
   );
+}
+
+function curatedClaimRecordsForSection(sectionId) {
+  return (sectionTraceClaims[sectionId] || []).map((claim, index) => ({
+    ...claim,
+    curated: true,
+    claimIndex: index
+  }));
+}
+
+function claimRecordsForSection(sectionId, sources, decisions, openQuestions) {
+  const curated = curatedClaimRecordsForSection(sectionId);
+  if (curated.length) return curated;
+  return generatedClaimRecordsForSection(sectionId, sources, decisions, openQuestions);
 }
 
 function buildTraceabilityData() {
@@ -97,15 +112,16 @@ function buildTraceabilityData() {
         index,
         title: claim.title,
         body: claim.body,
-        sourceId: claim.sourceId,
-        sourceTitle: claim.sourceTitle,
-        claimIndex: claim.claimIndex
+        sourceId: claim.sourceId || null,
+        sourceTitle: claim.sourceTitle || null,
+        claimIndex: claim.claimIndex,
+        curated: Boolean(claim.curated)
       }))
     };
   });
 
   return {
-    generatedFrom: "scripts/publication-data.js",
+    generatedFrom: "scripts/publication-data.js + scripts/section-trace-claims.js",
     generatedAt: "deterministic-build",
     records
   };
