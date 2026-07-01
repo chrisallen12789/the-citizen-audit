@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
+    "build:publication": "node scripts/build-publication-assets.js",
+    "qa": "node scripts/qa.js",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {

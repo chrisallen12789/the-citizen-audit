@@ -1,0 +1,198 @@
+[
+  {
+    "type": "Source",
+    "id": "S-002",
+    "title": "8 U.S.C. Sec. 1641",
+    "url": "/sources/s-002.html",
+    "text": "Qualified alien definition used to separate lawful immigration categories in domestic-benefit analysis. Section 2 Defines qualified-alien categories used throughout domestic eligibility analysis. Supports the category-separation rule used in the methodology section. "
+  },
+  {
+    "type": "Source",
+    "id": "S-003",
+    "title": "8 U.S.C. Sec. 1611",
+    "url": "/sources/s-003.html",
+    "text": "Federal public-benefit restrictions for non-qualified aliens, including the emergency-medical exception structure. Section 2 Section 7 Section 8 Supports the ineligibility baseline for undocumented immigrants in most federal public-benefit programs. Frames the emergency-medical exception carried into the Medicaid analysis. A-037"
+  },
+  {
+    "type": "Source",
+    "id": "S-004",
+    "title": "8 U.S.C. Sec. 1613",
+    "url": "/sources/s-004.html",
+    "text": "Five-year bar for many federal means-tested public benefits used in domestic program scope analysis. Section 2 Supports the methodology distinction between qualified categories and waiting-period limits. "
+  },
+  {
+    "type": "Source",
+    "id": "S-005",
+    "title": "GAO Budget Glossary",
+    "url": "/sources/s-005.html",
+    "text": "Primary budget-accounting terminology for appropriation, obligation, outlay, and related measure-separation rules. Section 2 Supports the rule that appropriation, obligation, and outlay are different accounting states. Supports the anti-mixing rule used across all totals. "
+  },
+  {
+    "type": "Source",
+    "id": "S-006",
+    "title": "CBO Common Budgetary Terms",
+    "url": "/sources/s-006.html",
+    "text": "Budgetary terminology used to corroborate measure definitions and keep figure types separated. Section 2 Reinforces the methodology rule against mixing budget authority, obligations, outlays, and estimates. "
+  },
+  {
+    "type": "Source",
+    "id": "S-038",
+    "title": "ForeignAssistance.gov financial datasets",
+    "url": "/sources/s-038.html",
+    "text": "Primary aggregate dataset for foreign-assistance obligations and disbursements used in Section 3. Section 1 Section 3 Supports the approximately $99.9B FY2023 obligations figure. Supports the approximately $71.9B FY2023 disbursements figure when read alongside agency-published foreign-assistance data. Supports the rule that obligations and disbursements are different measures. A-005"
+  },
+  {
+    "type": "Source",
+    "id": "S-039",
+    "title": "State/USAID foreign-assistance budget data",
+    "url": "/sources/s-039.html",
+    "text": "Supporting published foreign-assistance data used to corroborate disbursement totals and agency composition. Section 3 Corroborates FY2023 disbursement levels and agency composition in the international-assistance lane. A-005"
+  },
+  {
+    "type": "Source",
+    "id": "S-040",
+    "title": "Foreign-aid reporting under the Foreign Aid Transparency and Accountability Act",
+    "url": "/sources/s-040.html",
+    "text": "Published reporting lane used to frame FY2024 and to-date later-year obligations in the international-assistance section. Section 3 Supports the use of published assistance-reporting channels as the aggregate record of reference for Section 3. A-005"
+  },
+  {
+    "type": "Source",
+    "id": "S-043",
+    "title": "CRS IF11437",
+    "url": "/sources/s-043.html",
+    "text": "Context source used to distinguish taxpayer-funded assistance from allied-funded foreign military sales. Section 5 Supports exclusion of foreign-funded sales from taxpayer totals in the military-aid lane. A-017"
+  },
+  {
+    "type": "Source",
+    "id": "S-073",
+    "title": "SSA primary noncitizen SSI data",
+    "url": "/sources/s-073.html",
+    "text": "Primary data for noncitizen SSI recipient counts and average payments used in Section 9. Section 1 Section 9 Supports the published noncitizen SSI recipient count of 365,714 in December 2021. Supports the computed approximately $2.21B annualized SSI amount on the Dec. 2021 basis. A-028"
+  },
+  {
+    "type": "Open question",
+    "id": "A-005",
+    "title": "Unpublished U.S.-capture share in international assistance",
+    "url": "/open-questions/a-005.html",
+    "text": "Without a published capture-share breakout, the site can report gross taxpayer assistance (Total A) but cannot compute a defensible Total B for international assistance. Section 3 states that Total B is materially below Total A, but not measurable from the current public record. Program-level reporting that distinguishes value captured by U.S. entities from value reaching non-U.S. recipients. Section 1 Section 3 S-038 S-039 S-040"
+  },
+  {
+    "type": "Open question",
+    "id": "A-017",
+    "title": "Cross-section harmonization between foreign-assistance and military-aid lanes",
+    "url": "/open-questions/a-017.html",
+    "text": "Section 3 uses single-year obligations while Section 5 uses cumulative multi-year military lanes, so a blended headline would overstate precision. The site preserves separate lanes and explicitly forbids a synthetic grand total. A lawful harmonization method that keeps measure type, period, and duplication risks separated. Section 5 S-043"
+  },
+  {
+    "type": "Open question",
+    "id": "A-018",
+    "title": "ORR consolidated outlay and recipient/provider split",
+    "url": "/open-questions/a-018.html",
+    "text": "The refugee-resettlement lane is routed through states, voluntary agencies, and providers, but the public record does not cleanly isolate value reaching entrants. Section 6 names the program and the gap, but leaves Total B unresolved. Public ORR outlay reporting that isolates entrant-directed value versus provider or operator capture. Section 1 Section 6 "
+  },
+  {
+    "type": "Open question",
+    "id": "A-028",
+    "title": "SSI point-in-time basis versus annual flow basis",
+    "url": "/open-questions/a-028.html",
+    "text": "The SSI figure is computed from a published December 2021 basis, which is strong for that point in time but not a full annual transactional ledger. Section 9 keeps the figure labeled on its Dec. 2021 basis and avoids overstating it as a harmonized annual program total. A published annual SSI spending breakout for noncitizen recipients or a fully reconciled monthly series. Section 1 Section 9 S-073"
+  },
+  {
+    "type": "Open question",
+    "id": "A-037",
+    "title": "Federal-only emergency Medicaid share",
+    "url": "/open-questions/a-037.html",
+    "text": "The site can publish the federal-plus-state emergency Medicaid figure used in the locked section, but not the federal-only share needed for a cleaner federal total. The limitation is carried forward explicitly in the Executive Summary and Section 7. A public federal-only emergency Medicaid spending breakout for the same period and population basis. Section 1 Section 7 S-003"
+  },
+  {
+    "type": "Decision",
+    "id": "gross-not-net",
+    "title": "Gross, not net",
+    "url": "/decision-log.html",
+    "text": "The web edition preserves the audit rule that figures represent gross money directed toward non-U.S. recipients or non-citizens, not net fiscal impact after taxes. Methodology Section 1 Section 2"
+  },
+  {
+    "type": "Decision",
+    "id": "no-grand-total",
+    "title": "No blended grand total",
+    "url": "/decision-log.html",
+    "text": "The platform keeps incompatible bases separate and does not synthesize one headline total from disbursements, obligations, cumulative military lanes, and federal-plus-state figures. Section 1 Section 3 Section 5 Section 14 placeholder"
+  },
+  {
+    "type": "Decision",
+    "id": "no-population-modeling",
+    "title": "No population-share modeling",
+    "url": "/decision-log.html",
+    "text": "Where a federal program does not publish a citizenship-status spending breakout, the site records the gap instead of allocating dollars from population share. Methodology Section 8 Section 9 Section 13 placeholder"
+  },
+  {
+    "type": "Decision",
+    "id": "citizen-child-exclusion",
+    "title": "Citizen-child exclusion",
+    "url": "/decision-log.html",
+    "text": "Benefits paid for U.S.-citizen children in mixed-status households remain excluded from non-citizen spending totals. Section 1 Methodology Section 8"
+  },
+  {
+    "type": "Decision",
+    "id": "recipient-vs-beneficiary",
+    "title": "Recipient separated from economic beneficiary",
+    "url": "/decision-log.html",
+    "text": "The publication distinguishes the direct recipient of federal spending from the economic beneficiary that ultimately captures value, especially in provider-heavy or contractor-heavy lanes. Section 2 Section 5 Section 6 Section 7"
+  },
+  {
+    "type": "Decision",
+    "id": "drawdown-replacement-separation",
+    "title": "Drawdown value separated from replacement cost",
+    "url": "/decision-log.html",
+    "text": "Military drawdown transfer values are not treated as the same thing as taxpayer replacement appropriations, preventing duplicate counting. Section 2 Section 5"
+  },
+  {
+    "type": "Section",
+    "id": "Section 1",
+    "title": "Executive Summary",
+    "url": "/audit/section-01-executive-summary.html",
+    "text": "known minimum incompatible bases no blended grand total noncitizen SSI emergency Medicaid open questions A-005 A-018 A-028 A-037"
+  },
+  {
+    "type": "Section",
+    "id": "Section 2",
+    "title": "Definitions and Methodology",
+    "url": "/audit/section-02-definitions-methodology.html",
+    "text": "recipient economic beneficiary appropriation obligation outlay evidence class confidence estimation standard category separation"
+  },
+  {
+    "type": "Section",
+    "id": "Section 3",
+    "title": "International Assistance",
+    "url": "/audit/section-03-international-assistance.html",
+    "text": "ForeignAssistance.gov obligations disbursements Total A Total B A-005"
+  },
+  {
+    "type": "Section",
+    "id": "Section 5",
+    "title": "Military Aid",
+    "url": "/audit/section-05-military-aid.html",
+    "text": "USAI PDA replacement Section 333 CTEF A-017 drawdown replacement"
+  },
+  {
+    "type": "Section",
+    "id": "Section 7",
+    "title": "Medicaid / Emergency Medical",
+    "url": "/audit/section-07-medicaid-emergency-medical.html",
+    "text": "emergency Medicaid A-037 provider capture federal-only share"
+  },
+  {
+    "type": "Section",
+    "id": "Section 8",
+    "title": "Food Assistance",
+    "url": "/audit/section-08-food-assistance.html",
+    "text": "SNAP no modeled share citizen-child exclusion Section 13"
+  },
+  {
+    "type": "Section",
+    "id": "Section 9",
+    "title": "Cash Welfare / Income",
+    "url": "/audit/section-09-cash-welfare-income.html",
+    "text": "SSA SSI S-073 365714 2.21B A-028"
+  }
+]
