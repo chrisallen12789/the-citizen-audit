@@ -94,7 +94,8 @@ const requiredFiles = [
   "public/audit/appendix-a-open-questions.html",
   "public/audit/appendix-b-transparency-scorecard.html",
   "public/data/publication-search.json",
-  "public/data/section-traceability.json"
+  "public/data/section-traceability.json",
+  "public/data/build-manifest.json"
 ];
 
 for (const relative of requiredFiles) {
@@ -148,6 +149,22 @@ if (fs.existsSync(searchIndexPath)) {
         problems.push(`public/data/publication-search.json: missing expected searchable term ${requiredTerm}`);
       }
     }
+  }
+}
+
+const manifestPath = path.join(root, "public/data/build-manifest.json");
+if (fs.existsSync(manifestPath)) {
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  for (const field of ["name", "edition", "generatedAt", "generators", "sourceData", "qa", "counts", "invariants"]) {
+    if (!manifest[field]) {
+      problems.push(`public/data/build-manifest.json: missing ${field}`);
+    }
+  }
+  if (!Array.isArray(manifest.generators) || !manifest.generators.includes("scripts/build-manifest.js")) {
+    problems.push("public/data/build-manifest.json: manifest generator not recorded");
+  }
+  if (!manifest.counts || manifest.counts.sectionTraceRecords < 16 || manifest.counts.searchClaimTraceRecords < 16) {
+    problems.push("public/data/build-manifest.json: manifest counts do not reflect current verification layer");
   }
 }
 
