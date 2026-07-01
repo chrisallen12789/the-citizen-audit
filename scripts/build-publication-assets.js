@@ -523,6 +523,20 @@ function buildSearchIndex() {
     },
     {
       type: "Section",
+      id: "Section 4",
+      title: "Ukraine and Israel Examples",
+      url: "/audit/section-04-ukraine-israel-examples.html",
+      text: "ukraine israel non-additive D-017 A-006 A-010 A-011 A-012 appropriated disbursed delivered OSP FMF MOU"
+    },
+    {
+      type: "Section",
+      id: "Section 6",
+      title: "Refugee Resettlement",
+      url: "/audit/section-06-refugee-resettlement.html",
+      text: "ORR refugee entrant assistance USAspending 075-1503 provider capture A-018 A-019 A-020 A-021"
+    },
+    {
+      type: "Section",
       id: "Section 7",
       title: "Medicaid / Emergency Medical",
       url: "/audit/section-07-medicaid-emergency-medical.html",
@@ -541,6 +555,55 @@ function buildSearchIndex() {
       title: "Cash Welfare / Income",
       url: "/audit/section-09-cash-welfare-income.html",
       text: "SSA SSI S-073 365714 2.21B A-028"
+    },
+    {
+      type: "Section",
+      id: "Section 10",
+      title: "Federal Housing",
+      url: "/audit/section-10-federal-housing.html",
+      text: "Section 214 proration HUD eligible noncitizen housing A-030 A-031 S-067 S-068 S-077"
+    },
+    {
+      type: "Section",
+      id: "Section 11",
+      title: "Education / Public Services",
+      url: "/audit/section-11-education-public-services.html",
+      text: "Plyler K-12 status blind federal student aid eligible noncitizen A-032 A-033 S-069"
+    },
+    {
+      type: "Section",
+      id: "Section 12",
+      title: "State-Administered Federal Dollars",
+      url: "/audit/section-12-state-administered-federal-dollars.html",
+      text: "state administered non-additive D-020 D-021 A-034 reconciliation lens double count guard"
+    },
+    {
+      type: "Section",
+      id: "Section 13",
+      title: "Programs Without Citizenship Breakouts",
+      url: "/audit/section-13-programs-without-citizenship-breakouts.html",
+      text: "gap register no figures no fabricated estimate A-023 A-025 A-027 A-030 A-032 A-033 A-034 A-035 A-036 transparency"
+    },
+    {
+      type: "Section",
+      id: "Section 14",
+      title: "Conservative Total",
+      url: "/audit/section-14-conservative-total.html",
+      text: "D-022 D-023 no blended grand total set of subtotals A-017 A-018 A-037 Lane 1 Lane 3 Lane 4 conservative total"
+    },
+    {
+      type: "Section",
+      id: "Section 15",
+      title: "What Is Missing",
+      url: "/audit/section-15-what-is-missing.html",
+      text: "permanent limitations A-005 A-018 A-028 A-037 transparency missing evidence D-024"
+    },
+    {
+      type: "Section",
+      id: "Section 16",
+      title: "Final Argument",
+      url: "/audit/section-16-final-argument.html",
+      text: "bounded synthesis D-025 no advocacy final argument SSI SNAP emergency Medicaid basis segregation"
     }
   );
   return items;

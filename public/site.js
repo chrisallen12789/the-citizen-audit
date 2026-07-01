@@ -53,6 +53,36 @@ const sectionEnhancements = {
       }
     ]
   },
+  "/audit/section-04-ukraine-israel-examples.html": {
+    verification: {
+      confidence:
+        "Moderate to high for the non-additivity rule and stage distinctions; lower for any single delivered-value point estimate the section declines to adopt as a final total.",
+      evidence:
+        "The section is illustrative and strongest where it shows stage-labeled Ukraine and Israel aid lines without adding them back into the running totals.",
+      sources: ["S-043", "S-044", "S-045", "S-046", "S-049"],
+      openQuestions: ["A-006", "A-010", "A-011", "A-012"]
+    },
+    claims: [
+      {
+        index: 0,
+        title: "Section 4 is non-additive by design",
+        body:
+          "<p>Section 4 decomposes recognizable Ukraine and Israel examples already carried in broader foreign-assistance or military-aid lanes.</p><ul><li><a href='/decision-log/d-017.html'>D-017</a> prevents overlap with Sections 3 and 5</li><li><a href='/sources/s-043.html'>S-043</a> distinguishes taxpayer aid from foreign-funded sales</li><li><a href='/open-questions/a-017.html'>A-017</a> explains why cross-section blending remains forbidden</li></ul>"
+      }
+    ],
+    traceCards: [
+      {
+        title: "Ukraine stage labels are not interchangeable",
+        body:
+          "<p>Congressional appropriation, disbursement, delivered value, and drawdown valuation are different stages and cannot be netted against each other casually.</p><ul><li><a href='/sources/s-044.html'>S-044</a> oversight stage context</li><li><a href='/sources/s-046.html'>S-046</a> GAO drawdown valuation issue</li><li><a href='/open-questions/a-006.html'>A-006</a> primary-portal stage record</li></ul>"
+      },
+      {
+        title: "Israel aid is cleaner but still split by beneficiary chain",
+        body:
+          "<p>Israel's statutory lines are clearer, but FMF still includes substantial U.S.-industry capture through offshore-procurement rules and equipment sourcing.</p><ul><li><a href='/sources/s-049.html'>S-049</a> FMF, missile defense, and OSP context</li><li><a href='/open-questions/a-011.html'>A-011</a> exact current OSP share</li><li><a href='/open-questions/a-012.html'>A-012</a> 2024 supplemental execution stage</li></ul>"
+      }
+    ]
+  },
   "/audit/section-05-military-aid.html": {
     verification: {
       confidence:
@@ -122,6 +152,182 @@ const sectionEnhancements = {
         title: "SSI Total B approximately equals Total A",
         body:
           "<p>The section treats SSI as a rare domestic lane where provider capture is minimal because the benefit is direct cash.</p><ul><li><a href='/sources/s-073.html'>S-073</a> published SSI recipient and payment inputs</li><li><a href='/open-questions/a-028.html'>A-028</a> point-in-time basis limitation</li></ul>"
+      }
+    ]
+  },
+  "/audit/section-06-refugee-resettlement.html": {
+    verification: {
+      confidence:
+        "Moderate for the program account and routing facts; low for any precise entrant-directed value because provider and operator capture is not published cleanly.",
+      evidence:
+        "ORR account identity and appropriation facts are visible, but the beneficiary split remains an explicit unresolved limitation.",
+      sources: ["S-060", "S-062", "S-070"],
+      openQuestions: ["A-018", "A-019", "A-020", "A-021"]
+    },
+    traceCards: [
+      {
+        title: "ORR is a domestic lane, not an overseas add-on",
+        body:
+          "<p>Section 6 excludes overseas PRM and MRA support to avoid double-counting against Section 3 and keeps domestic refugee and entrant assistance in one owning lane.</p><ul><li><a href='/decision-log/d-021.html'>D-021</a> ownership map</li><li><a href='/sources/s-062.html'>S-062</a> Refugee and Entrant Assistance account anchor</li><li><a href='/sources/s-070.html'>S-070</a> CRS appropriations basis</li></ul>"
+      },
+      {
+        title: "Provider capture is the core ORR limitation",
+        body:
+          "<p>The public record identifies the ORR lane but does not publish a defensible entrant-versus-provider split, so Total B cannot be measured cleanly.</p><ul><li><a href='/open-questions/a-018.html'>A-018</a> consolidated obligations and outlays</li><li><a href='/open-questions/a-019.html'>A-019</a> entrant-versus-provider split</li><li><a href='/sources/s-060.html'>S-060</a> program-structure documentation</li></ul>"
+      }
+    ]
+  },
+  "/audit/section-10-federal-housing.html": {
+    verification: {
+      confidence:
+        "High for structural eligibility rules and proration; low for any eligible-noncitizen dollar total because that breakout is not published.",
+      evidence:
+        "The section is strongest where it documents exclusion mechanics and weakest where status-specific spending would require unpublished HUD outlay detail.",
+      sources: ["S-067", "S-068", "S-077"],
+      openQuestions: ["A-030", "A-031"]
+    },
+    traceCards: [
+      {
+        title: "Section 214 already excludes many ineligible uses",
+        body:
+          "<p>The housing lane documents that major rental-assistance programs are restricted to citizens and eligible noncitizens, with proration assigning ineligible household members a zero share.</p><ul><li><a href='/sources/s-067.html'>S-067</a> CRS eligibility structure</li><li><a href='/sources/s-068.html'>S-068</a> HUD proration guidance</li></ul>"
+      },
+      {
+        title: "No clean HUD status-spending figure is published",
+        body:
+          "<p>The section's central limitation is not whether housing rules exist, but whether HUD publishes a defensible eligible-noncitizen outlay figure after proration and mixed-status separation.</p><ul><li><a href='/open-questions/a-030.html'>A-030</a> eligible-noncitizen prorated outlay</li><li><a href='/open-questions/a-031.html'>A-031</a> no-verification grant programs</li><li><a href='/sources/s-077.html'>S-077</a> closest primary figure</li></ul>"
+      }
+    ]
+  },
+  "/audit/section-11-education-public-services.html": {
+    verification: {
+      confidence:
+        "High for the legal structure around Plyler and student-aid eligibility; low for any federal-by-status spending estimate because the section explicitly says no such K-12 breakout can exist.",
+      evidence:
+        "The section rests on legal and program-eligibility rules rather than a publishable status-based K-12 spending ledger.",
+      sources: ["S-069"],
+      openQuestions: ["A-032", "A-033"]
+    },
+    traceCards: [
+      {
+        title: "Plyler makes K-12 status spending effectively uncollectable",
+        body:
+          "<p>The audit treats K-12 as a legal collection limit, not just a missing spreadsheet, because status is not supposed to be collected in the way a forensic spending breakout would require.</p><ul><li><a href='/sources/s-069.html'>S-069</a> legal framework</li><li><a href='/open-questions/a-032.html'>A-032</a> federal K-12 noncitizen spending</li></ul>"
+      },
+      {
+        title: "Student aid has an eligibility boundary but not a published status total",
+        body:
+          "<p>Undocumented students are barred from federal student aid, but the public record still does not publish the spending line for eligible noncitizens as a separate figure.</p><ul><li><a href='/open-questions/a-033.html'>A-033</a> eligible-noncitizen federal student aid</li><li><a href='/sources/s-069.html'>S-069</a> Title IV eligibility context</li></ul>"
+      }
+    ]
+  },
+  "/audit/section-12-state-administered-federal-dollars.html": {
+    verification: {
+      confidence:
+        "High for the non-additive reconciliation rule; low for recovering lost citizenship detail once dollars move through state-administered lanes.",
+      evidence:
+        "The section functions as a double-count guard and visibility map rather than a net-new spending total.",
+      sources: [],
+      openQuestions: ["A-034"]
+    },
+    traceCards: [
+      {
+        title: "Section 12 adds zero net-new dollars by design",
+        body:
+          "<p>This section is a reconciliation lens showing where already-counted federal dollars are administered by states. Its contribution to Total A is explicitly zero.</p><ul><li><a href='/decision-log/d-020.html'>D-020</a> no blended grand total</li><li><a href='/decision-log/d-021.html'>D-021</a> ownership map for routed dollars</li></ul>"
+      },
+      {
+        title: "State administration is a transparency problem, not a hidden extra total",
+        body:
+          "<p>The section's value is documenting where citizenship detail disappears in the federal-state-local chain, especially for status-neutral or under-reported benefit streams.</p><ul><li><a href='/open-questions/a-034.html'>A-034</a> no-breakout state-administered programs</li><li><a href='/audit/section-13-programs-without-citizenship-breakouts.html'>Section 13</a> gap register destination</li></ul>"
+      }
+    ]
+  },
+  "/audit/section-13-programs-without-citizenship-breakouts.html": {
+    verification: {
+      confidence:
+        "High for the existence of the gap register and the decision not to fabricate figures; intentionally low for any numeric total because the section's point is that the figures are not derivable from primary evidence.",
+      evidence:
+        "This is the publication's central transparency finding: missing status breakouts are named, typed, and carried rather than modeled.",
+      sources: [],
+      openQuestions: ["A-023", "A-025", "A-027", "A-030", "A-032", "A-033", "A-034", "A-035", "A-036"]
+    },
+    traceCards: [
+      {
+        title: "The gap is the finding",
+        body:
+          "<p>Section 13 does not treat missing figures as zero and does not backfill them with estimates. It turns the absence of primary status breakouts into a documented result.</p><ul><li><a href='/decision-log/d-021.html'>D-021</a> keeps each program in its owning lane</li><li><a href='/audit/appendix-b-transparency-scorecard.html'>Appendix B</a> turns the gaps into transparency findings</li></ul>"
+      },
+      {
+        title: "Every gap points to a resolving data product",
+        body:
+          "<p>The register is meant to be actionable: each row names the agency, the reason the breakout is missing, and the specific data product that would resolve it in a future edition.</p><ul><li><a href='/open-questions/a-023.html'>A-023</a> eligible-immigrant Medicaid outlay</li><li><a href='/open-questions/a-025.html'>A-025</a> SNAP benefit attribution</li><li><a href='/open-questions/a-035.html'>A-035</a> per-program responsible agency map</li></ul>"
+      }
+    ]
+  },
+  "/audit/section-14-conservative-total.html": {
+    verification: {
+      confidence:
+        "Moderate to high within each lane, but intentionally non-additive across lanes and bases.",
+      evidence:
+        "Section 14 is a blueprint-driven set of subtotals that can be reconstructed from the locked source sections without cross-basis arithmetic.",
+      sources: ["S-038", "S-055", "S-058", "S-064", "S-073"],
+      openQuestions: ["A-017", "A-018", "A-037"]
+    },
+    traceCards: [
+      {
+        title: "Section 14 is a set of subtotals, not one number",
+        body:
+          "<p>The conservative total preserves native bases and refuses to produce a synthetic grand total across annual, cumulative, outlay, obligation, and federal-plus-state lanes.</p><ul><li><a href='/decision-log/d-020.html'>D-020</a> no blended grand total</li><li><a href='/decision-log/d-022.html'>D-022</a> frozen blueprint</li><li><a href='/open-questions/a-017.html'>A-017</a> harmonization limit</li></ul>"
+      },
+      {
+        title: "Pending lines carry no value until primary evidence exists",
+        body:
+          "<p>ORR and the federal-only emergency Medicaid share remain in the authority or pending register and do not enter any subtotal until the missing primary records are available.</p><ul><li><a href='/open-questions/a-018.html'>A-018</a> ORR consolidated outlays</li><li><a href='/open-questions/a-037.html'>A-037</a> federal-only emergency Medicaid share</li><li><a href='/decision-log/d-023.html'>D-023</a> section lock after blueprint population</li></ul>"
+      }
+    ]
+  },
+  "/audit/section-15-what-is-missing.html": {
+    verification: {
+      confidence:
+        "High for the existence and importance of the named limitations; deliberately non-numeric because the section is a limitations register rather than a spending lane.",
+      evidence:
+        "The section compiles the missing-record constraints that prevent false precision elsewhere in the audit.",
+      sources: [],
+      openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+    },
+    traceCards: [
+      {
+        title: "Permanent limitations do not vanish in the web edition",
+        body:
+          "<p>The web platform carries the same permanent limitations named in the PDF instead of smoothing them over with interface polish.</p><ul><li><a href='/open-questions/a-005.html'>A-005</a> international-assistance capture share</li><li><a href='/open-questions/a-018.html'>A-018</a> ORR outlays</li><li><a href='/open-questions/a-037.html'>A-037</a> emergency Medicaid federal share</li></ul>"
+      },
+      {
+        title: "Missing evidence is a governance rule, not a footnote",
+        body:
+          "<p>Section 15 explains why unresolved records change what the audit may responsibly claim, and why future editions must add evidence rather than rewrite Version 1.0 conclusions.</p><ul><li><a href='/decision-log/d-024.html'>D-024</a> locked limitations section</li><li><a href='/audit/appendix-a-open-questions.html'>Appendix A</a> register of unresolved items</li></ul>"
+      }
+    ]
+  },
+  "/audit/section-16-final-argument.html": {
+    verification: {
+      confidence:
+        "Moderate to high for the bounded synthesis because it inherits the locked sections' evidence and limitations rather than adding new measurements.",
+      evidence:
+        "The final argument is strongest where it restates measurable lanes and transparency limits without extending beyond the evidence.",
+      sources: ["S-064", "S-073", "S-074"],
+      openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+    },
+    traceCards: [
+      {
+        title: "The closing synthesis is bounded by the same basis rules",
+        body:
+          "<p>Section 16 does not create a new blended total or a new theory of the numbers. It inherits the same lane separation and limitation structure already locked in Section 14 and Section 15.</p><ul><li><a href='/decision-log/d-020.html'>D-020</a> basis incompatibility rule</li><li><a href='/decision-log/d-025.html'>D-025</a> final-argument lock</li><li><a href='/audit/section-14-conservative-total.html'>Section 14</a> conservative total structure</li></ul>"
+      },
+      {
+        title: "Domestic examples stay small and provider-heavy where measurable",
+        body:
+          "<p>The final section's domestic examples lean on SSI, SNAP composition, and emergency Medicaid provider routing without claiming broader unpublished totals.</p><ul><li><a href='/sources/s-073.html'>S-073</a> noncitizen SSI basis</li><li><a href='/sources/s-074.html'>S-074</a> SNAP composition</li><li><a href='/sources/s-064.html'>S-064</a> emergency Medicaid provider-capture context</li></ul>"
       }
     ]
   }
@@ -487,6 +693,44 @@ function injectVerificationPanel() {
   });
 }
 
+function injectTraceCards() {
+  const config = sectionEnhancements[location.pathname];
+  const actions = document.querySelector(".actions");
+  if (!config || !actions || document.querySelector("[data-trace-cards]")) return;
+
+  const cards = (config.traceCards || config.claims || []).map((claim) => ({
+    title: claim.title,
+    body: claim.body
+  }));
+
+  if (!cards.length) return;
+
+  const section = document.createElement("section");
+  section.className = "panel";
+  section.setAttribute("data-trace-cards", "");
+  section.innerHTML = `<h2>Key trace points</h2>
+    <p>These trace entries summarize the claims the current verification layer can already route back to sources, decisions, and unresolved evidence gaps.</p>
+    <div class="grid">${cards
+      .map(
+        (claim) => `<article class="card stack">
+          <p class="row-kicker">Claim trace</p>
+          <h3>${claim.title}</h3>
+          <p>${claim.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220)}${
+            claim.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().length > 220 ? "..." : ""
+          }</p>
+          <p><button type="button" class="button subtle" data-trace-title="${claim.title.replace(/"/g, "&quot;")}" data-trace-body-encoded="${encodeURIComponent(claim.body)}">Open trace panel</button></p>
+        </article>`
+      )
+      .join("")}</div>`;
+
+  const verificationPanel = document.querySelector("[data-verification-panel]");
+  if (verificationPanel) {
+    verificationPanel.insertAdjacentElement("afterend", section);
+    return;
+  }
+  actions.insertAdjacentElement("afterend", section);
+}
+
 async function runPublicationSearch(initialQuery) {
   const input = document.querySelector("[data-publication-search]");
   const results = document.querySelector("[data-search-results]");
@@ -534,9 +778,12 @@ document.addEventListener("click", (event) => {
 
   const traceButton = event.target.closest("[data-trace-title]");
   if (traceButton) {
+    const encodedBody = traceButton.getAttribute("data-trace-body-encoded");
     traceClaim(
       traceButton.getAttribute("data-trace-title") || "",
-      traceButton.getAttribute("data-trace-body") || ""
+      encodedBody
+        ? decodeURIComponent(encodedBody)
+        : traceButton.getAttribute("data-trace-body") || ""
     );
   }
 
@@ -554,6 +801,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-menu]").forEach(updateMenuState);
   ensureTraceDrawer();
   injectVerificationPanel();
+  injectTraceCards();
   calcDollar();
   renderTraceabilityExplorer();
   document.querySelectorAll("[data-filter-input]").forEach(filterList);
