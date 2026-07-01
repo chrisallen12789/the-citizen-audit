@@ -73,6 +73,55 @@ function linkList(items, basePath) {
     .join(" ");
 }
 
+const sectionPathByName = {
+  "Section 1": "/audit/section-01-executive-summary.html",
+  "Section 2": "/audit/section-02-definitions-methodology.html",
+  "Section 3": "/audit/section-03-international-assistance.html",
+  "Section 4": "/audit/section-04-ukraine-israel-examples.html",
+  "Section 5": "/audit/section-05-military-aid.html",
+  "Section 6": "/audit/section-06-refugee-resettlement.html",
+  "Section 7": "/audit/section-07-medicaid-emergency-medical.html",
+  "Section 8": "/audit/section-08-food-assistance.html",
+  "Section 9": "/audit/section-09-cash-welfare-income.html",
+  "Section 10": "/audit/section-10-federal-housing.html",
+  "Section 11": "/audit/section-11-education-public-services.html",
+  "Section 12": "/audit/section-12-state-administered-federal-dollars.html",
+  "Section 13": "/audit/section-13-programs-without-citizenship-breakouts.html",
+  "Section 14": "/audit/section-14-conservative-total.html",
+  "Section 15": "/audit/section-15-what-is-missing.html",
+  "Section 16": "/audit/section-16-final-argument.html",
+  "Appendix A": "/audit/appendix-a-open-questions.html",
+  "Appendix B": "/audit/appendix-b-transparency-scorecard.html"
+};
+
+function linkSections(sectionNames) {
+  return sectionNames
+    .map((name) =>
+      sectionPathByName[name]
+        ? `<a class="tag" href="${sectionPathByName[name]}">${escapeHtml(name)}</a>`
+        : `<span class="tag">${escapeHtml(name)}</span>`
+    )
+    .join(" ");
+}
+
+function relatedDecisionsForSections(sectionNames) {
+  return publication.decisions.filter((decision) =>
+    decision.references.some((reference) => sectionNames.includes(reference))
+  );
+}
+
+function relatedSourcesForDecision(decision) {
+  return publication.sources.filter((source) =>
+    source.sections.some((section) => decision.references.includes(section))
+  );
+}
+
+function relatedOpenQuestionsForDecision(decision) {
+  return publication.openQuestions.filter((item) =>
+    item.sections.some((section) => decision.references.includes(section))
+  );
+}
+
 function renderSourceIndex() {
   const rows = publication.sources
     .map(
@@ -121,6 +170,7 @@ function renderSourceIndex() {
 
 function renderSourceDetail(source) {
   const claims = source.claims.map((claim) => `<li>${escapeHtml(claim)}</li>`).join("");
+  const relatedDecisions = relatedDecisionsForSections(source.sections);
   const body = `<div class="actions">
       <a class="button" href="/sources.html">Back to source index</a>
       <a class="button" href="/search.html?q=${encodeURIComponent(source.id)}">Search related records</a>
@@ -134,7 +184,7 @@ function renderSourceDetail(source) {
         <p><strong>Type:</strong> ${escapeHtml(source.type)}</p>
         <p><strong>Confidence:</strong> ${escapeHtml(source.confidence)}</p>
         <p><strong>Evidence class:</strong> ${escapeHtml(source.evidenceClass)}</p>
-        <p><strong>Sections:</strong> ${escapeHtml(source.sections.join(", "))}</p>
+        <p><strong>Sections:</strong> ${linkSections(source.sections)}</p>
       </div>
     </section>
     <section class="panel">
@@ -147,6 +197,17 @@ function renderSourceDetail(source) {
         source.openQuestions.length
           ? `<p>${linkList(source.openQuestions, "/open-questions/")}</p>`
           : "<p>No open question is directly attached to this source in the current web edition.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Related decision IDs</h2>
+      ${
+        relatedDecisions.length
+          ? `<p>${linkList(
+              relatedDecisions.map((decision) => decision.id),
+              "/decision-log/"
+            )}</p>`
+          : "<p>No decision entry is linked through the current section map.</p>"
       }
     </section>`;
 
@@ -206,6 +267,7 @@ function renderOpenQuestionIndex() {
 }
 
 function renderOpenQuestionDetail(item) {
+  const relatedDecisions = relatedDecisionsForSections(item.sections);
   const body = `<div class="actions">
       <a class="button" href="/open-questions.html">Back to open questions</a>
       <a class="button" href="/audit/appendix-a-open-questions.html">Appendix A</a>
@@ -219,7 +281,7 @@ function renderOpenQuestionDetail(item) {
       <p>${escapeHtml(item.currentState)}</p>
       <div class="meta-grid">
         <p><strong>Status:</strong> ${escapeHtml(item.status)}</p>
-        <p><strong>Raised in:</strong> ${escapeHtml(item.sections.join(", "))}</p>
+        <p><strong>Raised in:</strong> ${linkSections(item.sections)}</p>
       </div>
     </section>
     <section class="panel">
@@ -232,6 +294,17 @@ function renderOpenQuestionDetail(item) {
         item.relatedSources.length
           ? `<p>${linkList(item.relatedSources, "/sources/")}</p>`
           : "<p>No source record has been linked yet in the current web edition.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Related decision IDs</h2>
+      ${
+        relatedDecisions.length
+          ? `<p>${linkList(
+              relatedDecisions.map((decision) => decision.id),
+              "/decision-log/"
+            )}</p>`
+          : "<p>No decision entry is linked through the current section map.</p>"
       }
     </section>`;
 
@@ -290,6 +363,8 @@ function renderDecisionLog() {
 }
 
 function renderDecisionDetail(item) {
+  const relatedSources = relatedSourcesForDecision(item);
+  const relatedOpenQuestions = relatedOpenQuestionsForDecision(item);
   const body = `<div class="actions">
       <a class="button" href="/decision-log.html">Back to decision log</a>
       <a class="button" href="/search.html?q=${encodeURIComponent(item.id)}">Search related records</a>
@@ -299,12 +374,34 @@ function renderDecisionDetail(item) {
       <p>${escapeHtml(item.body)}</p>
       <div class="meta-grid">
         <p><strong>Decision ID:</strong> ${escapeHtml(item.id)}</p>
-        <p><strong>References:</strong> ${escapeHtml(item.references.join(", "))}</p>
+        <p><strong>References:</strong> ${linkSections(item.references)}</p>
       </div>
     </section>
     <section class="panel">
       <h2>Why this page exists</h2>
       <p>This record makes the numbered methodology rule addressable in the web edition so sources, sections, and future traceability features can point back to the same canonical decision.</p>
+    </section>
+    <section class="panel">
+      <h2>Related source IDs</h2>
+      ${
+        relatedSources.length
+          ? `<p>${linkList(
+              relatedSources.map((source) => source.id),
+              "/sources/"
+            )}</p>`
+          : "<p>No source record is linked through the current section map.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Related open questions</h2>
+      ${
+        relatedOpenQuestions.length
+          ? `<p>${linkList(
+              relatedOpenQuestions.map((openQuestion) => openQuestion.id),
+              "/open-questions/"
+            )}</p>`
+          : "<p>No open-question record is linked through the current section map.</p>"
+      }
     </section>`;
 
   return layout({
