@@ -28,6 +28,7 @@ Remaining highest-value work:
 - Complete the remaining `A-001` through `A-037` web records beyond the currently published subset.
 - Add claim-to-source traceability views and section-level source panels.
 - Expand search coverage and cross-reference routing across sections, sources, decisions, and open questions.
+- Restore unattended deployment verification by supplying `CLOUDFLARE_API_TOKEN`; as of July 1, 2026, production root returns `200 OK` while newly generated branch pages such as `/decision-log/d-020.html` still return `404`.
 
 ## Release 0.4: Verification layer
 
