@@ -128,6 +128,29 @@ if (fs.existsSync(traceabilityPath)) {
   }
 }
 
+const searchIndexPath = path.join(root, "public/data/publication-search.json");
+if (fs.existsSync(searchIndexPath)) {
+  const searchIndex = JSON.parse(fs.readFileSync(searchIndexPath, "utf8"));
+  if (!Array.isArray(searchIndex)) {
+    problems.push("public/data/publication-search.json: expected array search index");
+  } else {
+    const sections = searchIndex.filter((item) => item.type === "Section");
+    const traces = searchIndex.filter((item) => item.type === "Claim trace");
+    if (sections.length < 16) {
+      problems.push("public/data/publication-search.json: expected at least 16 section search records");
+    }
+    if (traces.length < 16) {
+      problems.push("public/data/publication-search.json: expected at least 16 claim trace search records");
+    }
+    for (const requiredTerm of ["no blended total", "provider", "SNAP", "federal-only", "ORR"]) {
+      const found = searchIndex.some((item) => [item.title, item.text].join(" ").toLowerCase().includes(requiredTerm.toLowerCase()));
+      if (!found) {
+        problems.push(`public/data/publication-search.json: missing expected searchable term ${requiredTerm}`);
+      }
+    }
+  }
+}
+
 if (problems.length) {
   console.error("QA failed:");
   for (const problem of problems) {
