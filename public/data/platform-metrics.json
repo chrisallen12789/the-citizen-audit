@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T12:50:56.176Z",
+  "generatedAt": "2026-07-02T13:05:48.963Z",
   "buildVersion": "0.5",
   "audits": 1,
   "sections": 19,
@@ -8,16 +8,16 @@
   "generatedSectionPages": 16,
   "generatedClaimPages": 18,
   "sources": 47,
-  "verifiedSourceCount": 34,
-  "pendingSourceCount": 13,
-  "archiveCoverageCount": 15,
+  "verifiedSourceCount": 42,
+  "pendingSourceCount": 5,
+  "archiveCoverageCount": 20,
   "highPriorityCitationCompletionPercent": 100,
   "citationCoverage": {
-    "verified": 34,
-    "pending": 13,
-    "archiveCoverageCount": 15,
+    "verified": 42,
+    "pending": 5,
+    "archiveCoverageCount": 20,
     "highPriorityCitationCompletionPercent": 100,
-    "percentVerified": 72.34,
+    "percentVerified": 89.36,
     "highPriorityMissingCanonicalUrls": []
   },
   "decisionLogs": 15,
@@ -32,7 +32,7 @@
   "searchRecords": 154,
   "qaStatus": {
     "status": "passed",
-    "validatedAt": "2026-07-02T12:50:56.573Z",
+    "validatedAt": "2026-07-02T13:06:01.715Z",
     "htmlPagesChecked": 154,
     "checksEnforced": [
       "claim sources",

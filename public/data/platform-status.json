@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T12:50:56.575Z",
+  "generatedAt": "2026-07-02T13:06:01.717Z",
   "status": "healthy",
   "qaStatus": "passed",
   "buildVersion": "0.5",
   "traceabilityPercent": 100,
-  "citationCoveragePercent": 72.34,
+  "citationCoveragePercent": 89.36,
   "generatedPublicationPages": 18,
   "generatedSectionPages": 16,
   "generatedClaimPages": 18,
