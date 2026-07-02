@@ -1325,4 +1325,936 @@ const publication = {
   ]
 };
 
+function unique(values) {
+  return [...new Set(values)];
+}
+
+const sourceMetadataById = {
+  "S-001": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Congressional Research Service via Congress.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Issue brief",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "Automated verification of the exact Congress.gov CRS product page was blocked during this pass, so no canonical URL is published yet."
+  },
+  "S-002": {
+    officialUrl:
+      "https://uscode.house.gov/view.xhtml?req=%28title%3A8+section%3A1641+edition%3Aprelim%29",
+    archiveUrl: null,
+    publisher: "Office of the Law Revision Counsel, U.S. House of Representatives",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Statute",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official U.S. Code site."
+  },
+  "S-003": {
+    officialUrl:
+      "https://uscode.house.gov/view.xhtml?edition=prelim&num=0&req=granuleid%3AUSC-prelim-title8-section1611",
+    archiveUrl: null,
+    publisher: "Office of the Law Revision Counsel, U.S. House of Representatives",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Statute",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official U.S. Code site."
+  },
+  "S-004": {
+    officialUrl: "https://uscode.house.gov/quicksearch/get.plx?section=1613&title=8",
+    archiveUrl: null,
+    publisher: "Office of the Law Revision Counsel, U.S. House of Representatives",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Statute",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official U.S. Code site."
+  },
+  "S-005": {
+    officialUrl: "https://www.gao.gov/products/gao-05-734sp",
+    archiveUrl: "https://www.gao.gov/assets/gao-05-734sp.pdf",
+    publisher: "U.S. Government Accountability Office",
+    publicationDate: "2005-09-01",
+    retrievalDate: "2026-07-01",
+    documentType: "Glossary",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the GAO product page."
+  },
+  "S-006": {
+    officialUrl: "https://www.cbo.gov/publication/57660",
+    archiveUrl: null,
+    publisher: "Congressional Budget Office",
+    publicationDate: "2021-12-09",
+    retrievalDate: "2026-07-01",
+    documentType: "Glossary",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official CBO publication page."
+  },
+  "S-038": {
+    officialUrl: "https://foreignassistance.gov/data",
+    archiveUrl: "https://foreignassistance.gov/",
+    publisher: "U.S. Department of State / USAID / reporting agencies",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Dataset landing page",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official ForeignAssistance.gov data portal."
+  },
+  "S-039": {
+    officialUrl: "https://www.pewresearch.org/short-reads/2024/05/08/the-us-spends-billions-on-foreign-aid-each-year/",
+    archiveUrl: null,
+    publisher: "Pew Research Center",
+    publicationDate: "2024-05-08",
+    retrievalDate: "2026-07-01",
+    documentType: "Research summary",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "A Pew foreign-aid explainer is the likely canonical reference, but the exact article used in the audit needs line-by-line confirmation before it is treated as verified."
+  },
+  "S-040": {
+    officialUrl: "https://usafacts.org/articles/how-much-does-the-us-give-in-foreign-aid/",
+    archiveUrl: null,
+    publisher: "USAFacts",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Data explainer",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "USAFacts foreign-aid reporting was identified, but the exact article and edition used in the audit still need canonical verification."
+  },
+  "S-042": {
+    officialUrl:
+      "https://www.state.gov/wp-content/uploads/2024/03/Supplementary-Tables-Foreign-Assistance.pdf",
+    archiveUrl:
+      "https://2021-2025.state.gov/wp-content/uploads/2024/04/Supplementary-Tables-Foreign-Assistance.pdf",
+    publisher: "U.S. Department of State",
+    publicationDate: "2024-03-01",
+    retrievalDate: "2026-07-01",
+    documentType: "Budget tables PDF",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the State Department PDF path."
+  },
+  "S-043": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Congressional Research Service via Congress.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Issue brief",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The exact official CRS product page could not be confirmed automatically because Congress.gov blocked verification requests during this pass."
+  },
+  "S-044": {
+    officialUrl: "https://www.ukraineoversight.gov/Funding/",
+    archiveUrl: "https://www.gao.gov/ukraine-oversight",
+    publisher: "UkraineOversight.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Oversight portal",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official oversight portal."
+  },
+  "S-045": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "U.S. Department of State",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Agency reporting",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "Official State reporting pages for both Ukraine and Israel were located, but the exact canonical page used by this source record remains ambiguous."
+  },
+  "S-046": {
+    officialUrl: "https://www.gao.gov/products/gao-24-106934",
+    archiveUrl: "https://www.gao.gov/assets/gao-24-106934.pdf",
+    publisher: "U.S. Government Accountability Office",
+    publicationDate: "2024-07-22",
+    retrievalDate: "2026-07-01",
+    documentType: "Oversight report",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the GAO product page."
+  },
+  "S-047": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Center for Economic and Policy Research",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Contextual analysis",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The exact CEPR article used as contrary context has not been verified in this pass."
+  },
+  "S-048": {
+    officialUrl: "https://www.cfr.org/article/how-much-us-aid-going-ukraine",
+    archiveUrl: null,
+    publisher: "Council on Foreign Relations",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Tracker / explainer",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the CFR article page."
+  },
+  "S-049": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Congressional Research Service via Congress.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Report",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The CRS report number is known, but automated verification of the official Congress.gov product page was blocked."
+  },
+  "S-050": {
+    officialUrl: "https://samm.dsca.mil/",
+    archiveUrl: null,
+    publisher: "Defense Security Cooperation Agency",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Program manual",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official DSCA SAMM site."
+  },
+  "S-051": {
+    officialUrl: "https://www.state.gov/reports/foreign-military-training-and-dod-engagement-activities-of-interest-2022-2023",
+    archiveUrl: "https://www.state.gov/wp-content/uploads/2025/03/01-Front-Sections.pdf",
+    publisher: "U.S. Department of State / U.S. Department of Defense",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Joint report",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the State Department report landing page."
+  },
+  "S-052": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Congressional Research Service via Congress.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Issue brief",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The CRS identifier is known, but the exact official product page could not be verified automatically."
+  },
+  "S-053": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Congressional Research Service via Congress.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Insight",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The CRS identifier is known, but the exact official product page could not be verified automatically."
+  },
+  "S-054": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Congressional Research Service via Congress.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Report",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The CRS identifier is known, but the exact official product page could not be verified automatically."
+  },
+  "S-055": {
+    officialUrl: "https://www.gao.gov/products/gao-23-105842",
+    archiveUrl: "https://www.gao.gov/assets/gao-23-105842.pdf",
+    publisher: "U.S. Government Accountability Office",
+    publicationDate: "2023-08-29",
+    retrievalDate: "2026-07-01",
+    documentType: "Oversight report",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the GAO product page."
+  },
+  "S-056": {
+    officialUrl: "https://www.gao.gov/products/gao-24-107232",
+    archiveUrl: "https://www.gao.gov/assets/870/869711.pdf",
+    publisher: "U.S. Government Accountability Office",
+    publicationDate: "2024-05-30",
+    retrievalDate: "2026-07-01",
+    documentType: "Oversight report",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the GAO product page."
+  },
+  "S-057": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "U.S. Department of Defense / Defense Security Cooperation Agency",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Infographic",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "A DoD/DSCA infographic was used for lane separation context, but the exact canonical file has not yet been verified."
+  },
+  "S-058": {
+    officialUrl:
+      "https://comptroller.defense.gov/Portals/45/Documents/defbudget/FY2026/FY2026_CTEF_J-Book.pdf",
+    archiveUrl: null,
+    publisher: "Office of the Under Secretary of Defense (Comptroller)",
+    publicationDate: "2025-01-01",
+    retrievalDate: "2026-07-01",
+    documentType: "Budget justification PDF",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official DoD Comptroller budget document path."
+  },
+  "S-059": {
+    officialUrl:
+      "https://uscode.house.gov/view.xhtml?req=%28title%3A10+section%3A333+edition%3Aprelim%29",
+    archiveUrl: null,
+    publisher: "Office of the Law Revision Counsel, U.S. House of Representatives",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Statute",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official U.S. Code site."
+  },
+  "S-060": {
+    officialUrl: "https://www.acf.hhs.gov/orr/programs/refugees",
+    archiveUrl: null,
+    publisher: "Administration for Children and Families, Office of Refugee Resettlement",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Program documentation",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official ORR refugee program page."
+  },
+  "S-061": {
+    officialUrl: "https://www.acf.hhs.gov/orr/programs/refugees/cma",
+    archiveUrl: null,
+    publisher: "Administration for Children and Families, Office of Refugee Resettlement",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Program documentation",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official ORR Cash and Medical Assistance page."
+  },
+  "S-062": {
+    officialUrl: "https://www.usaspending.gov/account/075-1503",
+    archiveUrl: null,
+    publisher: "USAspending.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Federal spending account page",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official USAspending account record."
+  },
+  "S-063": {
+    officialUrl: "https://www.acf.hhs.gov/orr/fact-sheet/refugee-benefits",
+    archiveUrl: null,
+    publisher: "Administration for Children and Families, Office of Refugee Resettlement",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Fact sheet",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official ORR benefits fact sheet."
+  },
+  "S-064": {
+    officialUrl:
+      "https://www.kff.org/quick-insights/less-than-1-of-total-medicaid-spending-goes-to-emergency-care-for-noncitizen-immigrants/",
+    archiveUrl: null,
+    publisher: "KFF",
+    publicationDate: "2024-10-24",
+    retrievalDate: "2026-07-01",
+    documentType: "Quick take",
+    classification: "Secondary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the KFF publication page."
+  },
+  "S-065": {
+    officialUrl: "https://www.cms.gov/newsroom/press-releases/cms-increasing-oversight-states-illegally-using-federal-medicaid-funding-health-care-illegal",
+    archiveUrl: null,
+    publisher: "Centers for Medicare & Medicaid Services",
+    publicationDate: "2025-05-27",
+    retrievalDate: "2026-07-01",
+    documentType: "Federal administrative guidance / press release",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote:
+      "This official CMS page is a verified anchor for the emergency-services rule set, but the exact CMS-64 or MACPAC breakout used in future editions still needs a tighter canonical citation."
+  },
+  "S-067": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Congressional Research Service via Congress.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Report",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The CRS report number is known, but the exact official Congress.gov product page was not machine-verifiable during this pass."
+  },
+  "S-068": {
+    officialUrl:
+      "https://www.hud.gov/sites/dfiles/PIH/documents/PHA-Letter-on-Citizenship-and-Immigration-Status-Verification.pdf",
+    archiveUrl:
+      "https://www.hud.gov/sites/dfiles/PIH/documents/PHOG_Eligibility_Det_Denial_Assistance.pdf",
+    publisher: "U.S. Department of Housing and Urban Development",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Agency guidance PDF",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against official HUD guidance PDFs."
+  },
+  "S-069": {
+    officialUrl:
+      "https://fsapartners.ed.gov/knowledge-center/fsa-handbook/2025-2026/vol1/ch2-us-citizenship-eligible-noncitizens",
+    archiveUrl: null,
+    publisher: "U.S. Department of Education Federal Student Aid",
+    publicationDate: "2025-01-01",
+    retrievalDate: "2026-07-01",
+    documentType: "Eligibility guidance",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote:
+      "Verified against the official Department of Education eligible-noncitizen guidance; the broader Plyler legal record remains a framework source rather than one canonical page."
+  },
+  "S-070": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Congressional Research Service via Congress.gov",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Report",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The CRS report number is known, but the exact official Congress.gov product page was not machine-verifiable during this pass."
+  },
+  "S-071": {
+    officialUrl: "https://www.acf.hhs.gov/orr",
+    archiveUrl: null,
+    publisher: "Administration for Children and Families, Office of Refugee Resettlement",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Program documentation",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote:
+      "Mapped to the official ORR portal pending narrower identification of the exact support-material page."
+  },
+  "S-072": {
+    officialUrl: "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2023/index.html",
+    archiveUrl: "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2023/ssi_asr23.pdf",
+    publisher: "Social Security Administration",
+    publicationDate: "2023-01-01",
+    retrievalDate: "2026-07-01",
+    documentType: "Annual statistical report",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official SSA statistical compilation."
+  },
+  "S-073": {
+    officialUrl: "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2021/sect05.html",
+    archiveUrl: null,
+    publisher: "Social Security Administration",
+    publicationDate: "2021-01-01",
+    retrievalDate: "2026-07-01",
+    documentType: "Statistical report section",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official SSA statistical report section."
+  },
+  "S-074": {
+    officialUrl: "https://www.fns.usda.gov/research/snap/community-characteristics",
+    archiveUrl: null,
+    publisher: "USDA Food and Nutrition Service",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Research / characteristics page",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote:
+      "Verified against the official USDA-FNS characteristics landing page; the exact edition year remains to be pinned more tightly if future line-level citations require it."
+  },
+  "S-075": {
+    officialUrl:
+      "https://www.acf.hhs.gov/ofa/data/characteristics-and-financial-circumstances-tanf-recipients-fiscal-year-2021",
+    archiveUrl: "https://www.acf.hhs.gov/ofa/programs/temporary-assistance-needy-families-tanf",
+    publisher: "Administration for Children and Families",
+    publicationDate: "2024-08-30",
+    retrievalDate: "2026-07-01",
+    documentType: "Administrative data report",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official ACF data report."
+  },
+  "S-076": {
+    officialUrl: null,
+    archiveUrl: null,
+    publisher: "Cato Institute",
+    publicationDate: null,
+    retrievalDate: "2026-07-01",
+    documentType: "Modeled analysis",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "pending",
+    urlVerificationNote:
+      "The exact Cato modeling piece used as contextual evidence was not verified in this pass."
+  },
+  "S-077": {
+    officialUrl: "https://www.hud.gov/news/hud-no-26-008",
+    archiveUrl: null,
+    publisher: "U.S. Department of Housing and Urban Development",
+    publicationDate: "2026-01-27",
+    retrievalDate: "2026-07-01",
+    documentType: "Agency reporting",
+    classification: "Primary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote:
+      "Verified against official HUD reporting on citizenship-status verification and ineligible-tenant enforcement."
+  },
+  "S-078": {
+    officialUrl: "https://www.cbo.gov/publication/60805",
+    archiveUrl: null,
+    publisher: "Congressional Budget Office",
+    publicationDate: "2025-01-17",
+    retrievalDate: "2026-07-01",
+    documentType: "Cost estimate / analysis",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official CBO publication page."
+  },
+  "S-079": {
+    officialUrl:
+      "https://budget.house.gov/press-release/cbo-medicaid-spending-on-illegal-aliens-has-cost-taxpayers-over-162-billion-under-open-border-czar-harris",
+    archiveUrl: "https://budget.house.gov/download/cbo-on-medicaid-for-illegal-immigrants",
+    publisher: "U.S. House Budget Committee",
+    publicationDate: "2025-01-17",
+    retrievalDate: "2026-07-01",
+    documentType: "Congressional press / memo",
+    classification: "Secondary",
+    citationPriority: "standard",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official House Budget Committee page."
+  },
+  "S-080": {
+    officialUrl: "https://www.cbo.gov/publication/60569",
+    archiveUrl: null,
+    publisher: "Congressional Budget Office",
+    publicationDate: "2024-06-18",
+    retrievalDate: "2026-07-01",
+    documentType: "Projection",
+    classification: "Primary",
+    citationPriority: "high",
+    urlVerificationStatus: "verified",
+    urlVerificationNote: "Verified against the official CBO publication page."
+  }
+};
+
+publication.sources = publication.sources.map((source) => {
+  const metadata = sourceMetadataById[source.id] || {};
+  return {
+    ...source,
+    publisher: metadata.publisher || source.agency,
+    officialUrl: Object.prototype.hasOwnProperty.call(metadata, "officialUrl")
+      ? metadata.officialUrl
+      : null,
+    archiveUrl: Object.prototype.hasOwnProperty.call(metadata, "archiveUrl")
+      ? metadata.archiveUrl
+      : null,
+    publicationDate: Object.prototype.hasOwnProperty.call(metadata, "publicationDate")
+      ? metadata.publicationDate
+      : null,
+    retrievalDate: Object.prototype.hasOwnProperty.call(metadata, "retrievalDate")
+      ? metadata.retrievalDate
+      : null,
+    documentType: metadata.documentType || source.type,
+    classification:
+      metadata.classification ||
+      (source.evidenceClass.toLowerCase().includes("primary") ? "Primary" : "Secondary"),
+    citationPriority: metadata.citationPriority || "standard",
+    urlVerificationStatus: metadata.urlVerificationStatus || "pending",
+    urlVerificationNote: metadata.urlVerificationNote
+      ? metadata.urlVerificationStatus === "pending" &&
+        !metadata.urlVerificationNote.toLowerCase().includes("pending")
+        ? `URL verification pending because ${metadata.urlVerificationNote.charAt(0).toLowerCase()}${metadata.urlVerificationNote.slice(1)}`
+        : metadata.urlVerificationNote
+      : "URL verification pending because no canonical source URL has been verified yet."
+  };
+});
+
+const sectionCatalog = [
+  {
+    id: "Section 1",
+    title: "Executive Summary",
+    url: "/audit/section-01-executive-summary.html",
+    summary: "Basis-segregated summary of measurable lanes and permanent limitations."
+  },
+  {
+    id: "Section 2",
+    title: "Definitions and Methodology",
+    url: "/audit/section-02-definitions-methodology.html",
+    summary: "Primary legal and accounting definitions that bind the rest of the publication."
+  },
+  {
+    id: "Section 3",
+    title: "International Assistance",
+    url: "/audit/section-03-international-assistance.html",
+    summary: "Aggregate foreign-assistance obligations and disbursements with unresolved capture share."
+  },
+  {
+    id: "Section 4",
+    title: "Ukraine and Israel Examples",
+    url: "/audit/section-04-ukraine-israel-examples.html",
+    summary: "Illustrative, non-additive examples showing stage differences and beneficiary-chain complexity."
+  },
+  {
+    id: "Section 5",
+    title: "Military Aid",
+    url: "/audit/section-05-military-aid.html",
+    summary: "Net-new military lanes separated from already-counted foreign assistance and non-taxpayer flows."
+  },
+  {
+    id: "Section 6",
+    title: "Refugee Resettlement",
+    url: "/audit/section-06-refugee-resettlement.html",
+    summary: "Domestic refugee and entrant assistance with unresolved provider-capture and beneficiary-split limits."
+  },
+  {
+    id: "Section 7",
+    title: "Medicaid / Emergency Medical",
+    url: "/audit/section-07-medicaid-emergency-medical.html",
+    summary: "Emergency-medical assistance lane with an explicit federal-only share gap."
+  },
+  {
+    id: "Section 8",
+    title: "Food Assistance",
+    url: "/audit/section-08-food-assistance.html",
+    summary: "Eligibility structure and limits of SNAP attribution without unsupported noncitizen dollar estimates."
+  },
+  {
+    id: "Section 9",
+    title: "Cash Welfare / Income",
+    url: "/audit/section-09-cash-welfare-income.html",
+    summary: "SSI and welfare lanes where direct-cash structure is more measurable than many domestic programs."
+  },
+  {
+    id: "Section 10",
+    title: "Federal Housing",
+    url: "/audit/section-10-federal-housing.html",
+    summary: "Housing eligibility and proration mechanics without a published status-specific outlay ledger."
+  },
+  {
+    id: "Section 11",
+    title: "Education / Public Services",
+    url: "/audit/section-11-education-public-services.html",
+    summary: "Legal and eligibility structure for K-12 and student-aid analysis where status spending is not cleanly published."
+  },
+  {
+    id: "Section 12",
+    title: "State-Administered Federal Dollars",
+    url: "/audit/section-12-state-administered-federal-dollars.html",
+    summary: "A reconciliation lens for routed federal dollars, not a net-new spending subtotal."
+  },
+  {
+    id: "Section 13",
+    title: "Programs Without Citizenship Breakouts",
+    url: "/audit/section-13-programs-without-citizenship-breakouts.html",
+    summary: "Gap register for programs where the public record does not support a defensible status-based spending figure."
+  },
+  {
+    id: "Section 14",
+    title: "Conservative Total",
+    url: "/audit/section-14-conservative-total.html",
+    summary: "A reproducible set of basis-segregated subtotals rather than one blended grand total."
+  },
+  {
+    id: "Section 15",
+    title: "What Is Missing",
+    url: "/audit/section-15-what-is-missing.html",
+    summary: "Publication-wide limitations register preserving unresolved evidence constraints."
+  },
+  {
+    id: "Section 16",
+    title: "Final Argument",
+    url: "/audit/section-16-final-argument.html",
+    summary: "Closing synthesis bounded by the same evidence and basis-separation rules as the rest of Version 1.0."
+  }
+];
+
+const relatedSectionsById = {
+  "Section 1": ["Section 3", "Section 5", "Section 7", "Section 9", "Section 14"],
+  "Section 2": ["Section 1", "Section 3", "Section 5", "Section 8", "Section 9"],
+  "Section 3": ["Section 1", "Section 4", "Section 5", "Section 6", "Section 14"],
+  "Section 4": ["Section 3", "Section 5", "Section 14"],
+  "Section 5": ["Section 1", "Section 3", "Section 4", "Section 14"],
+  "Section 6": ["Section 1", "Section 3", "Section 12", "Section 14"],
+  "Section 7": ["Section 1", "Section 13", "Section 14", "Section 16"],
+  "Section 8": ["Section 2", "Section 13", "Section 16"],
+  "Section 9": ["Section 1", "Section 2", "Section 14", "Section 16"],
+  "Section 10": ["Section 11", "Section 13"],
+  "Section 11": ["Section 10", "Section 13"],
+  "Section 12": ["Section 6", "Section 13", "Section 14"],
+  "Section 13": ["Section 7", "Section 8", "Section 10", "Section 11", "Section 12", "Section 15"],
+  "Section 14": ["Section 1", "Section 3", "Section 5", "Section 15", "Section 16"],
+  "Section 15": ["Section 13", "Section 14", "Section 16"],
+  "Section 16": ["Section 14", "Section 15"]
+};
+
+publication.sectionRecords = sectionCatalog.map((section) => ({
+  ...section,
+  sources: unique(publication.sources.filter((source) => source.sections.includes(section.id)).map((source) => source.id)),
+  decisions: unique(
+    publication.decisions.filter((decision) => decision.references.includes(section.id)).map((decision) => decision.id)
+  ),
+  openQuestions: unique(
+    publication.openQuestions.filter((question) => question.sections.includes(section.id)).map((question) => question.id)
+  ),
+  relatedSections: relatedSectionsById[section.id] || []
+}));
+
+publication.traceClaims = [
+  {
+    id: "C-001",
+    title: "Executive summary keeps measurable lanes on their native bases",
+    summary: "The opening section preserves lane separation instead of collapsing obligations, outlays, cumulative military lines, and domestic program examples into one number.",
+    section: "Section 1",
+    sources: ["S-038", "S-039", "S-040", "S-073"],
+    decisions: ["D-001", "D-020"],
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+  },
+  {
+    id: "C-002",
+    title: "Methodology distinguishes legal status categories and number types",
+    summary: "Qualified status categories, waiting-period rules, appropriations, obligations, outlays, and transfer values are treated as distinct analytical objects.",
+    section: "Section 2",
+    sources: ["S-002", "S-003", "S-004", "S-005", "S-006"],
+    decisions: ["D-001", "D-005", "D-012"],
+    openQuestions: ["A-002"]
+  },
+  {
+    id: "C-003",
+    title: "International assistance obligations and disbursements are not interchangeable",
+    summary: "Section 3 preserves separate accounting states while carrying the unresolved beneficiary-capture share as an open question.",
+    section: "Section 3",
+    sources: ["S-001", "S-038", "S-039", "S-040", "S-042", "S-043"],
+    decisions: ["D-013", "D-014", "D-017"],
+    openQuestions: ["A-001", "A-003", "A-004", "A-005"]
+  },
+  {
+    id: "C-004",
+    title: "Ukraine and Israel examples are illustrative and non-additive",
+    summary: "Section 4 exists to show stage differences and beneficiary chains without adding its examples back into the running totals.",
+    section: "Section 4",
+    sources: ["S-043", "S-044", "S-045", "S-046", "S-049"],
+    decisions: ["D-017", "D-018", "D-019"],
+    openQuestions: ["A-006", "A-010", "A-011", "A-012"]
+  },
+  {
+    id: "C-005",
+    title: "Ukraine stage labels cannot be netted casually",
+    summary: "Appropriations, drawdowns, disbursements, and delivered-value estimates sit at different stages and remain analytically separate.",
+    section: "Section 4",
+    sources: ["S-044", "S-046", "S-047", "S-048"],
+    decisions: ["D-017", "D-018"],
+    openQuestions: ["A-006", "A-007", "A-008"]
+  },
+  {
+    id: "C-006",
+    title: "Military aid keeps net-new lanes separate from already-counted foreign assistance",
+    summary: "Section 5 excludes allied-funded sales and already-counted assistance while preserving drawdown value versus replacement-cost separation.",
+    section: "Section 5",
+    sources: ["S-043", "S-050", "S-051", "S-052", "S-053", "S-054", "S-055", "S-056", "S-057", "S-058", "S-059"],
+    decisions: ["D-012", "D-017", "D-019", "D-020"],
+    openQuestions: ["A-013", "A-014", "A-015", "A-016", "A-017"]
+  },
+  {
+    id: "C-007",
+    title: "ORR is owned as a domestic lane, not an overseas add-on",
+    summary: "Refugee and entrant assistance stays in one canonical domestic section so it is not double-counted against foreign-assistance accounts.",
+    section: "Section 6",
+    sources: ["S-060", "S-062", "S-070"],
+    decisions: ["D-013", "D-021"],
+    openQuestions: ["A-018", "A-020", "A-021"]
+  },
+  {
+    id: "C-008",
+    title: "ORR provider capture remains a first-class unresolved limitation",
+    summary: "The public record identifies the ORR lane but does not yet publish a defensible entrant-versus-provider split.",
+    section: "Section 6",
+    sources: ["S-060", "S-061", "S-063", "S-071"],
+    decisions: ["D-021"],
+    openQuestions: ["A-018", "A-019", "A-021"]
+  },
+  {
+    id: "C-009",
+    title: "Emergency Medicaid is measurable on a federal-plus-state basis, not a federal-only basis",
+    summary: "Section 7 preserves the measurable lane while carrying the missing federal-only share as an explicit open question.",
+    section: "Section 7",
+    sources: ["S-003", "S-064", "S-065", "S-078", "S-079"],
+    decisions: ["D-021"],
+    openQuestions: ["A-022", "A-023", "A-024", "A-037"]
+  },
+  {
+    id: "C-010",
+    title: "SNAP noncitizen dollars are not backfilled with modeled estimates",
+    summary: "Section 8 documents the eligibility framework and refuses unsupported benefit attribution by population share.",
+    section: "Section 8",
+    sources: ["S-003", "S-074"],
+    decisions: ["D-021"],
+    openQuestions: ["A-025", "A-026"]
+  },
+  {
+    id: "C-011",
+    title: "SSI is one of the clearest direct-cash domestic lanes",
+    summary: "The current edition relies on SSA-published noncitizen recipient and payment inputs while preserving the point-in-time limitation.",
+    section: "Section 9",
+    sources: ["S-072", "S-073", "S-075"],
+    decisions: ["D-001", "D-021"],
+    openQuestions: ["A-027", "A-028", "A-029"]
+  },
+  {
+    id: "C-012",
+    title: "Housing eligibility rules already exclude many ineligible uses through Section 214 and proration",
+    summary: "Section 10 is strongest on program mechanics, not on a missing published eligible-noncitizen outlay total.",
+    section: "Section 10",
+    sources: ["S-067", "S-068", "S-077"],
+    decisions: ["D-021"],
+    openQuestions: ["A-030", "A-031"]
+  },
+  {
+    id: "C-013",
+    title: "K-12 and student-aid analysis is constrained by legal collection limits and eligibility structure",
+    summary: "Section 11 treats missing education spending ledgers as a real transparency limit rather than something to impute.",
+    section: "Section 11",
+    sources: ["S-069"],
+    decisions: ["D-021"],
+    openQuestions: ["A-032", "A-033"]
+  },
+  {
+    id: "C-014",
+    title: "State-administered federal dollars add zero net-new dollars by design",
+    summary: "Section 12 is a routing and reconciliation lens that guards against double counting once federal money passes through state systems.",
+    section: "Section 12",
+    sources: ["S-062", "S-065"],
+    decisions: ["D-020", "D-021"],
+    openQuestions: ["A-034"]
+  },
+  {
+    id: "C-015",
+    title: "The gap register is itself a finding, not an empty placeholder",
+    summary: "Section 13 names programs where the record does not support a defensible citizenship breakout and refuses to fabricate missing values.",
+    section: "Section 13",
+    sources: ["S-076"],
+    decisions: ["D-021"],
+    openQuestions: ["A-023", "A-025", "A-027", "A-030", "A-032", "A-033", "A-034", "A-035", "A-036"]
+  },
+  {
+    id: "C-016",
+    title: "The conservative total is a reproducible set of subtotals, not one synthetic number",
+    summary: "Section 14 is locked to a blueprint that preserves incompatible bases instead of flattening them into a false grand total.",
+    section: "Section 14",
+    sources: ["S-038", "S-055", "S-058", "S-064", "S-073"],
+    decisions: ["D-014", "D-020", "D-022", "D-023"],
+    openQuestions: ["A-017", "A-018", "A-037"]
+  },
+  {
+    id: "C-017",
+    title: "Publication limits remain visible and binding",
+    summary: "Section 15 preserves missing-record constraints as governance rules for what the audit may claim.",
+    section: "Section 15",
+    sources: ["S-038", "S-072", "S-078"],
+    decisions: ["D-024"],
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+  },
+  {
+    id: "C-018",
+    title: "The final argument inherits the same basis rules and evidence limits",
+    summary: "Section 16 does not create a new theory of the numbers; it restates bounded findings from the locked sections.",
+    section: "Section 16",
+    sources: ["S-064", "S-073", "S-074"],
+    decisions: ["D-020", "D-025"],
+    openQuestions: ["A-005", "A-018", "A-028", "A-037"]
+  }
+].map((claim) => ({
+  ...claim,
+  sectionRecord: publication.sectionRecords.find((section) => section.id === claim.section)?.url || null
+}));
+
 module.exports = publication;

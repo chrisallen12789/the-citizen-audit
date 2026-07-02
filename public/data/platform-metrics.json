@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-02T01:23:24.600Z",
+  "htmlPages": 133,
+  "sources": 47,
+  "citationCoverage": {
+    "verified": 33,
+    "pending": 14,
+    "percentVerified": 70.21,
+    "highPriorityMissingCanonicalUrls": []
+  },
+  "decisionLogs": 15,
+  "openQuestions": 37,
+  "claims": 18,
+  "traceRecords": {
+    "sections": 16,
+    "claims": 18
+  },
+  "searchRecords": 133,
+  "qaStatus": {
+    "status": "passed",
+    "validatedAt": "2026-07-02T01:24:19.040Z",
+    "htmlPagesChecked": 133,
+    "checksEnforced": [
+      "required source metadata",
+      "high-priority canonical URLs",
+      "orphaned trace records",
+      "search coverage for trace claims",
+      "explorer reference integrity",
+      "generated-file consistency"
+    ]
+  }
+}

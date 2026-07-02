@@ -500,6 +500,29 @@ const traceabilityByPath = Object.fromEntries(
   traceabilityRecords.map((record) => [record.url, record])
 );
 
+var runtimeTraceabilityRecords = traceabilityRecords.slice();
+var runtimeTraceClaims = [];
+var runtimeTraceabilityByPath = { ...traceabilityByPath };
+
+async function loadTraceabilityData() {
+  try {
+    const response = await fetch("/data/trace-records.json");
+    if (!response.ok) return;
+    const payload = await response.json();
+    if (Array.isArray(payload.sections) && payload.sections.length) {
+      runtimeTraceabilityRecords = payload.sections;
+      runtimeTraceabilityByPath = Object.fromEntries(
+        payload.sections.map((record) => [record.url, record])
+      );
+    }
+    if (Array.isArray(payload.claims)) {
+      runtimeTraceClaims = payload.claims;
+    }
+  } catch (error) {
+    // Fall back to embedded records if generated JSON is unavailable.
+  }
+}
+
 function ensureTraceDrawer() {
   if (document.querySelector("[data-trace-drawer]")) return;
   const drawer = document.createElement("aside");
@@ -551,7 +574,7 @@ function renderSectionLinks(sectionIds) {
   if (!sectionIds.length) return "<span class='empty-state'>No section links published yet</span>";
   return sectionIds
     .map((sectionId) => {
-      const record = traceabilityRecords.find((item) => item.id === sectionId);
+      const record = runtimeTraceabilityRecords.find((item) => item.id === sectionId);
       if (!record) return "";
       return `<a class="tag" href="${record.url}">${record.id}</a>`;
     })
@@ -562,19 +585,22 @@ function renderTraceabilityExplorer() {
   const input = document.querySelector("[data-traceability-search]");
   const grid = document.querySelector("[data-traceability-grid]");
   if (!input || !grid) return;
+  const params = new URLSearchParams(location.search);
+  const initialQuery = params.get("q") || "";
 
   const render = () => {
     const query = (input.value || "").toLowerCase().trim();
     const matches = !query
-      ? traceabilityRecords
-      : traceabilityRecords.filter((record) =>
+      ? runtimeTraceabilityRecords
+      : runtimeTraceabilityRecords.filter((record) =>
           [
             record.id,
             record.title,
             record.summary,
             record.sources.join(" "),
             record.decisions.join(" "),
-            record.openQuestions.join(" ")
+            record.openQuestions.join(" "),
+            (record.relatedSections || []).join(" ")
           ]
             .join(" ")
             .toLowerCase()
@@ -593,12 +619,64 @@ function renderTraceabilityExplorer() {
               <p><strong>Sources</strong><br>${renderTagLinks(record.sources, "/sources/")}</p>
               <p><strong>Decisions</strong><br>${renderTagLinks(record.decisions, "/decision-log/")}</p>
               <p><strong>Open Questions</strong><br>${renderTagLinks(record.openQuestions, "/open-questions/")}</p>
+              <p><strong>Related Sections</strong><br>${renderSectionLinks(record.relatedSections || [])}</p>
             </article>`
           )
           .join("")
       : "<p class='empty-state'>No traceability record matched that filter.</p>";
   };
 
+  if (initialQuery && !input.value) input.value = initialQuery;
+  render();
+  input.addEventListener("input", render);
+}
+
+function renderClaimExplorer() {
+  const input = document.querySelector("[data-claim-search]");
+  const grid = document.querySelector("[data-claim-grid]");
+  if (!input || !grid) return;
+  const params = new URLSearchParams(location.search);
+  const initialQuery = params.get("q") || "";
+
+  const render = () => {
+    const query = (input.value || "").toLowerCase().trim();
+    const matches = !query
+      ? runtimeTraceClaims
+      : runtimeTraceClaims.filter((claim) =>
+          [
+            claim.id,
+            claim.title,
+            claim.summary,
+            claim.section,
+            claim.sources.join(" "),
+            claim.decisions.join(" "),
+            claim.openQuestions.join(" ")
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(query)
+        );
+
+    grid.innerHTML = matches.length
+      ? matches
+          .map(
+            (claim) => `<article class="card stack">
+              <div>
+                <p class="row-kicker">${claim.id} - ${claim.section}</p>
+                <h3 class="row-title">${claim.title}</h3>
+              </div>
+              <p>${claim.summary}</p>
+              <p><strong>Section</strong><br><a class="tag" href="${claim.sectionRecord || "#"}">${claim.section}</a></p>
+              <p><strong>Sources</strong><br>${renderTagLinks(claim.sources, "/sources/")}</p>
+              <p><strong>Decisions</strong><br>${renderTagLinks(claim.decisions, "/decision-log/")}</p>
+              <p><strong>Open Questions</strong><br>${renderTagLinks(claim.openQuestions, "/open-questions/")}</p>
+            </article>`
+          )
+          .join("")
+      : "<p class='empty-state'>No claim record matched that filter.</p>";
+  };
+
+  if (initialQuery && !input.value) input.value = initialQuery;
   render();
   input.addEventListener("input", render);
 }
@@ -632,7 +710,7 @@ function calcDollar() {
 
 function injectVerificationPanel() {
   const config = sectionEnhancements[location.pathname];
-  const traceRecord = traceabilityByPath[location.pathname];
+  const traceRecord = runtimeTraceabilityByPath[location.pathname];
   const actions = document.querySelector(".actions");
   if (!actions || document.querySelector("[data-verification-panel]")) return;
 
@@ -797,13 +875,15 @@ document.addEventListener("input", (event) => {
   if (event.target.matches("[data-filter-input]")) filterList(event.target);
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   document.querySelectorAll("[data-menu]").forEach(updateMenuState);
+  await loadTraceabilityData();
   ensureTraceDrawer();
   injectVerificationPanel();
   injectTraceCards();
   calcDollar();
   renderTraceabilityExplorer();
+  renderClaimExplorer();
   document.querySelectorAll("[data-filter-input]").forEach(filterList);
   if (document.querySelector("[data-publication-search]")) {
     const params = new URLSearchParams(location.search);

@@ -32,6 +32,7 @@ function nav() {
       <a href="/sources.html">Sources</a>
       <a href="/search.html">Search</a>
       <a href="/explorer.html">Explorer</a>
+      <a href="/review.html">Review</a>
       <a href="/methodology.html">Methodology</a>
       <a href="/downloads.html">Downloads</a>
       <a href="/corrections.html">Corrections</a>
@@ -122,21 +123,91 @@ function relatedOpenQuestionsForDecision(decision) {
   );
 }
 
+function findSectionRecord(sectionId) {
+  return publication.sectionRecords.find((section) => section.id === sectionId) || null;
+}
+
+function relatedClaimsForSource(sourceId) {
+  return publication.traceClaims.filter((claim) => claim.sources.includes(sourceId));
+}
+
+function relatedClaimsForDecision(decisionId) {
+  return publication.traceClaims.filter((claim) => claim.decisions.includes(decisionId));
+}
+
+function relatedClaimsForOpenQuestion(openQuestionId) {
+  return publication.traceClaims.filter((claim) => claim.openQuestions.includes(openQuestionId));
+}
+
+function relatedDecisionsForSource(sourceId, sectionNames) {
+  return publication.decisions.filter(
+    (decision) =>
+      decision.references.some((reference) => sectionNames.includes(reference)) ||
+      relatedClaimsForSource(sourceId).some((claim) => claim.decisions.includes(decision.id))
+  );
+}
+
+function relatedOpenQuestionsForSource(sourceId) {
+  const ids = new Set([
+    ...publication.sources.find((source) => source.id === sourceId).openQuestions,
+    ...relatedClaimsForSource(sourceId).flatMap((claim) => claim.openQuestions)
+  ]);
+  return publication.openQuestions.filter((item) => ids.has(item.id));
+}
+
+function renderSectionTagList(sectionNames) {
+  return sectionNames.length ? linkSections(sectionNames) : "<span class='empty-state'>None linked yet</span>";
+}
+
+function renderRecordLinks(ids, basePath) {
+  return ids.length ? linkList(ids, basePath) : "<span class='empty-state'>None linked yet</span>";
+}
+
+function renderSourceUrl(source, key) {
+  const href = source[key];
+  if (href) {
+    return `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${escapeHtml(href)}</a>`;
+  }
+  if (key === "officialUrl") {
+    return `<span class="empty-state">URL verification pending</span><br><span class="note">${escapeHtml(
+      source.urlVerificationNote
+    )}</span>`;
+  }
+  return "<span class='empty-state'>No archive URL recorded</span>";
+}
+
+function formatDate(value) {
+  if (!value) return "Not recorded";
+  return value;
+}
+
 function renderSourceIndex() {
   const rows = publication.sources
     .map(
       (source) => `<article class="source-row" data-filterable data-search="${escapeHtml(
-        [source.id, source.title, source.summary, source.sections.join(" "), source.claims.join(" ")].join(" ")
+        [
+          source.id,
+          source.title,
+          source.summary,
+          source.sections.join(" "),
+          source.claims.join(" "),
+          source.publisher,
+          source.documentType,
+          source.classification,
+          source.officialUrl || "",
+          source.urlVerificationStatus
+        ].join(" ")
       )}">
         <div class="source-row-head">
           <div>
-            <p class="row-kicker">${escapeHtml(source.type)} - ${escapeHtml(source.agency)}</p>
+            <p class="row-kicker">${escapeHtml(source.documentType)} - ${escapeHtml(source.publisher)}</p>
             <h2 class="row-title"><a href="/sources/${source.slug}.html">${escapeHtml(source.id)} - ${escapeHtml(source.title)}</a></h2>
           </div>
           <span class="tag">${escapeHtml(source.confidence)}</span>
         </div>
         <p>${escapeHtml(source.summary)}</p>
         <p class="meta-line"><strong>Evidence class:</strong> ${escapeHtml(source.evidenceClass)}</p>
+        <p class="meta-line"><strong>Classification:</strong> ${escapeHtml(source.classification)} | <strong>URL status:</strong> ${escapeHtml(source.urlVerificationStatus)}</p>
         <p class="meta-line"><strong>Used in:</strong> ${escapeHtml(source.sections.join(", "))}</p>
       </article>`
     )
@@ -153,7 +224,7 @@ function renderSourceIndex() {
     </label>
     <section class="panel">
       <h2>Structured source records</h2>
-      <p>This release publishes the sources already cited in converted sections and connects them to the claims and open questions they support. Additional Source IDs should be added from the canonical PDF as they are extracted and verified.</p>
+      <p>This release publishes source metadata, citation-verification status, and claim-level trace links for the records already cited in the converted sections. If an official canonical URL could not be verified, the page says so explicitly instead of guessing.</p>
     </section>
     <section class="panel stack">${rows}</section>`;
 
@@ -169,34 +240,56 @@ function renderSourceIndex() {
 }
 
 function renderSourceDetail(source) {
-  const claims = source.claims.map((claim) => `<li>${escapeHtml(claim)}</li>`).join("");
-  const relatedDecisions = relatedDecisionsForSections(source.sections);
+  const relatedClaims = relatedClaimsForSource(source.id);
+  const relatedDecisions = relatedDecisionsForSource(source.id, source.sections);
+  const relatedOpenQuestions = relatedOpenQuestionsForSource(source.id);
   const body = `<div class="actions">
       <a class="button" href="/sources.html">Back to source index</a>
       <a class="button" href="/search.html?q=${encodeURIComponent(source.id)}">Search related records</a>
+      <a class="button" href="/explorer.html">Open explorer</a>
     </div>
     <section class="panel">
       <h2>Source summary</h2>
       <p>${escapeHtml(source.summary)}</p>
       <div class="meta-grid">
         <p><strong>Source ID:</strong> ${escapeHtml(source.id)}</p>
-        <p><strong>Agency:</strong> ${escapeHtml(source.agency)}</p>
-        <p><strong>Type:</strong> ${escapeHtml(source.type)}</p>
+        <p><strong>Publisher:</strong> ${escapeHtml(source.publisher)}</p>
+        <p><strong>Agency label:</strong> ${escapeHtml(source.agency)}</p>
+        <p><strong>Document type:</strong> ${escapeHtml(source.documentType)}</p>
+        <p><strong>Classification:</strong> ${escapeHtml(source.classification)}</p>
         <p><strong>Confidence:</strong> ${escapeHtml(source.confidence)}</p>
         <p><strong>Evidence class:</strong> ${escapeHtml(source.evidenceClass)}</p>
-        <p><strong>Sections:</strong> ${linkSections(source.sections)}</p>
+        <p><strong>Publication date:</strong> ${escapeHtml(formatDate(source.publicationDate))}</p>
+        <p><strong>Retrieval date:</strong> ${escapeHtml(formatDate(source.retrievalDate))}</p>
+        <p><strong>Citation priority:</strong> ${escapeHtml(source.citationPriority)}</p>
+        <p><strong>URL verification:</strong> ${escapeHtml(source.urlVerificationStatus)}</p>
+        <p><strong>Sections:</strong> ${renderSectionTagList(source.sections)}</p>
       </div>
     </section>
     <section class="panel">
-      <h2>Claims supported in the current web edition</h2>
-      <ul>${claims}</ul>
+      <h2>Citation metadata</h2>
+      <div class="meta-grid">
+        <p><strong>Official URL:</strong><br>${renderSourceUrl(source, "officialUrl")}</p>
+        <p><strong>Archive URL:</strong><br>${renderSourceUrl(source, "archiveUrl")}</p>
+      </div>
+      <p class="note">${escapeHtml(source.urlVerificationNote)}</p>
     </section>
     <section class="panel">
-      <h2>Related open questions</h2>
+      <h2>Claims supported</h2>
       ${
-        source.openQuestions.length
-          ? `<p>${linkList(source.openQuestions, "/open-questions/")}</p>`
-          : "<p>No open question is directly attached to this source in the current web edition.</p>"
+        relatedClaims.length
+          ? `<div class="stack">${relatedClaims
+              .map(
+                (claim) => `<article class="card stack">
+                  <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
+                  <h3><a href="/explorer.html?q=${encodeURIComponent(claim.id)}">${escapeHtml(claim.title)}</a></h3>
+                  <p>${escapeHtml(claim.summary)}</p>
+                  <p><strong>Decisions</strong><br>${renderRecordLinks(claim.decisions, "/decision-log/")}</p>
+                  <p><strong>Open questions</strong><br>${renderRecordLinks(claim.openQuestions, "/open-questions/")}</p>
+                </article>`
+              )
+              .join("")}</div>`
+          : `<ul>${source.claims.map((claim) => `<li>${escapeHtml(claim)}</li>`).join("")}</ul>`
       }
     </section>
     <section class="panel">
@@ -208,6 +301,17 @@ function renderSourceDetail(source) {
               "/decision-log/"
             )}</p>`
           : "<p>No decision entry is linked through the current section map.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Related open questions</h2>
+      ${
+        relatedOpenQuestions.length
+          ? `<p>${renderRecordLinks(
+              relatedOpenQuestions.map((item) => item.id),
+              "/open-questions/"
+            )}</p>`
+          : "<p>No open question is directly attached to this source in the current web edition.</p>"
       }
     </section>`;
 
@@ -268,9 +372,11 @@ function renderOpenQuestionIndex() {
 
 function renderOpenQuestionDetail(item) {
   const relatedDecisions = relatedDecisionsForSections(item.sections);
+  const relatedClaims = relatedClaimsForOpenQuestion(item.id);
   const body = `<div class="actions">
       <a class="button" href="/open-questions.html">Back to open questions</a>
       <a class="button" href="/audit/appendix-a-open-questions.html">Appendix A</a>
+      <a class="button" href="/explorer.html">Open explorer</a>
     </div>
     <section class="panel">
       <h2>Why it matters</h2>
@@ -294,6 +400,22 @@ function renderOpenQuestionDetail(item) {
         item.relatedSources.length
           ? `<p>${linkList(item.relatedSources, "/sources/")}</p>`
           : "<p>No source record has been linked yet in the current web edition.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Claims blocked or limited</h2>
+      ${
+        relatedClaims.length
+          ? `<div class="stack">${relatedClaims
+              .map(
+                (claim) => `<article class="card stack">
+                  <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
+                  <h3><a href="/explorer.html?q=${encodeURIComponent(claim.id)}">${escapeHtml(claim.title)}</a></h3>
+                  <p>${escapeHtml(claim.summary)}</p>
+                </article>`
+              )
+              .join("")}</div>`
+          : "<p>No trace-claim record currently routes through this open question.</p>"
       }
     </section>
     <section class="panel">
@@ -365,9 +487,11 @@ function renderDecisionLog() {
 function renderDecisionDetail(item) {
   const relatedSources = relatedSourcesForDecision(item);
   const relatedOpenQuestions = relatedOpenQuestionsForDecision(item);
+  const relatedClaims = relatedClaimsForDecision(item.id);
   const body = `<div class="actions">
       <a class="button" href="/decision-log.html">Back to decision log</a>
       <a class="button" href="/search.html?q=${encodeURIComponent(item.id)}">Search related records</a>
+      <a class="button" href="/explorer.html">Open explorer</a>
     </div>
     <section class="panel">
       <h2>Published rule</h2>
@@ -401,6 +525,22 @@ function renderDecisionDetail(item) {
               "/open-questions/"
             )}</p>`
           : "<p>No open-question record is linked through the current section map.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Claims governed</h2>
+      ${
+        relatedClaims.length
+          ? `<div class="stack">${relatedClaims
+              .map(
+                (claim) => `<article class="card stack">
+                  <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
+                  <h3><a href="/explorer.html?q=${encodeURIComponent(claim.id)}">${escapeHtml(claim.title)}</a></h3>
+                  <p>${escapeHtml(claim.summary)}</p>
+                </article>`
+              )
+              .join("")}</div>`
+          : "<p>No trace-claim record currently routes through this decision.</p>"
       }
     </section>`;
 
@@ -560,6 +700,104 @@ function renderAppendixB() {
   });
 }
 
+function renderReviewPage() {
+  const body = `<div class="actions">
+      <a class="button primary" href="/explorer.html">Open Explorer</a>
+      <a class="button" href="/sources.html">Browse sources</a>
+      <a class="button" href="/corrections.html">Corrections page</a>
+    </div>
+    <section class="panel stack">
+      <h2>How to verify the audit</h2>
+      <p>Start from a section page, open its verification panel, then follow each claim into its source, decision, and open-question records. The platform is designed so readers can move from published prose to supporting evidence without changing the Version 1.0 conclusions.</p>
+      <p>Where the public record is incomplete, the platform keeps that incompleteness visible instead of filling it with modeled certainty.</p>
+    </section>
+    <section class="grid">
+      <article class="card stack">
+        <p class="row-kicker">Methodology</p>
+        <h3>What the platform preserves</h3>
+        <p>Number type, resource category, beneficiary chain, section ownership, and unresolved limitations stay separate across the generated site.</p>
+      </article>
+      <article class="card stack">
+        <p class="row-kicker">Evidence Standards</p>
+        <h3>Primary before secondary</h3>
+        <p>Source records now label document type, primary or secondary classification, evidence class, confidence, and citation-verification status.</p>
+      </article>
+      <article class="card stack">
+        <p class="row-kicker">Confidence Model</p>
+        <h3>Confidence is published, not implied</h3>
+        <p>The platform preserves section confidence notes and source confidence labels so readers can distinguish direct evidence from corroboration and context.</p>
+      </article>
+    </section>
+    <section class="panel stack">
+      <h2>How to submit corrections</h2>
+      <p>Use the published corrections workflow to report source mismatches, broken trace links, missing metadata, or verified public records that should resolve an open question. Corrections should cite the exact page, claim, and source record involved.</p>
+      <p>Corrections are tracked in public release notes, version history, and changelog pages so the platform never hides what changed around the locked publication.</p>
+    </section>
+    <section class="panel stack">
+      <h2>How corrections are tracked</h2>
+      <p>Every release should record platform-level changes without silently rewriting Version 1.0 analytical conclusions. Decision history is preserved, open questions remain public, and unresolved URL verification is flagged explicitly.</p>
+      <p>Version history describes delivery milestones, changelog captures platform changes, and release notes summarize what shipped in each iteration.</p>
+    </section>`;
+
+  return layout({
+    title: "Reviewer Portal | The Citizen Audit",
+    description: "Reviewer portal for verifying methodology, evidence, confidence, corrections, and version history in The Citizen Audit.",
+    eyebrow: "Reviewer Portal",
+    heading: "Review And Verify The Audit",
+    lede: "This portal explains how to test the publication, how evidence is classified, how confidence is communicated, and how corrections are carried without weakening transparency.",
+    body,
+    footerLabel: "Reviewer portal"
+  });
+}
+
+function renderExplorerPage() {
+  const body = `<div class="actions">
+      <a class="button primary" href="/search.html">Search the publication</a>
+      <a class="button" href="/sources.html">Browse sources</a>
+      <a class="button" href="/review.html">Reviewer portal</a>
+      <a class="button" href="/decision-log.html">Review decisions</a>
+    </div>
+    <section class="panel">
+      <h2>Traceability Explorer</h2>
+      <p>Navigate from the audit to sections, from sections to claims, and from claims to sources, decisions, and open questions.</p>
+      <label class="search-wrap">
+        <span class="sr-only">Search traceability records</span>
+        <input class="search" data-traceability-search placeholder="Try Section 7, C-009, S-065, D-020, A-018, ORR, Medicaid, or housing">
+      </label>
+      <div class="grid" data-traceability-grid></div>
+    </section>
+    <section class="panel">
+      <h2>Claim Explorer</h2>
+      <p>Filter claim-level trace records directly.</p>
+      <label class="search-wrap">
+        <span class="sr-only">Search claims</span>
+        <input class="search" data-claim-search placeholder="Try C-016, conservative total, ORR, Section 214, or SSI">
+      </label>
+      <div class="grid" data-claim-grid></div>
+    </section>
+    <section class="panel">
+      <h2>Scale Explorer</h2>
+      <p>Enter an amount and compare how the audit's currently measurable lanes relate in scale. These lanes remain basis-segregated and are not a blended grand total.</p>
+      <label for="taxAmount"><strong>Amount to explore</strong></label>
+      <input id="taxAmount" class="search" data-tax-amount type="number" min="1" value="100">
+      <div data-explorer-output></div>
+    </section>
+    <section class="panel">
+      <h2>Important Limitation</h2>
+      <p>The explorer intentionally labels each lane by basis and source. It does not convert incompatible obligations, disbursements, cumulative figures, point-in-time computations, or federal-plus-state totals into one blended federal total.</p>
+    </section>`;
+
+  return layout({
+    title: "Traceability Explorer | The Citizen Audit",
+    description: "Claim-to-source traceability explorer for The Citizen Audit.",
+    eyebrow: "Traceability Explorer",
+    heading: "Traceability Explorer",
+    lede: "Follow each converted lane back to its linked Source IDs, Decision Log rules, and Open Question records. This page is a verification surface, not a replacement for the locked audit text.",
+    body,
+    footerLabel: "Traceability explorer"
+  });
+}
+
 function buildSearchIndex() {
   const items = [];
   for (const source of publication.sources) {
@@ -568,7 +806,17 @@ function buildSearchIndex() {
       id: source.id,
       title: source.title,
       url: `/sources/${source.slug}.html`,
-      text: [source.summary, source.sections.join(" "), source.claims.join(" "), source.openQuestions.join(" ")].join(" ")
+      text: [
+        source.summary,
+        source.sections.join(" "),
+        source.claims.join(" "),
+        source.openQuestions.join(" "),
+        source.publisher,
+        source.documentType,
+        source.classification,
+        source.officialUrl || "",
+        source.urlVerificationStatus
+      ].join(" ")
     });
   }
   for (const item of publication.openQuestions) {
@@ -589,124 +837,118 @@ function buildSearchIndex() {
       text: [decision.body, decision.references.join(" ")].join(" ")
     });
   }
-  items.push(
-    {
+  for (const section of publication.sectionRecords) {
+    items.push({
       type: "Section",
-      id: "Section 1",
-      title: "Executive Summary",
-      url: "/audit/section-01-executive-summary.html",
-      text: "known minimum incompatible bases no blended grand total noncitizen SSI emergency Medicaid open questions A-005 A-018 A-028 A-037"
-    },
-    {
-      type: "Section",
-      id: "Section 2",
-      title: "Definitions and Methodology",
-      url: "/audit/section-02-definitions-methodology.html",
-      text: "recipient economic beneficiary appropriation obligation outlay evidence class confidence estimation standard category separation"
-    },
-    {
-      type: "Section",
-      id: "Section 3",
-      title: "International Assistance",
-      url: "/audit/section-03-international-assistance.html",
-      text: "ForeignAssistance.gov obligations disbursements Total A Total B A-005"
-    },
-    {
-      type: "Section",
-      id: "Section 5",
-      title: "Military Aid",
-      url: "/audit/section-05-military-aid.html",
-      text: "USAI PDA replacement Section 333 CTEF A-017 drawdown replacement"
-    },
-    {
-      type: "Section",
-      id: "Section 4",
-      title: "Ukraine and Israel Examples",
-      url: "/audit/section-04-ukraine-israel-examples.html",
-      text: "ukraine israel non-additive D-017 A-006 A-010 A-011 A-012 appropriated disbursed delivered OSP FMF MOU"
-    },
-    {
-      type: "Section",
-      id: "Section 6",
-      title: "Refugee Resettlement",
-      url: "/audit/section-06-refugee-resettlement.html",
-      text: "ORR refugee entrant assistance USAspending 075-1503 provider capture A-018 A-019 A-020 A-021"
-    },
-    {
-      type: "Section",
-      id: "Section 7",
-      title: "Medicaid / Emergency Medical",
-      url: "/audit/section-07-medicaid-emergency-medical.html",
-      text: "emergency Medicaid A-037 provider capture federal-only share"
-    },
-    {
-      type: "Section",
-      id: "Section 8",
-      title: "Food Assistance",
-      url: "/audit/section-08-food-assistance.html",
-      text: "SNAP no modeled share citizen-child exclusion Section 13"
-    },
-    {
-      type: "Section",
-      id: "Section 9",
-      title: "Cash Welfare / Income",
-      url: "/audit/section-09-cash-welfare-income.html",
-      text: "SSA SSI S-073 365714 2.21B A-028"
-    },
-    {
-      type: "Section",
-      id: "Section 10",
-      title: "Federal Housing",
-      url: "/audit/section-10-federal-housing.html",
-      text: "Section 214 proration HUD eligible noncitizen housing A-030 A-031 S-067 S-068 S-077"
-    },
-    {
-      type: "Section",
-      id: "Section 11",
-      title: "Education / Public Services",
-      url: "/audit/section-11-education-public-services.html",
-      text: "Plyler K-12 status blind federal student aid eligible noncitizen A-032 A-033 S-069"
-    },
-    {
-      type: "Section",
-      id: "Section 12",
-      title: "State-Administered Federal Dollars",
-      url: "/audit/section-12-state-administered-federal-dollars.html",
-      text: "state administered non-additive D-020 D-021 A-034 reconciliation lens double count guard"
-    },
-    {
-      type: "Section",
-      id: "Section 13",
-      title: "Programs Without Citizenship Breakouts",
-      url: "/audit/section-13-programs-without-citizenship-breakouts.html",
-      text: "gap register no figures no fabricated estimate A-023 A-025 A-027 A-030 A-032 A-033 A-034 A-035 A-036 transparency"
-    },
-    {
-      type: "Section",
-      id: "Section 14",
-      title: "Conservative Total",
-      url: "/audit/section-14-conservative-total.html",
-      text: "D-022 D-023 no blended grand total set of subtotals A-017 A-018 A-037 Lane 1 Lane 3 Lane 4 conservative total"
-    },
-    {
-      type: "Section",
-      id: "Section 15",
-      title: "What Is Missing",
-      url: "/audit/section-15-what-is-missing.html",
-      text: "permanent limitations A-005 A-018 A-028 A-037 transparency missing evidence D-024"
-    },
-    {
-      type: "Section",
-      id: "Section 16",
-      title: "Final Argument",
-      url: "/audit/section-16-final-argument.html",
-      text: "bounded synthesis D-025 no advocacy final argument SSI SNAP emergency Medicaid basis segregation"
-    }
-  );
+      id: section.id,
+      title: section.title,
+      url: section.url,
+      text: [
+        section.summary,
+        section.sources.join(" "),
+        section.decisions.join(" "),
+        section.openQuestions.join(" "),
+        section.relatedSections.join(" ")
+      ].join(" ")
+    });
+  }
+  for (const claim of publication.traceClaims) {
+    items.push({
+      type: "Claim",
+      id: claim.id,
+      title: claim.title,
+      url: `/explorer.html?q=${encodeURIComponent(claim.id)}`,
+      text: [
+        claim.summary,
+        claim.section,
+        claim.sources.join(" "),
+        claim.decisions.join(" "),
+        claim.openQuestions.join(" ")
+      ].join(" ")
+    });
+  }
   return items;
 }
 
+function buildTraceRecords() {
+  return {
+    generatedAt: new Date().toISOString(),
+    sections: publication.sectionRecords,
+    claims: publication.traceClaims,
+    sources: publication.sources.map((source) => ({
+      id: source.id,
+      slug: source.slug,
+      title: source.title,
+      officialUrl: source.officialUrl,
+      archiveUrl: source.archiveUrl,
+      publisher: source.publisher,
+      publicationDate: source.publicationDate,
+      retrievalDate: source.retrievalDate,
+      documentType: source.documentType,
+      classification: source.classification,
+      sections: source.sections,
+      urlVerificationStatus: source.urlVerificationStatus
+    })),
+    decisions: publication.decisions,
+    openQuestions: publication.openQuestions
+  };
+}
+
+function countHtmlFiles(dir) {
+  let total = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const next = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      total += countHtmlFiles(next);
+      continue;
+    }
+    if (entry.name.endsWith(".html")) {
+      total += 1;
+    }
+  }
+  return total;
+}
+
+function buildPlatformMetrics(searchIndex, traceRecords) {
+  const verifiedSources = publication.sources.filter((source) => source.urlVerificationStatus === "verified");
+  const highPriorityMissing = publication.sources
+    .filter((source) => source.citationPriority === "high" && !source.officialUrl)
+    .map((source) => source.id);
+  return {
+    generatedAt: new Date().toISOString(),
+    htmlPages: countHtmlFiles(publicDir),
+    sources: publication.sources.length,
+    citationCoverage: {
+      verified: verifiedSources.length,
+      pending: publication.sources.length - verifiedSources.length,
+      percentVerified: Number(((verifiedSources.length / publication.sources.length) * 100).toFixed(2)),
+      highPriorityMissingCanonicalUrls: highPriorityMissing
+    },
+    decisionLogs: publication.decisions.length,
+    openQuestions: publication.openQuestions.length,
+    claims: publication.traceClaims.length,
+    traceRecords: {
+      sections: traceRecords.sections.length,
+      claims: traceRecords.claims.length
+    },
+    searchRecords: searchIndex.length,
+    qaStatus: {
+      status: "build-generated",
+      checksExpected: [
+        "required source metadata",
+        "high-priority canonical URLs",
+        "orphaned trace records",
+        "search coverage for trace claims",
+        "explorer reference integrity",
+        "generated-file consistency"
+      ]
+    }
+  };
+}
+
 function build() {
+  const searchIndex = buildSearchIndex();
+  const traceRecords = buildTraceRecords();
   writeFile("sources.html", renderSourceIndex());
   for (const source of publication.sources) {
     writeFile(`sources/${source.slug}.html`, renderSourceDetail(source));
@@ -723,9 +965,16 @@ function build() {
   writeFile("version-history.html", renderReleasePage("version-history"));
   writeFile("changelog.html", renderReleasePage("changelog"));
   writeFile("search.html", renderSearchPage());
+  writeFile("review.html", renderReviewPage());
+  writeFile("explorer.html", renderExplorerPage());
   writeFile("audit/appendix-a-open-questions.html", renderAppendixA());
   writeFile("audit/appendix-b-transparency-scorecard.html", renderAppendixB());
-  writeFile("data/publication-search.json", `${JSON.stringify(buildSearchIndex(), null, 2)}\n`);
+  writeFile("data/publication-search.json", `${JSON.stringify(searchIndex, null, 2)}\n`);
+  writeFile("data/trace-records.json", `${JSON.stringify(traceRecords, null, 2)}\n`);
+  writeFile(
+    "data/platform-metrics.json",
+    `${JSON.stringify(buildPlatformMetrics(searchIndex, traceRecords), null, 2)}\n`
+  );
 }
 
 build();
