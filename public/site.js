@@ -1,30 +1,19 @@
-let traceabilityRecords = [];
-let sectionEnhancements = {};
+var runtimeTraceabilityRecords = [];
+var runtimeTraceClaims = [];
+var runtimeScaleExplorerRows = [];
 
 async function loadTraceabilityData() {
   try {
-    const response = await fetch("/data/section-traceability.json");
-    if (!response.ok) throw new Error(`Traceability data failed: ${response.status}`);
-    const data = await response.json();
-    traceabilityRecords = Array.isArray(data.records) ? data.records : [];
-    sectionEnhancements = Object.fromEntries(
-      traceabilityRecords.map((record) => [
-        record.url,
-        {
-          verification: record.verification || {
-            confidence: "Pending deeper normalization.",
-            evidence: "No generated verification metadata available."
-          },
-          claims: record.claims || [],
-          sources: record.sources || [],
-          decisions: record.decisions || [],
-          openQuestions: record.openQuestions || []
-        }
-      ])
-    );
+    const response = await fetch("/data/trace-records.json");
+    if (!response.ok) return;
+    const payload = await response.json();
+    runtimeTraceabilityRecords = Array.isArray(payload.sections) ? payload.sections : [];
+    runtimeTraceClaims = Array.isArray(payload.claims) ? payload.claims : [];
+    runtimeScaleExplorerRows = Array.isArray(payload.scaleExplorerRows) ? payload.scaleExplorerRows : [];
   } catch (error) {
-    traceabilityRecords = [];
-    sectionEnhancements = {};
+    runtimeTraceabilityRecords = [];
+    runtimeTraceClaims = [];
+    runtimeScaleExplorerRows = [];
   }
 }
 
@@ -35,7 +24,7 @@ function ensureTraceDrawer() {
   drawer.setAttribute("data-trace-drawer", "");
   drawer.setAttribute("aria-live", "polite");
   drawer.innerHTML =
-    "<div class='drawer-head'><div><p class='row-kicker'>Trace This Claim</p><h3></h3></div><button type='button' aria-label='Close trace panel' data-close-trace>&times;</button></div><div class='drawer-body'></div>";
+    "<div class='drawer-head'><div><p class='row-kicker'>Trace</p><h3></h3></div><button type='button' aria-label='Close trace panel' data-close-trace>&times;</button></div><div class='drawer-body'></div>";
   document.body.appendChild(drawer);
 }
 
@@ -69,9 +58,20 @@ function filterList(input) {
 }
 
 function renderTagLinks(ids, basePath) {
-  if (!ids || !ids.length) return "<span class='empty-state'>None linked yet</span>";
+  if (!ids.length) return "<span class='empty-state'>None linked yet</span>";
   return ids
     .map((id) => `<a class="tag" href="${basePath}${id.toLowerCase()}.html">${id}</a>`)
+    .join(" ");
+}
+
+function renderSectionLinks(sectionIds) {
+  if (!sectionIds.length) return "<span class='empty-state'>No section links published yet</span>";
+  return sectionIds
+    .map((sectionId) => {
+      const record = runtimeTraceabilityRecords.find((item) => item.id === sectionId);
+      if (!record) return "";
+      return `<a class="tag" href="${record.url}">${record.id}</a>`;
+    })
     .join(" ");
 }
 
@@ -79,19 +79,22 @@ function renderTraceabilityExplorer() {
   const input = document.querySelector("[data-traceability-search]");
   const grid = document.querySelector("[data-traceability-grid]");
   if (!input || !grid) return;
+  const params = new URLSearchParams(location.search);
+  const initialQuery = params.get("q") || "";
 
   const render = () => {
     const query = (input.value || "").toLowerCase().trim();
     const matches = !query
-      ? traceabilityRecords
-      : traceabilityRecords.filter((record) =>
+      ? runtimeTraceabilityRecords
+      : runtimeTraceabilityRecords.filter((record) =>
           [
             record.id,
             record.title,
             record.summary,
-            (record.sources || []).join(" "),
-            (record.decisions || []).join(" "),
-            (record.openQuestions || []).join(" ")
+            record.sources.join(" "),
+            record.decisions.join(" "),
+            record.openQuestions.join(" "),
+            (record.relatedSections || []).join(" ")
           ]
             .join(" ")
             .toLowerCase()
@@ -107,15 +110,67 @@ function renderTraceabilityExplorer() {
                 <h3 class="row-title"><a href="${record.url}">${record.title}</a></h3>
               </div>
               <p>${record.summary}</p>
-              <p><strong>Sources</strong><br>${renderTagLinks(record.sources || [], "/sources/")}</p>
-              <p><strong>Decisions</strong><br>${renderTagLinks(record.decisions || [], "/decision-log/")}</p>
-              <p><strong>Open Questions</strong><br>${renderTagLinks(record.openQuestions || [], "/open-questions/")}</p>
+              <p><strong>Sources</strong><br>${renderTagLinks(record.sources, "/sources/")}</p>
+              <p><strong>Decisions</strong><br>${renderTagLinks(record.decisions, "/decision-log/")}</p>
+              <p><strong>Open Questions</strong><br>${renderTagLinks(record.openQuestions, "/open-questions/")}</p>
+              <p><strong>Related Sections</strong><br>${renderSectionLinks(record.relatedSections || [])}</p>
             </article>`
           )
           .join("")
       : "<p class='empty-state'>No traceability record matched that filter.</p>";
   };
 
+  if (initialQuery && !input.value) input.value = initialQuery;
+  render();
+  input.addEventListener("input", render);
+}
+
+function renderClaimExplorer() {
+  const input = document.querySelector("[data-claim-search]");
+  const grid = document.querySelector("[data-claim-grid]");
+  if (!input || !grid) return;
+  const params = new URLSearchParams(location.search);
+  const initialQuery = params.get("q") || "";
+
+  const render = () => {
+    const query = (input.value || "").toLowerCase().trim();
+    const matches = !query
+      ? runtimeTraceClaims
+      : runtimeTraceClaims.filter((claim) =>
+          [
+            claim.id,
+            claim.title,
+            claim.summary,
+            claim.section,
+            claim.sources.join(" "),
+            claim.decisions.join(" "),
+            claim.openQuestions.join(" ")
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(query)
+        );
+
+    grid.innerHTML = matches.length
+      ? matches
+          .map(
+            (claim) => `<article class="card stack">
+              <div>
+                <p class="row-kicker">${claim.id} - ${claim.section}</p>
+                <h3 class="row-title"><a href="/claims/${claim.id.toLowerCase()}.html">${claim.title}</a></h3>
+              </div>
+              <p>${claim.summary}</p>
+              <p><strong>Section</strong><br><a class="tag" href="${claim.sectionRecord || "#"}">${claim.section}</a></p>
+              <p><strong>Sources</strong><br>${renderTagLinks(claim.sources, "/sources/")}</p>
+              <p><strong>Decisions</strong><br>${renderTagLinks(claim.decisions, "/decision-log/")}</p>
+              <p><strong>Open Questions</strong><br>${renderTagLinks(claim.openQuestions, "/open-questions/")}</p>
+            </article>`
+          )
+          .join("")
+      : "<p class='empty-state'>No claim record matched that filter.</p>";
+  };
+
+  if (initialQuery && !input.value) input.value = initialQuery;
   render();
   input.addEventListener("input", render);
 }
@@ -123,64 +178,20 @@ function renderTraceabilityExplorer() {
 function calcDollar() {
   const input = document.querySelector("[data-tax-amount]");
   const out = document.querySelector("[data-explorer-output]");
-  if (!input || !out) return;
+  if (!input || !out || !runtimeScaleExplorerRows.length) return;
   const amount = Math.max(1, Number(input.value || 100));
-  const rows = [
-    ["International assistance obligations, FY2023 basis", 99.9, "S-038"],
-    ["International assistance disbursements, FY2023 basis", 71.9, "S-038 / S-039"],
-    ["Net-new military assistance, Ukraine-surge cumulative obligations", 50.9, "Section 5"],
-    ["Recurring security assistance lanes", 1.6, "Section 5"],
-    ["Noncitizen SSI, Dec. 2021 basis", 2.21, "S-073"],
-    ["Emergency Medicaid, federal + state, FY2023", 3.8, "Section 7 / A-037"]
-  ];
-  const total = rows.reduce((sum, row) => sum + row[1], 0);
+  const total = runtimeScaleExplorerRows.reduce((sum, row) => sum + Number(row[1] || 0), 0);
   out.innerHTML =
-    rows
+    runtimeScaleExplorerRows
       .map(
-        ([label, value, source]) =>
-          `<div class="source-row"><strong>${label}</strong><br><span class="tag">${source}</span> $${(
+        (row) =>
+          `<div class="source-row"><strong>${row[0]}</strong><br><span class="tag">${row[2]}</span> $${(
             amount *
-            (value / total)
+            ((Number(row[1] || 0) || 0) / total)
           ).toFixed(2)} of $${amount.toLocaleString()}</div>`
       )
       .join("") +
     '<p class="lede">Prototype only. These lanes use incompatible bases and are not a blended grand total.</p>';
-}
-
-function injectVerificationPanel() {
-  const config = sectionEnhancements[location.pathname];
-  const actions = document.querySelector(".actions");
-  if (!config || !actions || document.querySelector("[data-verification-panel]")) return;
-
-  const panel = document.createElement("section");
-  panel.className = "panel verification";
-  panel.setAttribute("data-verification-panel", "");
-  panel.innerHTML = `<div>
-      <p class="row-kicker">Verification metadata</p>
-      <h2>Inspect this section before trusting its headline.</h2>
-      <p><strong>Confidence:</strong> ${config.verification.confidence}</p>
-      <p><strong>Evidence posture:</strong> ${config.verification.evidence}</p>
-      <p class="note">This metadata is generated from repository-backed publication data, not hand-maintained browser logic.</p>
-    </div>
-    <div class="stack">
-      <p><strong>Linked source IDs</strong><br>${renderTagLinks(config.sources || [], "/sources/")}</p>
-      <p><strong>Open questions</strong><br>${renderTagLinks(config.openQuestions || [], "/open-questions/")}</p>
-      <p><strong>More context</strong><br><a class="button subtle" href="/decision-log.html">Decision log</a> <a class="button subtle" href="/search.html">Search</a></p>
-    </div>`;
-  actions.insertAdjacentElement("afterend", panel);
-
-  const claims = document.querySelectorAll(".claim");
-  (config.claims || []).forEach((claim) => {
-    const target = claims[claim.index];
-    if (!target || target.querySelector("[data-trace-title]")) return;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "trace-button";
-    button.setAttribute("data-trace-title", claim.title);
-    button.setAttribute("data-trace-body", claim.body);
-    button.textContent = "Trace this claim";
-    target.appendChild(button);
-  });
 }
 
 async function runPublicationSearch(initialQuery) {
@@ -230,9 +241,12 @@ document.addEventListener("click", (event) => {
 
   const traceButton = event.target.closest("[data-trace-title]");
   if (traceButton) {
+    const encodedBody = traceButton.getAttribute("data-trace-body-encoded");
     traceClaim(
       traceButton.getAttribute("data-trace-title") || "",
-      traceButton.getAttribute("data-trace-body") || ""
+      encodedBody
+        ? decodeURIComponent(encodedBody)
+        : traceButton.getAttribute("data-trace-body") || ""
     );
   }
 
@@ -248,11 +262,11 @@ document.addEventListener("input", (event) => {
 
 document.addEventListener("DOMContentLoaded", async () => {
   document.querySelectorAll("[data-menu]").forEach(updateMenuState);
-  ensureTraceDrawer();
   await loadTraceabilityData();
-  injectVerificationPanel();
+  ensureTraceDrawer();
   calcDollar();
   renderTraceabilityExplorer();
+  renderClaimExplorer();
   document.querySelectorAll("[data-filter-input]").forEach(filterList);
   if (document.querySelector("[data-publication-search]")) {
     const params = new URLSearchParams(location.search);

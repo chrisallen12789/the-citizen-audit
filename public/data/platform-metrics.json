@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-07-02T02:21:51.876Z",
+  "buildVersion": "0.5",
+  "audits": 1,
+  "sections": 19,
+  "htmlPages": 153,
+  "sources": 47,
+  "citationCoverage": {
+    "verified": 33,
+    "pending": 14,
+    "percentVerified": 70.21,
+    "highPriorityMissingCanonicalUrls": []
+  },
+  "decisionLogs": 15,
+  "openQuestions": 37,
+  "claims": 18,
+  "traceabilityPercent": 100,
+  "platformHealth": "healthy",
+  "traceRecords": {
+    "sections": 19,
+    "claims": 18
+  },
+  "searchRecords": 136,
+  "qaStatus": {
+    "status": "passed",
+    "validatedAt": "2026-07-02T02:21:52.564Z",
+    "htmlPagesChecked": 153,
+    "checksEnforced": [
+      "claim sources",
+      "decision references",
+      "graph integrity",
+      "cross-reference integrity",
+      "duplicate IDs",
+      "orphan records",
+      "citation metadata",
+      "claim confidence",
+      "revision history",
+      "internal links"
+    ]
+  }
+}

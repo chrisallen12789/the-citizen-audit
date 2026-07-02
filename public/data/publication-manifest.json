@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-07-02T02:21:51.880Z",
+  "buildVersion": "0.5",
+  "auditId": "AUDIT-001",
+  "outputs": [
+    "/claims.html",
+    "/platform.html",
+    "/data/claim-database.json",
+    "/data/cross-reference-tables.json",
+    "/data/evidence-graph.json",
+    "/data/platform-metrics.json",
+    "/data/platform-status.json",
+    "/data/publication-manifest.json",
+    "/data/publication-search.json",
+    "/data/trace-records.json"
+  ]
+}

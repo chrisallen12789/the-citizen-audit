@@ -23,15 +23,22 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;");
 }
 
+function unique(values) {
+  return [...new Set(values)];
+}
+
 function nav() {
   return `<header class="site-header">
     <a class="brand" href="/"><span class="seal">CA</span><span>The Citizen Audit</span></a>
     <button class="menu" data-menu aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav" data-nav>
       <a href="/audit.html">Audit</a>
+      <a href="/claims.html">Claims</a>
       <a href="/sources.html">Sources</a>
       <a href="/search.html">Search</a>
       <a href="/explorer.html">Explorer</a>
+      <a href="/review.html">Review</a>
+      <a href="/platform.html">Platform</a>
       <a href="/methodology.html">Methodology</a>
       <a href="/downloads.html">Downloads</a>
       <a href="/corrections.html">Corrections</a>
@@ -73,21 +80,167 @@ function linkList(items, basePath) {
     .join(" ");
 }
 
+function linkClaims(claimIds) {
+  return claimIds
+    .map((claimId) => `<a class="tag" href="/claims/${claimId.toLowerCase()}.html">${escapeHtml(claimId)}</a>`)
+    .join(" ");
+}
+
+const sectionPathByName = {
+  "Section 1": "/audit/section-01-executive-summary.html",
+  "Section 2": "/audit/section-02-definitions-methodology.html",
+  "Section 3": "/audit/section-03-international-assistance.html",
+  "Section 4": "/audit/section-04-ukraine-israel-examples.html",
+  "Section 5": "/audit/section-05-military-aid.html",
+  "Section 6": "/audit/section-06-refugee-resettlement.html",
+  "Section 7": "/audit/section-07-medicaid-emergency-medical.html",
+  "Section 8": "/audit/section-08-food-assistance.html",
+  "Section 9": "/audit/section-09-cash-welfare-income.html",
+  "Section 10": "/audit/section-10-federal-housing.html",
+  "Section 11": "/audit/section-11-education-public-services.html",
+  "Section 12": "/audit/section-12-state-administered-federal-dollars.html",
+  "Section 13": "/audit/section-13-programs-without-citizenship-breakouts.html",
+  "Section 14": "/audit/section-14-conservative-total.html",
+  "Section 15": "/audit/section-15-what-is-missing.html",
+  "Section 16": "/audit/section-16-final-argument.html",
+  "Appendix A": "/audit/appendix-a-open-questions.html",
+  "Appendix B": "/audit/appendix-b-transparency-scorecard.html",
+  "Repository assets": "/platform.html"
+};
+
+function linkSections(sectionNames) {
+  return sectionNames
+    .map((name) =>
+      sectionPathByName[name]
+        ? `<a class="tag" href="${sectionPathByName[name]}">${escapeHtml(name)}</a>`
+        : `<span class="tag">${escapeHtml(name)}</span>`
+    )
+    .join(" ");
+}
+
+function relatedDecisionsForSections(sectionNames) {
+  return publication.decisions.filter((decision) =>
+    decision.references.some((reference) => sectionNames.includes(reference))
+  );
+}
+
+function relatedSourcesForDecision(decision) {
+  return publication.sources.filter((source) =>
+    source.sections.some((section) => decision.references.includes(section))
+  );
+}
+
+function relatedOpenQuestionsForDecision(decision) {
+  return publication.openQuestions.filter((item) =>
+    item.sections.some((section) => decision.references.includes(section))
+  );
+}
+
+function findSectionRecord(sectionId) {
+  return publication.sectionRecords.find((section) => section.id === sectionId) || null;
+}
+
+function relatedClaimsForSource(sourceId) {
+  return publication.traceClaims.filter((claim) => claim.sources.includes(sourceId));
+}
+
+function relatedClaimsForDecision(decisionId) {
+  return publication.traceClaims.filter((claim) => claim.decisions.includes(decisionId));
+}
+
+function relatedClaimsForOpenQuestion(openQuestionId) {
+  return publication.traceClaims.filter((claim) => claim.openQuestions.includes(openQuestionId));
+}
+
+function findClaimRecord(claimId) {
+  return publication.claims.find((claim) => claim.id === claimId) || null;
+}
+
+function relatedSourcesForClaim(claim) {
+  return publication.sources.filter((source) => claim.sources.includes(source.id));
+}
+
+function relatedDecisionsForClaim(claim) {
+  return publication.decisions.filter((decision) => claim.decisions.includes(decision.id));
+}
+
+function relatedOpenQuestionsForClaim(claim) {
+  return publication.openQuestions.filter((question) => claim.openQuestions.includes(question.id));
+}
+
+function relatedClaimsForClaim(claim) {
+  return publication.claims.filter((candidate) => claim.relatedClaims.includes(candidate.id));
+}
+
+function relatedDecisionsForSource(sourceId, sectionNames) {
+  return publication.decisions.filter(
+    (decision) =>
+      decision.references.some((reference) => sectionNames.includes(reference)) ||
+      relatedClaimsForSource(sourceId).some((claim) => claim.decisions.includes(decision.id))
+  );
+}
+
+function relatedOpenQuestionsForSource(sourceId) {
+  const ids = new Set([
+    ...publication.sources.find((source) => source.id === sourceId).openQuestions,
+    ...relatedClaimsForSource(sourceId).flatMap((claim) => claim.openQuestions)
+  ]);
+  return publication.openQuestions.filter((item) => ids.has(item.id));
+}
+
+function renderSectionTagList(sectionNames) {
+  return sectionNames.length ? linkSections(sectionNames) : "<span class='empty-state'>None linked yet</span>";
+}
+
+function renderRecordLinks(ids, basePath) {
+  return ids.length ? linkList(ids, basePath) : "<span class='empty-state'>None linked yet</span>";
+}
+
+function renderSourceUrl(source, key) {
+  const href = source[key];
+  if (href) {
+    return `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${escapeHtml(href)}</a>`;
+  }
+  if (key === "officialUrl") {
+    return `<span class="empty-state">URL verification pending</span><br><span class="note">${escapeHtml(
+      source.urlVerificationNote
+    )}</span>`;
+  }
+  return "<span class='empty-state'>No archive URL recorded</span>";
+}
+
+function formatDate(value) {
+  if (!value) return "Not recorded";
+  return value;
+}
+
 function renderSourceIndex() {
   const rows = publication.sources
     .map(
       (source) => `<article class="source-row" data-filterable data-search="${escapeHtml(
-        [source.id, source.title, source.summary, source.sections.join(" "), source.claims.join(" ")].join(" ")
+        [
+          source.id,
+          source.title,
+          source.summary,
+          source.sections.join(" "),
+          source.claims.join(" "),
+          source.publisher,
+          source.documentType,
+          source.classification,
+          source.officialUrl || "",
+          source.urlVerificationStatus
+        ].join(" ")
       )}">
         <div class="source-row-head">
           <div>
-            <p class="row-kicker">${escapeHtml(source.type)} - ${escapeHtml(source.agency)}</p>
+            <p class="row-kicker">${escapeHtml(source.documentType)} - ${escapeHtml(source.publisher)}</p>
             <h2 class="row-title"><a href="/sources/${source.slug}.html">${escapeHtml(source.id)} - ${escapeHtml(source.title)}</a></h2>
           </div>
           <span class="tag">${escapeHtml(source.confidence)}</span>
         </div>
         <p>${escapeHtml(source.summary)}</p>
         <p class="meta-line"><strong>Evidence class:</strong> ${escapeHtml(source.evidenceClass)}</p>
+        <p class="meta-line"><strong>Classification:</strong> ${escapeHtml(source.classification)} | <strong>URL status:</strong> ${escapeHtml(source.urlVerificationStatus)}</p>
         <p class="meta-line"><strong>Used in:</strong> ${escapeHtml(source.sections.join(", "))}</p>
       </article>`
     )
@@ -104,7 +257,7 @@ function renderSourceIndex() {
     </label>
     <section class="panel">
       <h2>Structured source records</h2>
-      <p>This release publishes the sources already cited in converted sections and connects them to the claims and open questions they support. Additional Source IDs should be added from the canonical PDF as they are extracted and verified.</p>
+      <p>This release publishes source metadata, citation-verification status, and claim-level trace links for the records already cited in the converted sections. If an official canonical URL could not be verified, the page says so explicitly instead of guessing.</p>
     </section>
     <section class="panel stack">${rows}</section>`;
 
@@ -120,32 +273,77 @@ function renderSourceIndex() {
 }
 
 function renderSourceDetail(source) {
-  const claims = source.claims.map((claim) => `<li>${escapeHtml(claim)}</li>`).join("");
+  const relatedClaims = relatedClaimsForSource(source.id);
+  const relatedDecisions = relatedDecisionsForSource(source.id, source.sections);
+  const relatedOpenQuestions = relatedOpenQuestionsForSource(source.id);
   const body = `<div class="actions">
       <a class="button" href="/sources.html">Back to source index</a>
       <a class="button" href="/search.html?q=${encodeURIComponent(source.id)}">Search related records</a>
+      <a class="button" href="/explorer.html">Open explorer</a>
     </div>
     <section class="panel">
       <h2>Source summary</h2>
       <p>${escapeHtml(source.summary)}</p>
       <div class="meta-grid">
         <p><strong>Source ID:</strong> ${escapeHtml(source.id)}</p>
-        <p><strong>Agency:</strong> ${escapeHtml(source.agency)}</p>
-        <p><strong>Type:</strong> ${escapeHtml(source.type)}</p>
+        <p><strong>Publisher:</strong> ${escapeHtml(source.publisher)}</p>
+        <p><strong>Agency label:</strong> ${escapeHtml(source.agency)}</p>
+        <p><strong>Document type:</strong> ${escapeHtml(source.documentType)}</p>
+        <p><strong>Classification:</strong> ${escapeHtml(source.classification)}</p>
         <p><strong>Confidence:</strong> ${escapeHtml(source.confidence)}</p>
         <p><strong>Evidence class:</strong> ${escapeHtml(source.evidenceClass)}</p>
-        <p><strong>Sections:</strong> ${escapeHtml(source.sections.join(", "))}</p>
+        <p><strong>Publication date:</strong> ${escapeHtml(formatDate(source.publicationDate))}</p>
+        <p><strong>Retrieval date:</strong> ${escapeHtml(formatDate(source.retrievalDate))}</p>
+        <p><strong>Citation priority:</strong> ${escapeHtml(source.citationPriority)}</p>
+        <p><strong>URL verification:</strong> ${escapeHtml(source.urlVerificationStatus)}</p>
+        <p><strong>Sections:</strong> ${renderSectionTagList(source.sections)}</p>
       </div>
     </section>
     <section class="panel">
-      <h2>Claims supported in the current web edition</h2>
-      <ul>${claims}</ul>
+      <h2>Citation metadata</h2>
+      <div class="meta-grid">
+        <p><strong>Official URL:</strong><br>${renderSourceUrl(source, "officialUrl")}</p>
+        <p><strong>Archive URL:</strong><br>${renderSourceUrl(source, "archiveUrl")}</p>
+      </div>
+      <p class="note">${escapeHtml(source.urlVerificationNote)}</p>
+    </section>
+    <section class="panel">
+      <h2>Claims supported</h2>
+      ${
+        relatedClaims.length
+          ? `<div class="stack">${relatedClaims
+              .map(
+                (claim) => `<article class="card stack">
+                  <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
+                  <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
+                  <p>${escapeHtml(claim.summary)}</p>
+                  <p><strong>Decisions</strong><br>${renderRecordLinks(claim.decisions, "/decision-log/")}</p>
+                  <p><strong>Open questions</strong><br>${renderRecordLinks(claim.openQuestions, "/open-questions/")}</p>
+                </article>`
+              )
+              .join("")}</div>`
+          : `<ul>${source.claims.map((claim) => `<li>${escapeHtml(claim)}</li>`).join("")}</ul>`
+      }
+    </section>
+    <section class="panel">
+      <h2>Related decision IDs</h2>
+      ${
+        relatedDecisions.length
+          ? `<p>${linkList(
+              relatedDecisions.map((decision) => decision.id),
+              "/decision-log/"
+            )}</p>`
+          : "<p>No decision entry is linked through the current section map.</p>"
+      }
     </section>
     <section class="panel">
       <h2>Related open questions</h2>
       ${
-        source.openQuestions.length
-          ? `<p>${linkList(source.openQuestions, "/open-questions/")}</p>`
+        relatedOpenQuestions.length
+          ? `<p>${renderRecordLinks(
+              relatedOpenQuestions.map((item) => item.id),
+              "/open-questions/"
+            )}</p>`
           : "<p>No open question is directly attached to this source in the current web edition.</p>"
       }
     </section>`;
@@ -206,9 +404,12 @@ function renderOpenQuestionIndex() {
 }
 
 function renderOpenQuestionDetail(item) {
+  const relatedDecisions = relatedDecisionsForSections(item.sections);
+  const relatedClaims = relatedClaimsForOpenQuestion(item.id);
   const body = `<div class="actions">
       <a class="button" href="/open-questions.html">Back to open questions</a>
       <a class="button" href="/audit/appendix-a-open-questions.html">Appendix A</a>
+      <a class="button" href="/explorer.html">Open explorer</a>
     </div>
     <section class="panel">
       <h2>Why it matters</h2>
@@ -219,7 +420,7 @@ function renderOpenQuestionDetail(item) {
       <p>${escapeHtml(item.currentState)}</p>
       <div class="meta-grid">
         <p><strong>Status:</strong> ${escapeHtml(item.status)}</p>
-        <p><strong>Raised in:</strong> ${escapeHtml(item.sections.join(", "))}</p>
+        <p><strong>Raised in:</strong> ${linkSections(item.sections)}</p>
       </div>
     </section>
     <section class="panel">
@@ -232,6 +433,33 @@ function renderOpenQuestionDetail(item) {
         item.relatedSources.length
           ? `<p>${linkList(item.relatedSources, "/sources/")}</p>`
           : "<p>No source record has been linked yet in the current web edition.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Claims blocked or limited</h2>
+      ${
+        relatedClaims.length
+          ? `<div class="stack">${relatedClaims
+              .map(
+                (claim) => `<article class="card stack">
+                  <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
+                  <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
+                  <p>${escapeHtml(claim.summary)}</p>
+                </article>`
+              )
+              .join("")}</div>`
+          : "<p>No trace-claim record currently routes through this open question.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Related decision IDs</h2>
+      ${
+        relatedDecisions.length
+          ? `<p>${linkList(
+              relatedDecisions.map((decision) => decision.id),
+              "/decision-log/"
+            )}</p>`
+          : "<p>No decision entry is linked through the current section map.</p>"
       }
     </section>`;
 
@@ -290,21 +518,63 @@ function renderDecisionLog() {
 }
 
 function renderDecisionDetail(item) {
+  const relatedSources = relatedSourcesForDecision(item);
+  const relatedOpenQuestions = relatedOpenQuestionsForDecision(item);
+  const relatedClaims = relatedClaimsForDecision(item.id);
   const body = `<div class="actions">
       <a class="button" href="/decision-log.html">Back to decision log</a>
       <a class="button" href="/search.html?q=${encodeURIComponent(item.id)}">Search related records</a>
+      <a class="button" href="/explorer.html">Open explorer</a>
     </div>
     <section class="panel">
       <h2>Published rule</h2>
       <p>${escapeHtml(item.body)}</p>
       <div class="meta-grid">
         <p><strong>Decision ID:</strong> ${escapeHtml(item.id)}</p>
-        <p><strong>References:</strong> ${escapeHtml(item.references.join(", "))}</p>
+        <p><strong>References:</strong> ${linkSections(item.references)}</p>
       </div>
     </section>
     <section class="panel">
       <h2>Why this page exists</h2>
       <p>This record makes the numbered methodology rule addressable in the web edition so sources, sections, and future traceability features can point back to the same canonical decision.</p>
+    </section>
+    <section class="panel">
+      <h2>Related source IDs</h2>
+      ${
+        relatedSources.length
+          ? `<p>${linkList(
+              relatedSources.map((source) => source.id),
+              "/sources/"
+            )}</p>`
+          : "<p>No source record is linked through the current section map.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Related open questions</h2>
+      ${
+        relatedOpenQuestions.length
+          ? `<p>${linkList(
+              relatedOpenQuestions.map((openQuestion) => openQuestion.id),
+              "/open-questions/"
+            )}</p>`
+          : "<p>No open-question record is linked through the current section map.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Claims governed</h2>
+      ${
+        relatedClaims.length
+          ? `<div class="stack">${relatedClaims
+              .map(
+                (claim) => `<article class="card stack">
+                  <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
+                  <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
+                  <p>${escapeHtml(claim.summary)}</p>
+                </article>`
+              )
+              .join("")}</div>`
+          : "<p>No trace-claim record currently routes through this decision.</p>"
+      }
     </section>`;
 
   return layout({
@@ -315,6 +585,261 @@ function renderDecisionDetail(item) {
     lede: "Decision records preserve the publication's binding methodological rules in one addressable location.",
     body,
     footerLabel: `${item.id} - decision record`
+  });
+}
+
+function renderSectionActions(section) {
+  const links = [];
+  const previousSection = section.previousSectionId
+    ? publication.sections.find((item) => item.id === section.previousSectionId)
+    : null;
+  const nextSection = section.nextSectionId
+    ? publication.sections.find((item) => item.id === section.nextSectionId)
+    : null;
+  if (previousSection) {
+    links.push(`<a class="button" href="${previousSection.url}">Previous Section</a>`);
+  }
+  links.push(`<a class="button" href="/audit.html">Audit Index</a>`);
+  if (nextSection) {
+    links.push(`<a class="button" href="${nextSection.url}">Next Section</a>`);
+  }
+  return `<div class="actions">${links.join("")}</div>`;
+}
+
+function renderBlockHtml(block) {
+  if (block.type === "paragraph" || block.type === "methodologyNote" || block.type === "bottomLine") {
+    return block.html;
+  }
+  if (block.type === "callout") {
+    return block.html;
+  }
+  if (block.type === "table") {
+    return block.html;
+  }
+  if (block.type === "list") {
+    return block.html;
+  }
+  return "";
+}
+
+function groupSectionBlocks(contentBlocks) {
+  const groups = [];
+  let current = null;
+  for (const block of contentBlocks) {
+    if (block.type === "heading") {
+      current = {
+        heading: block.text,
+        blocks: []
+      };
+      groups.push(current);
+      continue;
+    }
+    if (!current) {
+      current = { heading: "", blocks: [] };
+      groups.push(current);
+    }
+    current.blocks.push(block);
+  }
+  return groups;
+}
+
+function renderSectionVerificationPanel(section) {
+  const relatedClaims = publication.claims.filter((claim) => claim.sectionId === section.id);
+  return `<section class="panel verification">
+      <div>
+        <p class="row-kicker">Structured Verification</p>
+        <h2>Trace this section from the data model.</h2>
+        <p><strong>Summary:</strong> ${escapeHtml(section.summary)}</p>
+        <p><strong>Claims:</strong> ${escapeHtml(String(section.claimIds.length))}</p>
+        <p><strong>Claim links:</strong> ${relatedClaims.length ? linkClaims(relatedClaims.map((claim) => claim.id)) : "<span class='empty-state'>No linked claims</span>"}</p>
+      </div>
+      <div class="stack">
+        <p><strong>Sources</strong><br>${renderRecordLinks(section.sourceIds, "/sources/")}</p>
+        <p><strong>Decisions</strong><br>${renderRecordLinks(section.decisionIds, "/decision-log/")}</p>
+        <p><strong>Open Questions</strong><br>${renderRecordLinks(section.openQuestionIds, "/open-questions/")}</p>
+        <p><strong>Related Sections</strong><br>${renderSectionTagList(section.relatedSectionIds)}</p>
+      </div>
+    </section>`;
+}
+
+function renderSectionClaimsPanel(section) {
+  const claims = publication.claims.filter((claim) => claim.sectionId === section.id);
+  if (!claims.length) {
+    return "";
+  }
+  return `<section class="panel">
+      <h2>Claims In This Section</h2>
+      <p>Reviewers should be able to move from section to claim without leaving the generated evidence path.</p>
+      <div class="grid">${claims
+        .map(
+          (claim) => `<article class="card stack">
+            <p class="row-kicker">${escapeHtml(claim.id)}</p>
+            <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
+            <p>${escapeHtml(claim.statement)}</p>
+            <p><strong>Sources</strong><br>${renderRecordLinks(claim.sources, "/sources/")}</p>
+          </article>`
+        )
+        .join("")}</div>
+    </section>`;
+}
+
+function renderSectionContent(section) {
+  return groupSectionBlocks(section.contentBlocks)
+    .map(
+      (group) => `<section class="panel">
+        ${group.heading ? `<h2>${escapeHtml(group.heading)}</h2>` : ""}
+        ${group.blocks.map(renderBlockHtml).join("")}
+      </section>`
+    )
+    .join("");
+}
+
+function renderSectionPage(section) {
+  const body = `<div class="sr-only" data-generated-source="section-model" data-section-id="${escapeHtml(
+    section.id
+  )}"></div>
+    ${renderSectionActions(section)}
+    ${renderSectionVerificationPanel(section)}
+    ${renderSectionClaimsPanel(section)}
+    ${renderSectionContent(section)}`;
+
+  return layout({
+    title: `${section.id} - ${section.title} | The Citizen Audit`,
+    description: `Canonical ${section.id} web conversion for The Citizen Audit v1.0.`,
+    eyebrow: `${section.id} - Version 1.0 LOCKED`,
+    heading: section.title,
+    lede: section.summary,
+    body,
+    footerLabel: `${section.id} - ${section.title}`
+  });
+}
+
+function renderClaimIndex() {
+  const rows = publication.claims
+    .map(
+      (claim) => `<article class="source-row" data-filterable data-search="${escapeHtml(
+        [
+          claim.id,
+          claim.title,
+          claim.statement,
+          claim.sectionId,
+          claim.sources.join(" "),
+          claim.decisions.join(" "),
+          claim.openQuestions.join(" ")
+        ].join(" ")
+      )}">
+        <div class="source-row-head">
+          <div>
+            <p class="row-kicker">${escapeHtml(claim.sectionId)} - ${escapeHtml(claim.status)}</p>
+            <h2 class="row-title"><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.id)} - ${escapeHtml(claim.title)}</a></h2>
+          </div>
+          <span class="tag">${escapeHtml(claim.confidence)}</span>
+        </div>
+        <p>${escapeHtml(claim.statement)}</p>
+        <p class="meta-line"><strong>Sources:</strong> ${escapeHtml(claim.sources.join(", "))}</p>
+      </article>`
+    )
+    .join("");
+
+  const body = `<div class="actions">
+      <a class="button primary" href="/audit.html">Audit index</a>
+      <a class="button" href="/explorer.html">Explorer</a>
+      <a class="button" href="/platform.html">Platform dashboard</a>
+    </div>
+    <label class="search-wrap">
+      <span class="sr-only">Search claims</span>
+      <input class="search" data-filter-input data-filter-target="[data-filterable]" placeholder="Search claim IDs, sections, statements, or linked records">
+    </label>
+    <section class="panel">
+      <h2>Claim database</h2>
+      <p>Claims are now first-class structured records. Each claim page links directly to its section, sources, decisions, open questions, and related claims.</p>
+    </section>
+    <section class="panel stack">${rows}</section>`;
+
+  return layout({
+    title: "Claims | The Citizen Audit",
+    description: "Structured claim database for The Citizen Audit.",
+    eyebrow: "Claim Database",
+    heading: "Claims",
+    lede: "Reviewers should be able to move from audit to section to claim in three clicks or fewer, then branch outward into the supporting evidence graph.",
+    body,
+    footerLabel: "Claims - structured records"
+  });
+}
+
+function renderClaimDetail(claim) {
+  const section = publication.sections.find((item) => item.id === claim.sectionId);
+  const relatedSources = relatedSourcesForClaim(claim);
+  const relatedDecisions = relatedDecisionsForClaim(claim);
+  const relatedOpenQuestions = relatedOpenQuestionsForClaim(claim);
+  const siblingClaims = relatedClaimsForClaim(claim);
+  const body = `<div class="actions">
+      <a class="button" href="/claims.html">Back to claims</a>
+      <a class="button" href="${escapeHtml(section?.url || "/audit.html")}">Open section</a>
+      <a class="button" href="/search.html?q=${encodeURIComponent(claim.id)}">Search related records</a>
+    </div>
+    <section class="panel">
+      <h2>Claim record</h2>
+      <div class="meta-grid">
+        <p><strong>Claim ID:</strong> ${escapeHtml(claim.id)}</p>
+        <p><strong>Audit ID:</strong> ${escapeHtml(claim.auditId)}</p>
+        <p><strong>Section ID:</strong> ${escapeHtml(claim.sectionId)}</p>
+        <p><strong>Status:</strong> ${escapeHtml(claim.status)}</p>
+        <p><strong>Confidence:</strong> ${escapeHtml(claim.confidence)}</p>
+      </div>
+      <p>${escapeHtml(claim.statement)}</p>
+    </section>
+    <section class="panel">
+      <h2>Referenced By</h2>
+      <p><strong>Audit</strong><br><a class="tag" href="/audit.html">${escapeHtml(publication.primaryAudit?.title || "Audit")}</a></p>
+      <p><strong>Section</strong><br>${section ? `<a class="tag" href="${section.url}">${escapeHtml(section.id)}</a>` : "<span class='empty-state'>No linked section</span>"}</p>
+    </section>
+    <section class="panel">
+      <h2>Related Sources</h2>
+      ${relatedSources.length ? `<p>${renderRecordLinks(relatedSources.map((item) => item.id), "/sources/")}</p>` : "<p>No linked source records.</p>"}
+    </section>
+    <section class="panel">
+      <h2>Related Decisions</h2>
+      ${relatedDecisions.length ? `<p>${renderRecordLinks(relatedDecisions.map((item) => item.id), "/decision-log/")}</p>` : "<p>No linked decision records.</p>"}
+    </section>
+    <section class="panel">
+      <h2>Related Open Questions</h2>
+      ${relatedOpenQuestions.length ? `<p>${renderRecordLinks(relatedOpenQuestions.map((item) => item.id), "/open-questions/")}</p>` : "<p>No linked open-question records.</p>"}
+    </section>
+    <section class="panel">
+      <h2>Related Claims</h2>
+      ${
+        siblingClaims.length
+          ? `<div class="stack">${siblingClaims
+              .map(
+                (item) => `<article class="card stack">
+                  <p class="row-kicker">${escapeHtml(item.id)} - ${escapeHtml(item.sectionId)}</p>
+                  <h3><a href="/claims/${item.id.toLowerCase()}.html">${escapeHtml(item.title)}</a></h3>
+                  <p>${escapeHtml(item.statement)}</p>
+                </article>`
+              )
+              .join("")}</div>`
+          : "<p>No related-claim records are linked yet.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Revision History</h2>
+      <ul>${claim.revisionHistory
+        .map(
+          (entry) =>
+            `<li>${escapeHtml(entry.date)} - ${escapeHtml(entry.version)} - ${escapeHtml(entry.summary)}</li>`
+        )
+        .join("")}</ul>
+    </section>`;
+
+  return layout({
+    title: `${claim.id} | The Citizen Audit`,
+    description: `${claim.id} claim record for The Citizen Audit.`,
+    eyebrow: "Claim Record",
+    heading: `${claim.id} - ${claim.title}`,
+    lede: "Claims are first-class structured records so the evidence platform can point every published conclusion back to its sources, decisions, and unresolved questions.",
+    body,
+    footerLabel: `${claim.id} - claim record`
   });
 }
 
@@ -463,6 +988,141 @@ function renderAppendixB() {
   });
 }
 
+function renderReviewPage() {
+  const body = `<div class="actions">
+      <a class="button primary" href="/explorer.html">Open Explorer</a>
+      <a class="button" href="/sources.html">Browse sources</a>
+      <a class="button" href="/corrections.html">Corrections page</a>
+    </div>
+    <section class="panel stack">
+      <h2>How to verify the audit</h2>
+      <p>Start from a section page, open its verification panel, then follow each claim into its source, decision, and open-question records. The platform is designed so readers can move from published prose to supporting evidence without changing the Version 1.0 conclusions.</p>
+      <p>Where the public record is incomplete, the platform keeps that incompleteness visible instead of filling it with modeled certainty.</p>
+    </section>
+    <section class="grid">
+      <article class="card stack">
+        <p class="row-kicker">Methodology</p>
+        <h3>What the platform preserves</h3>
+        <p>Number type, resource category, beneficiary chain, section ownership, and unresolved limitations stay separate across the generated site.</p>
+      </article>
+      <article class="card stack">
+        <p class="row-kicker">Evidence Standards</p>
+        <h3>Primary before secondary</h3>
+        <p>Source records now label document type, primary or secondary classification, evidence class, confidence, and citation-verification status.</p>
+      </article>
+      <article class="card stack">
+        <p class="row-kicker">Confidence Model</p>
+        <h3>Confidence is published, not implied</h3>
+        <p>The platform preserves section confidence notes and source confidence labels so readers can distinguish direct evidence from corroboration and context.</p>
+      </article>
+    </section>
+    <section class="panel stack">
+      <h2>How to submit corrections</h2>
+      <p>Use the published corrections workflow to report source mismatches, broken trace links, missing metadata, or verified public records that should resolve an open question. Corrections should cite the exact page, claim, and source record involved.</p>
+      <p>Corrections are tracked in public release notes, version history, and changelog pages so the platform never hides what changed around the locked publication.</p>
+    </section>
+    <section class="panel stack">
+      <h2>How corrections are tracked</h2>
+      <p>Every release should record platform-level changes without silently rewriting Version 1.0 analytical conclusions. Decision history is preserved, open questions remain public, and unresolved URL verification is flagged explicitly.</p>
+      <p>Version history describes delivery milestones, changelog captures platform changes, and release notes summarize what shipped in each iteration.</p>
+    </section>`;
+
+  return layout({
+    title: "Reviewer Portal | The Citizen Audit",
+    description: "Reviewer portal for verifying methodology, evidence, confidence, corrections, and version history in The Citizen Audit.",
+    eyebrow: "Reviewer Portal",
+    heading: "Review And Verify The Audit",
+    lede: "This portal explains how to test the publication, how evidence is classified, how confidence is communicated, and how corrections are carried without weakening transparency.",
+    body,
+    footerLabel: "Reviewer portal"
+  });
+}
+
+function renderExplorerPage() {
+  const body = `<div class="actions">
+      <a class="button primary" href="/search.html">Search the publication</a>
+      <a class="button" href="/sources.html">Browse sources</a>
+      <a class="button" href="/review.html">Reviewer portal</a>
+      <a class="button" href="/decision-log.html">Review decisions</a>
+    </div>
+    <section class="panel">
+      <h2>Traceability Explorer</h2>
+      <p>Navigate from the audit to sections, from sections to claims, and from claims to sources, decisions, and open questions.</p>
+      <label class="search-wrap">
+        <span class="sr-only">Search traceability records</span>
+        <input class="search" data-traceability-search placeholder="Try Section 7, C-009, S-065, D-020, A-018, ORR, Medicaid, or housing">
+      </label>
+      <div class="grid" data-traceability-grid></div>
+    </section>
+    <section class="panel">
+      <h2>Claim Explorer</h2>
+      <p>Filter claim-level trace records directly.</p>
+      <label class="search-wrap">
+        <span class="sr-only">Search claims</span>
+        <input class="search" data-claim-search placeholder="Try C-016, conservative total, ORR, Section 214, or SSI">
+      </label>
+      <div class="grid" data-claim-grid></div>
+    </section>
+    <section class="panel">
+      <h2>Scale Explorer</h2>
+      <p>Enter an amount and compare how the audit's currently measurable lanes relate in scale. These lanes remain basis-segregated and are not a blended grand total.</p>
+      <label for="taxAmount"><strong>Amount to explore</strong></label>
+      <input id="taxAmount" class="search" data-tax-amount type="number" min="1" value="100">
+      <div data-explorer-output></div>
+    </section>
+    <section class="panel">
+      <h2>Important Limitation</h2>
+      <p>The explorer intentionally labels each lane by basis and source. It does not convert incompatible obligations, disbursements, cumulative figures, point-in-time computations, or federal-plus-state totals into one blended federal total.</p>
+    </section>`;
+
+  return layout({
+    title: "Traceability Explorer | The Citizen Audit",
+    description: "Claim-to-source traceability explorer for The Citizen Audit.",
+    eyebrow: "Traceability Explorer",
+    heading: "Traceability Explorer",
+    lede: "Follow each converted lane back to its linked Source IDs, Decision Log rules, and Open Question records. This page is a verification surface, not a replacement for the locked audit text.",
+    body,
+    footerLabel: "Traceability explorer"
+  });
+}
+
+function renderPlatformPage(metrics) {
+  const body = `<div class="actions">
+      <a class="button primary" href="/claims.html">Claim database</a>
+      <a class="button" href="/explorer.html">Explorer</a>
+      <a class="button" href="/review.html">Reviewer portal</a>
+    </div>
+    <section class="grid">
+      <article class="card stack"><p class="row-kicker">Published audits</p><h2>${escapeHtml(String(metrics.audits))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Sections</p><h2>${escapeHtml(String(metrics.sections))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Claims</p><h2>${escapeHtml(String(metrics.claims))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Sources</p><h2>${escapeHtml(String(metrics.sources))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Decision logs</p><h2>${escapeHtml(String(metrics.decisionLogs))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Open questions</p><h2>${escapeHtml(String(metrics.openQuestions))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Citation coverage</p><h2>${escapeHtml(String(metrics.citationCoverage.percentVerified))}%</h2></article>
+      <article class="card stack"><p class="row-kicker">Traceability %</p><h2>${escapeHtml(String(metrics.traceabilityPercent))}%</h2></article>
+      <article class="card stack"><p class="row-kicker">QA status</p><h2>${escapeHtml(metrics.qaStatus.status)}</h2></article>
+      <article class="card stack"><p class="row-kicker">Build version</p><h2>${escapeHtml(metrics.buildVersion)}</h2></article>
+      <article class="card stack"><p class="row-kicker">Platform health</p><h2>${escapeHtml(metrics.platformHealth)}</h2></article>
+      <article class="card stack"><p class="row-kicker">HTML pages</p><h2>${escapeHtml(String(metrics.htmlPages))}</h2></article>
+    </section>
+    <section class="panel stack">
+      <h2>Dashboard notes</h2>
+      <p>This dashboard is generated from the same structured records that drive claim pages, source pages, search, explorer data, graph outputs, and QA.</p>
+      <p>Adding a future audit should mean adding new audit, section, claim, source, decision, and open-question records, then running the build again without infrastructure changes.</p>
+    </section>`;
+
+  return layout({
+    title: "Platform Dashboard | The Citizen Audit",
+    description: "Platform dashboard for publication status, traceability, QA, and build health in The Citizen Audit.",
+    eyebrow: "Platform Dashboard",
+    heading: "Platform Dashboard",
+    lede: "The platform now treats structured data as the source of truth and generates the evidence surfaces around it.",
+    body,
+    footerLabel: "Platform dashboard"
+  });
+}
+
 function buildSearchIndex() {
   const items = [];
   for (const source of publication.sources) {
@@ -471,7 +1131,17 @@ function buildSearchIndex() {
       id: source.id,
       title: source.title,
       url: `/sources/${source.slug}.html`,
-      text: [source.summary, source.sections.join(" "), source.claims.join(" "), source.openQuestions.join(" ")].join(" ")
+      text: [
+        source.summary,
+        source.sections.join(" "),
+        source.claims.join(" "),
+        source.openQuestions.join(" "),
+        source.publisher,
+        source.documentType,
+        source.classification,
+        source.officialUrl || "",
+        source.urlVerificationStatus
+      ].join(" ")
     });
   }
   for (const item of publication.openQuestions) {
@@ -492,64 +1162,306 @@ function buildSearchIndex() {
       text: [decision.body, decision.references.join(" ")].join(" ")
     });
   }
-  items.push(
-    {
+  for (const section of publication.sectionRecords) {
+    items.push({
       type: "Section",
-      id: "Section 1",
-      title: "Executive Summary",
-      url: "/audit/section-01-executive-summary.html",
-      text: "known minimum incompatible bases no blended grand total noncitizen SSI emergency Medicaid open questions A-005 A-018 A-028 A-037"
-    },
-    {
-      type: "Section",
-      id: "Section 2",
-      title: "Definitions and Methodology",
-      url: "/audit/section-02-definitions-methodology.html",
-      text: "recipient economic beneficiary appropriation obligation outlay evidence class confidence estimation standard category separation"
-    },
-    {
-      type: "Section",
-      id: "Section 3",
-      title: "International Assistance",
-      url: "/audit/section-03-international-assistance.html",
-      text: "ForeignAssistance.gov obligations disbursements Total A Total B A-005"
-    },
-    {
-      type: "Section",
-      id: "Section 5",
-      title: "Military Aid",
-      url: "/audit/section-05-military-aid.html",
-      text: "USAI PDA replacement Section 333 CTEF A-017 drawdown replacement"
-    },
-    {
-      type: "Section",
-      id: "Section 7",
-      title: "Medicaid / Emergency Medical",
-      url: "/audit/section-07-medicaid-emergency-medical.html",
-      text: "emergency Medicaid A-037 provider capture federal-only share"
-    },
-    {
-      type: "Section",
-      id: "Section 8",
-      title: "Food Assistance",
-      url: "/audit/section-08-food-assistance.html",
-      text: "SNAP no modeled share citizen-child exclusion Section 13"
-    },
-    {
-      type: "Section",
-      id: "Section 9",
-      title: "Cash Welfare / Income",
-      url: "/audit/section-09-cash-welfare-income.html",
-      text: "SSA SSI S-073 365714 2.21B A-028"
-    }
-  );
+      id: section.id,
+      title: section.title,
+      url: section.url,
+      text: [
+        section.summary,
+        section.sources.join(" "),
+        section.decisions.join(" "),
+        section.openQuestions.join(" "),
+        section.relatedSections.join(" ")
+      ].join(" ")
+    });
+  }
+  for (const claim of publication.traceClaims) {
+    items.push({
+      type: "Claim",
+      id: claim.id,
+      title: claim.title,
+      url: `/claims/${claim.id.toLowerCase()}.html`,
+      text: [
+        claim.summary,
+        claim.section,
+        claim.sources.join(" "),
+        claim.decisions.join(" "),
+        claim.openQuestions.join(" ")
+      ].join(" ")
+    });
+  }
   return items;
 }
 
+function buildClaimDatabase() {
+  return {
+    generatedAt: new Date().toISOString(),
+    audits: publication.audits.map((audit) => ({ id: audit.id, title: audit.title })),
+    sections: publication.sections.map((section) => ({
+      id: section.id,
+      auditId: section.auditId,
+      title: section.title,
+      url: section.url,
+      claimIds: section.claimIds
+    })),
+    claims: publication.claims
+  };
+}
+
+function buildCrossReferenceTables() {
+  return {
+    generatedAt: new Date().toISOString(),
+    ...publication.crossReferences
+  };
+}
+
+function buildEvidenceGraph() {
+  return {
+    generatedAt: new Date().toISOString(),
+    audits: publication.audits.map((audit) => ({
+      id: audit.id,
+      title: audit.title,
+      sections: audit.sectionIds,
+      claims: audit.claimIds,
+      sources: audit.sourceIds,
+      decisions: audit.decisionIds,
+      openQuestions: audit.openQuestionIds,
+      connectedIds: unique([
+        ...audit.sectionIds,
+        ...audit.claimIds,
+        ...audit.sourceIds,
+        ...audit.decisionIds,
+        ...audit.openQuestionIds
+      ])
+    })),
+    sections: publication.sections.map((section) => ({
+      id: section.id,
+      title: section.title,
+      audits: [section.auditId],
+      claims: section.claimIds,
+      sources: section.sourceIds,
+      decisions: section.decisionIds,
+      openQuestions: section.openQuestionIds,
+      relatedSections: section.relatedSectionIds,
+      connectedIds: unique([
+        section.auditId,
+        ...section.claimIds,
+        ...section.sourceIds,
+        ...section.decisionIds,
+        ...section.openQuestionIds,
+        ...section.relatedSectionIds
+      ])
+    })),
+    claims: publication.claims.map((claim) => ({
+      id: claim.id,
+      title: claim.title,
+      audits: [claim.auditId],
+      sections: [claim.sectionId],
+      sources: claim.sources,
+      decisions: claim.decisions,
+      openQuestions: claim.openQuestions,
+      relatedClaims: claim.relatedClaims,
+      connectedIds: unique([
+        claim.auditId,
+        claim.sectionId,
+        ...claim.sources,
+        ...claim.decisions,
+        ...claim.openQuestions,
+        ...claim.relatedClaims
+      ])
+    })),
+    sources: publication.sources.map((source) => ({
+      id: source.id,
+      title: source.title,
+      audits: source.auditIds || [],
+      sections: source.sectionIds || source.sections || [],
+      claims: source.claimIds || [],
+      decisions: source.decisionIds || [],
+      openQuestions: source.openQuestionIds || [],
+      connectedIds: unique([
+        ...(source.auditIds || []),
+        ...(source.sectionIds || source.sections || []),
+        ...(source.claimIds || []),
+        ...(source.decisionIds || []),
+        ...(source.openQuestionIds || [])
+      ])
+    })),
+    decisions: publication.decisions.map((decision) => ({
+      id: decision.id,
+      title: decision.title,
+      audits: decision.auditIds || [],
+      sections: decision.sectionIds || decision.references || [],
+      claims: decision.claimIds || [],
+      sources: decision.sourceIds || [],
+      openQuestions: decision.openQuestionIds || [],
+      connectedIds: unique([
+        ...(decision.auditIds || []),
+        ...(decision.sectionIds || decision.references || []),
+        ...(decision.claimIds || []),
+        ...(decision.sourceIds || []),
+        ...(decision.openQuestionIds || [])
+      ])
+    })),
+    openQuestions: publication.openQuestions.map((question) => ({
+      id: question.id,
+      title: question.title,
+      audits: question.auditIds || [],
+      sections: question.sectionIds || question.sections || [],
+      claims: question.claimIds || [],
+      sources: question.sourceIds || question.relatedSources || [],
+      decisions: question.decisionIds || [],
+      connectedIds: unique([
+        ...(question.auditIds || []),
+        ...(question.sectionIds || question.sections || []),
+        ...(question.claimIds || []),
+        ...(question.sourceIds || question.relatedSources || []),
+        ...(question.decisionIds || [])
+      ])
+    }))
+  };
+}
+
+function buildManifest(outputs) {
+  return {
+    generatedAt: new Date().toISOString(),
+    buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
+    auditId: publication.primaryAudit?.id || null,
+    outputs
+  };
+}
+
+function buildPlatformStatus(metrics) {
+  return {
+    generatedAt: new Date().toISOString(),
+    status: metrics.platformHealth,
+    qaStatus: metrics.qaStatus.status,
+    buildVersion: metrics.buildVersion,
+    traceabilityPercent: metrics.traceabilityPercent,
+    citationCoveragePercent: metrics.citationCoverage.percentVerified
+  };
+}
+
+function buildTraceRecords() {
+  return {
+    generatedAt: new Date().toISOString(),
+    scaleExplorerRows: [
+      ["International assistance obligations, FY2023 basis", 99.9, "S-038"],
+      ["International assistance disbursements, FY2023 basis", 71.9, "S-038 / S-039"],
+      ["Net-new military assistance, Ukraine-surge cumulative obligations", 50.9, "Section 5"],
+      ["Recurring security assistance lanes", 1.6, "Section 5"],
+      ["Noncitizen SSI, Dec. 2021 basis", 2.21, "S-073"],
+      ["Emergency Medicaid, federal + state, FY2023", 3.8, "Section 7 / A-037"]
+    ],
+    sections: publication.sectionRecords,
+    claims: publication.traceClaims,
+    sources: publication.sources.map((source) => ({
+      id: source.id,
+      slug: source.slug,
+      title: source.title,
+      officialUrl: source.officialUrl,
+      archiveUrl: source.archiveUrl,
+      publisher: source.publisher,
+      publicationDate: source.publicationDate,
+      retrievalDate: source.retrievalDate,
+      documentType: source.documentType,
+      classification: source.classification,
+      sections: source.sections,
+      urlVerificationStatus: source.urlVerificationStatus
+    })),
+    decisions: publication.decisions,
+    openQuestions: publication.openQuestions
+  };
+}
+
+function countHtmlFiles(dir) {
+  let total = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const next = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      total += countHtmlFiles(next);
+      continue;
+    }
+    if (entry.name.endsWith(".html")) {
+      total += 1;
+    }
+  }
+  return total;
+}
+
+function buildPlatformMetrics(searchIndex, traceRecords) {
+  const verifiedSources = publication.sources.filter((source) => source.urlVerificationStatus === "verified");
+  const highPriorityMissing = publication.sources
+    .filter((source) => source.citationPriority === "high" && !source.officialUrl)
+    .map((source) => source.id);
+  const traceableClaims = publication.claims.filter((claim) => claim.sources.length && claim.confidence && claim.revisionHistory.length);
+  const traceabilityPercent = Number(((traceableClaims.length / publication.claims.length) * 100).toFixed(2));
+  return {
+    generatedAt: new Date().toISOString(),
+    buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
+    audits: publication.audits.length,
+    sections: publication.sections.length,
+    htmlPages: countHtmlFiles(publicDir),
+    sources: publication.sources.length,
+    citationCoverage: {
+      verified: verifiedSources.length,
+      pending: publication.sources.length - verifiedSources.length,
+      percentVerified: Number(((verifiedSources.length / publication.sources.length) * 100).toFixed(2)),
+      highPriorityMissingCanonicalUrls: highPriorityMissing
+    },
+    decisionLogs: publication.decisions.length,
+    openQuestions: publication.openQuestions.length,
+    claims: publication.claims.length,
+    traceabilityPercent,
+    platformHealth: highPriorityMissing.length ? "degraded" : "healthy",
+    traceRecords: {
+      sections: traceRecords.sections.length,
+      claims: traceRecords.claims.length
+    },
+    searchRecords: searchIndex.length,
+    qaStatus: {
+      status: "build-generated",
+      checksExpected: [
+        "required source metadata",
+        "high-priority canonical URLs",
+        "orphaned trace records",
+        "search coverage for trace claims",
+        "explorer reference integrity",
+        "generated-file consistency"
+      ]
+    }
+  };
+}
+
 function build() {
+  const searchIndex = buildSearchIndex();
+  const traceRecords = buildTraceRecords();
+  const claimDatabase = buildClaimDatabase();
+  const crossReferences = buildCrossReferenceTables();
+  const evidenceGraph = buildEvidenceGraph();
+  const manifestOutputs = [
+    "/claims.html",
+    "/platform.html",
+    "/data/claim-database.json",
+    "/data/cross-reference-tables.json",
+    "/data/evidence-graph.json",
+    "/data/platform-metrics.json",
+    "/data/platform-status.json",
+    "/data/publication-manifest.json",
+    "/data/publication-search.json",
+    "/data/trace-records.json"
+  ];
   writeFile("sources.html", renderSourceIndex());
+  for (const section of publication.sections.filter((item) => /^Section \d+$/.test(item.id))) {
+    writeFile(section.url.replace(/^\//, ""), renderSectionPage(section));
+  }
   for (const source of publication.sources) {
     writeFile(`sources/${source.slug}.html`, renderSourceDetail(source));
+  }
+  writeFile("claims.html", renderClaimIndex());
+  for (const claim of publication.claims) {
+    writeFile(`claims/${claim.id.toLowerCase()}.html`, renderClaimDetail(claim));
   }
   writeFile("open-questions.html", renderOpenQuestionIndex());
   for (const item of publication.openQuestions) {
@@ -563,9 +1475,27 @@ function build() {
   writeFile("version-history.html", renderReleasePage("version-history"));
   writeFile("changelog.html", renderReleasePage("changelog"));
   writeFile("search.html", renderSearchPage());
+  writeFile("review.html", renderReviewPage());
+  writeFile("explorer.html", renderExplorerPage());
   writeFile("audit/appendix-a-open-questions.html", renderAppendixA());
   writeFile("audit/appendix-b-transparency-scorecard.html", renderAppendixB());
-  writeFile("data/publication-search.json", `${JSON.stringify(buildSearchIndex(), null, 2)}\n`);
+  writeFile("data/claim-database.json", `${JSON.stringify(claimDatabase, null, 2)}\n`);
+  writeFile("data/cross-reference-tables.json", `${JSON.stringify(crossReferences, null, 2)}\n`);
+  writeFile("data/evidence-graph.json", `${JSON.stringify(evidenceGraph, null, 2)}\n`);
+  writeFile("data/publication-search.json", `${JSON.stringify(searchIndex, null, 2)}\n`);
+  writeFile("data/trace-records.json", `${JSON.stringify(traceRecords, null, 2)}\n`);
+  const provisionalMetrics = buildPlatformMetrics(searchIndex, traceRecords);
+  writeFile("platform.html", renderPlatformPage(provisionalMetrics));
+  const platformMetrics = buildPlatformMetrics(searchIndex, traceRecords);
+  const platformStatus = buildPlatformStatus(platformMetrics);
+  const manifest = buildManifest(manifestOutputs);
+  writeFile("platform.html", renderPlatformPage(platformMetrics));
+  writeFile("data/platform-status.json", `${JSON.stringify(platformStatus, null, 2)}\n`);
+  writeFile("data/publication-manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFile(
+    "data/platform-metrics.json",
+    `${JSON.stringify(platformMetrics, null, 2)}\n`
+  );
 }
 
 build();

@@ -18,6 +18,9 @@ Latest branch progress:
 - Decision Log expanded to 15 numbered canonical `D-xxx` records with individual detail pages.
 - Open Question coverage expanded to one page for every `A-001` through `A-037` register entry, including carried and resolved items.
 - Explorer upgraded into an initial claim-to-source traceability surface linking sections to source, decision, and open-question records.
+- Section pages now expose reusable cross-reference metadata with linked sources, decisions, open questions, and related sections.
+- Claim-level trace cards now cover the remaining converted sections, and publication search includes later-section keywords across Sections 4 and 6 through 16.
+- Source, decision, and open-question detail pages now cross-link through shared sections so the verification records form a navigable graph instead of isolated pages.
 - Client-side publication search, release-history pages, and verification-layer generation scripts are live.
 
 ## Release 0.3: Full v1.0 web conversion

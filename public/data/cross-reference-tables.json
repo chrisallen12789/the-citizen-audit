@@ -1,0 +1,4521 @@
+{
+  "generatedAt": "2026-07-02T02:21:51.598Z",
+  "audits": {
+    "AUDIT-001": {
+      "sections": [
+        "Section 1",
+        "Section 2",
+        "Section 3",
+        "Section 4",
+        "Section 5",
+        "Section 6",
+        "Section 7",
+        "Section 8",
+        "Section 9",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 13",
+        "Section 14",
+        "Section 15",
+        "Section 16",
+        "Appendix A",
+        "Appendix B",
+        "Repository assets"
+      ],
+      "claims": [
+        "C-001",
+        "C-002",
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-001",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048",
+        "S-049",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-060",
+        "S-061",
+        "S-062",
+        "S-063",
+        "S-064",
+        "S-065",
+        "S-067",
+        "S-068",
+        "S-069",
+        "S-070",
+        "S-071",
+        "S-072",
+        "S-073",
+        "S-074",
+        "S-075",
+        "S-076",
+        "S-077",
+        "S-078",
+        "S-079",
+        "S-080"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-007",
+        "A-008",
+        "A-009",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-019",
+        "A-020",
+        "A-021",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-025",
+        "A-026",
+        "A-027",
+        "A-028",
+        "A-029",
+        "A-030",
+        "A-031",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036",
+        "A-037"
+      ]
+    }
+  },
+  "sections": {
+    "Section 1": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-001"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-073"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedSections": [
+        "Section 3",
+        "Section 5",
+        "Section 7",
+        "Section 9",
+        "Section 14"
+      ]
+    },
+    "Section 2": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 3",
+        "Section 5",
+        "Section 8",
+        "Section 9"
+      ]
+    },
+    "Section 3": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "sources": [
+        "S-001",
+        "S-005",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 4",
+        "Section 5",
+        "Section 6",
+        "Section 14"
+      ]
+    },
+    "Section 4": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "sources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048",
+        "S-049"
+      ],
+      "decisions": [
+        "D-013",
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-007",
+        "A-008",
+        "A-009",
+        "A-010",
+        "A-011",
+        "A-012"
+      ],
+      "relatedSections": [
+        "Section 3",
+        "Section 5",
+        "Section 14"
+      ]
+    },
+    "Section 5": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-043",
+        "S-045",
+        "S-046",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-010",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 3",
+        "Section 4",
+        "Section 14"
+      ]
+    },
+    "Section 6": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-007",
+        "C-008"
+      ],
+      "sources": [
+        "S-038",
+        "S-060",
+        "S-061",
+        "S-062",
+        "S-063",
+        "S-070",
+        "S-071"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-020",
+        "A-021"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 3",
+        "Section 12",
+        "Section 14"
+      ]
+    },
+    "Section 7": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-009"
+      ],
+      "sources": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-080"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 13",
+        "Section 14",
+        "Section 16"
+      ]
+    },
+    "Section 8": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-010"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-074"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-025",
+        "A-026"
+      ],
+      "relatedSections": [
+        "Section 2",
+        "Section 13",
+        "Section 16"
+      ]
+    },
+    "Section 9": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-011"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-072",
+        "S-073",
+        "S-075",
+        "S-076"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-027",
+        "A-028",
+        "A-029"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 2",
+        "Section 14",
+        "Section 16"
+      ]
+    },
+    "Section 10": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "sources": [
+        "S-067",
+        "S-068",
+        "S-077"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "relatedSections": [
+        "Section 11",
+        "Section 13"
+      ]
+    },
+    "Section 11": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-013"
+      ],
+      "sources": [
+        "S-069"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-032",
+        "A-033"
+      ],
+      "relatedSections": [
+        "Section 10",
+        "Section 13"
+      ]
+    },
+    "Section 12": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-014"
+      ],
+      "sources": [],
+      "decisions": [
+        "D-020",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-034"
+      ],
+      "relatedSections": [
+        "Section 6",
+        "Section 13",
+        "Section 14"
+      ]
+    },
+    "Section 13": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-015"
+      ],
+      "sources": [],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-034",
+        "A-035",
+        "A-036"
+      ],
+      "relatedSections": [
+        "Section 7",
+        "Section 8",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 15"
+      ]
+    },
+    "Section 14": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-016"
+      ],
+      "sources": [
+        "S-055",
+        "S-058",
+        "S-060",
+        "S-062",
+        "S-064",
+        "S-070",
+        "S-073"
+      ],
+      "decisions": [
+        "D-014",
+        "D-017",
+        "D-020",
+        "D-022",
+        "D-023"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 1",
+        "Section 3",
+        "Section 5",
+        "Section 15",
+        "Section 16"
+      ]
+    },
+    "Section 15": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-017"
+      ],
+      "sources": [],
+      "decisions": [
+        "D-024"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 13",
+        "Section 14",
+        "Section 16"
+      ]
+    },
+    "Section 16": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-018"
+      ],
+      "sources": [
+        "S-064",
+        "S-074"
+      ],
+      "decisions": [
+        "D-020",
+        "D-025"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 14",
+        "Section 15"
+      ]
+    },
+    "Appendix A": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [],
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 15",
+        "Section 16"
+      ]
+    },
+    "Appendix B": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [],
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 13",
+        "Section 15"
+      ]
+    },
+    "Repository assets": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [],
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Appendix A",
+        "Appendix B"
+      ]
+    }
+  },
+  "claims": {
+    "C-001": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1"
+      ],
+      "sources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-002",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-014",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    "C-002": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-006",
+        "C-009",
+        "C-010",
+        "C-011"
+      ]
+    },
+    "C-003": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-004",
+        "C-005",
+        "C-006",
+        "C-007",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    "C-004": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "sources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012"
+      ],
+      "relatedClaims": [
+        "C-003",
+        "C-005",
+        "C-006"
+      ]
+    },
+    "C-005": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "sources": [
+        "S-044",
+        "S-046",
+        "S-047",
+        "S-048"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-007",
+        "A-008"
+      ],
+      "relatedClaims": [
+        "C-003",
+        "C-004",
+        "C-006"
+      ]
+    },
+    "C-006": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "sources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-014",
+        "C-016",
+        "C-018"
+      ]
+    },
+    "C-007": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "sources": [
+        "S-060",
+        "S-062",
+        "S-070"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    "C-008": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "sources": [
+        "S-060",
+        "S-061",
+        "S-063",
+        "S-071"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-021"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-007",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    "C-009": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "sources": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    "C-010": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 8"
+      ],
+      "sources": [
+        "S-003",
+        "S-074"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-025",
+        "A-026"
+      ],
+      "relatedClaims": [
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-018"
+      ]
+    },
+    "C-011": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "sources": [
+        "S-072",
+        "S-073",
+        "S-075"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-027",
+        "A-028",
+        "A-029"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    "C-012": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "sources": [
+        "S-067",
+        "S-068",
+        "S-077"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-013",
+        "C-014",
+        "C-015"
+      ]
+    },
+    "C-013": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 11"
+      ],
+      "sources": [
+        "S-069"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-032",
+        "A-033"
+      ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-014",
+        "C-015"
+      ]
+    },
+    "C-014": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 12"
+      ],
+      "sources": [
+        "S-062",
+        "S-065"
+      ],
+      "decisions": [
+        "D-020",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-034"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-015",
+        "C-016",
+        "C-018"
+      ]
+    },
+    "C-015": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 13"
+      ],
+      "sources": [
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014"
+      ]
+    },
+    "C-016": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 14"
+      ],
+      "sources": [
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "decisions": [
+        "D-014",
+        "D-020",
+        "D-022",
+        "D-023"
+      ],
+      "openQuestions": [
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-014",
+        "C-017",
+        "C-018"
+      ]
+    },
+    "C-017": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 15"
+      ],
+      "sources": [
+        "S-038",
+        "S-072",
+        "S-078"
+      ],
+      "decisions": [
+        "D-024"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-016",
+        "C-018"
+      ]
+    },
+    "C-018": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 16"
+      ],
+      "sources": [
+        "S-064",
+        "S-073",
+        "S-074"
+      ],
+      "decisions": [
+        "D-020",
+        "D-025"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-014",
+        "C-016",
+        "C-017"
+      ]
+    }
+  },
+  "sources": {
+    "S-001": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "relatedSources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ]
+    },
+    "S-002": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 8",
+        "Section 9"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedSources": [
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006"
+      ]
+    },
+    "S-003": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 7",
+        "Section 8",
+        "Section 9"
+      ],
+      "claims": [
+        "C-002",
+        "C-009",
+        "C-010"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-002",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-025",
+        "A-026"
+      ],
+      "relatedSources": [
+        "S-002",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-074"
+      ]
+    },
+    "S-004": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 8",
+        "Section 9"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedSources": [
+        "S-002",
+        "S-003",
+        "S-005",
+        "S-006"
+      ]
+    },
+    "S-005": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 3"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedSources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-006"
+      ]
+    },
+    "S-006": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedSources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005"
+      ]
+    },
+    "S-038": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 3",
+        "Section 6"
+      ],
+      "claims": [
+        "C-001",
+        "C-003",
+        "C-016",
+        "C-017"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-022",
+        "D-023",
+        "D-024"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-001",
+        "S-042",
+        "S-043",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-072",
+        "S-078"
+      ]
+    },
+    "S-039": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-001",
+        "C-003"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004"
+      ],
+      "relatedSources": [
+        "S-038",
+        "S-040",
+        "S-073",
+        "S-001",
+        "S-042",
+        "S-043"
+      ]
+    },
+    "S-040": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-001",
+        "C-003"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004"
+      ],
+      "relatedSources": [
+        "S-038",
+        "S-039",
+        "S-073",
+        "S-001",
+        "S-042",
+        "S-043"
+      ]
+    },
+    "S-042": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "relatedSources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-043"
+      ]
+    },
+    "S-043": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3",
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-003",
+        "C-004",
+        "C-006"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-012",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-017",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016"
+      ],
+      "relatedSources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ]
+    },
+    "S-044": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048"
+      ]
+    },
+    "S-045": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-044",
+        "S-046",
+        "S-049"
+      ]
+    },
+    "S-046": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-049",
+        "S-047",
+        "S-048"
+      ]
+    },
+    "S-047": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-005"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-007",
+        "A-008"
+      ],
+      "relatedSources": [
+        "S-044",
+        "S-046",
+        "S-048"
+      ]
+    },
+    "S-048": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-005"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-007",
+        "A-008"
+      ],
+      "relatedSources": [
+        "S-044",
+        "S-046",
+        "S-047"
+      ]
+    },
+    "S-049": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046"
+      ]
+    },
+    "S-050": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ]
+    },
+    "S-051": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ]
+    },
+    "S-052": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ]
+    },
+    "S-053": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ]
+    },
+    "S-054": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ]
+    },
+    "S-055": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5",
+        "Section 14"
+      ],
+      "claims": [
+        "C-006",
+        "C-016"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-038",
+        "S-064",
+        "S-073"
+      ]
+    },
+    "S-056": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-057",
+        "S-058",
+        "S-059"
+      ]
+    },
+    "S-057": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-058",
+        "S-059"
+      ]
+    },
+    "S-058": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5",
+        "Section 14"
+      ],
+      "claims": [
+        "C-006",
+        "C-016"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-059",
+        "S-038",
+        "S-064",
+        "S-073"
+      ]
+    },
+    "S-059": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058"
+      ]
+    },
+    "S-060": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6",
+        "Section 14"
+      ],
+      "claims": [
+        "C-007",
+        "C-008"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-019"
+      ],
+      "relatedSources": [
+        "S-062",
+        "S-070",
+        "S-061",
+        "S-063",
+        "S-071"
+      ]
+    },
+    "S-061": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-008"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-021"
+      ],
+      "relatedSources": [
+        "S-060",
+        "S-063",
+        "S-071"
+      ]
+    },
+    "S-062": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6",
+        "Section 14"
+      ],
+      "claims": [
+        "C-007",
+        "C-014"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-034"
+      ],
+      "relatedSources": [
+        "S-060",
+        "S-070",
+        "S-065"
+      ]
+    },
+    "S-063": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-008"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-021"
+      ],
+      "relatedSources": [
+        "S-060",
+        "S-061",
+        "S-071"
+      ]
+    },
+    "S-064": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7",
+        "Section 14",
+        "Section 16"
+      ],
+      "claims": [
+        "C-009",
+        "C-016",
+        "C-018"
+      ],
+      "decisions": [
+        "D-021",
+        "D-014",
+        "D-020",
+        "D-022",
+        "D-023",
+        "D-025"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-017",
+        "A-018",
+        "A-005",
+        "A-028"
+      ],
+      "relatedSources": [
+        "S-003",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-073",
+        "S-074"
+      ]
+    },
+    "S-065": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009",
+        "C-014"
+      ],
+      "decisions": [
+        "D-021",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-034"
+      ],
+      "relatedSources": [
+        "S-003",
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-062"
+      ]
+    },
+    "S-067": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "relatedSources": [
+        "S-068",
+        "S-077"
+      ]
+    },
+    "S-068": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "relatedSources": [
+        "S-067",
+        "S-077"
+      ]
+    },
+    "S-069": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 11"
+      ],
+      "claims": [
+        "C-013"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-032",
+        "A-033"
+      ],
+      "relatedSources": []
+    },
+    "S-070": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6",
+        "Section 14"
+      ],
+      "claims": [
+        "C-007"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021"
+      ],
+      "relatedSources": [
+        "S-060",
+        "S-062"
+      ]
+    },
+    "S-071": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-008"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-021"
+      ],
+      "relatedSources": [
+        "S-060",
+        "S-061",
+        "S-063"
+      ]
+    },
+    "S-072": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-011",
+        "C-017"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021",
+        "D-024"
+      ],
+      "openQuestions": [
+        "A-028",
+        "A-027",
+        "A-029",
+        "A-005",
+        "A-018",
+        "A-037"
+      ],
+      "relatedSources": [
+        "S-073",
+        "S-075",
+        "S-038",
+        "S-078"
+      ]
+    },
+    "S-073": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 9",
+        "Section 14"
+      ],
+      "claims": [
+        "C-001",
+        "C-011",
+        "C-016",
+        "C-018"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-025"
+      ],
+      "openQuestions": [
+        "A-028",
+        "A-005",
+        "A-018",
+        "A-037",
+        "A-027",
+        "A-029",
+        "A-017"
+      ],
+      "relatedSources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-072",
+        "S-075",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-074"
+      ]
+    },
+    "S-074": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 8",
+        "Section 16"
+      ],
+      "claims": [
+        "C-010",
+        "C-018"
+      ],
+      "decisions": [
+        "D-021",
+        "D-020",
+        "D-025"
+      ],
+      "openQuestions": [
+        "A-025",
+        "A-026",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedSources": [
+        "S-003",
+        "S-064",
+        "S-073"
+      ]
+    },
+    "S-075": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-011"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-027",
+        "A-028",
+        "A-029"
+      ],
+      "relatedSources": [
+        "S-072",
+        "S-073"
+      ]
+    },
+    "S-076": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-015"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ],
+      "relatedSources": []
+    },
+    "S-077": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "relatedSources": [
+        "S-067",
+        "S-068"
+      ]
+    },
+    "S-078": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009",
+        "C-017"
+      ],
+      "decisions": [
+        "D-021",
+        "D-024"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-005",
+        "A-018",
+        "A-028"
+      ],
+      "relatedSources": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-079",
+        "S-038",
+        "S-072"
+      ]
+    },
+    "S-079": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024"
+      ],
+      "relatedSources": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078"
+      ]
+    },
+    "S-080": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [],
+      "decisions": [],
+      "openQuestions": [],
+      "relatedSources": []
+    }
+  },
+  "decisions": {
+    "D-001": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 2",
+        "Section 9"
+      ],
+      "claims": [
+        "C-001",
+        "C-002",
+        "C-011"
+      ],
+      "sources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-072",
+        "S-075"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-002",
+        "A-027",
+        "A-029"
+      ],
+      "relatedDecisions": [
+        "D-020",
+        "D-005",
+        "D-012",
+        "D-021"
+      ]
+    },
+    "D-005": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedDecisions": [
+        "D-001",
+        "D-012"
+      ]
+    },
+    "D-012": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 5"
+      ],
+      "claims": [
+        "C-002",
+        "C-006"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestions": [
+        "A-002",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedDecisions": [
+        "D-001",
+        "D-005",
+        "D-017",
+        "D-019",
+        "D-020"
+      ]
+    },
+    "D-013": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3",
+        "Section 4",
+        "Section 6"
+      ],
+      "claims": [
+        "C-003",
+        "C-007"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-060",
+        "S-062",
+        "S-070"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-018",
+        "A-020",
+        "A-021"
+      ],
+      "relatedDecisions": [
+        "D-014",
+        "D-017",
+        "D-021"
+      ]
+    },
+    "D-014": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3",
+        "Section 14"
+      ],
+      "claims": [
+        "C-003",
+        "C-016"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "relatedDecisions": [
+        "D-013",
+        "D-017",
+        "D-020",
+        "D-022",
+        "D-023"
+      ]
+    },
+    "D-017": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3",
+        "Section 4",
+        "Section 5",
+        "Section 14"
+      ],
+      "claims": [
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-006"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedDecisions": [
+        "D-013",
+        "D-014",
+        "D-018",
+        "D-019",
+        "D-012",
+        "D-020"
+      ]
+    },
+    "D-018": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "sources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ],
+      "relatedDecisions": [
+        "D-017",
+        "D-019"
+      ]
+    },
+    "D-019": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-004",
+        "C-006"
+      ],
+      "sources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedDecisions": [
+        "D-017",
+        "D-018",
+        "D-012",
+        "D-020"
+      ]
+    },
+    "D-020": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 5",
+        "Section 12",
+        "Section 14",
+        "Section 16"
+      ],
+      "claims": [
+        "C-001",
+        "C-006",
+        "C-014",
+        "C-016",
+        "C-018"
+      ],
+      "sources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-062",
+        "S-065",
+        "S-064",
+        "S-074"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-034"
+      ],
+      "relatedDecisions": [
+        "D-001",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-025"
+      ]
+    },
+    "D-021": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6",
+        "Section 7",
+        "Section 8",
+        "Section 9",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 13"
+      ],
+      "claims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015"
+      ],
+      "sources": [
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-061",
+        "S-063",
+        "S-071",
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-074",
+        "S-072",
+        "S-073",
+        "S-075",
+        "S-067",
+        "S-068",
+        "S-077",
+        "S-069",
+        "S-076"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-019",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037",
+        "A-025",
+        "A-026",
+        "A-027",
+        "A-028",
+        "A-029",
+        "A-030",
+        "A-031",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ],
+      "relatedDecisions": [
+        "D-013",
+        "D-001",
+        "D-020"
+      ]
+    },
+    "D-022": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 14"
+      ],
+      "claims": [
+        "C-016"
+      ],
+      "sources": [
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestions": [
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "relatedDecisions": [
+        "D-014",
+        "D-020",
+        "D-023"
+      ]
+    },
+    "D-023": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 14"
+      ],
+      "claims": [
+        "C-016"
+      ],
+      "sources": [
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestions": [
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "relatedDecisions": [
+        "D-014",
+        "D-020",
+        "D-022"
+      ]
+    },
+    "D-024": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 15"
+      ],
+      "claims": [
+        "C-017"
+      ],
+      "sources": [
+        "S-038",
+        "S-072",
+        "S-078"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedDecisions": []
+    },
+    "D-025": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 16"
+      ],
+      "claims": [
+        "C-018"
+      ],
+      "sources": [
+        "S-064",
+        "S-073",
+        "S-074"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedDecisions": [
+        "D-020"
+      ]
+    },
+    "D-026": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Appendix A",
+        "Appendix B",
+        "Repository assets"
+      ],
+      "claims": [],
+      "sources": [],
+      "openQuestions": [],
+      "relatedDecisions": []
+    }
+  },
+  "openQuestions": {
+    "A-001": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "sources": [
+        "S-038",
+        "S-001",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "relatedOpenQuestions": [
+        "A-003",
+        "A-004",
+        "A-005"
+      ]
+    },
+    "A-002": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 3"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "sources": [
+        "S-005",
+        "S-006",
+        "S-002",
+        "S-003",
+        "S-004"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "relatedOpenQuestions": []
+    },
+    "A-003": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "sources": [
+        "S-040",
+        "S-042",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "relatedOpenQuestions": [
+        "A-001",
+        "A-004",
+        "A-005"
+      ]
+    },
+    "A-004": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "relatedOpenQuestions": [
+        "A-001",
+        "A-003",
+        "A-005"
+      ]
+    },
+    "A-005": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 3"
+      ],
+      "claims": [
+        "C-001",
+        "C-003",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-001",
+        "S-042",
+        "S-043",
+        "S-072",
+        "S-078",
+        "S-064",
+        "S-074"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-024",
+        "D-025"
+      ],
+      "relatedOpenQuestions": [
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004"
+      ]
+    },
+    "A-006": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "sources": [
+        "S-044",
+        "S-045",
+        "S-043",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "relatedOpenQuestions": [
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ]
+    },
+    "A-007": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-005"
+      ],
+      "sources": [
+        "S-046",
+        "S-053",
+        "S-054",
+        "S-044",
+        "S-047",
+        "S-048"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "relatedOpenQuestions": [
+        "A-006",
+        "A-008"
+      ]
+    },
+    "A-008": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-005"
+      ],
+      "sources": [
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "relatedOpenQuestions": [
+        "A-006",
+        "A-007"
+      ]
+    },
+    "A-009": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [],
+      "sources": [
+        "S-049"
+      ],
+      "decisions": [],
+      "relatedOpenQuestions": []
+    },
+    "A-010": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "sources": [
+        "S-043",
+        "S-047",
+        "S-049",
+        "S-057",
+        "S-044",
+        "S-045",
+        "S-046"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "relatedOpenQuestions": [
+        "A-006",
+        "A-011",
+        "A-012"
+      ]
+    },
+    "A-011": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "sources": [
+        "S-049",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "relatedOpenQuestions": [
+        "A-006",
+        "A-010",
+        "A-012"
+      ]
+    },
+    "A-012": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "sources": [
+        "S-045",
+        "S-049",
+        "S-043",
+        "S-044",
+        "S-046"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "relatedOpenQuestions": [
+        "A-006",
+        "A-010",
+        "A-011"
+      ]
+    },
+    "A-013": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-055",
+        "S-058",
+        "S-059",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-056",
+        "S-057"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "relatedOpenQuestions": [
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    "A-014": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-050",
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "relatedOpenQuestions": [
+        "A-013",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    "A-015": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-050",
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "relatedOpenQuestions": [
+        "A-013",
+        "A-014",
+        "A-016",
+        "A-017"
+      ]
+    },
+    "A-016": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "relatedOpenQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-017"
+      ]
+    },
+    "A-017": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006",
+        "C-016"
+      ],
+      "sources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-038",
+        "S-064",
+        "S-073"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023"
+      ],
+      "relatedOpenQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-018",
+        "A-037"
+      ]
+    },
+    "A-018": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 6"
+      ],
+      "claims": [
+        "C-001",
+        "C-007",
+        "C-008",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-061",
+        "S-063",
+        "S-071",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-072",
+        "S-078",
+        "S-074"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025"
+      ],
+      "relatedOpenQuestions": [
+        "A-005",
+        "A-028",
+        "A-037",
+        "A-020",
+        "A-021",
+        "A-019",
+        "A-017"
+      ]
+    },
+    "A-019": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-008"
+      ],
+      "sources": [
+        "S-060",
+        "S-061",
+        "S-063",
+        "S-071"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-018",
+        "A-021"
+      ]
+    },
+    "A-020": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-007"
+      ],
+      "sources": [
+        "S-060",
+        "S-070",
+        "S-062"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-018",
+        "A-021"
+      ]
+    },
+    "A-021": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-007",
+        "C-008"
+      ],
+      "sources": [
+        "S-061",
+        "S-071",
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-063"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-018",
+        "A-020",
+        "A-019"
+      ]
+    },
+    "A-022": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009"
+      ],
+      "sources": [
+        "S-065",
+        "S-078",
+        "S-003",
+        "S-064",
+        "S-079"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-023",
+        "A-024",
+        "A-037"
+      ]
+    },
+    "A-023": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009",
+        "C-015"
+      ],
+      "sources": [
+        "S-065",
+        "S-003",
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-022",
+        "A-024",
+        "A-037",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ]
+    },
+    "A-024": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009"
+      ],
+      "sources": [
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-003",
+        "S-065"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-022",
+        "A-023",
+        "A-037"
+      ]
+    },
+    "A-025": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 8"
+      ],
+      "claims": [
+        "C-010",
+        "C-015"
+      ],
+      "sources": [
+        "S-074",
+        "S-003",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-026",
+        "A-023",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ]
+    },
+    "A-026": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 8"
+      ],
+      "claims": [
+        "C-010"
+      ],
+      "sources": [
+        "S-003",
+        "S-074"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-025"
+      ]
+    },
+    "A-027": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-011",
+        "C-015"
+      ],
+      "sources": [
+        "S-075",
+        "S-072",
+        "S-073",
+        "S-076"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-028",
+        "A-029",
+        "A-023",
+        "A-025",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ]
+    },
+    "A-028": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 9"
+      ],
+      "claims": [
+        "C-001",
+        "C-011",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-072",
+        "S-073",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-075",
+        "S-078",
+        "S-064",
+        "S-074"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-024",
+        "D-025"
+      ],
+      "relatedOpenQuestions": [
+        "A-005",
+        "A-018",
+        "A-037",
+        "A-027",
+        "A-029"
+      ]
+    },
+    "A-029": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-011"
+      ],
+      "sources": [
+        "S-072",
+        "S-073",
+        "S-075"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-027",
+        "A-028"
+      ]
+    },
+    "A-030": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012",
+        "C-015"
+      ],
+      "sources": [
+        "S-067",
+        "S-068",
+        "S-077",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-031",
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ]
+    },
+    "A-031": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "sources": [
+        "S-067",
+        "S-068",
+        "S-077"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-030"
+      ]
+    },
+    "A-032": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 11"
+      ],
+      "claims": [
+        "C-013",
+        "C-015"
+      ],
+      "sources": [
+        "S-069",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-033",
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-034",
+        "A-035",
+        "A-036"
+      ]
+    },
+    "A-033": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 11"
+      ],
+      "claims": [
+        "C-013",
+        "C-015"
+      ],
+      "sources": [
+        "S-069",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-032",
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-034",
+        "A-035",
+        "A-036"
+      ]
+    },
+    "A-034": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 12",
+        "Section 13"
+      ],
+      "claims": [
+        "C-014",
+        "C-015"
+      ],
+      "sources": [
+        "S-062",
+        "S-065",
+        "S-076"
+      ],
+      "decisions": [
+        "D-020",
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-035",
+        "A-036"
+      ]
+    },
+    "A-035": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 13"
+      ],
+      "claims": [
+        "C-015"
+      ],
+      "sources": [
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-036"
+      ]
+    },
+    "A-036": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 13"
+      ],
+      "claims": [
+        "C-015"
+      ],
+      "sources": [
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "relatedOpenQuestions": [
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035"
+      ]
+    },
+    "A-037": {
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 7"
+      ],
+      "claims": [
+        "C-001",
+        "C-009",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-055",
+        "S-058",
+        "S-072",
+        "S-074"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025"
+      ],
+      "relatedOpenQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-017"
+      ]
+    }
+  }
+}
