@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const publication = require("./publication-data");
+const { applyQaStatus } = require("./build/qa-status");
 
 const root = path.resolve(__dirname, "..");
 const publicDir = path.join(root, "public");
@@ -189,6 +190,8 @@ const expectedModeledPageSlugs = new Set([
 const requiredRendererModules = [
   "scripts/build/io.js",
   "scripts/build/data-outputs.js",
+  "scripts/build/finalize.js",
+  "scripts/build/qa-status.js",
   "scripts/renderers/shared.js",
   "scripts/renderers/relationships.js",
   "scripts/renderers/page-model.js",
@@ -299,6 +302,9 @@ const publicationSearch = readJson("public/data/publication-search.json");
 const platformStatus = readJson("public/data/platform-status.json");
 const traceRecords = readJson("public/data/trace-records.json");
 const siteJs = fs.readFileSync(path.join(root, "public/site.js"), "utf8");
+const detailsRenderer = fs.readFileSync(path.join(root, "scripts/renderers/details.js"), "utf8");
+const sectionContentSource = fs.readFileSync(path.join(root, "data-model/section-content.js"), "utf8");
+const pageContentSource = fs.readFileSync(path.join(root, "data-model/pages.js"), "utf8");
 
 const generatedSectionFiles = fs
   .readdirSync(path.join(publicDir, "audit"))
@@ -392,6 +398,17 @@ for (const page of publication.pages) {
   if (page.id === "PAGE-APPENDIX-B" && !html.includes('data-appendix-source="transparency-scorecard"')) {
     problems.push("PAGE-APPENDIX-B: appendix page missing transparency source marker");
   }
+}
+
+const rawHtmlCount =
+  (sectionContentSource.match(/["']html["']\s*:/g) || []).length +
+  (pageContentSource.match(/["']html["']\s*:/g) || []).length;
+if (rawHtmlCount > 164) {
+  problems.push("raw HTML content increases beyond the current cleanup ceiling");
+}
+
+if (!detailsRenderer.includes('data-generated-source="typed-detail-renderer"')) {
+  problems.push("detail pages bypass typed renderers");
 }
 
 if (generatedSectionFiles.length !== modeledSections.length) {
@@ -596,6 +613,28 @@ if (platformStatus.generatedSectionPages !== metrics.generatedSectionPages) {
 if (platformStatus.generatedClaimPages !== metrics.generatedClaimPages) {
   problems.push("public/data/platform-status.json: generated claim page count mismatch");
 }
+if (platformStatus.qaStatus !== metrics.qaStatus.status) {
+  problems.push("QA status is not propagated consistently");
+}
+
+const platformHtml = fs.existsSync(path.join(root, "public/platform.html"))
+  ? fs.readFileSync(path.join(root, "public/platform.html"), "utf8")
+  : "";
+const statusHtml = fs.existsSync(path.join(root, "public/status.html"))
+  ? fs.readFileSync(path.join(root, "public/status.html"), "utf8")
+  : "";
+if (
+  platformHtml &&
+  !platformHtml.includes(`data-qa-status-value="platform">${metrics.qaStatus.status}</h2>`)
+) {
+  problems.push("platform.html QA status display is inconsistent");
+}
+if (
+  statusHtml &&
+  !statusHtml.includes(`data-qa-status-value="status">${platformStatus.qaStatus}</h2>`)
+) {
+  problems.push("status.html QA status display is inconsistent");
+}
 
 if (problems.length) {
   console.error("QA failed:");
@@ -605,9 +644,9 @@ if (problems.length) {
   process.exit(1);
 }
 
-metrics.qaStatus = {
+applyQaStatus({
+  root,
   status: "passed",
-  validatedAt: new Date().toISOString(),
   htmlPagesChecked: htmlFiles.length,
   checksEnforced: [
     "claim sources",
@@ -621,34 +660,6 @@ metrics.qaStatus = {
     "revision history",
     "internal links"
   ]
-};
-fs.writeFileSync(
-  path.join(root, "public/data/platform-metrics.json"),
-  `${JSON.stringify(metrics, null, 2)}\n`,
-  "utf8"
-);
-
-platformStatus.qaStatus = metrics.qaStatus.status;
-platformStatus.generatedAt = new Date().toISOString();
-fs.writeFileSync(
-  path.join(root, "public/data/platform-status.json"),
-  `${JSON.stringify(platformStatus, null, 2)}\n`,
-  "utf8"
-);
-
-for (const [relativePath, marker] of [
-  ["public/platform.html", "platform"],
-  ["public/status.html", "status"]
-]) {
-  const filePath = path.join(root, relativePath);
-  if (!fs.existsSync(filePath)) {
-    continue;
-  }
-  const html = fs.readFileSync(filePath, "utf8").replace(
-    new RegExp(`(<h2 data-qa-status-value="${marker}">)([\\s\\S]*?)(</h2>)`),
-    `$1${metrics.qaStatus.status}$3`
-  );
-  fs.writeFileSync(filePath, html, "utf8");
-}
+});
 
 console.log(`QA passed for ${htmlFiles.length} HTML files.`);

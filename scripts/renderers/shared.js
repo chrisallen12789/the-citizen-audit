@@ -82,9 +82,15 @@ function renderTable(table) {
 }
 
 function renderPanelBlock(block) {
+  const paragraphs = [
+    ...(block.texts || []).map((text) => renderParagraphBlock({ type: "paragraph", text })),
+    ...(block.paragraphs || [])
+  ].join("");
+  const nestedBlocks = (block.contentBlocks || []).map(renderContentBlock).join("");
   return `<section class="panel${block.stack ? " stack" : ""}">
       ${block.heading ? `<h2>${escapeHtml(block.heading)}</h2>` : ""}
-      ${(block.paragraphs || []).join("")}
+      ${paragraphs}
+      ${nestedBlocks}
       ${block.table ? renderTable(block.table) : ""}
     </section>`;
 }
@@ -124,6 +130,71 @@ function renderSearchFilter(block) {
     </label>`;
 }
 
+function renderParagraphBlock(block) {
+  if (block.html) {
+    return block.html;
+  }
+  return `<p>${escapeHtml(block.text)}</p>`;
+}
+
+function renderListBlock(block) {
+  const tag = block.ordered ? "ol" : "ul";
+  if (block.html) {
+    return block.html;
+  }
+  return `<${tag}>${(block.items || [])
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join("")}</${tag}>`;
+}
+
+function renderMetadataGrid(block) {
+  return `<div class="meta-grid">${(block.items || [])
+    .map((item) => {
+      const value = item.valueHtml || escapeHtml(item.value || "");
+      return `<p><strong>${escapeHtml(item.label)}:</strong> ${value}</p>`;
+    })
+    .join("")}</div>`;
+}
+
+function renderRelationshipGrid(block) {
+  return `<div class="${block.layout === "stack" ? "stack" : "grid"}">${(block.items || [])
+    .map(
+      (item) => `<article class="card stack">
+        ${item.eyebrow ? `<p class="row-kicker">${escapeHtml(item.eyebrow)}</p>` : ""}
+        <h3>${item.href ? `<a href="${escapeHtml(item.href)}">${escapeHtml(item.title)}</a>` : escapeHtml(item.title)}</h3>
+        ${item.text ? `<p>${escapeHtml(item.text)}</p>` : ""}
+        ${item.html || ""}
+      </article>`
+    )
+    .join("")}</div>`;
+}
+
+function renderContentBlock(block) {
+  if (
+    block.type === "paragraph" ||
+    block.type === "methodologyNote" ||
+    block.type === "bottomLine"
+  ) {
+    return renderParagraphBlock(block);
+  }
+  if (block.type === "callout") {
+    return block.html || `<div class="claim"><p>${escapeHtml(block.text || "")}</p></div>`;
+  }
+  if (block.type === "table") {
+    return block.table ? renderTable(block.table) : block.html || "";
+  }
+  if (block.type === "list") {
+    return renderListBlock(block);
+  }
+  if (block.type === "metadataGrid") {
+    return renderMetadataGrid(block);
+  }
+  if (block.type === "relationshipGrid") {
+    return renderRelationshipGrid(block);
+  }
+  return "";
+}
+
 function linkList(items, basePath) {
   return items
     .map((item) => `<a class="tag" href="${basePath}${item.toLowerCase()}.html">${escapeHtml(item)}</a>`)
@@ -155,6 +226,11 @@ module.exports = {
   renderCardGrid,
   renderTocBlock,
   renderSearchFilter,
+  renderParagraphBlock,
+  renderListBlock,
+  renderMetadataGrid,
+  renderRelationshipGrid,
+  renderContentBlock,
   linkList,
   linkClaims,
   renderRecordLinks,

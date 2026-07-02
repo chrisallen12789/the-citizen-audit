@@ -106,8 +106,8 @@ module.exports = [
       {
         type: "panel",
         heading: "Evidence Classes",
-        paragraphs: [
-          "<p>Evidence hierarchy: federal accounting records and statutes first; non-partisan analyses next; then peer-reviewed sources; then policy organizations; advocacy sources last.</p>"
+        texts: [
+          "Evidence hierarchy: federal accounting records and statutes first; non-partisan analyses next; then peer-reviewed sources; then policy organizations; advocacy sources last."
         ]
       }
     ]
@@ -146,8 +146,8 @@ module.exports = [
       {
         type: "panel",
         heading: "Structured source records",
-        paragraphs: [
-          "<p>This release publishes source metadata, citation-verification status, and claim-level trace links for the records already cited in the converted sections. If an official canonical URL could not be verified, the page says so explicitly instead of guessing.</p>"
+        texts: [
+          "This release publishes source metadata, citation-verification status, and claim-level trace links for the records already cited in the converted sections. If an official canonical URL could not be verified, the page says so explicitly instead of guessing."
         ]
       },
       {
@@ -256,9 +256,9 @@ module.exports = [
         type: "panel",
         heading: "How to verify the audit",
         stack: true,
-        paragraphs: [
-          "<p>Start from a section page, open its verification panel, then follow each claim into its source, decision, and open-question records. The platform is designed so readers can move from published prose to supporting evidence without changing the Version 1.0 conclusions.</p>",
-          "<p>Where the public record is incomplete, the platform keeps that incompleteness visible instead of filling it with modeled certainty.</p>"
+        texts: [
+          "Start from a section page, open its verification panel, then follow each claim into its source, decision, and open-question records. The platform is designed so readers can move from published prose to supporting evidence without changing the Version 1.0 conclusions.",
+          "Where the public record is incomplete, the platform keeps that incompleteness visible instead of filling it with modeled certainty."
         ]
       },
       {
@@ -285,18 +285,18 @@ module.exports = [
         type: "panel",
         heading: "How to submit corrections",
         stack: true,
-        paragraphs: [
-          "<p>Use the published corrections workflow to report source mismatches, broken trace links, missing metadata, or verified public records that should resolve an open question. Corrections should cite the exact page, claim, and source record involved.</p>",
-          "<p>Corrections are tracked in public release notes, version history, and changelog pages so the platform never hides what changed around the locked publication.</p>"
+        texts: [
+          "Use the published corrections workflow to report source mismatches, broken trace links, missing metadata, or verified public records that should resolve an open question. Corrections should cite the exact page, claim, and source record involved.",
+          "Corrections are tracked in public release notes, version history, and changelog pages so the platform never hides what changed around the locked publication."
         ]
       },
       {
         type: "panel",
         heading: "How corrections are tracked",
         stack: true,
-        paragraphs: [
-          "<p>Every release should record platform-level changes without silently rewriting Version 1.0 analytical conclusions. Decision history is preserved, open questions remain public, and unresolved URL verification is flagged explicitly.</p>",
-          "<p>Version history describes delivery milestones, changelog captures platform changes, and release notes summarize what shipped in each iteration.</p>"
+        texts: [
+          "Every release should record platform-level changes without silently rewriting Version 1.0 analytical conclusions. Decision history is preserved, open questions remain public, and unresolved URL verification is flagged explicitly.",
+          "Version history describes delivery milestones, changelog captures platform changes, and release notes summarize what shipped in each iteration."
         ]
       }
     ]
@@ -372,21 +372,21 @@ module.exports = [
       {
         type: "panel",
         heading: "Correction Standard",
-        paragraphs: [
-          "<p>A correction request should identify the claim, section, table if applicable, Source ID, alleged error, replacement evidence, and proposed correction. If the challenge is correct, the correction should be logged publicly.</p>"
+        texts: [
+          "A correction request should identify the claim, section, table if applicable, Source ID, alleged error, replacement evidence, and proposed correction. If the challenge is correct, the correction should be logged publicly."
         ]
       },
       {
         type: "panel",
         heading: "Version Rule",
-        paragraphs: [
-          "<p>Version 1.0 is analytically frozen. Corrections or new evidence create a later version rather than silently rewriting the locked edition.</p>"
+        texts: [
+          "Version 1.0 is analytically frozen. Corrections or new evidence create a later version rather than silently rewriting the locked edition."
         ]
       },
       {
         type: "panel",
         heading: "Current Public Corrections",
-        paragraphs: ["<p>No public corrections logged in this web release.</p>"]
+        texts: ["No public corrections logged in this web release."]
       }
     ]
   },
@@ -616,9 +616,9 @@ module.exports = [
         type: "panel",
         heading: "Locked-edition invariants",
         stack: true,
-        paragraphs: [
-          "<p>Version 1.0 conclusions stay locked unless a later version is issued. The platform can add traceability, metadata, and reviewer tooling without silently changing analytical conclusions.</p>",
-          "<p>Decision history remains public, open questions remain visible, and URL-verification gaps stay labeled as pending rather than guessed into existence.</p>"
+        texts: [
+          "Version 1.0 conclusions stay locked unless a later version is issued. The platform can add traceability, metadata, and reviewer tooling without silently changing analytical conclusions.",
+          "Decision history remains public, open questions remain visible, and URL-verification gaps stay labeled as pending rather than guessed into existence."
         ]
       }
     ]
@@ -655,9 +655,9 @@ module.exports = [
         type: "panel",
         heading: "Dashboard notes",
         stack: true,
-        paragraphs: [
-          "<p>This dashboard is generated from the same structured records that drive claim pages, source pages, search, explorer data, graph outputs, and QA.</p>",
-          "<p>Adding a future audit should mean adding new audit, section, claim, source, decision, and open-question records, then running the build again without infrastructure changes.</p>"
+        texts: [
+          "This dashboard is generated from the same structured records that drive claim pages, source pages, search, explorer data, graph outputs, and QA.",
+          "Adding a future audit should mean adding new audit, section, claim, source, decision, and open-question records, then running the build again without infrastructure changes."
         ]
       }
     ]

@@ -1,6 +1,7 @@
 const path = require("path");
 const publication = require("./publication-data");
 const { writeFile } = require("./build/io");
+const { finalizeBuild } = require("./build/finalize");
 const { createRelationships } = require("./renderers/relationships");
 const { createPageRenderer } = require("./renderers/page-model");
 const { createSectionRenderer } = require("./renderers/sections");
@@ -88,45 +89,18 @@ function build() {
   writeFile(publicDir, "data/publication-search.json", `${JSON.stringify(searchIndex, null, 2)}\n`);
   writeFile(publicDir, "data/trace-records.json", `${JSON.stringify(traceRecords, null, 2)}\n`);
 
-  const manifest = buildManifest(manifestOutputs);
-  const provisionalMetrics = buildPlatformMetrics(searchIndex, traceRecords);
-  const provisionalStatus = buildPlatformStatus(provisionalMetrics, manifest);
-
-  writeFile(
+  finalizeBuild({
+    writeFile,
     publicDir,
-    "platform.html",
-    renderPublicationPage(getPage("PAGE-PLATFORM"), { metrics: provisionalMetrics })
-  );
-  writeFile(
-    publicDir,
-    "status.html",
-    renderPublicationPage(getPage("PAGE-STATUS"), {
-      metrics: provisionalMetrics,
-      status: provisionalStatus,
-      manifest
-    })
-  );
-
-  const platformMetrics = buildPlatformMetrics(searchIndex, traceRecords);
-  const platformStatus = buildPlatformStatus(platformMetrics, manifest);
-
-  writeFile(
-    publicDir,
-    "platform.html",
-    renderPublicationPage(getPage("PAGE-PLATFORM"), { metrics: platformMetrics })
-  );
-  writeFile(
-    publicDir,
-    "status.html",
-    renderPublicationPage(getPage("PAGE-STATUS"), {
-      metrics: platformMetrics,
-      status: platformStatus,
-      manifest
-    })
-  );
-  writeFile(publicDir, "data/platform-status.json", `${JSON.stringify(platformStatus, null, 2)}\n`);
-  writeFile(publicDir, "data/publication-manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
-  writeFile(publicDir, "data/platform-metrics.json", `${JSON.stringify(platformMetrics, null, 2)}\n`);
+    getPage,
+    renderPublicationPage,
+    buildManifest,
+    buildPlatformMetrics,
+    buildPlatformStatus,
+    searchIndex,
+    traceRecords,
+    manifestOutputs
+  });
 }
 
 build();

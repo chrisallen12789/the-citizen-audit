@@ -2,6 +2,8 @@ const {
   escapeHtml,
   layout,
   linkList,
+  renderActionLinks,
+  renderContentBlock,
   renderRecordLinks,
   formatDate
 } = require("./shared");
@@ -13,127 +15,224 @@ function createDetailRenderers(publication, relationships) {
     return `<a href="${escapeHtml(value)}">${escapeHtml(value)}</a>`;
   }
 
-  function renderSourceDetail(source) {
+  function renderDetailSections(sections) {
+    return sections
+      .map(
+        (section) => `<section class="panel${section.stack ? " stack" : ""}">
+          <h2>${escapeHtml(section.heading)}</h2>
+          ${(section.blocks || []).map(renderContentBlock).join("")}
+        </section>`
+      )
+      .join("");
+  }
+
+  function buildSourceDetailSections(source) {
     const relatedClaims = relationships.relatedClaimsForSource(source.id);
     const relatedDecisions = relationships.relatedDecisionsForSource(source.id, source.sections);
     const relatedOpenQuestions = relationships.relatedOpenQuestionsForSource(source.id);
-    const body = `<div class="actions">
-        <a class="button" href="/sources.html">Back to source index</a>
-        <a class="button" href="/search.html?q=${encodeURIComponent(source.id)}">Search related records</a>
-        <a class="button" href="/explorer.html">Open explorer</a>
-      </div>
-      <section class="panel">
-        <h2>Source summary</h2>
-        <p>${escapeHtml(source.summary)}</p>
-        <div class="meta-grid">
-          <p><strong>Source ID:</strong> ${escapeHtml(source.id)}</p>
-          <p><strong>Publisher:</strong> ${escapeHtml(source.publisher)}</p>
-          <p><strong>Agency label:</strong> ${escapeHtml(source.agency)}</p>
-          <p><strong>Document type:</strong> ${escapeHtml(source.documentType)}</p>
-          <p><strong>Classification:</strong> ${escapeHtml(source.classification)}</p>
-          <p><strong>Confidence:</strong> ${escapeHtml(source.confidence)}</p>
-          <p><strong>Evidence class:</strong> ${escapeHtml(source.evidenceClass)}</p>
-          <p><strong>Publication date:</strong> ${escapeHtml(formatDate(source.publicationDate))}</p>
-          <p><strong>Retrieval date:</strong> ${escapeHtml(formatDate(source.retrievalDate))}</p>
-          <p><strong>Citation priority:</strong> ${escapeHtml(source.citationPriority)}</p>
-          <p><strong>URL verification:</strong> ${escapeHtml(source.urlVerificationStatus)}</p>
-        </div>
-      </section>
-      <section class="panel">
-        <h2>Source links</h2>
-        <p><strong>Official URL</strong><br>${renderSourceUrl(source, "officialUrl")}</p>
-        <p><strong>Archive URL</strong><br>${renderSourceUrl(source, "archiveUrl")}</p>
-        <p><strong>Verification note</strong><br>${escapeHtml(source.urlVerificationNote)}</p>
-      </section>
-      <section class="panel">
-        <h2>Referenced By</h2>
-        <p><strong>Sections</strong><br>${relationships.linkSections(source.sections)}</p>
-      </section>
-      <section class="panel">
-        <h2>Claims supported</h2>
-        ${relatedClaims.length ? `<p>${renderRecordLinks(relatedClaims.map((item) => item.id), "/claims/")}</p>` : "<p>No linked claims yet.</p>"}
-      </section>
-      <section class="panel">
-        <h2>Related decisions</h2>
-        ${relatedDecisions.length ? `<p>${renderRecordLinks(relatedDecisions.map((item) => item.id), "/decision-log/")}</p>` : "<p>No linked decisions yet.</p>"}
-      </section>
-      <section class="panel">
-        <h2>Related open questions</h2>
-        ${relatedOpenQuestions.length ? `<p>${renderRecordLinks(relatedOpenQuestions.map((item) => item.id), "/open-questions/")}</p>` : "<p>No linked open questions yet.</p>"}
-      </section>
-      <section class="panel">
-        <h2>Revision History</h2>
-        <ul>${source.revisionHistory
-          .map(
-            (entry) =>
-              `<li>${escapeHtml(entry.date)} - ${escapeHtml(entry.version)} - ${escapeHtml(entry.summary)}</li>`
-          )
-          .join("")}</ul>
-      </section>`;
+
+    return [
+      {
+        heading: "Source summary",
+        blocks: [
+          { type: "paragraph", text: source.summary },
+          {
+            type: "metadataGrid",
+            items: [
+              { label: "Source ID", value: source.id },
+              { label: "Publisher", value: source.publisher },
+              { label: "Agency label", value: source.agency },
+              { label: "Document type", value: source.documentType },
+              { label: "Classification", value: source.classification },
+              { label: "Confidence", value: source.confidence },
+              { label: "Evidence class", value: source.evidenceClass },
+              { label: "Publication date", value: formatDate(source.publicationDate) },
+              { label: "Retrieval date", value: formatDate(source.retrievalDate) },
+              { label: "Citation priority", value: source.citationPriority },
+              { label: "URL verification", value: source.urlVerificationStatus }
+            ]
+          }
+        ]
+      },
+      {
+        heading: "Source links",
+        blocks: [
+          { type: "paragraph", html: `<p><strong>Official URL</strong><br>${renderSourceUrl(source, "officialUrl")}</p>` },
+          { type: "paragraph", html: `<p><strong>Archive URL</strong><br>${renderSourceUrl(source, "archiveUrl")}</p>` },
+          { type: "paragraph", html: `<p><strong>Verification note</strong><br>${escapeHtml(source.urlVerificationNote)}</p>` }
+        ]
+      },
+      {
+        heading: "Referenced By",
+        blocks: [
+          {
+            type: "metadataGrid",
+            items: [{ label: "Sections", valueHtml: relationships.linkSections(source.sections) }]
+          }
+        ]
+      },
+      {
+        heading: "Claims supported",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedClaims.length
+              ? `<p>${renderRecordLinks(
+                  relatedClaims.map((item) => item.id),
+                  "/claims/"
+                )}</p>`
+              : "<p>No linked claims yet.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Related decisions",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedDecisions.length
+              ? `<p>${renderRecordLinks(
+                  relatedDecisions.map((item) => item.id),
+                  "/decision-log/"
+                )}</p>`
+              : "<p>No linked decisions yet.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Related open questions",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedOpenQuestions.length
+              ? `<p>${renderRecordLinks(
+                  relatedOpenQuestions.map((item) => item.id),
+                  "/open-questions/"
+                )}</p>`
+              : "<p>No linked open questions yet.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Revision History",
+        blocks: [
+          {
+            type: "list",
+            items: source.revisionHistory.map(
+              (entry) => `${entry.date} - ${entry.version} - ${entry.summary}`
+            )
+          }
+        ]
+      }
+    ];
+  }
+
+  function renderSourceDetail(source) {
+    const body = `${renderActionLinks([
+      { label: "Back to source index", href: "/sources.html" },
+      { label: "Search related records", href: `/search.html?q=${encodeURIComponent(source.id)}` },
+      { label: "Open explorer", href: "/explorer.html" }
+    ])}<div class="sr-only" data-generated-source="typed-detail-renderer" data-detail-kind="source"></div>${renderDetailSections(
+      buildSourceDetailSections(source)
+    )}`;
 
     return layout({
       title: `${source.id} | The Citizen Audit`,
       description: `${source.id} source record for The Citizen Audit.`,
       eyebrow: "Source Record",
       heading: `${source.id} - ${source.title}`,
-      lede: "Source pages preserve canonical links, metadata, and cross-references so reviewers can inspect the exact evidence behind published claims.",
+      lede:
+        "Source pages preserve canonical links, metadata, and cross-references so reviewers can inspect the exact evidence behind published claims.",
       body,
       footerLabel: `${source.id} - source record`
     });
   }
 
-  function renderOpenQuestionDetail(item) {
+  function buildOpenQuestionSections(item) {
     const relatedDecisions = relationships.relatedDecisionsForSections(item.sections);
     const relatedClaims = relationships.relatedClaimsForOpenQuestion(item.id);
-    const body = `<div class="actions">
-        <a class="button" href="/open-questions.html">Back to open questions</a>
-        <a class="button" href="/audit/appendix-a-open-questions.html">Appendix A</a>
-        <a class="button" href="/explorer.html">Open explorer</a>
-      </div>
-      <section class="panel">
-        <h2>Why it matters</h2>
-        <p>${escapeHtml(item.whyItMatters)}</p>
-      </section>
-      <section class="panel">
-        <h2>Current web-edition status</h2>
-        <p>${escapeHtml(item.currentState)}</p>
-        <div class="meta-grid">
-          <p><strong>Status:</strong> ${escapeHtml(item.status)}</p>
-          <p><strong>Raised in:</strong> ${relationships.linkSections(item.sections)}</p>
-        </div>
-      </section>
-      <section class="panel">
-        <h2>Record required to resolve it</h2>
-        <p>${escapeHtml(item.recordNeeded)}</p>
-      </section>
-      <section class="panel">
-        <h2>Related source IDs</h2>
-        ${
-          item.relatedSources.length
-            ? `<p>${linkList(item.relatedSources, "/sources/")}</p>`
-            : "<p>No source record has been linked yet in the current web edition.</p>"
-        }
-      </section>
-      <section class="panel">
-        <h2>Claims blocked or limited</h2>
-        ${
-          relatedClaims.length
-            ? `<div class="stack">${relatedClaims
-                .map(
-                  (claim) => `<article class="card stack">
-                    <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.sectionId)}</p>
-                    <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
-                    <p>${escapeHtml(claim.statement)}</p>
-                  </article>`
-                )
-                .join("")}</div>`
-            : "<p>No specific claim record has been linked yet.</p>"
-        }
-      </section>
-      <section class="panel">
-        <h2>Related decisions</h2>
-        ${relatedDecisions.length ? `<p>${renderRecordLinks(relatedDecisions.map((decision) => decision.id), "/decision-log/")}</p>` : "<p>No linked decision records yet.</p>"}
-      </section>`;
+    return [
+      {
+        heading: "Why it matters",
+        blocks: [{ type: "paragraph", text: item.whyItMatters }]
+      },
+      {
+        heading: "Current web-edition status",
+        blocks: [
+          { type: "paragraph", text: item.currentState },
+          {
+            type: "metadataGrid",
+            items: [
+              { label: "Status", value: item.status },
+              { label: "Raised in", valueHtml: relationships.linkSections(item.sections) }
+            ]
+          }
+        ]
+      },
+      {
+        heading: "Record required to resolve it",
+        blocks: [{ type: "paragraph", text: item.recordNeeded }]
+      },
+      {
+        heading: "Related source IDs",
+        blocks: [
+          {
+            type: "paragraph",
+            html: item.relatedSources.length
+              ? `<p>${linkList(item.relatedSources, "/sources/")}</p>`
+              : "<p>No source record has been linked yet in the current web edition.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Claims blocked or limited",
+        blocks: [
+          {
+            type: "relationshipGrid",
+            layout: "stack",
+            items: relatedClaims.map((claim) => ({
+              eyebrow: `${claim.id} - ${claim.sectionId}`,
+              title: claim.title,
+              href: `/claims/${claim.id.toLowerCase()}.html`,
+              text: claim.statement
+            }))
+          }
+        ]
+      },
+      {
+        heading: "Related decisions",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedDecisions.length
+              ? `<p>${renderRecordLinks(
+                  relatedDecisions.map((decision) => decision.id),
+                  "/decision-log/"
+                )}</p>`
+              : "<p>No linked decision records yet.</p>"
+          }
+        ]
+      }
+    ];
+  }
+
+  function renderOpenQuestionDetail(item) {
+    const relatedClaims = relationships.relatedClaimsForOpenQuestion(item.id);
+    const sections = buildOpenQuestionSections(item).map((section) =>
+      section.heading === "Claims blocked or limited" && !relatedClaims.length
+        ? {
+            ...section,
+            blocks: [{ type: "paragraph", html: "<p>No specific claim record has been linked yet.</p>" }]
+          }
+        : section
+    );
+    const body = `${renderActionLinks([
+      { label: "Back to open questions", href: "/open-questions.html" },
+      { label: "Appendix A", href: "/audit/appendix-a-open-questions.html" },
+      { label: "Open explorer", href: "/explorer.html" }
+    ])}<div class="sr-only" data-generated-source="typed-detail-renderer" data-detail-kind="open-question"></div>${renderDetailSections(
+      sections
+    )}`;
 
     return layout({
       title: `${item.id} | The Citizen Audit`,
@@ -146,39 +245,87 @@ function createDetailRenderers(publication, relationships) {
     });
   }
 
-  function renderDecisionDetail(item) {
+  function buildDecisionSections(item) {
     const relatedSources = relationships.relatedSourcesForDecision(item);
     const relatedOpenQuestions = relationships.relatedOpenQuestionsForDecision(item);
     const relatedClaims = relationships.relatedClaimsForDecision(item.id);
-    const body = `<div class="actions">
-        <a class="button" href="/decision-log.html">Back to decision log</a>
-        <a class="button" href="/search.html?q=${encodeURIComponent(item.id)}">Search related records</a>
-        <a class="button" href="/explorer.html">Open explorer</a>
-      </div>
-      <section class="panel">
-        <h2>Published rule</h2>
-        <p>${escapeHtml(item.body)}</p>
-        <div class="meta-grid">
-          <p><strong>Decision ID:</strong> ${escapeHtml(item.id)}</p>
-          <p><strong>References:</strong> ${relationships.linkSections(item.references)}</p>
-        </div>
-      </section>
-      <section class="panel">
-        <h2>Why this page exists</h2>
-        <p>This record makes the numbered methodology rule addressable in the web edition so sources, sections, and future traceability features can point back to the same canonical decision.</p>
-      </section>
-      <section class="panel">
-        <h2>Related Sources</h2>
-        ${relatedSources.length ? `<p>${renderRecordLinks(relatedSources.map((source) => source.id), "/sources/")}</p>` : "<p>No linked source records.</p>"}
-      </section>
-      <section class="panel">
-        <h2>Related Open Questions</h2>
-        ${relatedOpenQuestions.length ? `<p>${renderRecordLinks(relatedOpenQuestions.map((question) => question.id), "/open-questions/")}</p>` : "<p>No linked open-question records.</p>"}
-      </section>
-      <section class="panel">
-        <h2>Related Claims</h2>
-        ${relatedClaims.length ? `<p>${renderRecordLinks(relatedClaims.map((claim) => claim.id), "/claims/")}</p>` : "<p>No linked claim records.</p>"}
-      </section>`;
+    return [
+      {
+        heading: "Published rule",
+        blocks: [
+          { type: "paragraph", text: item.body },
+          {
+            type: "metadataGrid",
+            items: [
+              { label: "Decision ID", value: item.id },
+              { label: "References", valueHtml: relationships.linkSections(item.references) }
+            ]
+          }
+        ]
+      },
+      {
+        heading: "Why this page exists",
+        blocks: [
+          {
+            type: "paragraph",
+            text:
+              "This record makes the numbered methodology rule addressable in the web edition so sources, sections, and future traceability features can point back to the same canonical decision."
+          }
+        ]
+      },
+      {
+        heading: "Related Sources",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedSources.length
+              ? `<p>${renderRecordLinks(
+                  relatedSources.map((source) => source.id),
+                  "/sources/"
+                )}</p>`
+              : "<p>No linked source records.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Related Open Questions",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedOpenQuestions.length
+              ? `<p>${renderRecordLinks(
+                  relatedOpenQuestions.map((question) => question.id),
+                  "/open-questions/"
+                )}</p>`
+              : "<p>No linked open-question records.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Related Claims",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedClaims.length
+              ? `<p>${renderRecordLinks(
+                  relatedClaims.map((claim) => claim.id),
+                  "/claims/"
+                )}</p>`
+              : "<p>No linked claim records.</p>"
+          }
+        ]
+      }
+    ];
+  }
+
+  function renderDecisionDetail(item) {
+    const body = `${renderActionLinks([
+      { label: "Back to decision log", href: "/decision-log.html" },
+      { label: "Search related records", href: `/search.html?q=${encodeURIComponent(item.id)}` },
+      { label: "Open explorer", href: "/explorer.html" }
+    ])}<div class="sr-only" data-generated-source="typed-detail-renderer" data-detail-kind="decision"></div>${renderDetailSections(
+      buildDecisionSections(item)
+    )}`;
 
     return layout({
       title: `${item.id} | The Citizen Audit`,
@@ -191,77 +338,141 @@ function createDetailRenderers(publication, relationships) {
     });
   }
 
-  function renderClaimDetail(claim) {
+  function buildClaimSections(claim) {
     const section = publication.sections.find((item) => item.id === claim.sectionId);
     const relatedSources = relationships.relatedSourcesForClaim(claim);
     const relatedDecisions = relationships.relatedDecisionsForClaim(claim);
     const relatedOpenQuestions = relationships.relatedOpenQuestionsForClaim(claim);
     const siblingClaims = relationships.relatedClaimsForClaim(claim);
-    const body = `<div class="actions">
-        <a class="button" href="/claims.html">Back to claims</a>
-        <a class="button" href="${escapeHtml(section?.url || "/audit.html")}">Open section</a>
-        <a class="button" href="/search.html?q=${encodeURIComponent(claim.id)}">Search related records</a>
-      </div>
-      <section class="panel">
-        <h2>Claim record</h2>
-        <div class="meta-grid">
-          <p><strong>Claim ID:</strong> ${escapeHtml(claim.id)}</p>
-          <p><strong>Audit ID:</strong> ${escapeHtml(claim.auditId)}</p>
-          <p><strong>Section ID:</strong> ${escapeHtml(claim.sectionId)}</p>
-          <p><strong>Status:</strong> ${escapeHtml(claim.status)}</p>
-          <p><strong>Confidence:</strong> ${escapeHtml(claim.confidence)}</p>
-        </div>
-        <p>${escapeHtml(claim.statement)}</p>
-      </section>
-      <section class="panel">
-        <h2>Referenced By</h2>
-        <p><strong>Audit</strong><br><a class="tag" href="/audit.html">${escapeHtml(publication.primaryAudit?.title || "Audit")}</a></p>
-        <p><strong>Section</strong><br>${section ? `<a class="tag" href="${section.url}">${escapeHtml(section.id)}</a>` : "<span class='empty-state'>No linked section</span>"}</p>
-      </section>
-      <section class="panel">
-        <h2>Related Sources</h2>
-        ${relatedSources.length ? `<p>${renderRecordLinks(relatedSources.map((item) => item.id), "/sources/")}</p>` : "<p>No linked source records.</p>"}
-      </section>
-      <section class="panel">
-        <h2>Related Decisions</h2>
-        ${relatedDecisions.length ? `<p>${renderRecordLinks(relatedDecisions.map((item) => item.id), "/decision-log/")}</p>` : "<p>No linked decision records.</p>"}
-      </section>
-      <section class="panel">
-        <h2>Related Open Questions</h2>
-        ${relatedOpenQuestions.length ? `<p>${renderRecordLinks(relatedOpenQuestions.map((item) => item.id), "/open-questions/")}</p>` : "<p>No linked open-question records.</p>"}
-      </section>
-      <section class="panel">
-        <h2>Related Claims</h2>
-        ${
-          siblingClaims.length
-            ? `<div class="stack">${siblingClaims
-                .map(
-                  (item) => `<article class="card stack">
-                    <p class="row-kicker">${escapeHtml(item.id)} - ${escapeHtml(item.sectionId)}</p>
-                    <h3><a href="/claims/${item.id.toLowerCase()}.html">${escapeHtml(item.title)}</a></h3>
-                    <p>${escapeHtml(item.statement)}</p>
-                  </article>`
-                )
-                .join("")}</div>`
-            : "<p>No related-claim records are linked yet.</p>"
-        }
-      </section>
-      <section class="panel">
-        <h2>Revision History</h2>
-        <ul>${claim.revisionHistory
-          .map(
-            (entry) =>
-              `<li>${escapeHtml(entry.date)} - ${escapeHtml(entry.version)} - ${escapeHtml(entry.summary)}</li>`
-          )
-          .join("")}</ul>
-      </section>`;
+    return [
+      {
+        heading: "Claim record",
+        blocks: [
+          {
+            type: "metadataGrid",
+            items: [
+              { label: "Claim ID", value: claim.id },
+              { label: "Audit ID", value: claim.auditId },
+              { label: "Section ID", value: claim.sectionId },
+              { label: "Status", value: claim.status },
+              { label: "Confidence", value: claim.confidence }
+            ]
+          },
+          { type: "paragraph", text: claim.statement }
+        ]
+      },
+      {
+        heading: "Referenced By",
+        blocks: [
+          {
+            type: "metadataGrid",
+            items: [
+              {
+                label: "Audit",
+                valueHtml: `<a class="tag" href="/audit.html">${escapeHtml(
+                  publication.primaryAudit?.title || "Audit"
+                )}</a>`
+              },
+              {
+                label: "Section",
+                valueHtml: section
+                  ? `<a class="tag" href="${section.url}">${escapeHtml(section.id)}</a>`
+                  : "<span class='empty-state'>No linked section</span>"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        heading: "Related Sources",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedSources.length
+              ? `<p>${renderRecordLinks(
+                  relatedSources.map((item) => item.id),
+                  "/sources/"
+                )}</p>`
+              : "<p>No linked source records.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Related Decisions",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedDecisions.length
+              ? `<p>${renderRecordLinks(
+                  relatedDecisions.map((item) => item.id),
+                  "/decision-log/"
+                )}</p>`
+              : "<p>No linked decision records.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Related Open Questions",
+        blocks: [
+          {
+            type: "paragraph",
+            html: relatedOpenQuestions.length
+              ? `<p>${renderRecordLinks(
+                  relatedOpenQuestions.map((item) => item.id),
+                  "/open-questions/"
+                )}</p>`
+              : "<p>No linked open-question records.</p>"
+          }
+        ]
+      },
+      {
+        heading: "Related Claims",
+        blocks: siblingClaims.length
+          ? [
+              {
+                type: "relationshipGrid",
+                layout: "stack",
+                items: siblingClaims.map((item) => ({
+                  eyebrow: `${item.id} - ${item.sectionId}`,
+                  title: item.title,
+                  href: `/claims/${item.id.toLowerCase()}.html`,
+                  text: item.statement
+                }))
+              }
+            ]
+          : [{ type: "paragraph", html: "<p>No related-claim records are linked yet.</p>" }]
+      },
+      {
+        heading: "Revision History",
+        blocks: [
+          {
+            type: "list",
+            items: claim.revisionHistory.map(
+              (entry) => `${entry.date} - ${entry.version} - ${entry.summary}`
+            )
+          }
+        ]
+      }
+    ];
+  }
+
+  function renderClaimDetail(claim) {
+    const section = publication.sections.find((item) => item.id === claim.sectionId);
+    const body = `${renderActionLinks([
+      { label: "Back to claims", href: "/claims.html" },
+      { label: "Open section", href: section?.url || "/audit.html" },
+      { label: "Search related records", href: `/search.html?q=${encodeURIComponent(claim.id)}` }
+    ])}<div class="sr-only" data-generated-source="typed-detail-renderer" data-detail-kind="claim"></div>${renderDetailSections(
+      buildClaimSections(claim)
+    )}`;
 
     return layout({
       title: `${claim.id} | The Citizen Audit`,
       description: `${claim.id} claim record for The Citizen Audit.`,
       eyebrow: "Claim Record",
       heading: `${claim.id} - ${claim.title}`,
-      lede: "Claims are first-class structured records so the evidence platform can point every published conclusion back to its sources, decisions, and unresolved questions.",
+      lede:
+        "Claims are first-class structured records so the evidence platform can point every published conclusion back to its sources, decisions, and unresolved questions.",
       body,
       footerLabel: `${claim.id} - claim record`
     });

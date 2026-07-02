@@ -2,6 +2,7 @@ const {
   escapeHtml,
   layout,
   linkClaims,
+  renderContentBlock,
   renderRecordLinks
 } = require("./shared");
 
@@ -18,16 +19,6 @@ function createSectionRenderer(publication, relationships) {
     }
     links.push(`<a class="button" href="/audit.html">Audit Index</a>`);
     return `<div class="actions">${links.join("")}</div>`;
-  }
-
-  function renderBlockHtml(block) {
-    if (block.type === "paragraph" || block.type === "methodologyNote" || block.type === "bottomLine") {
-      return block.html;
-    }
-    if (block.type === "callout" || block.type === "table" || block.type === "list") {
-      return block.html;
-    }
-    return "";
   }
 
   function groupSectionBlocks(contentBlocks) {
@@ -96,7 +87,7 @@ function createSectionRenderer(publication, relationships) {
       .map(
         (group) => `<section class="panel">
           ${group.heading ? `<h2>${escapeHtml(group.heading)}</h2>` : ""}
-          ${group.blocks.map(renderBlockHtml).join("")}
+          ${group.blocks.map(renderContentBlock).join("")}
         </section>`
       )
       .join("");
