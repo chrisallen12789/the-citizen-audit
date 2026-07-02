@@ -122,6 +122,7 @@ for (const filePath of htmlFiles) {
 }
 
 const requiredFiles = [
+  "public/audit/section-01-executive-summary.html",
   "public/claims.html",
   "public/sources.html",
   "public/open-questions.html",
@@ -260,6 +261,53 @@ const metrics = readJson("public/data/platform-metrics.json");
 const publicationSearch = readJson("public/data/publication-search.json");
 const platformStatus = readJson("public/data/platform-status.json");
 const traceRecords = readJson("public/data/trace-records.json");
+const siteJs = fs.readFileSync(path.join(root, "public/site.js"), "utf8");
+
+const generatedSectionFiles = fs
+  .readdirSync(path.join(publicDir, "audit"))
+  .filter((name) => /^section-\d+.*\.html$/.test(name));
+const modeledSections = publication.sections.filter((section) => /^Section \d+$/.test(section.id));
+
+if (generatedSectionFiles.length !== modeledSections.length) {
+  problems.push("generated section count does not match data model");
+}
+
+if (/(S-\d{3}|A-\d{3}|D-\d{3}|Section \d+)/.test(siteJs)) {
+  problems.push("public/site.js contains hardcoded audit-specific evidence data");
+}
+
+for (const section of modeledSections) {
+  if (!section.contentBlocks || !section.contentBlocks.length) {
+    problems.push(`${section.id}: section has no structured content blocks`);
+  }
+  if (!section.claimIds.length) {
+    problems.push(`${section.id}: section has no linked claims`);
+  }
+  for (const sourceId of section.sourceIds) {
+    if (!sourceIds.has(sourceId)) {
+      problems.push(`${section.id}: section references missing source ${sourceId}`);
+    }
+  }
+  for (const decisionId of section.decisionIds) {
+    if (!decisionIds.has(decisionId)) {
+      problems.push(`${section.id}: section references missing decision ${decisionId}`);
+    }
+  }
+  for (const openQuestionId of section.openQuestionIds) {
+    if (!openQuestionIds.has(openQuestionId)) {
+      problems.push(`${section.id}: section references missing open question ${openQuestionId}`);
+    }
+  }
+  const htmlPath = path.join(publicDir, section.url.replace(/^\//, ""));
+  if (!fs.existsSync(htmlPath)) {
+    problems.push(`${section.id}: section page is missing`);
+  } else {
+    const html = fs.readFileSync(htmlPath, "utf8");
+    if (!html.includes('data-generated-source="section-model"')) {
+      problems.push(`${section.id}: section page is not generated from data`);
+    }
+  }
+}
 
 if (claimDatabase.claims.length !== publication.claims.length) {
   problems.push("public/data/claim-database.json: claim count does not match publication data");

@@ -6,6 +6,7 @@ const decisionsRaw = require("./decisions");
 const openQuestionsRaw = require("./open-questions");
 const releases = require("./releases");
 const glossary = require("./glossary");
+const sectionContent = require("./section-content");
 
 function unique(values) {
   return [...new Set(values)];
@@ -42,7 +43,8 @@ const sections = sectionsRaw.map((section) => {
   );
   return {
     ...section,
-    claimIds
+    claimIds,
+    contentBlocks: sectionContent[section.id] || []
   };
 });
 
@@ -131,6 +133,14 @@ const auditsEnriched = audits.map((audit) => ({
     .filter((question) => (question.auditIds || []).includes(audit.id))
     .map((question) => question.id)
 }));
+
+const orderedSections = sections.filter((section) => /^Section \d+$/.test(section.id));
+for (let index = 0; index < orderedSections.length; index += 1) {
+  const current = orderedSections[index];
+  current.order = index + 1;
+  current.previousSectionId = orderedSections[index - 1]?.id || null;
+  current.nextSectionId = orderedSections[index + 1]?.id || null;
+}
 
 const crossReferences = {
   audits: Object.fromEntries(

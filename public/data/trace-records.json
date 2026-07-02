@@ -1,5 +1,37 @@
 {
-  "generatedAt": "2026-07-02T01:59:15.989Z",
+  "generatedAt": "2026-07-02T02:11:00.196Z",
+  "scaleExplorerRows": [
+    [
+      "International assistance obligations, FY2023 basis",
+      99.9,
+      "S-038"
+    ],
+    [
+      "International assistance disbursements, FY2023 basis",
+      71.9,
+      "S-038 / S-039"
+    ],
+    [
+      "Net-new military assistance, Ukraine-surge cumulative obligations",
+      50.9,
+      "Section 5"
+    ],
+    [
+      "Recurring security assistance lanes",
+      1.6,
+      "Section 5"
+    ],
+    [
+      "Noncitizen SSI, Dec. 2021 basis",
+      2.21,
+      "S-073"
+    ],
+    [
+      "Emergency Medicaid, federal + state, FY2023",
+      3.8,
+      "Section 7 / A-037"
+    ]
+  ],
   "sections": [
     {
       "id": "Section 1",

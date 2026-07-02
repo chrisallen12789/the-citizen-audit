@@ -588,6 +588,132 @@ function renderDecisionDetail(item) {
   });
 }
 
+function renderSectionActions(section) {
+  const links = [];
+  const previousSection = section.previousSectionId
+    ? publication.sections.find((item) => item.id === section.previousSectionId)
+    : null;
+  const nextSection = section.nextSectionId
+    ? publication.sections.find((item) => item.id === section.nextSectionId)
+    : null;
+  if (previousSection) {
+    links.push(`<a class="button" href="${previousSection.url}">Previous Section</a>`);
+  }
+  links.push(`<a class="button" href="/audit.html">Audit Index</a>`);
+  if (nextSection) {
+    links.push(`<a class="button" href="${nextSection.url}">Next Section</a>`);
+  }
+  return `<div class="actions">${links.join("")}</div>`;
+}
+
+function renderBlockHtml(block) {
+  if (block.type === "paragraph" || block.type === "methodologyNote" || block.type === "bottomLine") {
+    return block.html;
+  }
+  if (block.type === "callout") {
+    return block.html;
+  }
+  if (block.type === "table") {
+    return block.html;
+  }
+  if (block.type === "list") {
+    return block.html;
+  }
+  return "";
+}
+
+function groupSectionBlocks(contentBlocks) {
+  const groups = [];
+  let current = null;
+  for (const block of contentBlocks) {
+    if (block.type === "heading") {
+      current = {
+        heading: block.text,
+        blocks: []
+      };
+      groups.push(current);
+      continue;
+    }
+    if (!current) {
+      current = { heading: "", blocks: [] };
+      groups.push(current);
+    }
+    current.blocks.push(block);
+  }
+  return groups;
+}
+
+function renderSectionVerificationPanel(section) {
+  const relatedClaims = publication.claims.filter((claim) => claim.sectionId === section.id);
+  return `<section class="panel verification">
+      <div>
+        <p class="row-kicker">Structured Verification</p>
+        <h2>Trace this section from the data model.</h2>
+        <p><strong>Summary:</strong> ${escapeHtml(section.summary)}</p>
+        <p><strong>Claims:</strong> ${escapeHtml(String(section.claimIds.length))}</p>
+        <p><strong>Claim links:</strong> ${relatedClaims.length ? linkClaims(relatedClaims.map((claim) => claim.id)) : "<span class='empty-state'>No linked claims</span>"}</p>
+      </div>
+      <div class="stack">
+        <p><strong>Sources</strong><br>${renderRecordLinks(section.sourceIds, "/sources/")}</p>
+        <p><strong>Decisions</strong><br>${renderRecordLinks(section.decisionIds, "/decision-log/")}</p>
+        <p><strong>Open Questions</strong><br>${renderRecordLinks(section.openQuestionIds, "/open-questions/")}</p>
+        <p><strong>Related Sections</strong><br>${renderSectionTagList(section.relatedSectionIds)}</p>
+      </div>
+    </section>`;
+}
+
+function renderSectionClaimsPanel(section) {
+  const claims = publication.claims.filter((claim) => claim.sectionId === section.id);
+  if (!claims.length) {
+    return "";
+  }
+  return `<section class="panel">
+      <h2>Claims In This Section</h2>
+      <p>Reviewers should be able to move from section to claim without leaving the generated evidence path.</p>
+      <div class="grid">${claims
+        .map(
+          (claim) => `<article class="card stack">
+            <p class="row-kicker">${escapeHtml(claim.id)}</p>
+            <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
+            <p>${escapeHtml(claim.statement)}</p>
+            <p><strong>Sources</strong><br>${renderRecordLinks(claim.sources, "/sources/")}</p>
+          </article>`
+        )
+        .join("")}</div>
+    </section>`;
+}
+
+function renderSectionContent(section) {
+  return groupSectionBlocks(section.contentBlocks)
+    .map(
+      (group) => `<section class="panel">
+        ${group.heading ? `<h2>${escapeHtml(group.heading)}</h2>` : ""}
+        ${group.blocks.map(renderBlockHtml).join("")}
+      </section>`
+    )
+    .join("");
+}
+
+function renderSectionPage(section) {
+  const body = `<div class="sr-only" data-generated-source="section-model" data-section-id="${escapeHtml(
+    section.id
+  )}"></div>
+    ${renderSectionActions(section)}
+    ${renderSectionVerificationPanel(section)}
+    ${renderSectionClaimsPanel(section)}
+    ${renderSectionContent(section)}`;
+
+  return layout({
+    title: `${section.id} - ${section.title} | The Citizen Audit`,
+    description: `Canonical ${section.id} web conversion for The Citizen Audit v1.0.`,
+    eyebrow: `${section.id} - Version 1.0 LOCKED`,
+    heading: section.title,
+    lede: section.summary,
+    body,
+    footerLabel: `${section.id} - ${section.title}`
+  });
+}
+
 function renderClaimIndex() {
   const rows = publication.claims
     .map(
@@ -1220,6 +1346,14 @@ function buildPlatformStatus(metrics) {
 function buildTraceRecords() {
   return {
     generatedAt: new Date().toISOString(),
+    scaleExplorerRows: [
+      ["International assistance obligations, FY2023 basis", 99.9, "S-038"],
+      ["International assistance disbursements, FY2023 basis", 71.9, "S-038 / S-039"],
+      ["Net-new military assistance, Ukraine-surge cumulative obligations", 50.9, "Section 5"],
+      ["Recurring security assistance lanes", 1.6, "Section 5"],
+      ["Noncitizen SSI, Dec. 2021 basis", 2.21, "S-073"],
+      ["Emergency Medicaid, federal + state, FY2023", 3.8, "Section 7 / A-037"]
+    ],
     sections: publication.sectionRecords,
     claims: publication.traceClaims,
     sources: publication.sources.map((source) => ({
@@ -1319,6 +1453,9 @@ function build() {
     "/data/trace-records.json"
   ];
   writeFile("sources.html", renderSourceIndex());
+  for (const section of publication.sections.filter((item) => /^Section \d+$/.test(item.id))) {
+    writeFile(section.url.replace(/^\//, ""), renderSectionPage(section));
+  }
   for (const source of publication.sources) {
     writeFile(`sources/${source.slug}.html`, renderSourceDetail(source));
   }
