@@ -74,6 +74,295 @@ function layout({ title, description, eyebrow, heading, lede, body, footerLabel 
 </html>`;
 }
 
+function getPage(pageId) {
+  return publication.maps.pagesById.get(pageId);
+}
+
+function renderActionLinks(links) {
+  return `<div class="actions">${links
+    .map(
+      (link) =>
+        `<a class="button${link.variant === "primary" ? " primary" : ""}" href="${escapeHtml(
+          link.href
+        )}">${escapeHtml(link.label)}</a>`
+    )
+    .join("")}</div>`;
+}
+
+function renderTable(table) {
+  return `<table><tr>${table.headers
+    .map((header) => `<th>${escapeHtml(header)}</th>`)
+    .join("")}</tr>${table.rows
+    .map(
+      (row) =>
+        `<tr>${row
+          .map((cell) => `<td>${escapeHtml(cell)}</td>`)
+          .join("")}</tr>`
+    )
+    .join("")}</table>`;
+}
+
+function renderPanelBlock(block) {
+  return `<section class="panel${block.stack ? " stack" : ""}">
+      ${block.heading ? `<h2>${escapeHtml(block.heading)}</h2>` : ""}
+      ${(block.paragraphs || []).join("")}
+      ${block.table ? renderTable(block.table) : ""}
+    </section>`;
+}
+
+function renderCardGrid(cards) {
+  return `<section class="grid">${cards
+    .map((card) => {
+      const tag = card.href ? "a" : "article";
+      const attrs = card.href ? ` class="card" href="${escapeHtml(card.href)}"` : ` class="card stack"`;
+      return `<${tag}${attrs}>${card.eyebrow ? `<p class="row-kicker">${escapeHtml(card.eyebrow)}</p>` : ""}<h3>${escapeHtml(
+        card.title
+      )}</h3><p>${escapeHtml(card.body)}</p></${tag}>`;
+    })
+    .join("")}</section>`;
+}
+
+function renderTocBlock(block) {
+  return `<section class="panel">
+      <h2>${escapeHtml(block.heading)}</h2>
+      <div class="toc">${block.entries
+        .map(
+          (entry) =>
+            `<a href="${escapeHtml(entry.href)}">${escapeHtml(entry.label)}${
+              entry.detail ? `<small>${escapeHtml(entry.detail)}</small>` : ""
+            }</a>`
+        )
+        .join("")}</div>
+    </section>`;
+}
+
+function renderSearchFilter(block) {
+  return `<label class="search-wrap">
+      <span class="sr-only">${escapeHtml(block.ariaLabel)}</span>
+      <input class="search" data-filter-input data-filter-target="${escapeHtml(
+        block.target
+      )}" placeholder="${escapeHtml(block.placeholder)}">
+    </label>`;
+}
+
+function renderSourceIndexRows() {
+  return publication.sources
+    .map(
+      (source) => `<article class="source-row" data-filterable data-search="${escapeHtml(
+        [
+          source.id,
+          source.title,
+          source.summary,
+          source.sections.join(" "),
+          source.claims.join(" "),
+          source.publisher,
+          source.documentType,
+          source.classification,
+          source.officialUrl || "",
+          source.urlVerificationStatus
+        ].join(" ")
+      )}">
+        <div class="source-row-head">
+          <div>
+            <p class="row-kicker">${escapeHtml(source.documentType)} - ${escapeHtml(source.publisher)}</p>
+            <h2 class="row-title"><a href="/sources/${source.slug}.html">${escapeHtml(source.id)} - ${escapeHtml(source.title)}</a></h2>
+          </div>
+          <span class="tag">${escapeHtml(source.confidence)}</span>
+        </div>
+        <p>${escapeHtml(source.summary)}</p>
+        <p class="meta-line"><strong>Evidence class:</strong> ${escapeHtml(source.evidenceClass)}</p>
+        <p class="meta-line"><strong>Classification:</strong> ${escapeHtml(source.classification)} | <strong>URL status:</strong> ${escapeHtml(source.urlVerificationStatus)}</p>
+        <p class="meta-line"><strong>Used in:</strong> ${escapeHtml(source.sections.join(", "))}</p>
+      </article>`
+    )
+    .join("");
+}
+
+function renderOpenQuestionRows() {
+  return publication.openQuestions
+    .map(
+      (item) => `<article class="source-row" data-filterable data-search="${escapeHtml(
+        [item.id, item.title, item.sections.join(" "), item.whyItMatters, item.recordNeeded].join(" ")
+      )}">
+        <div class="source-row-head">
+          <div>
+            <p class="row-kicker">${escapeHtml(item.status)} - ${escapeHtml(item.sections.join(", "))}</p>
+            <h2 class="row-title"><a href="/open-questions/${item.slug}.html">${escapeHtml(item.id)} - ${escapeHtml(item.title)}</a></h2>
+          </div>
+          <span class="tag">${escapeHtml(item.status)}</span>
+        </div>
+        <p>${escapeHtml(item.whyItMatters)}</p>
+        <p class="meta-line"><strong>Record needed:</strong> ${escapeHtml(item.recordNeeded)}</p>
+      </article>`
+    )
+    .join("");
+}
+
+function renderDecisionRows() {
+  return publication.decisions
+    .map(
+      (item) => `<article class="source-row" data-filterable data-search="${escapeHtml(
+        [item.id, item.title, item.body, item.references.join(" ")].join(" ")
+      )}">
+        <div class="source-row-head">
+          <div>
+            <p class="row-kicker">Canonical methodology decision</p>
+            <h2 class="row-title"><a href="/decision-log/${item.slug}.html">${escapeHtml(item.id)} - ${escapeHtml(item.title)}</a></h2>
+          </div>
+        </div>
+        <p>${escapeHtml(item.body)}</p>
+        <p class="meta-line"><strong>Visible references:</strong> ${escapeHtml(item.references.join(", "))}</p>
+      </article>`
+    )
+    .join("");
+}
+
+function renderClaimRows() {
+  return publication.claims
+    .map(
+      (claim) => `<article class="source-row" data-filterable data-search="${escapeHtml(
+        [
+          claim.id,
+          claim.title,
+          claim.statement,
+          claim.sectionId,
+          claim.sources.join(" "),
+          claim.decisions.join(" "),
+          claim.openQuestions.join(" ")
+        ].join(" ")
+      )}">
+        <div class="source-row-head">
+          <div>
+            <p class="row-kicker">${escapeHtml(claim.sectionId)} - ${escapeHtml(claim.status)}</p>
+            <h2 class="row-title"><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.id)} - ${escapeHtml(claim.title)}</a></h2>
+          </div>
+          <span class="tag">${escapeHtml(claim.confidence)}</span>
+        </div>
+        <p>${escapeHtml(claim.statement)}</p>
+        <p class="meta-line"><strong>Sources:</strong> ${escapeHtml(claim.sources.join(", "))}</p>
+      </article>`
+    )
+    .join("");
+}
+
+function renderReleaseCards() {
+  return `<section class="grid">${publication.releases
+    .map(
+      (release) => `<article class="card stack">
+        <p class="row-kicker">v${escapeHtml(release.version)} - ${escapeHtml(release.date)}</p>
+        <h2 class="row-title">${escapeHtml(release.title)}</h2>
+        <ul>${release.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join("")}</ul>
+      </article>`
+    )
+    .join("")}</section>`;
+}
+
+function renderPlatformMetricsBlock(metrics) {
+  const cards = [
+    { label: "Published audits", value: metrics.audits },
+    { label: "Sections", value: metrics.sections },
+    { label: "Claims", value: metrics.claims },
+    { label: "Sources", value: metrics.sources },
+    { label: "Decision logs", value: metrics.decisionLogs },
+    { label: "Open questions", value: metrics.openQuestions },
+    { label: "Generated publication pages", value: metrics.generatedPublicationPages },
+    { label: "Generated section pages", value: metrics.generatedSectionPages },
+    { label: "Generated claim pages", value: metrics.generatedClaimPages },
+    { label: "Citation coverage", value: `${metrics.citationCoverage.percentVerified}%` },
+    { label: "Traceability coverage", value: `${metrics.traceabilityPercent}%` },
+    { label: "QA status", value: metrics.qaStatus.status, marker: "platform" },
+    { label: "Build version", value: metrics.buildVersion },
+    { label: "Platform health", value: metrics.platformHealth },
+    { label: "HTML pages", value: metrics.htmlPages }
+  ];
+  return `<section class="grid">${cards
+    .map(
+      (card) =>
+        `<article class="card stack"><p class="row-kicker">${escapeHtml(String(card.label))}</p><h2${
+          card.marker ? ` data-qa-status-value="${card.marker}"` : ""
+        }>${escapeHtml(String(card.value))}</h2></article>`
+    )
+    .join("")}</section>`;
+}
+
+function renderStatusSummaryBlock(metrics, status, manifest) {
+  const cards = [
+    { label: "Platform health", value: status.status },
+    { label: "QA status", value: status.qaStatus, marker: "status" },
+    { label: "Build version", value: status.buildVersion },
+    { label: "Citation coverage", value: `${status.citationCoveragePercent}%` },
+    { label: "Traceability coverage", value: `${status.traceabilityPercent}%` },
+    { label: "Generated publication pages", value: metrics.generatedPublicationPages },
+    { label: "Generated section pages", value: metrics.generatedSectionPages },
+    { label: "Generated claim pages", value: metrics.generatedClaimPages },
+    { label: "Manifest outputs", value: manifest.outputs.length }
+  ];
+  return `<section class="grid">${cards
+    .map(
+      (card) =>
+        `<article class="card stack"><p class="row-kicker">${escapeHtml(String(card.label))}</p><h2${
+          card.marker ? ` data-qa-status-value="${card.marker}"` : ""
+        }>${escapeHtml(String(card.value))}</h2></article>`
+    )
+    .join("")}</section>
+    <section class="panel stack">
+      <h2>Generated counts</h2>
+      <p>The build currently publishes ${escapeHtml(String(metrics.generatedPublicationPages))} modeled publication pages, ${escapeHtml(
+        String(metrics.generatedSectionPages)
+      )} modeled numbered section pages, and ${escapeHtml(String(metrics.generatedClaimPages))} claim detail pages.</p>
+      <p>View raw manifest and status data directly at <a href="/data/publication-manifest.json">/data/publication-manifest.json</a> and <a href="/data/platform-status.json">/data/platform-status.json</a>.</p>
+    </section>`;
+}
+
+function renderPublicationPageBlock(block, context) {
+  switch (block.type) {
+    case "actions":
+      return renderActionLinks(block.links);
+    case "panel":
+      return renderPanelBlock(block);
+    case "cardGrid":
+      return renderCardGrid(block.cards);
+    case "toc":
+      return renderTocBlock(block);
+    case "searchFilter":
+      return renderSearchFilter(block);
+    case "sourceIndex":
+      return `<section class="panel stack">${renderSourceIndexRows()}</section>`;
+    case "openQuestionIndex":
+      return `<section class="panel stack">${renderOpenQuestionRows()}</section>`;
+    case "decisionIndex":
+      return `<section class="panel stack">${renderDecisionRows()}</section>`;
+    case "claimIndex":
+      return `<section class="panel stack">${renderClaimRows()}</section>`;
+    case "releaseCards":
+      return renderReleaseCards();
+    case "platformMetrics":
+      return renderPlatformMetricsBlock(context.metrics);
+    case "statusSummary":
+      return renderStatusSummaryBlock(context.metrics, context.status, context.manifest);
+    default:
+      return "";
+  }
+}
+
+function renderPublicationPage(page, context = {}) {
+  const body = `<div class="sr-only" data-generated-source="page-model" data-page-id="${escapeHtml(
+    page.id
+  )}"></div>${page.contentBlocks
+    .map((block) => renderPublicationPageBlock(block, context))
+    .join("")}`;
+
+  return layout({
+    title: page.title,
+    description: page.description,
+    eyebrow: page.eyebrow,
+    heading: page.heading,
+    lede: page.lede,
+    body,
+    footerLabel: page.footerLabel || page.heading
+  });
+}
+
 function linkList(items, basePath) {
   return items
     .map((item) => `<a class="tag" href="${basePath}${item.toLowerCase()}.html">${escapeHtml(item)}</a>`)
@@ -1125,6 +1414,26 @@ function renderPlatformPage(metrics) {
 
 function buildSearchIndex() {
   const items = [];
+  for (const page of publication.pages) {
+    items.push({
+      type: "Page",
+      id: page.id,
+      title: page.heading,
+      url: page.url,
+      text: [
+        page.title,
+        page.description,
+        page.eyebrow,
+        page.lede,
+        JSON.stringify(page.contentBlocks),
+        page.relatedSectionIds.join(" "),
+        page.relatedClaimIds.join(" "),
+        page.relatedSourceIds.join(" "),
+        page.relatedDecisionIds.join(" "),
+        page.relatedOpenQuestionIds.join(" ")
+      ].join(" ")
+    });
+  }
   for (const source of publication.sources) {
     items.push({
       type: "Source",
@@ -1220,6 +1529,24 @@ function buildCrossReferenceTables() {
 function buildEvidenceGraph() {
   return {
     generatedAt: new Date().toISOString(),
+    pages: publication.pages.map((page) => ({
+      id: page.id,
+      title: page.heading,
+      audits: page.relatedAuditIds,
+      sections: page.relatedSectionIds,
+      claims: page.relatedClaimIds,
+      sources: page.relatedSourceIds,
+      decisions: page.relatedDecisionIds,
+      openQuestions: page.relatedOpenQuestionIds,
+      connectedIds: unique([
+        ...page.relatedAuditIds,
+        ...page.relatedSectionIds,
+        ...page.relatedClaimIds,
+        ...page.relatedSourceIds,
+        ...page.relatedDecisionIds,
+        ...page.relatedOpenQuestionIds
+      ])
+    })),
     audits: publication.audits.map((audit) => ({
       id: audit.id,
       title: audit.title,
@@ -1324,22 +1651,38 @@ function buildEvidenceGraph() {
 }
 
 function buildManifest(outputs) {
+  const generatedSectionPages = publication.sections.filter((section) => /^Section \d+$/.test(section.id));
   return {
     generatedAt: new Date().toISOString(),
     buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
     auditId: publication.primaryAudit?.id || null,
-    outputs
+    outputs,
+    counts: {
+      generatedPublicationPages: publication.pages.length,
+      generatedSectionPages: generatedSectionPages.length,
+      generatedClaimPages: publication.claims.length
+    },
+    invariants: [
+      "Version 1.0 analytical conclusions remain locked by edition.",
+      "Decision history remains public.",
+      "Open questions remain public.",
+      "Unknown values are not estimated without published support."
+    ]
   };
 }
 
-function buildPlatformStatus(metrics) {
+function buildPlatformStatus(metrics, manifest) {
   return {
     generatedAt: new Date().toISOString(),
     status: metrics.platformHealth,
     qaStatus: metrics.qaStatus.status,
     buildVersion: metrics.buildVersion,
     traceabilityPercent: metrics.traceabilityPercent,
-    citationCoveragePercent: metrics.citationCoverage.percentVerified
+    citationCoveragePercent: metrics.citationCoverage.percentVerified,
+    generatedPublicationPages: metrics.generatedPublicationPages,
+    generatedSectionPages: metrics.generatedSectionPages,
+    generatedClaimPages: metrics.generatedClaimPages,
+    manifestOutputs: manifest.outputs.length
   };
 }
 
@@ -1397,12 +1740,16 @@ function buildPlatformMetrics(searchIndex, traceRecords) {
     .map((source) => source.id);
   const traceableClaims = publication.claims.filter((claim) => claim.sources.length && claim.confidence && claim.revisionHistory.length);
   const traceabilityPercent = Number(((traceableClaims.length / publication.claims.length) * 100).toFixed(2));
+  const generatedSectionPages = publication.sections.filter((section) => /^Section \d+$/.test(section.id)).length;
   return {
     generatedAt: new Date().toISOString(),
     buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
     audits: publication.audits.length,
     sections: publication.sections.length,
     htmlPages: countHtmlFiles(publicDir),
+    generatedPublicationPages: publication.pages.length,
+    generatedSectionPages,
+    generatedClaimPages: publication.claims.length,
     sources: publication.sources.length,
     citationCoverage: {
       verified: verifiedSources.length,
@@ -1440,9 +1787,25 @@ function build() {
   const claimDatabase = buildClaimDatabase();
   const crossReferences = buildCrossReferenceTables();
   const evidenceGraph = buildEvidenceGraph();
+  const modeledPageOutputs = publication.pages.map((page) => page.url);
+  const sectionOutputs = publication.sections
+    .filter((item) => /^Section \d+$/.test(item.id))
+    .map((section) => section.url);
+  const sourceOutputs = publication.sources.map((source) => `/sources/${source.slug}.html`);
+  const claimOutputs = publication.claims.map((claim) => `/claims/${claim.id.toLowerCase()}.html`);
+  const openQuestionOutputs = publication.openQuestions.map((item) => `/open-questions/${item.slug}.html`);
+  const decisionOutputs = publication.decisions.map((decision) => `/decision-log/${decision.slug}.html`);
   const manifestOutputs = [
-    "/claims.html",
-    "/platform.html",
+    ...modeledPageOutputs,
+    ...sectionOutputs,
+    ...sourceOutputs,
+    ...claimOutputs,
+    ...openQuestionOutputs,
+    ...decisionOutputs,
+    "/search.html",
+    "/explorer.html",
+    "/audit/appendix-a-open-questions.html",
+    "/audit/appendix-b-transparency-scorecard.html",
     "/data/claim-database.json",
     "/data/cross-reference-tables.json",
     "/data/evidence-graph.json",
@@ -1452,30 +1815,25 @@ function build() {
     "/data/publication-search.json",
     "/data/trace-records.json"
   ];
-  writeFile("sources.html", renderSourceIndex());
+  for (const page of publication.pages.filter((item) => !["PAGE-PLATFORM", "PAGE-STATUS"].includes(item.id))) {
+    writeFile(page.url.replace(/^\//, ""), renderPublicationPage(page));
+  }
   for (const section of publication.sections.filter((item) => /^Section \d+$/.test(item.id))) {
     writeFile(section.url.replace(/^\//, ""), renderSectionPage(section));
   }
   for (const source of publication.sources) {
     writeFile(`sources/${source.slug}.html`, renderSourceDetail(source));
   }
-  writeFile("claims.html", renderClaimIndex());
   for (const claim of publication.claims) {
     writeFile(`claims/${claim.id.toLowerCase()}.html`, renderClaimDetail(claim));
   }
-  writeFile("open-questions.html", renderOpenQuestionIndex());
   for (const item of publication.openQuestions) {
     writeFile(`open-questions/${item.slug}.html`, renderOpenQuestionDetail(item));
   }
-  writeFile("decision-log.html", renderDecisionLog());
   for (const decision of publication.decisions) {
     writeFile(`decision-log/${decision.slug}.html`, renderDecisionDetail(decision));
   }
-  writeFile("release-notes.html", renderReleasePage("release-notes"));
-  writeFile("version-history.html", renderReleasePage("version-history"));
-  writeFile("changelog.html", renderReleasePage("changelog"));
   writeFile("search.html", renderSearchPage());
-  writeFile("review.html", renderReviewPage());
   writeFile("explorer.html", renderExplorerPage());
   writeFile("audit/appendix-a-open-questions.html", renderAppendixA());
   writeFile("audit/appendix-b-transparency-scorecard.html", renderAppendixB());
@@ -1484,12 +1842,29 @@ function build() {
   writeFile("data/evidence-graph.json", `${JSON.stringify(evidenceGraph, null, 2)}\n`);
   writeFile("data/publication-search.json", `${JSON.stringify(searchIndex, null, 2)}\n`);
   writeFile("data/trace-records.json", `${JSON.stringify(traceRecords, null, 2)}\n`);
-  const provisionalMetrics = buildPlatformMetrics(searchIndex, traceRecords);
-  writeFile("platform.html", renderPlatformPage(provisionalMetrics));
-  const platformMetrics = buildPlatformMetrics(searchIndex, traceRecords);
-  const platformStatus = buildPlatformStatus(platformMetrics);
   const manifest = buildManifest(manifestOutputs);
-  writeFile("platform.html", renderPlatformPage(platformMetrics));
+  const provisionalMetrics = buildPlatformMetrics(searchIndex, traceRecords);
+  const provisionalStatus = buildPlatformStatus(provisionalMetrics, manifest);
+  writeFile("platform.html", renderPublicationPage(getPage("PAGE-PLATFORM"), { metrics: provisionalMetrics }));
+  writeFile(
+    "status.html",
+    renderPublicationPage(getPage("PAGE-STATUS"), {
+      metrics: provisionalMetrics,
+      status: provisionalStatus,
+      manifest
+    })
+  );
+  const platformMetrics = buildPlatformMetrics(searchIndex, traceRecords);
+  const platformStatus = buildPlatformStatus(platformMetrics, manifest);
+  writeFile("platform.html", renderPublicationPage(getPage("PAGE-PLATFORM"), { metrics: platformMetrics }));
+  writeFile(
+    "status.html",
+    renderPublicationPage(getPage("PAGE-STATUS"), {
+      metrics: platformMetrics,
+      status: platformStatus,
+      manifest
+    })
+  );
   writeFile("data/platform-status.json", `${JSON.stringify(platformStatus, null, 2)}\n`);
   writeFile("data/publication-manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
   writeFile(

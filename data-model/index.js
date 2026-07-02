@@ -7,6 +7,7 @@ const openQuestionsRaw = require("./open-questions");
 const releases = require("./releases");
 const glossary = require("./glossary");
 const sectionContent = require("./section-content");
+const pagesRaw = require("./pages");
 
 function unique(values) {
   return [...new Set(values)];
@@ -117,11 +118,24 @@ const openQuestions = openQuestionsRaw.map((question) => {
   };
 });
 
+const pages = pagesRaw.map((page) => ({
+  ...page,
+  url: `/${page.slug}.html`,
+  contentBlocks: page.contentBlocks || [],
+  relatedAuditIds: unique(page.relatedAuditIds || []),
+  relatedSectionIds: unique(page.relatedSectionIds || []),
+  relatedClaimIds: unique(page.relatedClaimIds || []),
+  relatedSourceIds: unique(page.relatedSourceIds || []),
+  relatedDecisionIds: unique(page.relatedDecisionIds || []),
+  relatedOpenQuestionIds: unique(page.relatedOpenQuestionIds || [])
+}));
+
 const sectionsById = new Map(sections.map((section) => [section.id, section]));
 const sourcesById = new Map(sources.map((source) => [source.id, source]));
 const decisionsById = new Map(decisions.map((decision) => [decision.id, decision]));
 const openQuestionsById = new Map(openQuestions.map((question) => [question.id, question]));
 const claimsById = new Map(claims.map((claim) => [claim.id, claim]));
+const pagesById = new Map(pages.map((page) => [page.id, page]));
 
 const auditsEnriched = audits.map((audit) => ({
   ...audit,
@@ -229,6 +243,19 @@ const crossReferences = {
         )
       }
     ])
+  ),
+  pages: Object.fromEntries(
+    pages.map((page) => [
+      page.id,
+      {
+        audits: page.relatedAuditIds,
+        sections: page.relatedSectionIds,
+        claims: page.relatedClaimIds,
+        sources: page.relatedSourceIds,
+        decisions: page.relatedDecisionIds,
+        openQuestions: page.relatedOpenQuestionIds
+      }
+    ])
   )
 };
 
@@ -266,6 +293,7 @@ module.exports = {
   sources,
   decisions,
   openQuestions,
+  pages,
   releases,
   glossary,
   crossReferences,
@@ -278,6 +306,7 @@ module.exports = {
     sourcesById,
     decisionsById,
     openQuestionsById,
-    claimsById
+    claimsById,
+    pagesById
   }
 };

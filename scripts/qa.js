@@ -78,14 +78,17 @@ const problems = [];
 const strictMetaFiles = new Set([
   "public/index.html",
   "public/audit.html",
+  "public/methodology.html",
   "public/claims.html",
   "public/sources.html",
   "public/open-questions.html",
   "public/decision-log.html",
   "public/platform.html",
+  "public/status.html",
   "public/search.html",
   "public/explorer.html",
   "public/review.html",
+  "public/corrections.html",
   "public/release-notes.html",
   "public/version-history.html",
   "public/changelog.html",
@@ -123,14 +126,18 @@ for (const filePath of htmlFiles) {
 
 const requiredFiles = [
   "public/audit/section-01-executive-summary.html",
+  "public/audit.html",
+  "public/methodology.html",
   "public/claims.html",
   "public/sources.html",
   "public/open-questions.html",
   "public/decision-log.html",
   "public/platform.html",
+  "public/status.html",
   "public/search.html",
   "public/explorer.html",
   "public/review.html",
+  "public/corrections.html",
   "public/release-notes.html",
   "public/version-history.html",
   "public/changelog.html",
@@ -158,6 +165,23 @@ const claimIds = collectIds(publication.claims, "claims", problems);
 const sourceIds = collectIds(publication.sources, "sources", problems);
 const decisionIds = collectIds(publication.decisions, "decisions", problems);
 const openQuestionIds = collectIds(publication.openQuestions, "open questions", problems);
+const pageIds = collectIds(publication.pages, "pages", problems);
+const expectedModeledPageSlugs = new Set([
+  "audit",
+  "methodology",
+  "sources",
+  "open-questions",
+  "decision-log",
+  "review",
+  "downloads",
+  "corrections",
+  "release-notes",
+  "version-history",
+  "changelog",
+  "status",
+  "platform",
+  "claims"
+]);
 
 for (const section of publication.sections) {
   if (!hasRevisionHistory(section)) {
@@ -267,6 +291,79 @@ const generatedSectionFiles = fs
   .readdirSync(path.join(publicDir, "audit"))
   .filter((name) => /^section-\d+.*\.html$/.test(name));
 const modeledSections = publication.sections.filter((section) => /^Section \d+$/.test(section.id));
+const modeledPageFiles = new Set(publication.pages.map((page) => `public/${page.slug}.html`));
+
+for (const slug of expectedModeledPageSlugs) {
+  if (!publication.pages.some((page) => page.slug === slug)) {
+    problems.push(`page model missing required non-section page ${slug}`);
+  }
+}
+
+for (const page of publication.pages) {
+  if (!expectedModeledPageSlugs.has(page.slug)) {
+    problems.push(`page model contains unexpected non-section page ${page.slug}`);
+  }
+  for (const field of ["title", "description", "heading", "lede"]) {
+    if (!page[field] || !String(page[field]).trim()) {
+      problems.push(`${page.id}: missing page field ${field}`);
+    }
+  }
+  for (const auditId of page.relatedAuditIds || []) {
+    if (!auditIds.has(auditId)) {
+      problems.push(`${page.id}: page references missing audit ${auditId}`);
+    }
+  }
+  for (const sectionId of page.relatedSectionIds || []) {
+    if (!sectionIds.has(sectionId)) {
+      problems.push(`${page.id}: page references missing section ${sectionId}`);
+    }
+  }
+  for (const claimId of page.relatedClaimIds || []) {
+    if (!claimIds.has(claimId)) {
+      problems.push(`${page.id}: page references missing claim ${claimId}`);
+    }
+  }
+  for (const sourceId of page.relatedSourceIds || []) {
+    if (!sourceIds.has(sourceId)) {
+      problems.push(`${page.id}: page references missing source ${sourceId}`);
+    }
+  }
+  for (const decisionId of page.relatedDecisionIds || []) {
+    if (!decisionIds.has(decisionId)) {
+      problems.push(`${page.id}: page references missing decision ${decisionId}`);
+    }
+  }
+  for (const openQuestionId of page.relatedOpenQuestionIds || []) {
+    if (!openQuestionIds.has(openQuestionId)) {
+      problems.push(`${page.id}: page references missing open question ${openQuestionId}`);
+    }
+  }
+  const htmlPath = path.join(publicDir, `${page.slug}.html`);
+  const relativeHtml = `public/${page.slug}.html`;
+  if (!fs.existsSync(htmlPath)) {
+    problems.push(`${page.id}: generated non-section page is missing`);
+    continue;
+  }
+  const html = fs.readFileSync(htmlPath, "utf8");
+  if (!html.includes(`data-generated-source="page-model"`)) {
+    problems.push(`${page.id}: generated page missing page-model marker`);
+  }
+  if (!html.includes(`data-page-id="${page.id}"`)) {
+    problems.push(`${page.id}: generated page missing page ID marker`);
+  }
+  if (!html.includes("<title>")) {
+    problems.push(`${relativeHtml}: generated page missing title`);
+  }
+  if (!html.includes('meta name="description"')) {
+    problems.push(`${relativeHtml}: generated page missing description`);
+  }
+  if (!html.includes("<h1>")) {
+    problems.push(`${relativeHtml}: generated page missing heading`);
+  }
+  if (!html.includes('<p class="lede">')) {
+    problems.push(`${relativeHtml}: generated page missing lede`);
+  }
+}
 
 if (generatedSectionFiles.length !== modeledSections.length) {
   problems.push("generated section count does not match data model");
@@ -332,6 +429,12 @@ for (const claim of publication.traceClaims) {
   }
 }
 
+for (const page of publication.pages) {
+  if (!publicationSearch.some((item) => item.type === "Page" && item.id === page.id)) {
+    problems.push(`${page.id}: search index omits generated non-section page`);
+  }
+}
+
 for (const [claimId, refs] of Object.entries(crossReferences.claims || {})) {
   if (!claimIds.has(claimId)) {
     problems.push(`cross references: unknown claim ${claimId}`);
@@ -353,7 +456,7 @@ for (const [claimId, refs] of Object.entries(crossReferences.claims || {})) {
   }
 }
 
-for (const group of ["audits", "sections", "claims", "sources", "decisions", "openQuestions"]) {
+for (const group of ["pages", "audits", "sections", "claims", "sources", "decisions", "openQuestions"]) {
   for (const node of evidenceGraph[group] || []) {
     if (!Array.isArray(node.connectedIds) || !node.connectedIds.length) {
       problems.push(`evidence graph: orphan ${group} node ${node.id}`);
@@ -375,6 +478,11 @@ for (const group of ["audits", "sections", "claims", "sources", "decisions", "op
 
 if (!manifest.outputs.includes("/data/evidence-graph.json")) {
   problems.push("public/data/publication-manifest.json: missing evidence graph output");
+}
+for (const page of publication.pages) {
+  if (!manifest.outputs.includes(page.url)) {
+    problems.push(`public/data/publication-manifest.json: missing page output ${page.url}`);
+  }
 }
 if (platformStatus.buildVersion !== metrics.buildVersion) {
   problems.push("public/data/platform-status.json: build version mismatch");
@@ -398,6 +506,15 @@ if (metrics.openQuestions !== publication.openQuestions.length) {
 if (metrics.claims !== publication.claims.length) {
   problems.push("public/data/platform-metrics.json: claim count mismatch");
 }
+if (metrics.generatedPublicationPages !== publication.pages.length) {
+  problems.push("public/data/platform-metrics.json: generated publication page count mismatch");
+}
+if (metrics.generatedSectionPages !== modeledSections.length) {
+  problems.push("public/data/platform-metrics.json: generated section page count mismatch");
+}
+if (metrics.generatedClaimPages !== publication.claims.length) {
+  problems.push("public/data/platform-metrics.json: generated claim page count mismatch");
+}
 if (metrics.searchRecords !== publicationSearch.length) {
   problems.push("public/data/platform-metrics.json: search record count mismatch");
 }
@@ -406,6 +523,15 @@ if (metrics.traceRecords.sections !== traceRecords.sections.length) {
 }
 if (metrics.traceRecords.claims !== traceRecords.claims.length) {
   problems.push("public/data/platform-metrics.json: claim trace count mismatch");
+}
+if (platformStatus.generatedPublicationPages !== metrics.generatedPublicationPages) {
+  problems.push("public/data/platform-status.json: generated publication page count mismatch");
+}
+if (platformStatus.generatedSectionPages !== metrics.generatedSectionPages) {
+  problems.push("public/data/platform-status.json: generated section page count mismatch");
+}
+if (platformStatus.generatedClaimPages !== metrics.generatedClaimPages) {
+  problems.push("public/data/platform-status.json: generated claim page count mismatch");
 }
 
 if (problems.length) {
@@ -438,5 +564,28 @@ fs.writeFileSync(
   `${JSON.stringify(metrics, null, 2)}\n`,
   "utf8"
 );
+
+platformStatus.qaStatus = metrics.qaStatus.status;
+platformStatus.generatedAt = new Date().toISOString();
+fs.writeFileSync(
+  path.join(root, "public/data/platform-status.json"),
+  `${JSON.stringify(platformStatus, null, 2)}\n`,
+  "utf8"
+);
+
+for (const [relativePath, marker] of [
+  ["public/platform.html", "platform"],
+  ["public/status.html", "status"]
+]) {
+  const filePath = path.join(root, relativePath);
+  if (!fs.existsSync(filePath)) {
+    continue;
+  }
+  const html = fs.readFileSync(filePath, "utf8").replace(
+    new RegExp(`(<h2 data-qa-status-value="${marker}">)([\\s\\S]*?)(</h2>)`),
+    `$1${metrics.qaStatus.status}$3`
+  );
+  fs.writeFileSync(filePath, html, "utf8");
+}
 
 console.log(`QA passed for ${htmlFiles.length} HTML files.`);
