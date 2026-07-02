@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T02:11:00.444Z",
+  "generatedAt": "2026-07-02T02:21:51.876Z",
   "buildVersion": "0.5",
   "audits": 1,
   "sections": 19,
@@ -23,7 +23,7 @@
   "searchRecords": 136,
   "qaStatus": {
     "status": "passed",
-    "validatedAt": "2026-07-02T02:11:12.081Z",
+    "validatedAt": "2026-07-02T02:21:52.564Z",
     "htmlPagesChecked": 153,
     "checksEnforced": [
       "claim sources",
