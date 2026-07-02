@@ -332,7 +332,8 @@ function createPageRenderer(publication) {
       heading: page.heading,
       lede: page.lede,
       body,
-      footerLabel: page.footerLabel || page.heading
+      footerLabel: page.footerLabel || page.heading,
+      canonicalPath: page.url
     });
   }
 

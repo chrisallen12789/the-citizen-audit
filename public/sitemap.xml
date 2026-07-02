@@ -1,27 +1,156 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://thecitizenaudit.org/</loc></url>
-<url><loc>https://thecitizenaudit.org/audit.html</loc></url>
-<url><loc>https://thecitizenaudit.org/sources.html</loc></url>
-<url><loc>https://thecitizenaudit.org/explorer.html</loc></url>
-<url><loc>https://thecitizenaudit.org/methodology.html</loc></url>
-<url><loc>https://thecitizenaudit.org/downloads.html</loc></url>
-<url><loc>https://thecitizenaudit.org/press.html</loc></url>
-<url><loc>https://thecitizenaudit.org/corrections.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-01-executive-summary.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-02-definitions-methodology.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-03-international-assistance.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-04-ukraine-israel-examples.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-05-military-aid.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-06-refugee-resettlement.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-07-medicaid-emergency-medical.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-08-food-assistance.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-09-cash-welfare-income.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-10-federal-housing.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-11-education-public-services.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-12-state-administered-federal-dollars.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-13-programs-without-citizenship-breakouts.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-14-conservative-total.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-15-what-is-missing.html</loc></url>
-<url><loc>https://thecitizenaudit.org/audit/section-16-final-argument.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/</loc></url>
+  <url><loc>https://thecitizenaudit.org/press.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/methodology.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/review.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/downloads.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/corrections.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/release-notes.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/version-history.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/changelog.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/search.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/explorer.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/appendix-a-open-questions.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/appendix-b-transparency-scorecard.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/status.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/platform.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-01-executive-summary.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-02-definitions-methodology.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-03-international-assistance.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-04-ukraine-israel-examples.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-05-military-aid.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-06-refugee-resettlement.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-07-medicaid-emergency-medical.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-08-food-assistance.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-09-cash-welfare-income.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-10-federal-housing.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-11-education-public-services.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-12-state-administered-federal-dollars.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-13-programs-without-citizenship-breakouts.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-14-conservative-total.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-15-what-is-missing.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/audit/section-16-final-argument.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-001.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-002.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-003.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-004.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-005.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-006.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-038.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-039.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-040.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-042.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-043.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-044.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-045.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-046.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-047.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-048.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-049.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-050.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-051.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-052.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-053.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-054.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-055.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-056.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-057.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-058.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-059.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-060.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-061.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-062.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-063.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-064.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-065.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-067.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-068.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-069.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-070.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-071.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-072.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-073.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-074.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-075.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-076.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-077.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-078.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-079.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/sources/s-080.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-001.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-002.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-003.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-004.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-005.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-006.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-007.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-008.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-009.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-010.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-011.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-012.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-013.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-014.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-015.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-016.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-017.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/claims/c-018.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-001.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-002.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-003.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-004.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-005.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-006.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-007.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-008.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-009.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-010.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-011.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-012.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-013.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-014.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-015.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-016.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-017.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-018.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-019.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-020.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-021.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-022.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-023.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-024.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-025.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-026.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-027.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-028.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-029.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-030.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-031.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-032.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-033.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-034.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-035.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-036.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/open-questions/a-037.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-001.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-005.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-012.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-013.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-014.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-017.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-018.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-019.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-020.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-021.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-022.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-023.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-024.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-025.html</loc></url>
+  <url><loc>https://thecitizenaudit.org/decision-log/d-026.html</loc></url>
 </urlset>

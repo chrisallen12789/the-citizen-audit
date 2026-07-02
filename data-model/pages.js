@@ -35,7 +35,7 @@ module.exports = [
     description: "Audit reader for The Citizen Audit with appendices and verification links.",
     eyebrow: "Audit Reader",
     lede:
-      "Structured reader pages are being added for the locked Version 1.0 audit. The PDF remains controlling until QA is complete, but the verification layer now exposes source records, open questions, and appendices directly on the site.",
+      "This release candidate publishes the locked Version 1.0 audit as a structured web reader while preserving the canonical PDF, numbered sections, source records, appendices, and traceability pathways used for independent review.",
     footerLabel: "Audit reader",
     relatedAuditIds: ["AUDIT-001"],
     relatedSectionIds: [...numberedSectionIds, ...appendixSectionIds],

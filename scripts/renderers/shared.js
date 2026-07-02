@@ -1,3 +1,5 @@
+const SITE_ORIGIN = "https://thecitizenaudit.org";
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -14,7 +16,7 @@ function nav() {
   return `<header class="site-header">
     <a class="brand" href="/"><span class="seal">CA</span><span>The Citizen Audit</span></a>
     <button class="menu" data-menu aria-expanded="false" aria-controls="site-nav">Menu</button>
-    <nav id="site-nav" data-nav>
+    <nav id="site-nav" data-nav aria-label="Primary">
       <a href="/audit.html">Audit</a>
       <a href="/claims.html">Claims</a>
       <a href="/sources.html">Sources</a>
@@ -33,7 +35,23 @@ function footer(label) {
   return `<footer><strong>The Citizen Audit</strong><span>${escapeHtml(label)}</span></footer>`;
 }
 
-function layout({ title, description, eyebrow, heading, lede, body, footerLabel }) {
+function absoluteUrl(pathname = "/") {
+  const normalized = pathname === "/" ? "/" : `/${String(pathname).replace(/^\/+/, "")}`;
+  return `${SITE_ORIGIN}${normalized}`;
+}
+
+function layout({
+  title,
+  description,
+  eyebrow,
+  heading,
+  lede,
+  body,
+  footerLabel,
+  canonicalPath = "/",
+  ogType = "website"
+}) {
+  const canonicalUrl = absoluteUrl(canonicalPath);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -41,6 +59,15 @@ function layout({ title, description, eyebrow, heading, lede, body, footerLabel 
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">
+  <meta property="og:type" content="${escapeHtml(ogType)}">
+  <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
+  <meta property="og:site_name" content="The Citizen Audit">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f5f0e8">
+  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -234,5 +261,7 @@ module.exports = {
   linkList,
   linkClaims,
   renderRecordLinks,
-  formatDate
+  formatDate,
+  absoluteUrl,
+  SITE_ORIGIN
 };

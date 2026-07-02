@@ -109,7 +109,9 @@ function createSectionRenderer(publication, relationships) {
       heading: section.title,
       lede: section.summary,
       body,
-      footerLabel: `${section.id} - ${section.title}`
+      footerLabel: `${section.id} - ${section.title}`,
+      canonicalPath: section.url,
+      ogType: "article"
     });
   }
 

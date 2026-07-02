@@ -1,10 +1,11 @@
 {
   "name": "the-citizen-audit",
-  "version": "0.1.0",
+  "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
     "build:publication": "node scripts/build-publication-assets.js",
     "qa": "node scripts/qa.js",
+    "release:rc": "node scripts/release-candidate.js",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {

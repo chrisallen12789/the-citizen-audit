@@ -5,13 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Release Notes | The Citizen Audit</title>
   <meta name="description" content="Release notes for The Citizen Audit platform.">
+  <meta property="og:title" content="Release Notes | The Citizen Audit">
+  <meta property="og:description" content="Release notes for The Citizen Audit platform.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thecitizenaudit.org/release-notes.html">
+  <meta property="og:site_name" content="The Citizen Audit">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f5f0e8">
+  <link rel="canonical" href="https://thecitizenaudit.org/release-notes.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="/"><span class="seal">CA</span><span>The Citizen Audit</span></a>
     <button class="menu" data-menu aria-expanded="false" aria-controls="site-nav">Menu</button>
-    <nav id="site-nav" data-nav>
+    <nav id="site-nav" data-nav aria-label="Primary">
       <a href="/audit.html">Audit</a>
       <a href="/claims.html">Claims</a>
       <a href="/sources.html">Sources</a>
@@ -44,6 +53,10 @@
           <p class="row-kicker">v0.4 - Current branch work</p>
           <h2 class="row-title">Verification layer foundation</h2>
           <ul><li>Structured source records, open-question records, publication search, and decision-log pages generated from repo-traceable material.</li><li>Appendix A and Appendix B upgraded from placeholders into working research registers.</li><li>Existing converted sections gain section-level verification metadata and trace-panel hooks.</li></ul>
+        </article><article class="card stack">
+          <p class="row-kicker">v1.0.0-rc1 - Release candidate</p>
+          <h2 class="row-title">Production-ready review candidate</h2>
+          <ul><li>All currently modeled claims, sources, decisions, and open questions now build from structured records.</li><li>Citation verification is complete for the live source library and release artifacts are generated with checksums, QA reporting, and reproducibility notes.</li><li>The public site ships with generated search, evidence graph, source pages, release documentation, and production metadata suitable for independent review.</li></ul>
         </article></section>
   </main>
   <footer><strong>The Citizen Audit</strong><span>release notes - platform history</span></footer>

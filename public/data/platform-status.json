@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-02T13:13:45.865Z",
+  "generatedAt": "2026-07-02T13:50:02.372Z",
   "status": "healthy",
   "qaStatus": "passed",
-  "buildVersion": "0.5",
+  "buildVersion": "1.0.0-rc1",
   "traceabilityPercent": 100,
   "citationCoveragePercent": 100,
   "generatedPublicationPages": 18,

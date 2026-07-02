@@ -97,6 +97,7 @@ const strictMetaFiles = new Set([
   "public/release-notes.html",
   "public/version-history.html",
   "public/changelog.html",
+  "public/press.html",
   "public/audit/appendix-a-open-questions.html",
   "public/audit/appendix-b-transparency-scorecard.html",
   "public/downloads.html"
@@ -110,6 +111,18 @@ for (const filePath of htmlFiles) {
   }
   if (strictMetaFiles.has(relative) && !html.includes('meta name="description"')) {
     problems.push(`${relative}: missing meta description`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('rel="canonical"')) {
+    problems.push(`${relative}: missing canonical URL`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('property="og:title"')) {
+    problems.push(`${relative}: missing Open Graph title`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('property="og:description"')) {
+    problems.push(`${relative}: missing Open Graph description`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('rel="icon"')) {
+    problems.push(`${relative}: missing favicon link`);
   }
   if (
     html.includes("Ãƒâ€š") ||
@@ -155,7 +168,10 @@ const requiredFiles = [
   "public/data/platform-status.json",
   "public/data/publication-manifest.json",
   "public/data/publication-search.json",
-  "public/data/trace-records.json"
+  "public/data/trace-records.json",
+  "public/robots.txt",
+  "public/sitemap.xml",
+  "public/favicon.svg"
 ];
 
 for (const relative of requiredFiles) {
@@ -330,6 +346,25 @@ const generatedSectionFiles = fs
   .readdirSync(path.join(publicDir, "audit"))
   .filter((name) => /^section-\d+.*\.html$/.test(name));
 const modeledSections = publication.sections.filter((section) => /^Section \d+$/.test(section.id));
+const expectedHtmlFiles = new Set([
+  "public/index.html",
+  "public/press.html",
+  ...publication.pages.map((page) => `public/${page.url.replace(/^\//, "")}`),
+  ...publication.sections
+    .filter((section) => /^Section \d+$/.test(section.id))
+    .map((section) => `public/${section.url.replace(/^\//, "")}`),
+  ...publication.sources.map((source) => `public/sources/${source.slug}.html`),
+  ...publication.claims.map((claim) => `public/claims/${claim.id.toLowerCase()}.html`),
+  ...publication.openQuestions.map((item) => `public/open-questions/${item.slug}.html`),
+  ...publication.decisions.map((decision) => `public/decision-log/${decision.slug}.html`)
+]);
+
+for (const filePath of htmlFiles) {
+  const relative = path.relative(root, filePath).replace(/\\/g, "/");
+  if (!expectedHtmlFiles.has(relative)) {
+    problems.push(`${relative}: unexpected public HTML artifact`);
+  }
+}
 
 for (const slug of expectedModeledPageSlugs) {
   if (!publication.pages.some((page) => page.slug === slug)) {

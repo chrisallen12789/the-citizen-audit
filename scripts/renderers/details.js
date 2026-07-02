@@ -154,7 +154,9 @@ function createDetailRenderers(publication, relationships) {
       lede:
         "Source pages preserve canonical links, metadata, and cross-references so reviewers can inspect the exact evidence behind published claims.",
       body,
-      footerLabel: `${source.id} - source record`
+      footerLabel: `${source.id} - source record`,
+      canonicalPath: `/sources/${source.slug}.html`,
+      ogType: "article"
     });
   }
 
@@ -251,7 +253,9 @@ function createDetailRenderers(publication, relationships) {
       heading: `${item.id} - ${item.title}`,
       lede: "Open questions are published to keep the limits of the current record explicit.",
       body,
-      footerLabel: `${item.id} - open question`
+      footerLabel: `${item.id} - open question`,
+      canonicalPath: `/open-questions/${item.slug}.html`,
+      ogType: "article"
     });
   }
 
@@ -344,7 +348,9 @@ function createDetailRenderers(publication, relationships) {
       heading: `${item.id} - ${item.title}`,
       lede: "Decision records keep the publication's numbered methodology rules visible and linkable.",
       body,
-      footerLabel: `${item.id} - decision record`
+      footerLabel: `${item.id} - decision record`,
+      canonicalPath: `/decision-log/${item.slug}.html`,
+      ogType: "article"
     });
   }
 
@@ -484,7 +490,9 @@ function createDetailRenderers(publication, relationships) {
       lede:
         "Claims are first-class structured records so the evidence platform can point every published conclusion back to its sources, decisions, and unresolved questions.",
       body,
-      footerLabel: `${claim.id} - claim record`
+      footerLabel: `${claim.id} - claim record`,
+      canonicalPath: `/claims/${claim.id.toLowerCase()}.html`,
+      ogType: "article"
     });
   }
 
