@@ -28,41 +28,36 @@
     <p class="eyebrow">Traceability Explorer</p>
     <h1>Traceability Explorer</h1>
     <p class="lede">Follow each converted lane back to its linked Source IDs, Decision Log rules, and Open Question records. This page is a verification surface, not a replacement for the locked audit text.</p>
-    <div class="actions">
-      <a class="button primary" href="/search.html">Search the publication</a>
-      <a class="button" href="/sources.html">Browse sources</a>
-      <a class="button" href="/review.html">Reviewer portal</a>
-      <a class="button" href="/decision-log.html">Review decisions</a>
-    </div>
-    <section class="panel">
-      <h2>Traceability Explorer</h2>
-      <p>Navigate from the audit to sections, from sections to claims, and from claims to sources, decisions, and open questions.</p>
-      <label class="search-wrap">
-        <span class="sr-only">Search traceability records</span>
-        <input class="search" data-traceability-search placeholder="Try Section 7, C-009, S-065, D-020, A-018, ORR, Medicaid, or housing">
-      </label>
-      <div class="grid" data-traceability-grid></div>
-    </section>
-    <section class="panel">
-      <h2>Claim Explorer</h2>
-      <p>Filter claim-level trace records directly.</p>
-      <label class="search-wrap">
-        <span class="sr-only">Search claims</span>
-        <input class="search" data-claim-search placeholder="Try C-016, conservative total, ORR, Section 214, or SSI">
-      </label>
-      <div class="grid" data-claim-grid></div>
-    </section>
-    <section class="panel">
-      <h2>Scale Explorer</h2>
-      <p>Enter an amount and compare how the audit's currently measurable lanes relate in scale. These lanes remain basis-segregated and are not a blended grand total.</p>
-      <label for="taxAmount"><strong>Amount to explore</strong></label>
-      <input id="taxAmount" class="search" data-tax-amount type="number" min="1" value="100">
-      <div data-explorer-output></div>
-    </section>
-    <section class="panel">
-      <h2>Important Limitation</h2>
-      <p>The explorer intentionally labels each lane by basis and source. It does not convert incompatible obligations, disbursements, cumulative figures, point-in-time computations, or federal-plus-state totals into one blended federal total.</p>
-    </section>
+    <div class="sr-only" data-generated-source="page-model" data-page-id="PAGE-EXPLORER"></div><div class="actions"><a class="button primary" href="/search.html">Search the publication</a><a class="button" href="/sources.html">Browse sources</a><a class="button" href="/review.html">Reviewer portal</a><a class="button" href="/decision-log.html">Review decisions</a></div>
+      <section class="panel">
+        <h2>Traceability Explorer</h2>
+        <p>Navigate from the audit to sections, from sections to claims, and from claims to sources, decisions, and open questions.</p>
+        <label class="search-wrap">
+          <span class="sr-only">Search traceability records</span>
+          <input class="search" data-traceability-search placeholder="Try Section 7, C-009, S-065, D-020, A-018, ORR, Medicaid, or housing">
+        </label>
+        <div class="grid" data-traceability-grid></div>
+      </section>
+      <section class="panel">
+        <h2>Claim Explorer</h2>
+        <p>Filter claim-level trace records directly.</p>
+        <label class="search-wrap">
+          <span class="sr-only">Search claims</span>
+          <input class="search" data-claim-search placeholder="Try C-016, conservative total, ORR, Section 214, or SSI">
+        </label>
+        <div class="grid" data-claim-grid></div>
+      </section>
+      <section class="panel">
+        <h2>Scale Explorer</h2>
+        <p>Enter an amount and compare how the audit's currently measurable lanes relate in scale. These lanes remain basis-segregated and are not a blended grand total.</p>
+        <label for="taxAmount"><strong>Amount to explore</strong></label>
+        <input id="taxAmount" class="search" data-tax-amount type="number" min="1" value="100">
+        <div data-explorer-output></div>
+      </section>
+      <section class="panel">
+        <h2>Important Limitation</h2>
+        <p>The explorer intentionally labels each lane by basis and source. It does not convert incompatible obligations, disbursements, cumulative figures, point-in-time computations, or federal-plus-state totals into one blended federal total.</p>
+      </section>
   </main>
   <footer><strong>The Citizen Audit</strong><span>Traceability explorer</span></footer>
   <script src="/site.js"></script>

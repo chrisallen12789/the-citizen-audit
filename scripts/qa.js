@@ -178,10 +178,23 @@ const expectedModeledPageSlugs = new Set([
   "release-notes",
   "version-history",
   "changelog",
+  "search",
+  "explorer",
+  "appendix-a-open-questions",
+  "appendix-b-transparency-scorecard",
   "status",
   "platform",
   "claims"
 ]);
+const requiredRendererModules = [
+  "scripts/build/io.js",
+  "scripts/build/data-outputs.js",
+  "scripts/renderers/shared.js",
+  "scripts/renderers/relationships.js",
+  "scripts/renderers/page-model.js",
+  "scripts/renderers/sections.js",
+  "scripts/renderers/details.js"
+];
 
 for (const section of publication.sections) {
   if (!hasRevisionHistory(section)) {
@@ -291,7 +304,6 @@ const generatedSectionFiles = fs
   .readdirSync(path.join(publicDir, "audit"))
   .filter((name) => /^section-\d+.*\.html$/.test(name));
 const modeledSections = publication.sections.filter((section) => /^Section \d+$/.test(section.id));
-const modeledPageFiles = new Set(publication.pages.map((page) => `public/${page.slug}.html`));
 
 for (const slug of expectedModeledPageSlugs) {
   if (!publication.pages.some((page) => page.slug === slug)) {
@@ -338,8 +350,8 @@ for (const page of publication.pages) {
       problems.push(`${page.id}: page references missing open question ${openQuestionId}`);
     }
   }
-  const htmlPath = path.join(publicDir, `${page.slug}.html`);
-  const relativeHtml = `public/${page.slug}.html`;
+  const htmlPath = path.join(publicDir, page.url.replace(/^\//, ""));
+  const relativeHtml = `public/${page.url.replace(/^\//, "")}`;
   if (!fs.existsSync(htmlPath)) {
     problems.push(`${page.id}: generated non-section page is missing`);
     continue;
@@ -362,6 +374,23 @@ for (const page of publication.pages) {
   }
   if (!html.includes('<p class="lede">')) {
     problems.push(`${relativeHtml}: generated page missing lede`);
+  }
+  if (page.id === "PAGE-SEARCH" && !html.includes("data-publication-search")) {
+    problems.push("PAGE-SEARCH: modeled utility page missing search input hook");
+  }
+  if (
+    page.id === "PAGE-EXPLORER" &&
+    (!html.includes("data-traceability-search") ||
+      !html.includes("data-claim-search") ||
+      !html.includes("data-tax-amount"))
+  ) {
+    problems.push("PAGE-EXPLORER: modeled utility page missing explorer hooks");
+  }
+  if (page.id === "PAGE-APPENDIX-A" && !html.includes('data-appendix-source="open-questions"')) {
+    problems.push("PAGE-APPENDIX-A: appendix page missing open-question source marker");
+  }
+  if (page.id === "PAGE-APPENDIX-B" && !html.includes('data-appendix-source="transparency-scorecard"')) {
+    problems.push("PAGE-APPENDIX-B: appendix page missing transparency source marker");
   }
 }
 
@@ -435,6 +464,25 @@ for (const page of publication.pages) {
   }
 }
 
+const appendixAHtml = fs.existsSync(path.join(root, "public/audit/appendix-a-open-questions.html"))
+  ? fs.readFileSync(path.join(root, "public/audit/appendix-a-open-questions.html"), "utf8")
+  : "";
+const appendixBHtml = fs.existsSync(path.join(root, "public/audit/appendix-b-transparency-scorecard.html"))
+  ? fs.readFileSync(path.join(root, "public/audit/appendix-b-transparency-scorecard.html"), "utf8")
+  : "";
+if (appendixAHtml) {
+  const appendixALinkCount = [...appendixAHtml.matchAll(/href="\/open-questions\/[^"]+\.html"/g)].length;
+  if (appendixALinkCount !== publication.openQuestions.length) {
+    problems.push("Appendix A disagrees with open-question data");
+  }
+}
+if (appendixBHtml) {
+  const appendixBRowCount = [...appendixBHtml.matchAll(/<tr>/g)].length - 1;
+  if (appendixBRowCount !== publication.transparencyScorecard.length) {
+    problems.push("Appendix B disagrees with transparency scorecard data");
+  }
+}
+
 for (const [claimId, refs] of Object.entries(crossReferences.claims || {})) {
   if (!claimIds.has(claimId)) {
     problems.push(`cross references: unknown claim ${claimId}`);
@@ -473,6 +521,21 @@ for (const group of ["pages", "audits", "sections", "claims", "sources", "decisi
         problems.push(`evidence graph: broken graph node link ${node.id} -> ${connectedId}`);
       }
     }
+  }
+}
+
+for (const relative of requiredRendererModules) {
+  if (!fs.existsSync(path.join(root, relative))) {
+    problems.push(`${relative}: required renderer/build module missing`);
+  }
+}
+
+const buildScriptPath = path.join(root, "scripts/build-publication-assets.js");
+if (fs.existsSync(buildScriptPath)) {
+  const buildScript = fs.readFileSync(buildScriptPath, "utf8");
+  const buildLineCount = buildScript.split(/\r?\n/).length;
+  if (buildLineCount > 220) {
+    problems.push("scripts/build-publication-assets.js remains monolithic beyond reasonable orchestration");
   }
 }
 

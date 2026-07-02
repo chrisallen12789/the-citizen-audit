@@ -120,7 +120,7 @@ const openQuestions = openQuestionsRaw.map((question) => {
 
 const pages = pagesRaw.map((page) => ({
   ...page,
-  url: `/${page.slug}.html`,
+  url: page.url || `/${page.slug}.html`,
   contentBlocks: page.contentBlocks || [],
   relatedAuditIds: unique(page.relatedAuditIds || []),
   relatedSectionIds: unique(page.relatedSectionIds || []),

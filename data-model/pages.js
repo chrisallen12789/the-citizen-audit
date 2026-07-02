@@ -481,6 +481,110 @@ module.exports = [
     ]
   },
   {
+    id: "PAGE-SEARCH",
+    title: "Search | The Citizen Audit",
+    heading: "Search the publication",
+    slug: "search",
+    description: "Full-text publication search for The Citizen Audit.",
+    eyebrow: "Search",
+    lede:
+      "The current static release uses a client-side search index generated from the repository's structured research records.",
+    footerLabel: "Search - publication index",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: allSectionIds,
+    relatedClaimIds: allClaimIds,
+    relatedSourceIds: allSourceIds,
+    relatedDecisionIds: allDecisionIds,
+    relatedOpenQuestionIds: allOpenQuestionIds,
+    contentBlocks: [
+      {
+        type: "searchInterface"
+      }
+    ]
+  },
+  {
+    id: "PAGE-EXPLORER",
+    title: "Traceability Explorer | The Citizen Audit",
+    heading: "Traceability Explorer",
+    slug: "explorer",
+    description: "Claim-to-source traceability explorer for The Citizen Audit.",
+    eyebrow: "Traceability Explorer",
+    lede:
+      "Follow each converted lane back to its linked Source IDs, Decision Log rules, and Open Question records. This page is a verification surface, not a replacement for the locked audit text.",
+    footerLabel: "Traceability explorer",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: allSectionIds,
+    relatedClaimIds: allClaimIds,
+    relatedSourceIds: allSourceIds,
+    relatedDecisionIds: allDecisionIds,
+    relatedOpenQuestionIds: allOpenQuestionIds,
+    contentBlocks: [
+      {
+        type: "explorerInterface"
+      }
+    ]
+  },
+  {
+    id: "PAGE-APPENDIX-A",
+    title: "Appendix A | The Citizen Audit",
+    heading: "Appendix A - Open Questions Register",
+    slug: "appendix-a-open-questions",
+    url: "/audit/appendix-a-open-questions.html",
+    description: "Appendix A open-question register for The Citizen Audit.",
+    eyebrow: "Appendix A - Version 1.0 register",
+    lede:
+      "The publication names what it cannot yet measure, why that gap exists, and what record would resolve it.",
+    footerLabel: "Appendix A - open-question register",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: allSectionIds,
+    relatedClaimIds: allClaimIds,
+    relatedSourceIds: allSourceIds,
+    relatedDecisionIds: allDecisionIds,
+    relatedOpenQuestionIds: allOpenQuestionIds,
+    contentBlocks: [
+      {
+        type: "actions",
+        links: [
+          { label: "Open question pages", href: "/open-questions.html", variant: "primary" },
+          { label: "Audit index", href: "/audit.html" }
+        ]
+      },
+      {
+        type: "appendixOpenQuestions"
+      }
+    ]
+  },
+  {
+    id: "PAGE-APPENDIX-B",
+    title: "Appendix B | The Citizen Audit",
+    heading: "Appendix B - Transparency Scorecard",
+    slug: "appendix-b-transparency-scorecard",
+    url: "/audit/appendix-b-transparency-scorecard.html",
+    description: "Appendix B transparency scorecard for The Citizen Audit.",
+    eyebrow: "Appendix B - Version 1.0 scorecard",
+    lede:
+      "Readers should be able to see which lanes are well-published, which are only partly measurable, and where federal reporting stops.",
+    footerLabel: "Appendix B - transparency scorecard",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: numberedSectionIds,
+    relatedClaimIds: allClaimIds,
+    relatedSourceIds: allSourceIds,
+    relatedDecisionIds: allDecisionIds,
+    relatedOpenQuestionIds: allOpenQuestionIds,
+    contentBlocks: [
+      {
+        type: "actions",
+        links: [
+          { label: "Evidence library", href: "/sources.html", variant: "primary" },
+          { label: "Audit index", href: "/audit.html" }
+        ]
+      },
+      {
+        type: "appendixTransparencyScorecard"
+      }
+    ]
+  },
+  {
     id: "PAGE-STATUS",
     title: "Status | The Citizen Audit",
     heading: "Build Status",
