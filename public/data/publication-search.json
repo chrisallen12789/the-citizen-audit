@@ -226,9 +226,9 @@
   {
     "type": "Source",
     "id": "S-047",
-    "title": "CEPR Ukraine valuation context",
+    "title": "New analysis from Economists for Ukraine: The cost of U.S. aid to Ukraine is less than half the official figures",
     "url": "/sources/s-047.html",
-    "text": "Retained as disconfirming or bounding context for delivered-value discussions in Section 4. Section 4 Provides lower-bound contextual estimates for value reaching Ukraine without being adopted as the canonical total.  Center for Economic and Policy Research Contextual analysis Secondary  pending URL verification pending because the exact CEPR article used as contrary context has not been verified in this pass."
+    "text": "Retained as disconfirming or bounding context for delivered-value discussions in Section 4. Section 4 Provides lower-bound contextual estimates for value reaching Ukraine without being adopted as the canonical total.  Centre for Economic Policy Research Contextual analysis Secondary https://cepr.org/voxeu/columns/new-analysis-economists-ukraine-cost-us-aid-ukraine-less-half-official-figures verified Normalized from a generic CEPR placeholder to the specific CEPR VoxEU article that matches the audit's contrary-context use. The Economists for Ukraine analysis is retained as the alternate stable supporting artifact."
   },
   {
     "type": "Source",
@@ -296,9 +296,9 @@
   {
     "type": "Source",
     "id": "S-057",
-    "title": "DoD / DSCA infographic",
+    "title": "Ukraine Security Assistance Infographic",
     "url": "/sources/s-057.html",
-    "text": "DoD summary used to verify separation between USAI and PDA replacement lines in Section 5. Section 5 Supports the non-overlap of USAI and PDA replacement lines. Supports the cumulative military-assistance line items used in Block A.  U.S. Department of Defense / Defense Security Cooperation Agency Infographic Primary  pending URL verification pending because a DoD/DSCA infographic was used for lane separation context, but the exact canonical file has not yet been verified."
+    "text": "DoD summary used to verify separation between USAI and PDA replacement lines in Section 5. Section 5 Supports the non-overlap of USAI and PDA replacement lines. Supports the cumulative military-assistance line items used in Block A.  U.S. Department of Defense Infographic Primary https://media.defense.gov/2024/Sep/06/2003538814/-1/-1/1/UKRAINE-INFOGRAPHIC-08AUG2024.PDF verified The infographic data are labeled as of August 8, 2024 inside the PDF. No separate archived copy beyond the live official Defense.gov PDF was verified during this pass."
   },
   {
     "type": "Source",
@@ -359,9 +359,9 @@
   {
     "type": "Source",
     "id": "S-067",
-    "title": "CRS R46462",
+    "title": "Noncitizen Eligibility for Federal Housing Programs",
     "url": "/sources/s-067.html",
-    "text": "Primary structural source for housing-program eligibility, Section 214 limits, and status-verification rules. Section 10 Supports the claim that major HUD rental-assistance programs are limited to citizens and eligible noncitizens under Section 214.  Congressional Research Service via Congress.gov Report Secondary  pending URL verification pending because the CRS report number is known, but the exact official Congress.gov product page was not machine-verifiable during this pass."
+    "text": "Primary structural source for housing-program eligibility, Section 214 limits, and status-verification rules. Section 10 Supports the claim that major HUD rental-assistance programs are limited to citizens and eligible noncitizens under Section 214.  Congressional Research Service via Congress.gov Report Secondary https://www.congress.gov/crs-product/R46462 verified Normalized from the CRS report number alone to the report title and official Congress.gov product path. Current public mirrors identify the latest version date as January 23, 2023."
   },
   {
     "type": "Source",
@@ -380,9 +380,9 @@
   {
     "type": "Source",
     "id": "S-070",
-    "title": "CRS R47936",
+    "title": "Labor, Health and Human Services, and Education: FY2024 Appropriations",
     "url": "/sources/s-070.html",
-    "text": "Appropriations source for Refugee and Entrant Assistance and related ORR emergency funding in Section 6. Section 6 Section 14 Supports the approximately $4.2B FY2023 emergency-designated Refugee and Entrant Assistance figure. Supports the approximately $481M FY2024 emergency appropriation figure. A-018 Congressional Research Service via Congress.gov Report Secondary  pending URL verification pending because the CRS report number is known, but the exact official Congress.gov product page was not machine-verifiable during this pass."
+    "text": "Appropriations source for Refugee and Entrant Assistance and related ORR emergency funding in Section 6. Section 6 Section 14 Supports the approximately $4.2B FY2023 emergency-designated Refugee and Entrant Assistance figure. Supports the approximately $481M FY2024 emergency appropriation figure. A-018 Congressional Research Service via Congress.gov Report Secondary https://www.congress.gov/crs-product/R47936 verified Normalized from the CRS report number alone to the report title and official Congress.gov product path. Public CRS mirrors show the FY2024 appropriations report updated through November 4, 2024."
   },
   {
     "type": "Source",
@@ -422,9 +422,9 @@
   {
     "type": "Source",
     "id": "S-076",
-    "title": "Cato SIPP-modeled welfare context",
+    "title": "Immigrant and Native Consumption of Means-Tested Welfare and Entitlement Benefits in 2023",
     "url": "/sources/s-076.html",
-    "text": "Directional, non-canonical context retained in Section 9 but not adopted as a Total A figure. Section 9 Provides modeled context for noncitizen welfare use while remaining outside the audit's adopted topline because of scope and methodology mismatches.  Cato Institute Modeled analysis Secondary  pending URL verification pending because the exact Cato modeling piece used as contextual evidence was not verified in this pass."
+    "text": "Directional, non-canonical context retained in Section 9 but not adopted as a Total A figure. Section 9 Provides modeled context for noncitizen welfare use while remaining outside the audit's adopted topline because of scope and methodology mismatches.  Cato Institute Modeled analysis Secondary https://www.cato.org/briefing-paper/immigrant-native-consumption-means-tested-welfare-entitlement-benefits-2023 verified Normalized from a generic Cato placeholder to the specific briefing paper that matches the audit's modeled-context use. No separate official archive artifact was verified during this pass."
   },
   {
     "type": "Source",

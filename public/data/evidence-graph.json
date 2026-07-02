@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T13:05:48.697Z",
+  "generatedAt": "2026-07-02T13:13:32.349Z",
   "pages": [
     {
       "id": "PAGE-AUDIT",
@@ -6678,7 +6678,7 @@
     },
     {
       "id": "S-047",
-      "title": "CEPR Ukraine valuation context",
+      "title": "New analysis from Economists for Ukraine: The cost of U.S. aid to Ukraine is less than half the official figures",
       "audits": [
         "AUDIT-001"
       ],
@@ -7072,7 +7072,7 @@
     },
     {
       "id": "S-057",
-      "title": "DoD / DSCA infographic",
+      "title": "Ukraine Security Assistance Infographic",
       "audits": [
         "AUDIT-001"
       ],
@@ -7440,7 +7440,7 @@
     },
     {
       "id": "S-067",
-      "title": "CRS R46462",
+      "title": "Noncitizen Eligibility for Federal Housing Programs",
       "audits": [
         "AUDIT-001"
       ],
@@ -7524,7 +7524,7 @@
     },
     {
       "id": "S-070",
-      "title": "CRS R47936",
+      "title": "Labor, Health and Human Services, and Education: FY2024 Appropriations",
       "audits": [
         "AUDIT-001"
       ],
@@ -7766,7 +7766,7 @@
     },
     {
       "id": "S-076",
-      "title": "Cato SIPP-modeled welfare context",
+      "title": "Immigrant and Native Consumption of Means-Tested Welfare and Entitlement Benefits in 2023",
       "audits": [
         "AUDIT-001"
       ],

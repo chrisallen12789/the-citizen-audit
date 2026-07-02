@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T13:05:48.695Z",
+  "generatedAt": "2026-07-02T13:13:32.347Z",
   "scaleExplorerRows": [
     [
       "International assistance obligations, FY2023 basis",
@@ -1424,23 +1424,23 @@
     {
       "id": "S-047",
       "slug": "s-047",
-      "title": "CEPR Ukraine valuation context",
-      "canonicalUrl": null,
-      "officialUrl": null,
-      "archiveUrl": null,
-      "archiveStatus": "not-available",
-      "publisher": "Center for Economic and Policy Research",
-      "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "title": "New analysis from Economists for Ukraine: The cost of U.S. aid to Ukraine is less than half the official figures",
+      "canonicalUrl": "https://cepr.org/voxeu/columns/new-analysis-economists-ukraine-cost-us-aid-ukraine-less-half-official-figures",
+      "officialUrl": "https://cepr.org/voxeu/columns/new-analysis-economists-ukraine-cost-us-aid-ukraine-less-half-official-figures",
+      "archiveUrl": "https://econ4ua.org/aid-value/",
+      "archiveStatus": "available",
+      "publisher": "Centre for Economic Policy Research",
+      "publicationDate": "2025-03-06",
+      "retrievalDate": "2026-07-02",
       "documentType": "Contextual analysis",
       "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 4"
       ],
-      "verificationStatus": "pending",
-      "urlVerificationStatus": "pending",
-      "notes": "URL verification pending because the exact CEPR article used as contrary context has not been verified in this pass."
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Normalized from a generic CEPR placeholder to the specific CEPR VoxEU article that matches the audit's contrary-context use. The Economists for Ukraine analysis is retained as the alternate stable supporting artifact."
     },
     {
       "id": "S-048",
@@ -1635,23 +1635,23 @@
     {
       "id": "S-057",
       "slug": "s-057",
-      "title": "DoD / DSCA infographic",
-      "canonicalUrl": null,
-      "officialUrl": null,
+      "title": "Ukraine Security Assistance Infographic",
+      "canonicalUrl": "https://media.defense.gov/2024/Sep/06/2003538814/-1/-1/1/UKRAINE-INFOGRAPHIC-08AUG2024.PDF",
+      "officialUrl": "https://media.defense.gov/2024/Sep/06/2003538814/-1/-1/1/UKRAINE-INFOGRAPHIC-08AUG2024.PDF",
       "archiveUrl": null,
       "archiveStatus": "not-available",
-      "publisher": "U.S. Department of Defense / Defense Security Cooperation Agency",
-      "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "publisher": "U.S. Department of Defense",
+      "publicationDate": "2024-09-06",
+      "retrievalDate": "2026-07-02",
       "documentType": "Infographic",
       "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 5"
       ],
-      "verificationStatus": "pending",
-      "urlVerificationStatus": "pending",
-      "notes": "URL verification pending because a DoD/DSCA infographic was used for lane separation context, but the exact canonical file has not yet been verified."
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "The infographic data are labeled as of August 8, 2024 inside the PDF. No separate archived copy beyond the live official Defense.gov PDF was verified during this pass."
     },
     {
       "id": "S-058",
@@ -1829,23 +1829,23 @@
     {
       "id": "S-067",
       "slug": "s-067",
-      "title": "CRS R46462",
-      "canonicalUrl": null,
-      "officialUrl": null,
-      "archiveUrl": null,
-      "archiveStatus": "not-available",
+      "title": "Noncitizen Eligibility for Federal Housing Programs",
+      "canonicalUrl": "https://www.congress.gov/crs-product/R46462",
+      "officialUrl": "https://www.congress.gov/crs-product/R46462",
+      "archiveUrl": "https://crsreports.congress.gov/product/pdf/R/R46462",
+      "archiveStatus": "available",
       "publisher": "Congressional Research Service via Congress.gov",
-      "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "publicationDate": "2023-01-23",
+      "retrievalDate": "2026-07-02",
       "documentType": "Report",
       "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 10"
       ],
-      "verificationStatus": "pending",
-      "urlVerificationStatus": "pending",
-      "notes": "URL verification pending because the CRS report number is known, but the exact official Congress.gov product page was not machine-verifiable during this pass."
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Normalized from the CRS report number alone to the report title and official Congress.gov product path. Current public mirrors identify the latest version date as January 23, 2023."
     },
     {
       "id": "S-068",
@@ -1892,14 +1892,14 @@
     {
       "id": "S-070",
       "slug": "s-070",
-      "title": "CRS R47936",
-      "canonicalUrl": null,
-      "officialUrl": null,
-      "archiveUrl": null,
-      "archiveStatus": "not-available",
+      "title": "Labor, Health and Human Services, and Education: FY2024 Appropriations",
+      "canonicalUrl": "https://www.congress.gov/crs-product/R47936",
+      "officialUrl": "https://www.congress.gov/crs-product/R47936",
+      "archiveUrl": "https://crsreports.congress.gov/product/pdf/R/R47936",
+      "archiveStatus": "available",
       "publisher": "Congressional Research Service via Congress.gov",
-      "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "publicationDate": "2024-11-04",
+      "retrievalDate": "2026-07-02",
       "documentType": "Report",
       "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
@@ -1907,9 +1907,9 @@
         "Section 6",
         "Section 14"
       ],
-      "verificationStatus": "pending",
-      "urlVerificationStatus": "pending",
-      "notes": "URL verification pending because the CRS report number is known, but the exact official Congress.gov product page was not machine-verifiable during this pass."
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Normalized from the CRS report number alone to the report title and official Congress.gov product path. Public CRS mirrors show the FY2024 appropriations report updated through November 4, 2024."
     },
     {
       "id": "S-071",
@@ -2022,23 +2022,23 @@
     {
       "id": "S-076",
       "slug": "s-076",
-      "title": "Cato SIPP-modeled welfare context",
-      "canonicalUrl": null,
-      "officialUrl": null,
+      "title": "Immigrant and Native Consumption of Means-Tested Welfare and Entitlement Benefits in 2023",
+      "canonicalUrl": "https://www.cato.org/briefing-paper/immigrant-native-consumption-means-tested-welfare-entitlement-benefits-2023",
+      "officialUrl": "https://www.cato.org/briefing-paper/immigrant-native-consumption-means-tested-welfare-entitlement-benefits-2023",
       "archiveUrl": null,
       "archiveStatus": "not-available",
       "publisher": "Cato Institute",
-      "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "publicationDate": "2026-01-27",
+      "retrievalDate": "2026-07-02",
       "documentType": "Modeled analysis",
       "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 9"
       ],
-      "verificationStatus": "pending",
-      "urlVerificationStatus": "pending",
-      "notes": "URL verification pending because the exact Cato modeling piece used as contextual evidence was not verified in this pass."
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Normalized from a generic Cato placeholder to the specific briefing paper that matches the audit's modeled-context use. No separate official archive artifact was verified during this pass."
     },
     {
       "id": "S-077",
