@@ -9,7 +9,7 @@ module.exports = [
     "canonicalTitle": "The Citizen Audit v1.0",
     "publicationFormat": "Evidence platform",
     "language": "en",
-    "currentReleaseVersion": "0.5",
+    "currentReleaseVersion": "1.0.0-rc1",
     "reviewerPath": "/review.html",
     "platformPath": "/platform.html",
     "auditPath": "/audit.html"

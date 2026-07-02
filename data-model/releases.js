@@ -43,5 +43,17 @@ module.exports = [
       "Appendix A and Appendix B upgraded from placeholders into working research registers.",
       "Existing converted sections gain section-level verification metadata and trace-panel hooks."
     ]
+  },
+  {
+    "id": "R-005",
+    "auditId": "AUDIT-001",
+    "version": "1.0.0-rc1",
+    "date": "Release candidate",
+    "title": "Production-ready review candidate",
+    "notes": [
+      "All currently modeled claims, sources, decisions, and open questions now build from structured records.",
+      "Citation verification is complete for the live source library and release artifacts are generated with checksums, QA reporting, and reproducibility notes.",
+      "The public site ships with generated search, evidence graph, source pages, release documentation, and production metadata suitable for independent review."
+    ]
   }
 ];

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>The Citizen Audit</title>
+  <rect width="64" height="64" rx="14" fill="#171717"/>
+  <rect x="7" y="7" width="50" height="50" rx="10" fill="#f5f0e8" opacity="0.12"/>
+  <path d="M18 19h28v6H24v9h18v6H24v9h22v6H18z" fill="#f5f0e8"/>
+  <path d="M38 19h8l8 36h-7l-1.4-6.8H35.3L33.9 55H27zm1.6 23.2h4.8L42 30.4z" fill="#d96b4a"/>
+</svg>
