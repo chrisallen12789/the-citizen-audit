@@ -65,6 +65,15 @@ const sources = sourcesRaw.map((source) => {
   );
   return {
     ...source,
+    canonicalUrl: source.canonicalUrl || source.officialUrl || null,
+    officialUrl: source.officialUrl || source.canonicalUrl || null,
+    archiveStatus: source.archiveStatus || (source.archiveUrl ? "available" : "not-available"),
+    primaryOrSecondary: source.primaryOrSecondary || source.classification || null,
+    classification: source.classification || source.primaryOrSecondary || null,
+    verificationStatus: source.verificationStatus || source.urlVerificationStatus || null,
+    urlVerificationStatus: source.urlVerificationStatus || source.verificationStatus || null,
+    notes: source.notes || source.urlVerificationNote || "",
+    urlVerificationNote: source.urlVerificationNote || source.notes || "",
     claimIds,
     decisionIds,
     openQuestionIds,

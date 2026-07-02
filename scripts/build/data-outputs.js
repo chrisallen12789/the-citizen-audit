@@ -38,9 +38,10 @@ function createDataOutputBuilders(publication, publicDir) {
           source.openQuestions.join(" "),
           source.publisher,
           source.documentType,
-          source.classification,
-          source.officialUrl || "",
-          source.urlVerificationStatus
+          source.primaryOrSecondary,
+          source.canonicalUrl || "",
+          source.verificationStatus,
+          source.notes || ""
         ].join(" ")
       });
     }
@@ -294,15 +295,20 @@ function createDataOutputBuilders(publication, publicDir) {
         id: source.id,
         slug: source.slug,
         title: source.title,
+        canonicalUrl: source.canonicalUrl,
         officialUrl: source.officialUrl,
         archiveUrl: source.archiveUrl,
+        archiveStatus: source.archiveStatus,
         publisher: source.publisher,
         publicationDate: source.publicationDate,
         retrievalDate: source.retrievalDate,
         documentType: source.documentType,
+        primaryOrSecondary: source.primaryOrSecondary,
         classification: source.classification,
         sections: source.sections,
-        urlVerificationStatus: source.urlVerificationStatus
+        verificationStatus: source.verificationStatus,
+        urlVerificationStatus: source.urlVerificationStatus,
+        notes: source.notes
       })),
       decisions: publication.decisions,
       openQuestions: publication.openQuestions
@@ -325,10 +331,17 @@ function createDataOutputBuilders(publication, publicDir) {
   }
 
   function buildPlatformMetrics(searchIndex, traceRecords) {
-    const verifiedSources = publication.sources.filter((source) => source.urlVerificationStatus === "verified");
+    const verifiedSources = publication.sources.filter((source) => source.verificationStatus === "verified");
+    const pendingSources = publication.sources.filter((source) => source.verificationStatus !== "verified");
+    const archiveCoveredSources = publication.sources.filter((source) => source.archiveUrl);
+    const highPrioritySources = publication.sources.filter((source) => source.citationPriority === "high");
     const highPriorityMissing = publication.sources
-      .filter((source) => source.citationPriority === "high" && !source.officialUrl)
+      .filter((source) => source.citationPriority === "high" && !source.canonicalUrl)
       .map((source) => source.id);
+    const highPriorityVerified = highPrioritySources.filter((source) => source.canonicalUrl).length;
+    const highPriorityCitationCompletionPercent = highPrioritySources.length
+      ? Number(((highPriorityVerified / highPrioritySources.length) * 100).toFixed(2))
+      : 100;
     const traceableClaims = publication.claims.filter(
       (claim) => claim.sources.length && claim.confidence && claim.revisionHistory.length
     );
@@ -344,9 +357,15 @@ function createDataOutputBuilders(publication, publicDir) {
       generatedSectionPages,
       generatedClaimPages: publication.claims.length,
       sources: publication.sources.length,
+      verifiedSourceCount: verifiedSources.length,
+      pendingSourceCount: pendingSources.length,
+      archiveCoverageCount: archiveCoveredSources.length,
+      highPriorityCitationCompletionPercent,
       citationCoverage: {
         verified: verifiedSources.length,
-        pending: publication.sources.length - verifiedSources.length,
+        pending: pendingSources.length,
+        archiveCoverageCount: archiveCoveredSources.length,
+        highPriorityCitationCompletionPercent,
         percentVerified: Number(((verifiedSources.length / publication.sources.length) * 100).toFixed(2)),
         highPriorityMissingCanonicalUrls: highPriorityMissing
       },

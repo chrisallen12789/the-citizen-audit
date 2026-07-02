@@ -50,9 +50,13 @@ function hasRequiredSourceMetadata(source) {
     "publisher",
     "documentType",
     "classification",
+    "primaryOrSecondary",
     "citationPriority",
+    "verificationStatus",
     "urlVerificationStatus",
-    "urlVerificationNote"
+    "urlVerificationNote",
+    "notes",
+    "archiveStatus"
   ];
   return requiredStringFields.every(
     (field) => typeof source[field] === "string" && source[field].trim().length > 0
@@ -262,17 +266,33 @@ for (const source of publication.sources) {
   if (!hasRevisionHistory(source)) {
     problems.push(`${source.id}: missing revision history`);
   }
-  if (source.urlVerificationStatus === "verified" && !source.officialUrl) {
-    problems.push(`${source.id}: verified source is missing officialUrl`);
+  if (source.verificationStatus === "verified" && !source.canonicalUrl) {
+    problems.push(`${source.id}: verified source is missing canonicalUrl`);
   }
-  if (source.citationPriority === "high" && !source.officialUrl) {
-    problems.push(`${source.id}: high-priority citation lacks canonical URL`);
+  if (source.citationPriority === "high") {
+    for (const field of [
+      "canonicalUrl",
+      "publisher",
+      "documentType",
+      "primaryOrSecondary",
+      "verificationStatus"
+    ]) {
+      if (!source[field] || !String(source[field]).trim()) {
+        problems.push(`${source.id}: high-priority source lacks ${field}`);
+      }
+    }
   }
   if (
     source.urlVerificationStatus === "pending" &&
     !source.urlVerificationNote.toLowerCase().includes("pending")
   ) {
     problems.push(`${source.id}: pending URL verification note must explain why verification is pending`);
+  }
+  if (source.archiveUrl && source.archiveStatus === "not-available") {
+    problems.push(`${source.id}: archiveStatus says not-available but archiveUrl is populated`);
+  }
+  if (!source.archiveUrl && source.archiveStatus === "available") {
+    problems.push(`${source.id}: archiveStatus says available but archiveUrl is missing`);
   }
 }
 
@@ -576,6 +596,27 @@ if (metrics.sections !== publication.sections.length) {
 }
 if (metrics.sources !== publication.sources.length) {
   problems.push("public/data/platform-metrics.json: source count mismatch");
+}
+if (metrics.verifiedSourceCount !== publication.sources.filter((source) => source.verificationStatus === "verified").length) {
+  problems.push("public/data/platform-metrics.json: verified source count mismatch");
+}
+if (metrics.pendingSourceCount !== publication.sources.filter((source) => source.verificationStatus !== "verified").length) {
+  problems.push("public/data/platform-metrics.json: pending source count mismatch");
+}
+if (metrics.archiveCoverageCount !== publication.sources.filter((source) => source.archiveUrl).length) {
+  problems.push("public/data/platform-metrics.json: archive coverage count mismatch");
+}
+const highPrioritySources = publication.sources.filter((source) => source.citationPriority === "high");
+const expectedHighPriorityCitationCompletionPercent = highPrioritySources.length
+  ? Number(
+      (
+        (highPrioritySources.filter((source) => source.canonicalUrl).length / highPrioritySources.length) *
+        100
+      ).toFixed(2)
+    )
+  : 100;
+if (metrics.highPriorityCitationCompletionPercent !== expectedHighPriorityCitationCompletionPercent) {
+  problems.push("public/data/platform-metrics.json: high-priority citation completion mismatch");
 }
 if (metrics.decisionLogs !== publication.decisions.length) {
   problems.push("public/data/platform-metrics.json: decision count mismatch");

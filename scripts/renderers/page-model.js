@@ -21,9 +21,10 @@ function createPageRenderer(publication) {
             source.claims.join(" "),
             source.publisher,
             source.documentType,
-            source.classification,
-            source.officialUrl || "",
-            source.urlVerificationStatus
+            source.primaryOrSecondary,
+            source.canonicalUrl || "",
+            source.verificationStatus,
+            source.notes || ""
           ].join(" ")
         )}">
           <div class="source-row-head">
@@ -35,7 +36,8 @@ function createPageRenderer(publication) {
           </div>
           <p>${escapeHtml(source.summary)}</p>
           <p class="meta-line"><strong>Evidence class:</strong> ${escapeHtml(source.evidenceClass)}</p>
-          <p class="meta-line"><strong>Classification:</strong> ${escapeHtml(source.classification)} | <strong>URL status:</strong> ${escapeHtml(source.urlVerificationStatus)}</p>
+          <p class="meta-line"><strong>Primary / Secondary:</strong> ${escapeHtml(source.primaryOrSecondary)} | <strong>Verification:</strong> ${escapeHtml(source.verificationStatus)}</p>
+          <p class="meta-line"><strong>Archive:</strong> ${escapeHtml(source.archiveStatus)}${source.archiveUrl ? ` | <a href="${escapeHtml(source.archiveUrl)}">alternate artifact</a>` : ""}</p>
           <p class="meta-line"><strong>Used in:</strong> ${escapeHtml(source.sections.join(", "))}</p>
         </article>`
       )
@@ -132,6 +134,10 @@ function createPageRenderer(publication) {
       { label: "Generated publication pages", value: metrics.generatedPublicationPages },
       { label: "Generated section pages", value: metrics.generatedSectionPages },
       { label: "Generated claim pages", value: metrics.generatedClaimPages },
+      { label: "Verified sources", value: metrics.verifiedSourceCount },
+      { label: "Pending sources", value: metrics.pendingSourceCount },
+      { label: "Archive coverage", value: metrics.archiveCoverageCount },
+      { label: "High-priority citation completion", value: `${metrics.highPriorityCitationCompletionPercent}%` },
       { label: "Citation coverage", value: `${metrics.citationCoverage.percentVerified}%` },
       { label: "Traceability coverage", value: `${metrics.traceabilityPercent}%` },
       { label: "QA status", value: metrics.qaStatus.status, marker: "platform" },

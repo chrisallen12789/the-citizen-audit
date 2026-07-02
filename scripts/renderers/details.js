@@ -43,23 +43,33 @@ function createDetailRenderers(publication, relationships) {
               { label: "Publisher", value: source.publisher },
               { label: "Agency label", value: source.agency },
               { label: "Document type", value: source.documentType },
-              { label: "Classification", value: source.classification },
+              { label: "Primary / Secondary", value: source.primaryOrSecondary },
               { label: "Confidence", value: source.confidence },
               { label: "Evidence class", value: source.evidenceClass },
               { label: "Publication date", value: formatDate(source.publicationDate) },
               { label: "Retrieval date", value: formatDate(source.retrievalDate) },
               { label: "Citation priority", value: source.citationPriority },
-              { label: "URL verification", value: source.urlVerificationStatus }
+              { label: "Verification status", value: source.verificationStatus }
             ]
           }
         ]
       },
       {
-        heading: "Source links",
+        heading: "Citation metadata",
         blocks: [
-          { type: "paragraph", html: `<p><strong>Official URL</strong><br>${renderSourceUrl(source, "officialUrl")}</p>` },
-          { type: "paragraph", html: `<p><strong>Archive URL</strong><br>${renderSourceUrl(source, "archiveUrl")}</p>` },
-          { type: "paragraph", html: `<p><strong>Verification note</strong><br>${escapeHtml(source.urlVerificationNote)}</p>` }
+          {
+            type: "metadataGrid",
+            items: [
+              { label: "Canonical URL", valueHtml: renderSourceUrl(source, "canonicalUrl") },
+              { label: "Archive URL", valueHtml: renderSourceUrl(source, "archiveUrl") },
+              { label: "Archive status", value: source.archiveStatus },
+              { label: "Publisher", value: source.publisher },
+              { label: "Document type", value: source.documentType },
+              { label: "Primary / Secondary", value: source.primaryOrSecondary },
+              { label: "Verification status", value: source.verificationStatus }
+            ]
+          },
+          { type: "paragraph", text: source.notes || source.urlVerificationNote }
         ]
       },
       {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T12:35:49.921Z",
+  "generatedAt": "2026-07-02T12:50:55.874Z",
   "scaleExplorerRows": [
     [
       "International assistance obligations, FY2023 basis",
@@ -1116,47 +1116,60 @@
       "id": "S-001",
       "slug": "s-001",
       "title": "CRS IF10183",
-      "officialUrl": null,
-      "archiveUrl": null,
+      "canonicalUrl": "https://www.congress.gov/crs-product/IF11437",
+      "officialUrl": "https://www.congress.gov/crs-product/IF11437",
+      "archiveUrl": "https://www.congress.gov/crs_external_products/IF/PDF/IF11437/IF11437.1.pdf",
+      "archiveStatus": "available",
       "publisher": "Congressional Research Service via Congress.gov",
-      "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "publicationDate": "2020-02-21",
+      "retrievalDate": "2026-07-02",
       "documentType": "Issue brief",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 1",
         "Section 3"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because automated verification of the exact Congress.gov CRS product page was blocked during this pass, so no canonical URL is published yet."
     },
     {
       "id": "S-002",
       "slug": "s-002",
       "title": "8 U.S.C. Sec. 1641(b)",
+      "canonicalUrl": "https://uscode.house.gov/view.xhtml?req=%28title%3A8+section%3A1641+edition%3Aprelim%29",
       "officialUrl": "https://uscode.house.gov/view.xhtml?req=%28title%3A8+section%3A1641+edition%3Aprelim%29",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Office of the Law Revision Counsel, U.S. House of Representatives",
       "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "retrievalDate": "2026-07-02",
       "documentType": "Statute",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 2",
         "Section 8",
         "Section 9"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Official U.S. Code page verified. No separate archive snapshot was verified during this pass."
     },
     {
       "id": "S-003",
       "slug": "s-003",
       "title": "8 U.S.C. Sec. 1611",
+      "canonicalUrl": "https://uscode.house.gov/view.xhtml?edition=prelim&num=0&req=granuleid%3AUSC-prelim-title8-section1611",
       "officialUrl": "https://uscode.house.gov/view.xhtml?edition=prelim&num=0&req=granuleid%3AUSC-prelim-title8-section1611",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Office of the Law Revision Counsel, U.S. House of Representatives",
       "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "retrievalDate": "2026-07-02",
       "documentType": "Statute",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 2",
@@ -1164,730 +1177,952 @@
         "Section 8",
         "Section 9"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Official U.S. Code page verified. No separate archive snapshot was verified during this pass."
     },
     {
       "id": "S-004",
       "slug": "s-004",
       "title": "8 U.S.C. Sec. 1613",
+      "canonicalUrl": "https://uscode.house.gov/quicksearch/get.plx?section=1613&title=8",
       "officialUrl": "https://uscode.house.gov/quicksearch/get.plx?section=1613&title=8",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Office of the Law Revision Counsel, U.S. House of Representatives",
       "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "retrievalDate": "2026-07-02",
       "documentType": "Statute",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 2",
         "Section 8",
         "Section 9"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Official U.S. Code page verified. No separate archive snapshot was verified during this pass."
     },
     {
       "id": "S-005",
       "slug": "s-005",
       "title": "GAO Budget Glossary (GAO-05-734SP)",
+      "canonicalUrl": "https://www.gao.gov/products/gao-05-734sp",
       "officialUrl": "https://www.gao.gov/products/gao-05-734sp",
       "archiveUrl": "https://www.gao.gov/assets/gao-05-734sp.pdf",
+      "archiveStatus": "available",
       "publisher": "U.S. Government Accountability Office",
       "publicationDate": "2005-09-01",
-      "retrievalDate": "2026-07-01",
+      "retrievalDate": "2026-07-02",
       "documentType": "Glossary",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 2",
         "Section 3"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Official GAO product page verified, with the official PDF retained as the alternate stable artifact."
     },
     {
       "id": "S-006",
       "slug": "s-006",
       "title": "CBO Common Budgetary Terms Explained",
+      "canonicalUrl": "https://www.cbo.gov/publication/57660",
       "officialUrl": "https://www.cbo.gov/publication/57660",
-      "archiveUrl": null,
+      "archiveUrl": "https://www.cbo.gov/system/files/2021-12/57420-Budgetary-Terms.pdf",
+      "archiveStatus": "available",
       "publisher": "Congressional Budget Office",
       "publicationDate": "2021-12-09",
-      "retrievalDate": "2026-07-01",
+      "retrievalDate": "2026-07-02",
       "documentType": "Glossary",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 2"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Canonical CBO landing page verified. The official PDF download provides alternate stable access to the same publication."
     },
     {
       "id": "S-038",
       "slug": "s-038",
       "title": "ForeignAssistance.gov financial datasets",
+      "canonicalUrl": "https://foreignassistance.gov/data",
       "officialUrl": "https://foreignassistance.gov/data",
-      "archiveUrl": "https://foreignassistance.gov/",
+      "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "U.S. Department of State / USAID / reporting agencies",
       "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "retrievalDate": "2026-07-02",
       "documentType": "Dataset landing page",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 1",
         "Section 3",
         "Section 6"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Canonical data-portal URL verified. No separate archived snapshot or static export URL was verified during this pass."
     },
     {
       "id": "S-039",
       "slug": "s-039",
       "title": "Pew foreign-aid reporting summary",
+      "canonicalUrl": "https://www.pewresearch.org/short-reads/2024/05/08/the-us-spends-billions-on-foreign-aid-each-year/",
       "officialUrl": "https://www.pewresearch.org/short-reads/2024/05/08/the-us-spends-billions-on-foreign-aid-each-year/",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Pew Research Center",
       "publicationDate": "2024-05-08",
       "retrievalDate": "2026-07-01",
       "documentType": "Research summary",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 3"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because a Pew foreign-aid explainer is the likely canonical reference, but the exact article used in the audit needs line-by-line confirmation before it is treated as verified."
     },
     {
       "id": "S-040",
       "slug": "s-040",
       "title": "USAFacts foreign-aid reporting summary",
+      "canonicalUrl": "https://usafacts.org/articles/how-much-does-the-us-give-in-foreign-aid/",
       "officialUrl": "https://usafacts.org/articles/how-much-does-the-us-give-in-foreign-aid/",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "USAFacts",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Data explainer",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 3"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because uSAFacts foreign-aid reporting was identified, but the exact article and edition used in the audit still need canonical verification."
     },
     {
       "id": "S-042",
       "slug": "s-042",
       "title": "State Supplementary Tables FY2025",
+      "canonicalUrl": "https://www.state.gov/wp-content/uploads/2024/03/Supplementary-Tables-Foreign-Assistance.pdf",
       "officialUrl": "https://www.state.gov/wp-content/uploads/2024/03/Supplementary-Tables-Foreign-Assistance.pdf",
       "archiveUrl": "https://2021-2025.state.gov/wp-content/uploads/2024/04/Supplementary-Tables-Foreign-Assistance.pdf",
+      "archiveStatus": "available",
       "publisher": "U.S. Department of State",
       "publicationDate": "2024-03-01",
       "retrievalDate": "2026-07-01",
       "documentType": "Budget tables PDF",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 3"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the State Department PDF path."
     },
     {
       "id": "S-043",
       "slug": "s-043",
       "title": "CRS IF11437",
-      "officialUrl": null,
-      "archiveUrl": null,
+      "canonicalUrl": "https://www.congress.gov/crs-product/IF11437",
+      "officialUrl": "https://www.congress.gov/crs-product/IF11437",
+      "archiveUrl": "https://www.congress.gov/crs_external_products/IF/PDF/IF11437/IF11437.1.pdf",
+      "archiveStatus": "available",
       "publisher": "Congressional Research Service via Congress.gov",
-      "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "publicationDate": "2020-02-21",
+      "retrievalDate": "2026-07-02",
       "documentType": "Issue brief",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 3",
         "Section 4",
         "Section 5"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Congress.gov blocked automated retrieval during this pass, so verification relied on current web-discoverable official CRS product and PDF URL patterns rather than a live fetch of the final page body."
     },
     {
       "id": "S-044",
       "slug": "s-044",
       "title": "UkraineOversight.gov",
+      "canonicalUrl": "https://www.ukraineoversight.gov/Funding/",
       "officialUrl": "https://www.ukraineoversight.gov/Funding/",
       "archiveUrl": "https://www.gao.gov/ukraine-oversight",
+      "archiveStatus": "available",
       "publisher": "UkraineOversight.gov",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Oversight portal",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 4"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official oversight portal."
     },
     {
       "id": "S-045",
       "slug": "s-045",
       "title": "State Department Ukraine/Israel aid reporting",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "U.S. Department of State",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Agency reporting",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 4",
         "Section 5"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because official State reporting pages for both Ukraine and Israel were located, but the exact canonical page used by this source record remains ambiguous."
     },
     {
       "id": "S-046",
       "slug": "s-046",
       "title": "GAO drawdown valuation reporting",
+      "canonicalUrl": "https://www.gao.gov/products/gao-24-106934",
       "officialUrl": "https://www.gao.gov/products/gao-24-106934",
       "archiveUrl": "https://www.gao.gov/assets/gao-24-106934.pdf",
+      "archiveStatus": "available",
       "publisher": "U.S. Government Accountability Office",
       "publicationDate": "2024-07-22",
       "retrievalDate": "2026-07-01",
       "documentType": "Oversight report",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 4",
         "Section 5"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the GAO product page."
     },
     {
       "id": "S-047",
       "slug": "s-047",
       "title": "CEPR Ukraine valuation context",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Center for Economic and Policy Research",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Contextual analysis",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 4"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because the exact CEPR article used as contrary context has not been verified in this pass."
     },
     {
       "id": "S-048",
       "slug": "s-048",
       "title": "Council on Foreign Relations aid tracker context",
+      "canonicalUrl": "https://www.cfr.org/article/how-much-us-aid-going-ukraine",
       "officialUrl": "https://www.cfr.org/article/how-much-us-aid-going-ukraine",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Council on Foreign Relations",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Tracker / explainer",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 4"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the CFR article page."
     },
     {
       "id": "S-049",
       "slug": "s-049",
       "title": "CRS RL33222",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Congressional Research Service via Congress.gov",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Report",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 4"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because the CRS report number is known, but automated verification of the official Congress.gov product page was blocked."
     },
     {
       "id": "S-050",
       "slug": "s-050",
       "title": "DSCA SAMM and related security-cooperation materials",
+      "canonicalUrl": "https://samm.dsca.mil/",
       "officialUrl": "https://samm.dsca.mil/",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Defense Security Cooperation Agency",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Program manual",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 5"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official DSCA SAMM site."
     },
     {
       "id": "S-051",
       "slug": "s-051",
       "title": "State FMTR",
+      "canonicalUrl": "https://www.state.gov/reports/foreign-military-training-and-dod-engagement-activities-of-interest-2022-2023",
       "officialUrl": "https://www.state.gov/reports/foreign-military-training-and-dod-engagement-activities-of-interest-2022-2023",
       "archiveUrl": "https://www.state.gov/wp-content/uploads/2025/03/01-Front-Sections.pdf",
+      "archiveStatus": "available",
       "publisher": "U.S. Department of State / U.S. Department of Defense",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Joint report",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 5"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the State Department report landing page."
     },
     {
       "id": "S-052",
       "slug": "s-052",
       "title": "CRS IF12040",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Congressional Research Service via Congress.gov",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Issue brief",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 5"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because the CRS identifier is known, but the exact official product page could not be verified automatically."
     },
     {
       "id": "S-053",
       "slug": "s-053",
       "title": "CRS IN12453",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Congressional Research Service via Congress.gov",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Insight",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 5"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because the CRS identifier is known, but the exact official product page could not be verified automatically."
     },
     {
       "id": "S-054",
       "slug": "s-054",
       "title": "CRS R48182",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Congressional Research Service via Congress.gov",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Report",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 5"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because the CRS identifier is known, but the exact official product page could not be verified automatically."
     },
     {
       "id": "S-055",
       "slug": "s-055",
       "title": "GAO-23-105842",
+      "canonicalUrl": "https://www.gao.gov/products/gao-23-105842",
       "officialUrl": "https://www.gao.gov/products/gao-23-105842",
       "archiveUrl": "https://www.gao.gov/assets/gao-23-105842.pdf",
+      "archiveStatus": "available",
       "publisher": "U.S. Government Accountability Office",
       "publicationDate": "2023-08-29",
       "retrievalDate": "2026-07-01",
       "documentType": "Oversight report",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 5",
         "Section 14"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the GAO product page."
     },
     {
       "id": "S-056",
       "slug": "s-056",
       "title": "GAO-24-107232",
+      "canonicalUrl": "https://www.gao.gov/products/gao-24-107232",
       "officialUrl": "https://www.gao.gov/products/gao-24-107232",
       "archiveUrl": "https://www.gao.gov/assets/870/869711.pdf",
+      "archiveStatus": "available",
       "publisher": "U.S. Government Accountability Office",
       "publicationDate": "2024-05-30",
       "retrievalDate": "2026-07-01",
       "documentType": "Oversight report",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 5"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the GAO product page."
     },
     {
       "id": "S-057",
       "slug": "s-057",
       "title": "DoD / DSCA infographic",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "U.S. Department of Defense / Defense Security Cooperation Agency",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Infographic",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 5"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because a DoD/DSCA infographic was used for lane separation context, but the exact canonical file has not yet been verified."
     },
     {
       "id": "S-058",
       "slug": "s-058",
       "title": "DoD CTEF J-Books",
+      "canonicalUrl": "https://comptroller.defense.gov/Portals/45/Documents/defbudget/FY2026/FY2026_CTEF_J-Book.pdf",
       "officialUrl": "https://comptroller.defense.gov/Portals/45/Documents/defbudget/FY2026/FY2026_CTEF_J-Book.pdf",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Office of the Under Secretary of Defense (Comptroller)",
       "publicationDate": "2025-01-01",
       "retrievalDate": "2026-07-01",
       "documentType": "Budget justification PDF",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 5",
         "Section 14"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official DoD Comptroller budget document path."
     },
     {
       "id": "S-059",
       "slug": "s-059",
       "title": "10 U.S.C. Sec. 333",
+      "canonicalUrl": "https://uscode.house.gov/view.xhtml?req=%28title%3A10+section%3A333+edition%3Aprelim%29",
       "officialUrl": "https://uscode.house.gov/view.xhtml?req=%28title%3A10+section%3A333+edition%3Aprelim%29",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Office of the Law Revision Counsel, U.S. House of Representatives",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Statute",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 5"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official U.S. Code site."
     },
     {
       "id": "S-060",
       "slug": "s-060",
       "title": "ORR program documents",
+      "canonicalUrl": "https://www.acf.hhs.gov/orr/programs/refugees",
       "officialUrl": "https://www.acf.hhs.gov/orr/programs/refugees",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Administration for Children and Families, Office of Refugee Resettlement",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Program documentation",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 6",
         "Section 14"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official ORR refugee program page."
     },
     {
       "id": "S-061",
       "slug": "s-061",
       "title": "ORR entrant-assistance program materials",
+      "canonicalUrl": "https://www.acf.hhs.gov/orr/programs/refugees/cma",
       "officialUrl": "https://www.acf.hhs.gov/orr/programs/refugees/cma",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Administration for Children and Families, Office of Refugee Resettlement",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Program documentation",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 6"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official ORR Cash and Medical Assistance page."
     },
     {
       "id": "S-062",
       "slug": "s-062",
       "title": "USAspending account 075-1503",
+      "canonicalUrl": "https://www.usaspending.gov/account/075-1503",
       "officialUrl": "https://www.usaspending.gov/account/075-1503",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "USAspending.gov",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Federal spending account page",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 6",
         "Section 14"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official USAspending account record."
     },
     {
       "id": "S-063",
       "slug": "s-063",
       "title": "ORR service-delivery and provider-route materials",
+      "canonicalUrl": "https://www.acf.hhs.gov/orr/fact-sheet/refugee-benefits",
       "officialUrl": "https://www.acf.hhs.gov/orr/fact-sheet/refugee-benefits",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Administration for Children and Families, Office of Refugee Resettlement",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Fact sheet",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 6"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official ORR benefits fact sheet."
     },
     {
       "id": "S-064",
       "slug": "s-064",
       "title": "KFF emergency Medicaid analysis",
+      "canonicalUrl": "https://www.kff.org/quick-insights/less-than-1-of-total-medicaid-spending-goes-to-emergency-care-for-noncitizen-immigrants/",
       "officialUrl": "https://www.kff.org/quick-insights/less-than-1-of-total-medicaid-spending-goes-to-emergency-care-for-noncitizen-immigrants/",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "KFF",
       "publicationDate": "2024-10-24",
-      "retrievalDate": "2026-07-01",
+      "retrievalDate": "2026-07-02",
       "documentType": "Quick take",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 7",
         "Section 14",
         "Section 16"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Canonical KFF page verified. No separate archive artifact was verified during this pass."
     },
     {
       "id": "S-065",
       "slug": "s-065",
       "title": "CMS-64 / MACPAC emergency Medicaid reporting",
+      "canonicalUrl": "https://www.cms.gov/newsroom/press-releases/cms-increasing-oversight-states-illegally-using-federal-medicaid-funding-health-care-illegal",
       "officialUrl": "https://www.cms.gov/newsroom/press-releases/cms-increasing-oversight-states-illegally-using-federal-medicaid-funding-health-care-illegal",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Centers for Medicare & Medicaid Services",
       "publicationDate": "2025-05-27",
       "retrievalDate": "2026-07-01",
       "documentType": "Federal administrative guidance / press release",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 7"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "This official CMS page is a verified anchor for the emergency-services rule set, but the exact CMS-64 or MACPAC breakout used in future editions still needs a tighter canonical citation."
     },
     {
       "id": "S-067",
       "slug": "s-067",
       "title": "CRS R46462",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Congressional Research Service via Congress.gov",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Report",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 10"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because the CRS report number is known, but the exact official Congress.gov product page was not machine-verifiable during this pass."
     },
     {
       "id": "S-068",
       "slug": "s-068",
       "title": "HUD program guidance",
+      "canonicalUrl": "https://www.hud.gov/sites/dfiles/PIH/documents/PHA-Letter-on-Citizenship-and-Immigration-Status-Verification.pdf",
       "officialUrl": "https://www.hud.gov/sites/dfiles/PIH/documents/PHA-Letter-on-Citizenship-and-Immigration-Status-Verification.pdf",
       "archiveUrl": "https://www.hud.gov/sites/dfiles/PIH/documents/PHOG_Eligibility_Det_Denial_Assistance.pdf",
+      "archiveStatus": "available",
       "publisher": "U.S. Department of Housing and Urban Development",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Agency guidance PDF",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 10"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against official HUD guidance PDFs."
     },
     {
       "id": "S-069",
       "slug": "s-069",
       "title": "Plyler / federal education-aid legal framework",
+      "canonicalUrl": "https://fsapartners.ed.gov/knowledge-center/fsa-handbook/2025-2026/vol1/ch2-us-citizenship-eligible-noncitizens",
       "officialUrl": "https://fsapartners.ed.gov/knowledge-center/fsa-handbook/2025-2026/vol1/ch2-us-citizenship-eligible-noncitizens",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "U.S. Department of Education Federal Student Aid",
       "publicationDate": "2025-01-01",
       "retrievalDate": "2026-07-01",
       "documentType": "Eligibility guidance",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 11"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official Department of Education eligible-noncitizen guidance; the broader Plyler legal record remains a framework source rather than one canonical page."
     },
     {
       "id": "S-070",
       "slug": "s-070",
       "title": "CRS R47936",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Congressional Research Service via Congress.gov",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Report",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 6",
         "Section 14"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because the CRS report number is known, but the exact official Congress.gov product page was not machine-verifiable during this pass."
     },
     {
       "id": "S-071",
       "slug": "s-071",
       "title": "ORR / HHS additional resettlement support materials",
+      "canonicalUrl": "https://www.acf.hhs.gov/orr",
       "officialUrl": "https://www.acf.hhs.gov/orr",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Administration for Children and Families, Office of Refugee Resettlement",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Program documentation",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 6"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Mapped to the official ORR portal pending narrower identification of the exact support-material page."
     },
     {
       "id": "S-072",
       "slug": "s-072",
       "title": "SSA SSI program totals",
+      "canonicalUrl": "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2023/index.html",
       "officialUrl": "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2023/index.html",
       "archiveUrl": "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2023/ssi_asr23.pdf",
+      "archiveStatus": "available",
       "publisher": "Social Security Administration",
       "publicationDate": "2023-01-01",
       "retrievalDate": "2026-07-01",
       "documentType": "Annual statistical report",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 9"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official SSA statistical compilation."
     },
     {
       "id": "S-073",
       "slug": "s-073",
       "title": "SSA noncitizen SSI data",
+      "canonicalUrl": "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2021/sect05.html",
       "officialUrl": "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2021/sect05.html",
-      "archiveUrl": null,
+      "archiveUrl": "https://www.ssa.gov/policy/docs/statcomps/ssi_asr/2021/sect05.pdf",
+      "archiveStatus": "available",
       "publisher": "Social Security Administration",
-      "publicationDate": "2021-01-01",
-      "retrievalDate": "2026-07-01",
+      "publicationDate": "2022-09-01",
+      "retrievalDate": "2026-07-02",
       "documentType": "Statistical report section",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 1",
         "Section 9",
         "Section 14"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "The exact noncitizen table is also available as the official section PDF, which is retained here as the alternate stable artifact."
     },
     {
       "id": "S-074",
       "slug": "s-074",
       "title": "USDA-FNS SNAP characteristics data",
+      "canonicalUrl": "https://www.fns.usda.gov/research/snap/community-characteristics",
       "officialUrl": "https://www.fns.usda.gov/research/snap/community-characteristics",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "USDA Food and Nutrition Service",
-      "publicationDate": null,
-      "retrievalDate": "2026-07-01",
+      "publicationDate": "2023-06-23",
+      "retrievalDate": "2026-07-02",
       "documentType": "Research / characteristics page",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 8",
         "Section 16"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Canonical USDA-FNS dashboard page verified. A separate archived export for the exact FY2023 view was not verified during this pass."
     },
     {
       "id": "S-075",
       "slug": "s-075",
       "title": "ACF TANF totals and characteristics",
+      "canonicalUrl": "https://www.acf.hhs.gov/ofa/data/characteristics-and-financial-circumstances-tanf-recipients-fiscal-year-2021",
       "officialUrl": "https://www.acf.hhs.gov/ofa/data/characteristics-and-financial-circumstances-tanf-recipients-fiscal-year-2021",
       "archiveUrl": "https://www.acf.hhs.gov/ofa/programs/temporary-assistance-needy-families-tanf",
+      "archiveStatus": "available",
       "publisher": "Administration for Children and Families",
       "publicationDate": "2024-08-30",
       "retrievalDate": "2026-07-01",
       "documentType": "Administrative data report",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 9"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official ACF data report."
     },
     {
       "id": "S-076",
       "slug": "s-076",
       "title": "Cato SIPP-modeled welfare context",
+      "canonicalUrl": null,
       "officialUrl": null,
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Cato Institute",
       "publicationDate": null,
       "retrievalDate": "2026-07-01",
       "documentType": "Modeled analysis",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 9"
       ],
-      "urlVerificationStatus": "pending"
+      "verificationStatus": "pending",
+      "urlVerificationStatus": "pending",
+      "notes": "URL verification pending because the exact Cato modeling piece used as contextual evidence was not verified in this pass."
     },
     {
       "id": "S-077",
       "slug": "s-077",
       "title": "HUD ineligible-tenant reporting",
+      "canonicalUrl": "https://www.hud.gov/news/hud-no-26-008",
       "officialUrl": "https://www.hud.gov/news/hud-no-26-008",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "U.S. Department of Housing and Urban Development",
       "publicationDate": "2026-01-27",
       "retrievalDate": "2026-07-01",
       "documentType": "Agency reporting",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 10"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against official HUD reporting on citizenship-status verification and ineligible-tenant enforcement."
     },
     {
       "id": "S-078",
       "slug": "s-078",
       "title": "CBO emergency Medicaid cost reporting",
+      "canonicalUrl": "https://www.cbo.gov/publication/60805",
       "officialUrl": "https://www.cbo.gov/publication/60805",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Congressional Budget Office",
       "publicationDate": "2025-01-17",
       "retrievalDate": "2026-07-01",
       "documentType": "Cost estimate / analysis",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 7"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official CBO publication page."
     },
     {
       "id": "S-079",
       "slug": "s-079",
       "title": "House Budget Committee emergency Medicaid context",
+      "canonicalUrl": "https://budget.house.gov/press-release/cbo-medicaid-spending-on-illegal-aliens-has-cost-taxpayers-over-162-billion-under-open-border-czar-harris",
       "officialUrl": "https://budget.house.gov/press-release/cbo-medicaid-spending-on-illegal-aliens-has-cost-taxpayers-over-162-billion-under-open-border-czar-harris",
       "archiveUrl": "https://budget.house.gov/download/cbo-on-medicaid-for-illegal-immigrants",
+      "archiveStatus": "available",
       "publisher": "U.S. House Budget Committee",
       "publicationDate": "2025-01-17",
       "retrievalDate": "2026-07-01",
       "documentType": "Congressional press / memo",
+      "primaryOrSecondary": "Secondary",
       "classification": "Secondary",
       "sections": [
         "Section 7"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official House Budget Committee page."
     },
     {
       "id": "S-080",
       "slug": "s-080",
       "title": "CBO immigration-surge projection context",
+      "canonicalUrl": "https://www.cbo.gov/publication/60569",
       "officialUrl": "https://www.cbo.gov/publication/60569",
       "archiveUrl": null,
+      "archiveStatus": "not-available",
       "publisher": "Congressional Budget Office",
       "publicationDate": "2024-06-18",
       "retrievalDate": "2026-07-01",
       "documentType": "Projection",
+      "primaryOrSecondary": "Primary",
       "classification": "Primary",
       "sections": [
         "Section 7"
       ],
-      "urlVerificationStatus": "verified"
+      "verificationStatus": "verified",
+      "urlVerificationStatus": "verified",
+      "notes": "Verified against the official CBO publication page."
     }
   ],
   "decisions": [
