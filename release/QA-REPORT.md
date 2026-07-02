@@ -3,9 +3,9 @@
 ## Release candidate
 
 - Version: 1.0.0-rc1
-- Commit: 0a17e36b576771bea93637e7ecdb3ffd64421968
-- Branch: codex/verification-layer
-- Build timestamp: 2026-07-02T13:53:27.415Z
+- Commit: d6d06132438a71e9243b8a3c406e385fc6622760
+- Branch: main
+- Build timestamp: 2026-07-02T13:55:43.115Z
 - QA status: passed
 - Platform health: healthy
 

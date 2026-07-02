@@ -1,8 +1,8 @@
 {
   "version": "1.0.0-rc1",
-  "buildTimestamp": "2026-07-02T13:53:27.415Z",
-  "gitCommitHash": "0a17e36b576771bea93637e7ecdb3ffd64421968",
-  "branch": "codex/verification-layer",
+  "buildTimestamp": "2026-07-02T13:55:43.115Z",
+  "gitCommitHash": "d6d06132438a71e9243b8a3c406e385fc6622760",
+  "branch": "main",
   "counts": {
     "claims": 18,
     "verifiedSources": 47,
@@ -11,7 +11,7 @@
   },
   "qaResults": {
     "status": "passed",
-    "validatedAt": "2026-07-02T13:53:28.223Z",
+    "validatedAt": "2026-07-02T13:55:43.700Z",
     "htmlPagesChecked": 153,
     "checksEnforced": [
       "claim sources",
@@ -35,13 +35,13 @@
   "artifactInventory": [
     {
       "path": "artifacts/the-citizen-audit-1.0.0-rc1-publication-package.zip",
-      "sizeBytes": 875420,
-      "sha256": "85e9760e4933d04a82c1fb0af301c6352ff737cef0b0c2fdc13c70ecfcfe91d9"
+      "sizeBytes": 875407,
+      "sha256": "51f68558788f70ff0a5eada1a1434f4ea382cd0f0b51607daff64eb7cebc7c93"
     },
     {
       "path": "artifacts/the-citizen-audit-1.0.0-rc1-site.zip",
-      "sizeBytes": 405609,
-      "sha256": "b492fc63c239f299f39d62f8553e16a81666afa3538a3975f78c81d9f212a398"
+      "sizeBytes": 405605,
+      "sha256": "434a65d0faaa1f8205352213b47718e4f08d6a2265537387f5ecaf063d6f23f0"
     },
     {
       "path": "artifacts/the-citizen-audit-1.0.0-rc1.pdf",
@@ -60,8 +60,8 @@
     },
     {
       "path": "QA-REPORT.md",
-      "sizeBytes": 1028,
-      "sha256": "4a0a9fe033eb6652dfb8fda283832bdb9860b1ab409fb5ccb5c29b0420ddb07a"
+      "sizeBytes": 1008,
+      "sha256": "74052c99ae98f4e59e1334463155dcea9f8eeedc541b8fd7250c928721a9aa5d"
     },
     {
       "path": "RELEASE-NOTES-v1.0.0.md",
@@ -276,32 +276,32 @@
     {
       "path": "site/data/claim-database.json",
       "sizeBytes": 23945,
-      "sha256": "35345c34442eed2fd2b0fc33975e8254d65dd2e03e5351d46225eb12f8785985"
+      "sha256": "a4cc2afba9437de7436cf0ff3117bf309a1ee44b8edb9ac8c0de735a14988f2f"
     },
     {
       "path": "site/data/cross-reference-tables.json",
       "sizeBytes": 108154,
-      "sha256": "e0ad419ce2d2707ae121d952183fe0be47f7ecda23efd0b6168ef702b056229a"
+      "sha256": "5894cf91015e124d9ab930da388d7f0d69b6fe15aa6800d2e3cbe8c8aec68a7b"
     },
     {
       "path": "site/data/evidence-graph.json",
       "sizeBytes": 180683,
-      "sha256": "c855806433de73fe5e6ea158b93312e0b4ce8cebbc10f4836190944c23fe58b9"
+      "sha256": "cf520dbf7c0d9c5b67ddde2cde15d708ff6bb556226b11f27c511a1f94d6a994"
     },
     {
       "path": "site/data/platform-metrics.json",
       "sizeBytes": 1218,
-      "sha256": "8d722036556e5de08ab81ac90230d753803080d773136c76bdaf08dea70e5fbf"
+      "sha256": "9a1cabe0cbc7861ef38a22c00f01c64064d4aff474818aa7f11aef2e527fc804"
     },
     {
       "path": "site/data/platform-status.json",
       "sizeBytes": 311,
-      "sha256": "63082943f42182251b80053007c1ca7b1671d6d93bd46782355e8c3886a33354"
+      "sha256": "6d4686ad696e279614eeac6e369823d30a4264afb162e861cafddbed1ff69aad"
     },
     {
       "path": "site/data/publication-manifest.json",
       "sizeBytes": 5538,
-      "sha256": "ed4da61539042aa300f763fdc69e98b3d9c95beb1975ba9764e4be40290d3b78"
+      "sha256": "dc89c056640717715201c6e3121e8691d0ed03e833976990f95a58eb4d8eb7b9"
     },
     {
       "path": "site/data/publication-search.json",
@@ -311,7 +311,7 @@
     {
       "path": "site/data/trace-records.json",
       "sizeBytes": 135392,
-      "sha256": "81b14a188b0f5b5ec64f719db0faf4fffa8f98318c70cdc191f121b6419cd28c"
+      "sha256": "22182ea2508b9d3106e732439a73fcbe9bc69ecc6e4d59569de18c4a85ecbdcb"
     },
     {
       "path": "site/decision-log/d-001.html",
@@ -405,13 +405,13 @@
     },
     {
       "path": "site/favicon.svg",
-      "sizeBytes": 436,
-      "sha256": "d224ca1a609beb8be2872eeb144973fc026deda032d5bb792fd40dae60d18112"
+      "sizeBytes": 443,
+      "sha256": "ab4aaacd2f8ba2bf0569d36f6e7ac99da219e0fbf8857e5d1cb8f71974031bd6"
     },
     {
       "path": "site/index.html",
-      "sizeBytes": 4910,
-      "sha256": "ebf609c252c554ea86e1ca563201d456cf2e243563f9a973036704df1d548d3f"
+      "sizeBytes": 4962,
+      "sha256": "74e53bb718a5d6e05fd1c37ee96a5779ec61affe8486dffbee75d1d220cf1dc6"
     },
     {
       "path": "site/methodology.html",
@@ -615,8 +615,8 @@
     },
     {
       "path": "site/press.html",
-      "sizeBytes": 2854,
-      "sha256": "8a2013de7a3919d660e6345bf9cb10d4f2bb5a985657c5e37e1fdfe1c72eef8e"
+      "sizeBytes": 2855,
+      "sha256": "e3e9e2386f28d24330a0e22b8779b561efb15ee750b81cbee0505caf93d930c7"
     },
     {
       "path": "site/release-notes.html",
@@ -895,8 +895,8 @@
     },
     {
       "path": "site/styles.css",
-      "sizeBytes": 6618,
-      "sha256": "86e1ab1f7bc0c3e0a9d8a9f7353dd855ba19ce35adb4848f97554259ecd1800e"
+      "sizeBytes": 6619,
+      "sha256": "989e0c189ccba60c7237d30eaf23e5cbc2e8262b7cf6861242eee69123e46fa3"
     },
     {
       "path": "site/version-history.html",
