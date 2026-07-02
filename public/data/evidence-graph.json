@@ -1,0 +1,6506 @@
+{
+  "generatedAt": "2026-07-02T01:59:15.991Z",
+  "audits": [
+    {
+      "id": "AUDIT-001",
+      "title": "The Citizen Audit v1.0",
+      "sections": [
+        "Section 1",
+        "Section 2",
+        "Section 3",
+        "Section 4",
+        "Section 5",
+        "Section 6",
+        "Section 7",
+        "Section 8",
+        "Section 9",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 13",
+        "Section 14",
+        "Section 15",
+        "Section 16",
+        "Appendix A",
+        "Appendix B",
+        "Repository assets"
+      ],
+      "claims": [
+        "C-001",
+        "C-002",
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-001",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048",
+        "S-049",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-060",
+        "S-061",
+        "S-062",
+        "S-063",
+        "S-064",
+        "S-065",
+        "S-067",
+        "S-068",
+        "S-069",
+        "S-070",
+        "S-071",
+        "S-072",
+        "S-073",
+        "S-074",
+        "S-075",
+        "S-076",
+        "S-077",
+        "S-078",
+        "S-079",
+        "S-080"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-007",
+        "A-008",
+        "A-009",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-019",
+        "A-020",
+        "A-021",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-025",
+        "A-026",
+        "A-027",
+        "A-028",
+        "A-029",
+        "A-030",
+        "A-031",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036",
+        "A-037"
+      ],
+      "connectedIds": [
+        "Section 1",
+        "Section 2",
+        "Section 3",
+        "Section 4",
+        "Section 5",
+        "Section 6",
+        "Section 7",
+        "Section 8",
+        "Section 9",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 13",
+        "Section 14",
+        "Section 15",
+        "Section 16",
+        "Appendix A",
+        "Appendix B",
+        "Repository assets",
+        "C-001",
+        "C-002",
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018",
+        "S-001",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048",
+        "S-049",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-060",
+        "S-061",
+        "S-062",
+        "S-063",
+        "S-064",
+        "S-065",
+        "S-067",
+        "S-068",
+        "S-069",
+        "S-070",
+        "S-071",
+        "S-072",
+        "S-073",
+        "S-074",
+        "S-075",
+        "S-076",
+        "S-077",
+        "S-078",
+        "S-079",
+        "S-080",
+        "D-001",
+        "D-005",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026",
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-007",
+        "A-008",
+        "A-009",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-019",
+        "A-020",
+        "A-021",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-025",
+        "A-026",
+        "A-027",
+        "A-028",
+        "A-029",
+        "A-030",
+        "A-031",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036",
+        "A-037"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "id": "Section 1",
+      "title": "Executive Summary",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-001"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-073"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedSections": [
+        "Section 3",
+        "Section 5",
+        "Section 7",
+        "Section 9",
+        "Section 14"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-001",
+        "S-001",
+        "S-038",
+        "S-073",
+        "D-001",
+        "D-020",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "Section 3",
+        "Section 5",
+        "Section 7",
+        "Section 9",
+        "Section 14"
+      ]
+    },
+    {
+      "id": "Section 2",
+      "title": "Definitions and Methodology",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 3",
+        "Section 5",
+        "Section 8",
+        "Section 9"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-002",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "D-001",
+        "D-005",
+        "D-012",
+        "A-002",
+        "Section 1",
+        "Section 3",
+        "Section 5",
+        "Section 8",
+        "Section 9"
+      ]
+    },
+    {
+      "id": "Section 3",
+      "title": "International Assistance",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "sources": [
+        "S-001",
+        "S-005",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 4",
+        "Section 5",
+        "Section 6",
+        "Section 14"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-003",
+        "S-001",
+        "S-005",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "D-013",
+        "D-014",
+        "D-017",
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004",
+        "A-005",
+        "Section 1",
+        "Section 4",
+        "Section 5",
+        "Section 6",
+        "Section 14"
+      ]
+    },
+    {
+      "id": "Section 4",
+      "title": "Ukraine and Israel Examples",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "sources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048",
+        "S-049"
+      ],
+      "decisions": [
+        "D-013",
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-007",
+        "A-008",
+        "A-009",
+        "A-010",
+        "A-011",
+        "A-012"
+      ],
+      "relatedSections": [
+        "Section 3",
+        "Section 5",
+        "Section 14"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-004",
+        "C-005",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048",
+        "S-049",
+        "D-013",
+        "D-017",
+        "D-018",
+        "D-019",
+        "A-006",
+        "A-007",
+        "A-008",
+        "A-009",
+        "A-010",
+        "A-011",
+        "A-012",
+        "Section 3",
+        "Section 5",
+        "Section 14"
+      ]
+    },
+    {
+      "id": "Section 5",
+      "title": "Military Aid",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-043",
+        "S-045",
+        "S-046",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-010",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 3",
+        "Section 4",
+        "Section 14"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-006",
+        "S-043",
+        "S-045",
+        "S-046",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-010",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "Section 1",
+        "Section 3",
+        "Section 4",
+        "Section 14"
+      ]
+    },
+    {
+      "id": "Section 6",
+      "title": "Refugee Resettlement",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-007",
+        "C-008"
+      ],
+      "sources": [
+        "S-038",
+        "S-060",
+        "S-061",
+        "S-062",
+        "S-063",
+        "S-070",
+        "S-071"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-020",
+        "A-021"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 3",
+        "Section 12",
+        "Section 14"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-007",
+        "C-008",
+        "S-038",
+        "S-060",
+        "S-061",
+        "S-062",
+        "S-063",
+        "S-070",
+        "S-071",
+        "D-013",
+        "D-021",
+        "A-018",
+        "A-019",
+        "A-020",
+        "A-021",
+        "Section 1",
+        "Section 3",
+        "Section 12",
+        "Section 14"
+      ]
+    },
+    {
+      "id": "Section 7",
+      "title": "Medicaid / Emergency Medical",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-009"
+      ],
+      "sources": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-080"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 13",
+        "Section 14",
+        "Section 16"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-009",
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-080",
+        "D-021",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037",
+        "Section 1",
+        "Section 13",
+        "Section 14",
+        "Section 16"
+      ]
+    },
+    {
+      "id": "Section 8",
+      "title": "Food Assistance",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-010"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-074"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-025",
+        "A-026"
+      ],
+      "relatedSections": [
+        "Section 2",
+        "Section 13",
+        "Section 16"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-010",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-074",
+        "D-021",
+        "A-025",
+        "A-026",
+        "Section 2",
+        "Section 13",
+        "Section 16"
+      ]
+    },
+    {
+      "id": "Section 9",
+      "title": "Cash Welfare / Income",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-011"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-072",
+        "S-073",
+        "S-075",
+        "S-076"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-027",
+        "A-028",
+        "A-029"
+      ],
+      "relatedSections": [
+        "Section 1",
+        "Section 2",
+        "Section 14",
+        "Section 16"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-011",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-072",
+        "S-073",
+        "S-075",
+        "S-076",
+        "D-001",
+        "D-021",
+        "A-027",
+        "A-028",
+        "A-029",
+        "Section 1",
+        "Section 2",
+        "Section 14",
+        "Section 16"
+      ]
+    },
+    {
+      "id": "Section 10",
+      "title": "Federal Housing",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "sources": [
+        "S-067",
+        "S-068",
+        "S-077"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "relatedSections": [
+        "Section 11",
+        "Section 13"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-012",
+        "S-067",
+        "S-068",
+        "S-077",
+        "D-021",
+        "A-030",
+        "A-031",
+        "Section 11",
+        "Section 13"
+      ]
+    },
+    {
+      "id": "Section 11",
+      "title": "Education / Public Services",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-013"
+      ],
+      "sources": [
+        "S-069"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-032",
+        "A-033"
+      ],
+      "relatedSections": [
+        "Section 10",
+        "Section 13"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-013",
+        "S-069",
+        "D-021",
+        "A-032",
+        "A-033",
+        "Section 10",
+        "Section 13"
+      ]
+    },
+    {
+      "id": "Section 12",
+      "title": "State-Administered Federal Dollars",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-014"
+      ],
+      "sources": [],
+      "decisions": [
+        "D-020",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-034"
+      ],
+      "relatedSections": [
+        "Section 6",
+        "Section 13",
+        "Section 14"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-014",
+        "D-020",
+        "D-021",
+        "A-034",
+        "Section 6",
+        "Section 13",
+        "Section 14"
+      ]
+    },
+    {
+      "id": "Section 13",
+      "title": "Programs Without Citizenship Breakouts",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-015"
+      ],
+      "sources": [],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-034",
+        "A-035",
+        "A-036"
+      ],
+      "relatedSections": [
+        "Section 7",
+        "Section 8",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 15"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-015",
+        "D-021",
+        "A-034",
+        "A-035",
+        "A-036",
+        "Section 7",
+        "Section 8",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 15"
+      ]
+    },
+    {
+      "id": "Section 14",
+      "title": "Conservative Total",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-016"
+      ],
+      "sources": [
+        "S-055",
+        "S-058",
+        "S-060",
+        "S-062",
+        "S-064",
+        "S-070",
+        "S-073"
+      ],
+      "decisions": [
+        "D-014",
+        "D-017",
+        "D-020",
+        "D-022",
+        "D-023"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 1",
+        "Section 3",
+        "Section 5",
+        "Section 15",
+        "Section 16"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-016",
+        "S-055",
+        "S-058",
+        "S-060",
+        "S-062",
+        "S-064",
+        "S-070",
+        "S-073",
+        "D-014",
+        "D-017",
+        "D-020",
+        "D-022",
+        "D-023",
+        "Section 1",
+        "Section 3",
+        "Section 5",
+        "Section 15",
+        "Section 16"
+      ]
+    },
+    {
+      "id": "Section 15",
+      "title": "What Is Missing",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-017"
+      ],
+      "sources": [],
+      "decisions": [
+        "D-024"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 13",
+        "Section 14",
+        "Section 16"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-017",
+        "D-024",
+        "Section 13",
+        "Section 14",
+        "Section 16"
+      ]
+    },
+    {
+      "id": "Section 16",
+      "title": "Final Argument",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [
+        "C-018"
+      ],
+      "sources": [
+        "S-064",
+        "S-074"
+      ],
+      "decisions": [
+        "D-020",
+        "D-025"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 14",
+        "Section 15"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "C-018",
+        "S-064",
+        "S-074",
+        "D-020",
+        "D-025",
+        "Section 14",
+        "Section 15"
+      ]
+    },
+    {
+      "id": "Appendix A",
+      "title": "Open Questions Register",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [],
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 15",
+        "Section 16"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "D-026",
+        "Section 15",
+        "Section 16"
+      ]
+    },
+    {
+      "id": "Appendix B",
+      "title": "Transparency Scorecard",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [],
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 13",
+        "Section 15"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "D-026",
+        "Section 13",
+        "Section 15"
+      ]
+    },
+    {
+      "id": "Repository assets",
+      "title": "Repository Assets",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "claims": [],
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Appendix A",
+        "Appendix B"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "D-026",
+        "Appendix A",
+        "Appendix B"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "C-001",
+      "title": "Executive summary keeps measurable lanes on their native bases",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1"
+      ],
+      "sources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-002",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-014",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "D-001",
+        "D-020",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "C-002",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-014",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-002",
+      "title": "Methodology distinguishes legal status categories and number types",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-006",
+        "C-009",
+        "C-010",
+        "C-011"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "D-001",
+        "D-005",
+        "D-012",
+        "A-002",
+        "C-001",
+        "C-006",
+        "C-009",
+        "C-010",
+        "C-011"
+      ]
+    },
+    {
+      "id": "C-003",
+      "title": "International assistance obligations and disbursements are not interchangeable",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-004",
+        "C-005",
+        "C-006",
+        "C-007",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "D-013",
+        "D-014",
+        "D-017",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "C-001",
+        "C-004",
+        "C-005",
+        "C-006",
+        "C-007",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-004",
+      "title": "Ukraine and Israel examples are illustrative and non-additive",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "sources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012"
+      ],
+      "relatedClaims": [
+        "C-003",
+        "C-005",
+        "C-006"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "D-017",
+        "D-018",
+        "D-019",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "C-003",
+        "C-005",
+        "C-006"
+      ]
+    },
+    {
+      "id": "C-005",
+      "title": "Ukraine stage labels cannot be netted casually",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "sources": [
+        "S-044",
+        "S-046",
+        "S-047",
+        "S-048"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-007",
+        "A-008"
+      ],
+      "relatedClaims": [
+        "C-003",
+        "C-004",
+        "C-006"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "S-044",
+        "S-046",
+        "S-047",
+        "S-048",
+        "D-017",
+        "D-018",
+        "A-006",
+        "A-007",
+        "A-008",
+        "C-003",
+        "C-004",
+        "C-006"
+      ]
+    },
+    {
+      "id": "C-006",
+      "title": "Military aid keeps net-new lanes separate from already-counted foreign assistance",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "sources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-014",
+        "C-016",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "C-001",
+        "C-002",
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-014",
+        "C-016",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-007",
+      "title": "ORR is owned as a domestic lane, not an overseas add-on",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "sources": [
+        "S-060",
+        "S-062",
+        "S-070"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "S-060",
+        "S-062",
+        "S-070",
+        "D-013",
+        "D-021",
+        "A-018",
+        "A-020",
+        "A-021",
+        "C-001",
+        "C-003",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-008",
+      "title": "ORR provider capture remains a first-class unresolved limitation",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "sources": [
+        "S-060",
+        "S-061",
+        "S-063",
+        "S-071"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-021"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-007",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "S-060",
+        "S-061",
+        "S-063",
+        "S-071",
+        "D-021",
+        "A-018",
+        "A-019",
+        "A-021",
+        "C-001",
+        "C-007",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-009",
+      "title": "Emergency Medicaid is measurable on a federal-plus-state basis, not a federal-only basis",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "sources": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7",
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "D-021",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037",
+        "C-001",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-010",
+      "title": "SNAP noncitizen dollars are not backfilled with modeled estimates",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 8"
+      ],
+      "sources": [
+        "S-003",
+        "S-074"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-025",
+        "A-026"
+      ],
+      "relatedClaims": [
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 8",
+        "S-003",
+        "S-074",
+        "D-021",
+        "A-025",
+        "A-026",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-011",
+      "title": "SSI is one of the clearest direct-cash domestic lanes",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "sources": [
+        "S-072",
+        "S-073",
+        "S-075"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-027",
+        "A-028",
+        "A-029"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 9",
+        "S-072",
+        "S-073",
+        "S-075",
+        "D-001",
+        "D-021",
+        "A-027",
+        "A-028",
+        "A-029",
+        "C-001",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-012",
+      "title": "Housing eligibility rules already exclude many ineligible uses through Section 214 and proration",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "sources": [
+        "S-067",
+        "S-068",
+        "S-077"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-013",
+        "C-014",
+        "C-015"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 10",
+        "S-067",
+        "S-068",
+        "S-077",
+        "D-021",
+        "A-030",
+        "A-031",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-013",
+        "C-014",
+        "C-015"
+      ]
+    },
+    {
+      "id": "C-013",
+      "title": "K-12 and student-aid analysis is constrained by legal collection limits and eligibility structure",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 11"
+      ],
+      "sources": [
+        "S-069"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-032",
+        "A-033"
+      ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-014",
+        "C-015"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 11",
+        "S-069",
+        "D-021",
+        "A-032",
+        "A-033",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-014",
+        "C-015"
+      ]
+    },
+    {
+      "id": "C-014",
+      "title": "State-administered federal dollars add zero net-new dollars by design",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 12"
+      ],
+      "sources": [
+        "S-062",
+        "S-065"
+      ],
+      "decisions": [
+        "D-020",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-034"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-015",
+        "C-016",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 12",
+        "S-062",
+        "S-065",
+        "D-020",
+        "D-021",
+        "A-034",
+        "C-001",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-015",
+        "C-016",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-015",
+      "title": "The gap register is itself a finding, not an empty placeholder",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 13"
+      ],
+      "sources": [
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 13",
+        "S-076",
+        "D-021",
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014"
+      ]
+    },
+    {
+      "id": "C-016",
+      "title": "The conservative total is a reproducible set of subtotals, not one synthetic number",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 14"
+      ],
+      "sources": [
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "decisions": [
+        "D-014",
+        "D-020",
+        "D-022",
+        "D-023"
+      ],
+      "openQuestions": [
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-014",
+        "C-017",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 14",
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073",
+        "D-014",
+        "D-020",
+        "D-022",
+        "D-023",
+        "A-017",
+        "A-018",
+        "A-037",
+        "C-001",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-014",
+        "C-017",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-017",
+      "title": "Publication limits remain visible and binding",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 15"
+      ],
+      "sources": [
+        "S-038",
+        "S-072",
+        "S-078"
+      ],
+      "decisions": [
+        "D-024"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-016",
+        "C-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 15",
+        "S-038",
+        "S-072",
+        "S-078",
+        "D-024",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "C-001",
+        "C-003",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-016",
+        "C-018"
+      ]
+    },
+    {
+      "id": "C-018",
+      "title": "The final argument inherits the same basis rules and evidence limits",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 16"
+      ],
+      "sources": [
+        "S-064",
+        "S-073",
+        "S-074"
+      ],
+      "decisions": [
+        "D-020",
+        "D-025"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-014",
+        "C-016",
+        "C-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 16",
+        "S-064",
+        "S-073",
+        "S-074",
+        "D-020",
+        "D-025",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "C-001",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-014",
+        "C-016",
+        "C-017"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "S-001",
+      "title": "CRS IF10183",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 3",
+        "C-003",
+        "D-013",
+        "D-014",
+        "D-017",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005"
+      ]
+    },
+    {
+      "id": "S-002",
+      "title": "8 U.S.C. Sec. 1641(b)",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 8",
+        "Section 9"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "Section 8",
+        "Section 9",
+        "C-002",
+        "D-001",
+        "D-005",
+        "D-012",
+        "A-002"
+      ]
+    },
+    {
+      "id": "S-003",
+      "title": "8 U.S.C. Sec. 1611",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 7",
+        "Section 8",
+        "Section 9"
+      ],
+      "claims": [
+        "C-002",
+        "C-009",
+        "C-010"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-002",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-025",
+        "A-026"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "Section 7",
+        "Section 8",
+        "Section 9",
+        "C-002",
+        "C-009",
+        "C-010",
+        "D-001",
+        "D-005",
+        "D-012",
+        "D-021",
+        "A-037",
+        "A-002",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-025",
+        "A-026"
+      ]
+    },
+    {
+      "id": "S-004",
+      "title": "8 U.S.C. Sec. 1613",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 8",
+        "Section 9"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "Section 8",
+        "Section 9",
+        "C-002",
+        "D-001",
+        "D-005",
+        "D-012",
+        "A-002"
+      ]
+    },
+    {
+      "id": "S-005",
+      "title": "GAO Budget Glossary (GAO-05-734SP)",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 3"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "Section 3",
+        "C-002",
+        "D-001",
+        "D-005",
+        "D-012",
+        "A-002"
+      ]
+    },
+    {
+      "id": "S-006",
+      "title": "CBO Common Budgetary Terms Explained",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "C-002",
+        "D-001",
+        "D-005",
+        "D-012",
+        "A-002"
+      ]
+    },
+    {
+      "id": "S-038",
+      "title": "ForeignAssistance.gov financial datasets",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 3",
+        "Section 6"
+      ],
+      "claims": [
+        "C-001",
+        "C-003",
+        "C-016",
+        "C-017"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-022",
+        "D-023",
+        "D-024"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 3",
+        "Section 6",
+        "C-001",
+        "C-003",
+        "C-016",
+        "C-017",
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-022",
+        "D-023",
+        "D-024",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-039",
+      "title": "Pew foreign-aid reporting summary",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-001",
+        "C-003"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "C-001",
+        "C-003",
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004"
+      ]
+    },
+    {
+      "id": "S-040",
+      "title": "USAFacts foreign-aid reporting summary",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-001",
+        "C-003"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "C-001",
+        "C-003",
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-001",
+        "A-003",
+        "A-004"
+      ]
+    },
+    {
+      "id": "S-042",
+      "title": "State Supplementary Tables FY2025",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "C-003",
+        "D-013",
+        "D-014",
+        "D-017",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005"
+      ]
+    },
+    {
+      "id": "S-043",
+      "title": "CRS IF11437",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3",
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-003",
+        "C-004",
+        "C-006"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-012",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-017",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "Section 4",
+        "Section 5",
+        "C-003",
+        "C-004",
+        "C-006",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-012",
+        "D-020",
+        "A-017",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016"
+      ]
+    },
+    {
+      "id": "S-044",
+      "title": "UkraineOversight.gov",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-004",
+        "C-005",
+        "D-017",
+        "D-018",
+        "D-019",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ]
+    },
+    {
+      "id": "S-045",
+      "title": "State Department Ukraine/Israel aid reporting",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "Section 5",
+        "C-004",
+        "D-017",
+        "D-018",
+        "D-019",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012"
+      ]
+    },
+    {
+      "id": "S-046",
+      "title": "GAO drawdown valuation reporting",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "Section 5",
+        "C-004",
+        "C-005",
+        "D-017",
+        "D-018",
+        "D-019",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ]
+    },
+    {
+      "id": "S-047",
+      "title": "CEPR Ukraine valuation context",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-005"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-007",
+        "A-008"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-005",
+        "D-017",
+        "D-018",
+        "A-006",
+        "A-007",
+        "A-008"
+      ]
+    },
+    {
+      "id": "S-048",
+      "title": "Council on Foreign Relations aid tracker context",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-005"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-007",
+        "A-008"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-005",
+        "D-017",
+        "D-018",
+        "A-006",
+        "A-007",
+        "A-008"
+      ]
+    },
+    {
+      "id": "S-049",
+      "title": "CRS RL33222",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-004",
+        "D-017",
+        "D-018",
+        "D-019",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012"
+      ]
+    },
+    {
+      "id": "S-050",
+      "title": "DSCA SAMM and related security-cooperation materials",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-051",
+      "title": "State FMTR",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-052",
+      "title": "CRS IF12040",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-053",
+      "title": "CRS IN12453",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-054",
+      "title": "CRS R48182",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-055",
+      "title": "GAO-23-105842",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5",
+        "Section 14"
+      ],
+      "claims": [
+        "C-006",
+        "C-016"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "Section 14",
+        "C-006",
+        "C-016",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-037"
+      ]
+    },
+    {
+      "id": "S-056",
+      "title": "GAO-24-107232",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-057",
+      "title": "DoD / DSCA infographic",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-058",
+      "title": "DoD CTEF J-Books",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5",
+        "Section 14"
+      ],
+      "claims": [
+        "C-006",
+        "C-016"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "Section 14",
+        "C-006",
+        "C-016",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-018",
+        "A-037"
+      ]
+    },
+    {
+      "id": "S-059",
+      "title": "10 U.S.C. Sec. 333",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-060",
+      "title": "ORR program documents",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6",
+        "Section 14"
+      ],
+      "claims": [
+        "C-007",
+        "C-008"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-019"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "Section 14",
+        "C-007",
+        "C-008",
+        "D-013",
+        "D-021",
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-019"
+      ]
+    },
+    {
+      "id": "S-061",
+      "title": "ORR entrant-assistance program materials",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-008"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "C-008",
+        "D-021",
+        "A-018",
+        "A-019",
+        "A-021"
+      ]
+    },
+    {
+      "id": "S-062",
+      "title": "USAspending account 075-1503",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6",
+        "Section 14"
+      ],
+      "claims": [
+        "C-007",
+        "C-014"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-034"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "Section 14",
+        "C-007",
+        "C-014",
+        "D-013",
+        "D-021",
+        "D-020",
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-034"
+      ]
+    },
+    {
+      "id": "S-063",
+      "title": "ORR service-delivery and provider-route materials",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-008"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "C-008",
+        "D-021",
+        "A-018",
+        "A-019",
+        "A-021"
+      ]
+    },
+    {
+      "id": "S-064",
+      "title": "KFF emergency Medicaid analysis",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7",
+        "Section 14",
+        "Section 16"
+      ],
+      "claims": [
+        "C-009",
+        "C-016",
+        "C-018"
+      ],
+      "decisions": [
+        "D-021",
+        "D-014",
+        "D-020",
+        "D-022",
+        "D-023",
+        "D-025"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-017",
+        "A-018",
+        "A-005",
+        "A-028"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7",
+        "Section 14",
+        "Section 16",
+        "C-009",
+        "C-016",
+        "C-018",
+        "D-021",
+        "D-014",
+        "D-020",
+        "D-022",
+        "D-023",
+        "D-025",
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-017",
+        "A-018",
+        "A-005",
+        "A-028"
+      ]
+    },
+    {
+      "id": "S-065",
+      "title": "CMS-64 / MACPAC emergency Medicaid reporting",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009",
+        "C-014"
+      ],
+      "decisions": [
+        "D-021",
+        "D-020"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-034"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7",
+        "C-009",
+        "C-014",
+        "D-021",
+        "D-020",
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-034"
+      ]
+    },
+    {
+      "id": "S-067",
+      "title": "CRS R46462",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 10",
+        "C-012",
+        "D-021",
+        "A-030",
+        "A-031"
+      ]
+    },
+    {
+      "id": "S-068",
+      "title": "HUD program guidance",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 10",
+        "C-012",
+        "D-021",
+        "A-030",
+        "A-031"
+      ]
+    },
+    {
+      "id": "S-069",
+      "title": "Plyler / federal education-aid legal framework",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 11"
+      ],
+      "claims": [
+        "C-013"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-032",
+        "A-033"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 11",
+        "C-013",
+        "D-021",
+        "A-032",
+        "A-033"
+      ]
+    },
+    {
+      "id": "S-070",
+      "title": "CRS R47936",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6",
+        "Section 14"
+      ],
+      "claims": [
+        "C-007"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "Section 14",
+        "C-007",
+        "D-013",
+        "D-021",
+        "A-018",
+        "A-020",
+        "A-021"
+      ]
+    },
+    {
+      "id": "S-071",
+      "title": "ORR / HHS additional resettlement support materials",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-008"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-019",
+        "A-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "C-008",
+        "D-021",
+        "A-018",
+        "A-019",
+        "A-021"
+      ]
+    },
+    {
+      "id": "S-072",
+      "title": "SSA SSI program totals",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-011",
+        "C-017"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021",
+        "D-024"
+      ],
+      "openQuestions": [
+        "A-028",
+        "A-027",
+        "A-029",
+        "A-005",
+        "A-018",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 9",
+        "C-011",
+        "C-017",
+        "D-001",
+        "D-021",
+        "D-024",
+        "A-028",
+        "A-027",
+        "A-029",
+        "A-005",
+        "A-018",
+        "A-037"
+      ]
+    },
+    {
+      "id": "S-073",
+      "title": "SSA noncitizen SSI data",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 9",
+        "Section 14"
+      ],
+      "claims": [
+        "C-001",
+        "C-011",
+        "C-016",
+        "C-018"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-025"
+      ],
+      "openQuestions": [
+        "A-028",
+        "A-005",
+        "A-018",
+        "A-037",
+        "A-027",
+        "A-029",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 9",
+        "Section 14",
+        "C-001",
+        "C-011",
+        "C-016",
+        "C-018",
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-025",
+        "A-028",
+        "A-005",
+        "A-018",
+        "A-037",
+        "A-027",
+        "A-029",
+        "A-017"
+      ]
+    },
+    {
+      "id": "S-074",
+      "title": "USDA-FNS SNAP characteristics data",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 8",
+        "Section 16"
+      ],
+      "claims": [
+        "C-010",
+        "C-018"
+      ],
+      "decisions": [
+        "D-021",
+        "D-020",
+        "D-025"
+      ],
+      "openQuestions": [
+        "A-025",
+        "A-026",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 8",
+        "Section 16",
+        "C-010",
+        "C-018",
+        "D-021",
+        "D-020",
+        "D-025",
+        "A-025",
+        "A-026",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ]
+    },
+    {
+      "id": "S-075",
+      "title": "ACF TANF totals and characteristics",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-011"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-027",
+        "A-028",
+        "A-029"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 9",
+        "C-011",
+        "D-001",
+        "D-021",
+        "A-027",
+        "A-028",
+        "A-029"
+      ]
+    },
+    {
+      "id": "S-076",
+      "title": "Cato SIPP-modeled welfare context",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-015"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 9",
+        "C-015",
+        "D-021",
+        "A-023",
+        "A-025",
+        "A-027",
+        "A-030",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ]
+    },
+    {
+      "id": "S-077",
+      "title": "HUD ineligible-tenant reporting",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-030",
+        "A-031"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 10",
+        "C-012",
+        "D-021",
+        "A-030",
+        "A-031"
+      ]
+    },
+    {
+      "id": "S-078",
+      "title": "CBO emergency Medicaid cost reporting",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009",
+        "C-017"
+      ],
+      "decisions": [
+        "D-021",
+        "D-024"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-005",
+        "A-018",
+        "A-028"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7",
+        "C-009",
+        "C-017",
+        "D-021",
+        "D-024",
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-005",
+        "A-018",
+        "A-028"
+      ]
+    },
+    {
+      "id": "S-079",
+      "title": "House Budget Committee emergency Medicaid context",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "openQuestions": [
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7",
+        "C-009",
+        "D-021",
+        "A-037",
+        "A-022",
+        "A-023",
+        "A-024"
+      ]
+    },
+    {
+      "id": "S-080",
+      "title": "CBO immigration-surge projection context",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [],
+      "decisions": [],
+      "openQuestions": [],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D-001",
+      "title": "Gross, not net",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 2",
+        "Section 9"
+      ],
+      "claims": [
+        "C-001",
+        "C-002",
+        "C-011"
+      ],
+      "sources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-072",
+        "S-075"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-002",
+        "A-027",
+        "A-029"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 2",
+        "Section 9",
+        "C-001",
+        "C-002",
+        "C-011",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-072",
+        "S-075",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-002",
+        "A-027",
+        "A-029"
+      ]
+    },
+    {
+      "id": "D-005",
+      "title": "Status categories are never collapsed",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006"
+      ],
+      "openQuestions": [
+        "A-002"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "C-002",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "A-002"
+      ]
+    },
+    {
+      "id": "D-012",
+      "title": "Number type and resource category are recorded separately",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 5"
+      ],
+      "claims": [
+        "C-002",
+        "C-006"
+      ],
+      "sources": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestions": [
+        "A-002",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "Section 5",
+        "C-002",
+        "C-006",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "A-002",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "D-013",
+      "title": "Universe-of-programs completeness artifact",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3",
+        "Section 4",
+        "Section 6"
+      ],
+      "claims": [
+        "C-003",
+        "C-007"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-060",
+        "S-062",
+        "S-070"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-018",
+        "A-020",
+        "A-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "Section 4",
+        "Section 6",
+        "C-003",
+        "C-007",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-060",
+        "S-062",
+        "S-070",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-018",
+        "A-020",
+        "A-021"
+      ]
+    },
+    {
+      "id": "D-014",
+      "title": "The Two Running Totals",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3",
+        "Section 14"
+      ],
+      "claims": [
+        "C-003",
+        "C-016"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "Section 14",
+        "C-003",
+        "C-016",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-017",
+        "A-018",
+        "A-037"
+      ]
+    },
+    {
+      "id": "D-017",
+      "title": "Section 3 to Section 5 netting rule",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3",
+        "Section 4",
+        "Section 5",
+        "Section 14"
+      ],
+      "claims": [
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-006"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestions": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "Section 4",
+        "Section 5",
+        "Section 14",
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-006",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "D-018",
+      "title": "Research docket publication rule",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "sources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-004",
+        "C-005",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
+      ]
+    },
+    {
+      "id": "D-019",
+      "title": "Standardized key-findings opening",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-004",
+        "C-006"
+      ],
+      "sources": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestions": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "Section 5",
+        "C-004",
+        "C-006",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
+      ]
+    },
+    {
+      "id": "D-020",
+      "title": "No blended grand total",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 5",
+        "Section 12",
+        "Section 14",
+        "Section 16"
+      ],
+      "claims": [
+        "C-001",
+        "C-006",
+        "C-014",
+        "C-016",
+        "C-018"
+      ],
+      "sources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-062",
+        "S-065",
+        "S-064",
+        "S-074"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-034"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 5",
+        "Section 12",
+        "Section 14",
+        "Section 16",
+        "C-001",
+        "C-006",
+        "C-014",
+        "C-016",
+        "C-018",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-062",
+        "S-065",
+        "S-064",
+        "S-074",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-034"
+      ]
+    },
+    {
+      "id": "D-021",
+      "title": "Ownership map for domestic sections",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6",
+        "Section 7",
+        "Section 8",
+        "Section 9",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 13"
+      ],
+      "claims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015"
+      ],
+      "sources": [
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-061",
+        "S-063",
+        "S-071",
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-074",
+        "S-072",
+        "S-073",
+        "S-075",
+        "S-067",
+        "S-068",
+        "S-077",
+        "S-069",
+        "S-076"
+      ],
+      "openQuestions": [
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-019",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037",
+        "A-025",
+        "A-026",
+        "A-027",
+        "A-028",
+        "A-029",
+        "A-030",
+        "A-031",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "Section 7",
+        "Section 8",
+        "Section 9",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 13",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-061",
+        "S-063",
+        "S-071",
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-074",
+        "S-072",
+        "S-073",
+        "S-075",
+        "S-067",
+        "S-068",
+        "S-077",
+        "S-069",
+        "S-076",
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-019",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037",
+        "A-025",
+        "A-026",
+        "A-027",
+        "A-028",
+        "A-029",
+        "A-030",
+        "A-031",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
+      ]
+    },
+    {
+      "id": "D-022",
+      "title": "Section 14 blueprint frozen",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 14"
+      ],
+      "claims": [
+        "C-016"
+      ],
+      "sources": [
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestions": [
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 14",
+        "C-016",
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073",
+        "A-017",
+        "A-018",
+        "A-037"
+      ]
+    },
+    {
+      "id": "D-023",
+      "title": "Section 14 locked",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 14"
+      ],
+      "claims": [
+        "C-016"
+      ],
+      "sources": [
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestions": [
+        "A-017",
+        "A-018",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 14",
+        "C-016",
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073",
+        "A-017",
+        "A-018",
+        "A-037"
+      ]
+    },
+    {
+      "id": "D-024",
+      "title": "Section 15 locked",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 15"
+      ],
+      "claims": [
+        "C-017"
+      ],
+      "sources": [
+        "S-038",
+        "S-072",
+        "S-078"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 15",
+        "C-017",
+        "S-038",
+        "S-072",
+        "S-078",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ]
+    },
+    {
+      "id": "D-025",
+      "title": "Section 16 locked",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 16"
+      ],
+      "claims": [
+        "C-018"
+      ],
+      "sources": [
+        "S-064",
+        "S-073",
+        "S-074"
+      ],
+      "openQuestions": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 16",
+        "C-018",
+        "S-064",
+        "S-073",
+        "S-074",
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
+      ]
+    },
+    {
+      "id": "D-026",
+      "title": "Repository completion assembly",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Appendix A",
+        "Appendix B",
+        "Repository assets"
+      ],
+      "claims": [],
+      "sources": [],
+      "openQuestions": [],
+      "connectedIds": [
+        "AUDIT-001",
+        "Appendix A",
+        "Appendix B",
+        "Repository assets"
+      ]
+    }
+  ],
+  "openQuestions": [
+    {
+      "id": "A-001",
+      "title": "ForeignAssistance.gov live sum and version date",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "sources": [
+        "S-038",
+        "S-001",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "C-003",
+        "S-038",
+        "S-001",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "D-013",
+        "D-014",
+        "D-017"
+      ]
+    },
+    {
+      "id": "A-002",
+      "title": "GAO budget-glossary edition",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 2",
+        "Section 3"
+      ],
+      "claims": [
+        "C-002"
+      ],
+      "sources": [
+        "S-005",
+        "S-006",
+        "S-002",
+        "S-003",
+        "S-004"
+      ],
+      "decisions": [
+        "D-001",
+        "D-005",
+        "D-012"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 2",
+        "Section 3",
+        "C-002",
+        "S-005",
+        "S-006",
+        "S-002",
+        "S-003",
+        "S-004",
+        "D-001",
+        "D-005",
+        "D-012"
+      ]
+    },
+    {
+      "id": "A-003",
+      "title": "Post-2025 USAID-State administering offices",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "sources": [
+        "S-040",
+        "S-042",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "C-003",
+        "S-040",
+        "S-042",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-043",
+        "D-013",
+        "D-014",
+        "D-017"
+      ]
+    },
+    {
+      "id": "A-004",
+      "title": "IMF budget-scoring treatment",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 3"
+      ],
+      "claims": [
+        "C-003"
+      ],
+      "sources": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "decisions": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 3",
+        "C-003",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "D-013",
+        "D-014",
+        "D-017"
+      ]
+    },
+    {
+      "id": "A-005",
+      "title": "Unpublished U.S.-capture share in international assistance",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 3"
+      ],
+      "claims": [
+        "C-001",
+        "C-003",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-001",
+        "S-042",
+        "S-043",
+        "S-072",
+        "S-078",
+        "S-064",
+        "S-074"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-024",
+        "D-025"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 3",
+        "C-001",
+        "C-003",
+        "C-017",
+        "C-018",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-001",
+        "S-042",
+        "S-043",
+        "S-072",
+        "S-078",
+        "S-064",
+        "S-074",
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-024",
+        "D-025"
+      ]
+    },
+    {
+      "id": "A-006",
+      "title": "Ukraine stage figures from the primary portal",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004",
+        "C-005"
+      ],
+      "sources": [
+        "S-044",
+        "S-045",
+        "S-043",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-004",
+        "C-005",
+        "S-044",
+        "S-045",
+        "S-043",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048",
+        "D-017",
+        "D-018",
+        "D-019"
+      ]
+    },
+    {
+      "id": "A-007",
+      "title": "PDA valuation treatment",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-005"
+      ],
+      "sources": [
+        "S-046",
+        "S-053",
+        "S-054",
+        "S-044",
+        "S-047",
+        "S-048"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-005",
+        "S-046",
+        "S-053",
+        "S-054",
+        "S-044",
+        "S-047",
+        "S-048",
+        "D-017",
+        "D-018"
+      ]
+    },
+    {
+      "id": "A-008",
+      "title": "Ukraine grant-versus-loan treatment",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-005"
+      ],
+      "sources": [
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-005",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048",
+        "D-017",
+        "D-018"
+      ]
+    },
+    {
+      "id": "A-009",
+      "title": "Israel FMF/MOU staging details",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [],
+      "sources": [
+        "S-049"
+      ],
+      "decisions": [],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "S-049"
+      ]
+    },
+    {
+      "id": "A-010",
+      "title": "Capture share for Ukraine and Israel military aid",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4",
+        "Section 5"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "sources": [
+        "S-043",
+        "S-047",
+        "S-049",
+        "S-057",
+        "S-044",
+        "S-045",
+        "S-046"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "Section 5",
+        "C-004",
+        "S-043",
+        "S-047",
+        "S-049",
+        "S-057",
+        "S-044",
+        "S-045",
+        "S-046",
+        "D-017",
+        "D-018",
+        "D-019"
+      ]
+    },
+    {
+      "id": "A-011",
+      "title": "Israel OSP share",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "sources": [
+        "S-049",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-004",
+        "S-049",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "D-017",
+        "D-018",
+        "D-019"
+      ]
+    },
+    {
+      "id": "A-012",
+      "title": "Israel 2024 supplemental obligated-versus-outlaid status",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 4"
+      ],
+      "claims": [
+        "C-004"
+      ],
+      "sources": [
+        "S-045",
+        "S-049",
+        "S-043",
+        "S-044",
+        "S-046"
+      ],
+      "decisions": [
+        "D-017",
+        "D-018",
+        "D-019"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 4",
+        "C-004",
+        "S-045",
+        "S-049",
+        "S-043",
+        "S-044",
+        "S-046",
+        "D-017",
+        "D-018",
+        "D-019"
+      ]
+    },
+    {
+      "id": "A-013",
+      "title": "DoD execution-level annual figures for Section 333, CTEF, and ASFF",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-055",
+        "S-058",
+        "S-059",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-056",
+        "S-057"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "S-055",
+        "S-058",
+        "S-059",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-056",
+        "S-057",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ]
+    },
+    {
+      "id": "A-014",
+      "title": "EDA marginal taxpayer cost versus acquisition value",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-050",
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "S-050",
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ]
+    },
+    {
+      "id": "A-015",
+      "title": "WRSA transferred value versus retained U.S.-owned stock",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-050",
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "S-050",
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ]
+    },
+    {
+      "id": "A-016",
+      "title": "SDAF revolving treatment",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006"
+      ],
+      "sources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ]
+    },
+    {
+      "id": "A-017",
+      "title": "Cross-section harmonization between foreign-assistance and military-aid lanes",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 5"
+      ],
+      "claims": [
+        "C-006",
+        "C-016"
+      ],
+      "sources": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-038",
+        "S-064",
+        "S-073"
+      ],
+      "decisions": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 5",
+        "C-006",
+        "C-016",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-038",
+        "S-064",
+        "S-073",
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023"
+      ]
+    },
+    {
+      "id": "A-018",
+      "title": "ORR consolidated outlay and recipient/provider split",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 6"
+      ],
+      "claims": [
+        "C-001",
+        "C-007",
+        "C-008",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-061",
+        "S-063",
+        "S-071",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-072",
+        "S-078",
+        "S-074"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 6",
+        "C-001",
+        "C-007",
+        "C-008",
+        "C-016",
+        "C-017",
+        "C-018",
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-061",
+        "S-063",
+        "S-071",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-072",
+        "S-078",
+        "S-074",
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025"
+      ]
+    },
+    {
+      "id": "A-019",
+      "title": "ORR entrant-versus-provider split",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-008"
+      ],
+      "sources": [
+        "S-060",
+        "S-061",
+        "S-063",
+        "S-071"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "C-008",
+        "S-060",
+        "S-061",
+        "S-063",
+        "S-071",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-020",
+      "title": "UC in-scope versus custodial share",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-007"
+      ],
+      "sources": [
+        "S-060",
+        "S-070",
+        "S-062"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "C-007",
+        "S-060",
+        "S-070",
+        "S-062",
+        "D-013",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-021",
+      "title": "Afghan and Ukrainian parolee supplemental amounts",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 6"
+      ],
+      "claims": [
+        "C-007",
+        "C-008"
+      ],
+      "sources": [
+        "S-061",
+        "S-071",
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-063"
+      ],
+      "decisions": [
+        "D-013",
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 6",
+        "C-007",
+        "C-008",
+        "S-061",
+        "S-071",
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-063",
+        "D-013",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-022",
+      "title": "CMS-64 emergency Medicaid federal share by year",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009"
+      ],
+      "sources": [
+        "S-065",
+        "S-078",
+        "S-003",
+        "S-064",
+        "S-079"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7",
+        "C-009",
+        "S-065",
+        "S-078",
+        "S-003",
+        "S-064",
+        "S-079",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-023",
+      "title": "Eligible-immigrant Medicaid outlay",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009",
+        "C-015"
+      ],
+      "sources": [
+        "S-065",
+        "S-003",
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7",
+        "C-009",
+        "C-015",
+        "S-065",
+        "S-003",
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-076",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-024",
+      "title": "Reconcile House Budget and CBO figures versus KFF $3.8B",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 7"
+      ],
+      "claims": [
+        "C-009"
+      ],
+      "sources": [
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-003",
+        "S-065"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 7",
+        "C-009",
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-003",
+        "S-065",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-025",
+      "title": "SNAP noncitizen participant share and benefit attribution",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 8"
+      ],
+      "claims": [
+        "C-010",
+        "C-015"
+      ],
+      "sources": [
+        "S-074",
+        "S-003",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 8",
+        "C-010",
+        "C-015",
+        "S-074",
+        "S-003",
+        "S-076",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-026",
+      "title": "WIC and school-meals status-neutrality",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 8"
+      ],
+      "claims": [
+        "C-010"
+      ],
+      "sources": [
+        "S-003",
+        "S-074"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 8",
+        "C-010",
+        "S-003",
+        "S-074",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-027",
+      "title": "TANF eligible-noncitizen share net of ORR",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-011",
+        "C-015"
+      ],
+      "sources": [
+        "S-075",
+        "S-072",
+        "S-073",
+        "S-076"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 9",
+        "C-011",
+        "C-015",
+        "S-075",
+        "S-072",
+        "S-073",
+        "S-076",
+        "D-001",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-028",
+      "title": "SSI point-in-time basis versus annual flow basis",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 9"
+      ],
+      "claims": [
+        "C-001",
+        "C-011",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-072",
+        "S-073",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-075",
+        "S-078",
+        "S-064",
+        "S-074"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-024",
+        "D-025"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 9",
+        "C-001",
+        "C-011",
+        "C-017",
+        "C-018",
+        "S-072",
+        "S-073",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-075",
+        "S-078",
+        "S-064",
+        "S-074",
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-024",
+        "D-025"
+      ]
+    },
+    {
+      "id": "A-029",
+      "title": "ACTC/CTC via ITIN and citizen-child share",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 9"
+      ],
+      "claims": [
+        "C-011"
+      ],
+      "sources": [
+        "S-072",
+        "S-073",
+        "S-075"
+      ],
+      "decisions": [
+        "D-001",
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 9",
+        "C-011",
+        "S-072",
+        "S-073",
+        "S-075",
+        "D-001",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-030",
+      "title": "HUD eligible-noncitizen prorated outlay",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012",
+        "C-015"
+      ],
+      "sources": [
+        "S-067",
+        "S-068",
+        "S-077",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 10",
+        "C-012",
+        "C-015",
+        "S-067",
+        "S-068",
+        "S-077",
+        "S-076",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-031",
+      "title": "No-verification grant housing programs",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 10"
+      ],
+      "claims": [
+        "C-012"
+      ],
+      "sources": [
+        "S-067",
+        "S-068",
+        "S-077"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 10",
+        "C-012",
+        "S-067",
+        "S-068",
+        "S-077",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-032",
+      "title": "Federal K-12 noncitizen spending",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 11"
+      ],
+      "claims": [
+        "C-013",
+        "C-015"
+      ],
+      "sources": [
+        "S-069",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 11",
+        "C-013",
+        "C-015",
+        "S-069",
+        "S-076",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-033",
+      "title": "Eligible-noncitizen federal student aid",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 11"
+      ],
+      "claims": [
+        "C-013",
+        "C-015"
+      ],
+      "sources": [
+        "S-069",
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 11",
+        "C-013",
+        "C-015",
+        "S-069",
+        "S-076",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-034",
+      "title": "CCDF, SSBG, CSBG, and LIHEAP no-breakout",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 12",
+        "Section 13"
+      ],
+      "claims": [
+        "C-014",
+        "C-015"
+      ],
+      "sources": [
+        "S-062",
+        "S-065",
+        "S-076"
+      ],
+      "decisions": [
+        "D-020",
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 12",
+        "Section 13",
+        "C-014",
+        "C-015",
+        "S-062",
+        "S-065",
+        "S-076",
+        "D-020",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-035",
+      "title": "Per-program responsible agency for missing status data",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 13"
+      ],
+      "claims": [
+        "C-015"
+      ],
+      "sources": [
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 13",
+        "C-015",
+        "S-076",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-036",
+      "title": "Whether Class C or D modeled estimates exist as bounded context only",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 13"
+      ],
+      "claims": [
+        "C-015"
+      ],
+      "sources": [
+        "S-076"
+      ],
+      "decisions": [
+        "D-021"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 13",
+        "C-015",
+        "S-076",
+        "D-021"
+      ]
+    },
+    {
+      "id": "A-037",
+      "title": "Federal-only emergency Medicaid share",
+      "audits": [
+        "AUDIT-001"
+      ],
+      "sections": [
+        "Section 1",
+        "Section 7"
+      ],
+      "claims": [
+        "C-001",
+        "C-009",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "sources": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-055",
+        "S-058",
+        "S-072",
+        "S-074"
+      ],
+      "decisions": [
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025"
+      ],
+      "connectedIds": [
+        "AUDIT-001",
+        "Section 1",
+        "Section 7",
+        "C-001",
+        "C-009",
+        "C-016",
+        "C-017",
+        "C-018",
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-055",
+        "S-058",
+        "S-072",
+        "S-074",
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025"
+      ]
+    }
+  ]
+}

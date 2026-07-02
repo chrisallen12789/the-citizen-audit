@@ -1,6 +1,9 @@
 {
-  "generatedAt": "2026-07-02T01:23:24.600Z",
-  "htmlPages": 133,
+  "generatedAt": "2026-07-02T01:59:16.258Z",
+  "buildVersion": "0.5",
+  "audits": 1,
+  "sections": 19,
+  "htmlPages": 153,
   "sources": 47,
   "citationCoverage": {
     "verified": 33,
@@ -11,22 +14,28 @@
   "decisionLogs": 15,
   "openQuestions": 37,
   "claims": 18,
+  "traceabilityPercent": 100,
+  "platformHealth": "healthy",
   "traceRecords": {
-    "sections": 16,
+    "sections": 19,
     "claims": 18
   },
-  "searchRecords": 133,
+  "searchRecords": 136,
   "qaStatus": {
     "status": "passed",
-    "validatedAt": "2026-07-02T01:24:19.040Z",
-    "htmlPagesChecked": 133,
+    "validatedAt": "2026-07-02T01:59:31.541Z",
+    "htmlPagesChecked": 153,
     "checksEnforced": [
-      "required source metadata",
-      "high-priority canonical URLs",
-      "orphaned trace records",
-      "search coverage for trace claims",
-      "explorer reference integrity",
-      "generated-file consistency"
+      "claim sources",
+      "decision references",
+      "graph integrity",
+      "cross-reference integrity",
+      "duplicate IDs",
+      "orphan records",
+      "citation metadata",
+      "claim confidence",
+      "revision history",
+      "internal links"
     ]
   }
 }

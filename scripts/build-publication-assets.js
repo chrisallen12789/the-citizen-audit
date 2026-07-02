@@ -23,16 +23,22 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;");
 }
 
+function unique(values) {
+  return [...new Set(values)];
+}
+
 function nav() {
   return `<header class="site-header">
     <a class="brand" href="/"><span class="seal">CA</span><span>The Citizen Audit</span></a>
     <button class="menu" data-menu aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav" data-nav>
       <a href="/audit.html">Audit</a>
+      <a href="/claims.html">Claims</a>
       <a href="/sources.html">Sources</a>
       <a href="/search.html">Search</a>
       <a href="/explorer.html">Explorer</a>
       <a href="/review.html">Review</a>
+      <a href="/platform.html">Platform</a>
       <a href="/methodology.html">Methodology</a>
       <a href="/downloads.html">Downloads</a>
       <a href="/corrections.html">Corrections</a>
@@ -74,6 +80,12 @@ function linkList(items, basePath) {
     .join(" ");
 }
 
+function linkClaims(claimIds) {
+  return claimIds
+    .map((claimId) => `<a class="tag" href="/claims/${claimId.toLowerCase()}.html">${escapeHtml(claimId)}</a>`)
+    .join(" ");
+}
+
 const sectionPathByName = {
   "Section 1": "/audit/section-01-executive-summary.html",
   "Section 2": "/audit/section-02-definitions-methodology.html",
@@ -92,7 +104,8 @@ const sectionPathByName = {
   "Section 15": "/audit/section-15-what-is-missing.html",
   "Section 16": "/audit/section-16-final-argument.html",
   "Appendix A": "/audit/appendix-a-open-questions.html",
-  "Appendix B": "/audit/appendix-b-transparency-scorecard.html"
+  "Appendix B": "/audit/appendix-b-transparency-scorecard.html",
+  "Repository assets": "/platform.html"
 };
 
 function linkSections(sectionNames) {
@@ -137,6 +150,26 @@ function relatedClaimsForDecision(decisionId) {
 
 function relatedClaimsForOpenQuestion(openQuestionId) {
   return publication.traceClaims.filter((claim) => claim.openQuestions.includes(openQuestionId));
+}
+
+function findClaimRecord(claimId) {
+  return publication.claims.find((claim) => claim.id === claimId) || null;
+}
+
+function relatedSourcesForClaim(claim) {
+  return publication.sources.filter((source) => claim.sources.includes(source.id));
+}
+
+function relatedDecisionsForClaim(claim) {
+  return publication.decisions.filter((decision) => claim.decisions.includes(decision.id));
+}
+
+function relatedOpenQuestionsForClaim(claim) {
+  return publication.openQuestions.filter((question) => claim.openQuestions.includes(question.id));
+}
+
+function relatedClaimsForClaim(claim) {
+  return publication.claims.filter((candidate) => claim.relatedClaims.includes(candidate.id));
 }
 
 function relatedDecisionsForSource(sourceId, sectionNames) {
@@ -282,7 +315,7 @@ function renderSourceDetail(source) {
               .map(
                 (claim) => `<article class="card stack">
                   <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
-                  <h3><a href="/explorer.html?q=${encodeURIComponent(claim.id)}">${escapeHtml(claim.title)}</a></h3>
+                  <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
                   <p>${escapeHtml(claim.summary)}</p>
                   <p><strong>Decisions</strong><br>${renderRecordLinks(claim.decisions, "/decision-log/")}</p>
                   <p><strong>Open questions</strong><br>${renderRecordLinks(claim.openQuestions, "/open-questions/")}</p>
@@ -410,7 +443,7 @@ function renderOpenQuestionDetail(item) {
               .map(
                 (claim) => `<article class="card stack">
                   <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
-                  <h3><a href="/explorer.html?q=${encodeURIComponent(claim.id)}">${escapeHtml(claim.title)}</a></h3>
+                  <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
                   <p>${escapeHtml(claim.summary)}</p>
                 </article>`
               )
@@ -535,7 +568,7 @@ function renderDecisionDetail(item) {
               .map(
                 (claim) => `<article class="card stack">
                   <p class="row-kicker">${escapeHtml(claim.id)} - ${escapeHtml(claim.section)}</p>
-                  <h3><a href="/explorer.html?q=${encodeURIComponent(claim.id)}">${escapeHtml(claim.title)}</a></h3>
+                  <h3><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.title)}</a></h3>
                   <p>${escapeHtml(claim.summary)}</p>
                 </article>`
               )
@@ -552,6 +585,135 @@ function renderDecisionDetail(item) {
     lede: "Decision records preserve the publication's binding methodological rules in one addressable location.",
     body,
     footerLabel: `${item.id} - decision record`
+  });
+}
+
+function renderClaimIndex() {
+  const rows = publication.claims
+    .map(
+      (claim) => `<article class="source-row" data-filterable data-search="${escapeHtml(
+        [
+          claim.id,
+          claim.title,
+          claim.statement,
+          claim.sectionId,
+          claim.sources.join(" "),
+          claim.decisions.join(" "),
+          claim.openQuestions.join(" ")
+        ].join(" ")
+      )}">
+        <div class="source-row-head">
+          <div>
+            <p class="row-kicker">${escapeHtml(claim.sectionId)} - ${escapeHtml(claim.status)}</p>
+            <h2 class="row-title"><a href="/claims/${claim.id.toLowerCase()}.html">${escapeHtml(claim.id)} - ${escapeHtml(claim.title)}</a></h2>
+          </div>
+          <span class="tag">${escapeHtml(claim.confidence)}</span>
+        </div>
+        <p>${escapeHtml(claim.statement)}</p>
+        <p class="meta-line"><strong>Sources:</strong> ${escapeHtml(claim.sources.join(", "))}</p>
+      </article>`
+    )
+    .join("");
+
+  const body = `<div class="actions">
+      <a class="button primary" href="/audit.html">Audit index</a>
+      <a class="button" href="/explorer.html">Explorer</a>
+      <a class="button" href="/platform.html">Platform dashboard</a>
+    </div>
+    <label class="search-wrap">
+      <span class="sr-only">Search claims</span>
+      <input class="search" data-filter-input data-filter-target="[data-filterable]" placeholder="Search claim IDs, sections, statements, or linked records">
+    </label>
+    <section class="panel">
+      <h2>Claim database</h2>
+      <p>Claims are now first-class structured records. Each claim page links directly to its section, sources, decisions, open questions, and related claims.</p>
+    </section>
+    <section class="panel stack">${rows}</section>`;
+
+  return layout({
+    title: "Claims | The Citizen Audit",
+    description: "Structured claim database for The Citizen Audit.",
+    eyebrow: "Claim Database",
+    heading: "Claims",
+    lede: "Reviewers should be able to move from audit to section to claim in three clicks or fewer, then branch outward into the supporting evidence graph.",
+    body,
+    footerLabel: "Claims - structured records"
+  });
+}
+
+function renderClaimDetail(claim) {
+  const section = publication.sections.find((item) => item.id === claim.sectionId);
+  const relatedSources = relatedSourcesForClaim(claim);
+  const relatedDecisions = relatedDecisionsForClaim(claim);
+  const relatedOpenQuestions = relatedOpenQuestionsForClaim(claim);
+  const siblingClaims = relatedClaimsForClaim(claim);
+  const body = `<div class="actions">
+      <a class="button" href="/claims.html">Back to claims</a>
+      <a class="button" href="${escapeHtml(section?.url || "/audit.html")}">Open section</a>
+      <a class="button" href="/search.html?q=${encodeURIComponent(claim.id)}">Search related records</a>
+    </div>
+    <section class="panel">
+      <h2>Claim record</h2>
+      <div class="meta-grid">
+        <p><strong>Claim ID:</strong> ${escapeHtml(claim.id)}</p>
+        <p><strong>Audit ID:</strong> ${escapeHtml(claim.auditId)}</p>
+        <p><strong>Section ID:</strong> ${escapeHtml(claim.sectionId)}</p>
+        <p><strong>Status:</strong> ${escapeHtml(claim.status)}</p>
+        <p><strong>Confidence:</strong> ${escapeHtml(claim.confidence)}</p>
+      </div>
+      <p>${escapeHtml(claim.statement)}</p>
+    </section>
+    <section class="panel">
+      <h2>Referenced By</h2>
+      <p><strong>Audit</strong><br><a class="tag" href="/audit.html">${escapeHtml(publication.primaryAudit?.title || "Audit")}</a></p>
+      <p><strong>Section</strong><br>${section ? `<a class="tag" href="${section.url}">${escapeHtml(section.id)}</a>` : "<span class='empty-state'>No linked section</span>"}</p>
+    </section>
+    <section class="panel">
+      <h2>Related Sources</h2>
+      ${relatedSources.length ? `<p>${renderRecordLinks(relatedSources.map((item) => item.id), "/sources/")}</p>` : "<p>No linked source records.</p>"}
+    </section>
+    <section class="panel">
+      <h2>Related Decisions</h2>
+      ${relatedDecisions.length ? `<p>${renderRecordLinks(relatedDecisions.map((item) => item.id), "/decision-log/")}</p>` : "<p>No linked decision records.</p>"}
+    </section>
+    <section class="panel">
+      <h2>Related Open Questions</h2>
+      ${relatedOpenQuestions.length ? `<p>${renderRecordLinks(relatedOpenQuestions.map((item) => item.id), "/open-questions/")}</p>` : "<p>No linked open-question records.</p>"}
+    </section>
+    <section class="panel">
+      <h2>Related Claims</h2>
+      ${
+        siblingClaims.length
+          ? `<div class="stack">${siblingClaims
+              .map(
+                (item) => `<article class="card stack">
+                  <p class="row-kicker">${escapeHtml(item.id)} - ${escapeHtml(item.sectionId)}</p>
+                  <h3><a href="/claims/${item.id.toLowerCase()}.html">${escapeHtml(item.title)}</a></h3>
+                  <p>${escapeHtml(item.statement)}</p>
+                </article>`
+              )
+              .join("")}</div>`
+          : "<p>No related-claim records are linked yet.</p>"
+      }
+    </section>
+    <section class="panel">
+      <h2>Revision History</h2>
+      <ul>${claim.revisionHistory
+        .map(
+          (entry) =>
+            `<li>${escapeHtml(entry.date)} - ${escapeHtml(entry.version)} - ${escapeHtml(entry.summary)}</li>`
+        )
+        .join("")}</ul>
+    </section>`;
+
+  return layout({
+    title: `${claim.id} | The Citizen Audit`,
+    description: `${claim.id} claim record for The Citizen Audit.`,
+    eyebrow: "Claim Record",
+    heading: `${claim.id} - ${claim.title}`,
+    lede: "Claims are first-class structured records so the evidence platform can point every published conclusion back to its sources, decisions, and unresolved questions.",
+    body,
+    footerLabel: `${claim.id} - claim record`
   });
 }
 
@@ -798,6 +960,43 @@ function renderExplorerPage() {
   });
 }
 
+function renderPlatformPage(metrics) {
+  const body = `<div class="actions">
+      <a class="button primary" href="/claims.html">Claim database</a>
+      <a class="button" href="/explorer.html">Explorer</a>
+      <a class="button" href="/review.html">Reviewer portal</a>
+    </div>
+    <section class="grid">
+      <article class="card stack"><p class="row-kicker">Published audits</p><h2>${escapeHtml(String(metrics.audits))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Sections</p><h2>${escapeHtml(String(metrics.sections))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Claims</p><h2>${escapeHtml(String(metrics.claims))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Sources</p><h2>${escapeHtml(String(metrics.sources))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Decision logs</p><h2>${escapeHtml(String(metrics.decisionLogs))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Open questions</p><h2>${escapeHtml(String(metrics.openQuestions))}</h2></article>
+      <article class="card stack"><p class="row-kicker">Citation coverage</p><h2>${escapeHtml(String(metrics.citationCoverage.percentVerified))}%</h2></article>
+      <article class="card stack"><p class="row-kicker">Traceability %</p><h2>${escapeHtml(String(metrics.traceabilityPercent))}%</h2></article>
+      <article class="card stack"><p class="row-kicker">QA status</p><h2>${escapeHtml(metrics.qaStatus.status)}</h2></article>
+      <article class="card stack"><p class="row-kicker">Build version</p><h2>${escapeHtml(metrics.buildVersion)}</h2></article>
+      <article class="card stack"><p class="row-kicker">Platform health</p><h2>${escapeHtml(metrics.platformHealth)}</h2></article>
+      <article class="card stack"><p class="row-kicker">HTML pages</p><h2>${escapeHtml(String(metrics.htmlPages))}</h2></article>
+    </section>
+    <section class="panel stack">
+      <h2>Dashboard notes</h2>
+      <p>This dashboard is generated from the same structured records that drive claim pages, source pages, search, explorer data, graph outputs, and QA.</p>
+      <p>Adding a future audit should mean adding new audit, section, claim, source, decision, and open-question records, then running the build again without infrastructure changes.</p>
+    </section>`;
+
+  return layout({
+    title: "Platform Dashboard | The Citizen Audit",
+    description: "Platform dashboard for publication status, traceability, QA, and build health in The Citizen Audit.",
+    eyebrow: "Platform Dashboard",
+    heading: "Platform Dashboard",
+    lede: "The platform now treats structured data as the source of truth and generates the evidence surfaces around it.",
+    body,
+    footerLabel: "Platform dashboard"
+  });
+}
+
 function buildSearchIndex() {
   const items = [];
   for (const source of publication.sources) {
@@ -857,7 +1056,7 @@ function buildSearchIndex() {
       type: "Claim",
       id: claim.id,
       title: claim.title,
-      url: `/explorer.html?q=${encodeURIComponent(claim.id)}`,
+      url: `/claims/${claim.id.toLowerCase()}.html`,
       text: [
         claim.summary,
         claim.section,
@@ -868,6 +1067,154 @@ function buildSearchIndex() {
     });
   }
   return items;
+}
+
+function buildClaimDatabase() {
+  return {
+    generatedAt: new Date().toISOString(),
+    audits: publication.audits.map((audit) => ({ id: audit.id, title: audit.title })),
+    sections: publication.sections.map((section) => ({
+      id: section.id,
+      auditId: section.auditId,
+      title: section.title,
+      url: section.url,
+      claimIds: section.claimIds
+    })),
+    claims: publication.claims
+  };
+}
+
+function buildCrossReferenceTables() {
+  return {
+    generatedAt: new Date().toISOString(),
+    ...publication.crossReferences
+  };
+}
+
+function buildEvidenceGraph() {
+  return {
+    generatedAt: new Date().toISOString(),
+    audits: publication.audits.map((audit) => ({
+      id: audit.id,
+      title: audit.title,
+      sections: audit.sectionIds,
+      claims: audit.claimIds,
+      sources: audit.sourceIds,
+      decisions: audit.decisionIds,
+      openQuestions: audit.openQuestionIds,
+      connectedIds: unique([
+        ...audit.sectionIds,
+        ...audit.claimIds,
+        ...audit.sourceIds,
+        ...audit.decisionIds,
+        ...audit.openQuestionIds
+      ])
+    })),
+    sections: publication.sections.map((section) => ({
+      id: section.id,
+      title: section.title,
+      audits: [section.auditId],
+      claims: section.claimIds,
+      sources: section.sourceIds,
+      decisions: section.decisionIds,
+      openQuestions: section.openQuestionIds,
+      relatedSections: section.relatedSectionIds,
+      connectedIds: unique([
+        section.auditId,
+        ...section.claimIds,
+        ...section.sourceIds,
+        ...section.decisionIds,
+        ...section.openQuestionIds,
+        ...section.relatedSectionIds
+      ])
+    })),
+    claims: publication.claims.map((claim) => ({
+      id: claim.id,
+      title: claim.title,
+      audits: [claim.auditId],
+      sections: [claim.sectionId],
+      sources: claim.sources,
+      decisions: claim.decisions,
+      openQuestions: claim.openQuestions,
+      relatedClaims: claim.relatedClaims,
+      connectedIds: unique([
+        claim.auditId,
+        claim.sectionId,
+        ...claim.sources,
+        ...claim.decisions,
+        ...claim.openQuestions,
+        ...claim.relatedClaims
+      ])
+    })),
+    sources: publication.sources.map((source) => ({
+      id: source.id,
+      title: source.title,
+      audits: source.auditIds || [],
+      sections: source.sectionIds || source.sections || [],
+      claims: source.claimIds || [],
+      decisions: source.decisionIds || [],
+      openQuestions: source.openQuestionIds || [],
+      connectedIds: unique([
+        ...(source.auditIds || []),
+        ...(source.sectionIds || source.sections || []),
+        ...(source.claimIds || []),
+        ...(source.decisionIds || []),
+        ...(source.openQuestionIds || [])
+      ])
+    })),
+    decisions: publication.decisions.map((decision) => ({
+      id: decision.id,
+      title: decision.title,
+      audits: decision.auditIds || [],
+      sections: decision.sectionIds || decision.references || [],
+      claims: decision.claimIds || [],
+      sources: decision.sourceIds || [],
+      openQuestions: decision.openQuestionIds || [],
+      connectedIds: unique([
+        ...(decision.auditIds || []),
+        ...(decision.sectionIds || decision.references || []),
+        ...(decision.claimIds || []),
+        ...(decision.sourceIds || []),
+        ...(decision.openQuestionIds || [])
+      ])
+    })),
+    openQuestions: publication.openQuestions.map((question) => ({
+      id: question.id,
+      title: question.title,
+      audits: question.auditIds || [],
+      sections: question.sectionIds || question.sections || [],
+      claims: question.claimIds || [],
+      sources: question.sourceIds || question.relatedSources || [],
+      decisions: question.decisionIds || [],
+      connectedIds: unique([
+        ...(question.auditIds || []),
+        ...(question.sectionIds || question.sections || []),
+        ...(question.claimIds || []),
+        ...(question.sourceIds || question.relatedSources || []),
+        ...(question.decisionIds || [])
+      ])
+    }))
+  };
+}
+
+function buildManifest(outputs) {
+  return {
+    generatedAt: new Date().toISOString(),
+    buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
+    auditId: publication.primaryAudit?.id || null,
+    outputs
+  };
+}
+
+function buildPlatformStatus(metrics) {
+  return {
+    generatedAt: new Date().toISOString(),
+    status: metrics.platformHealth,
+    qaStatus: metrics.qaStatus.status,
+    buildVersion: metrics.buildVersion,
+    traceabilityPercent: metrics.traceabilityPercent,
+    citationCoveragePercent: metrics.citationCoverage.percentVerified
+  };
 }
 
 function buildTraceRecords() {
@@ -914,8 +1261,13 @@ function buildPlatformMetrics(searchIndex, traceRecords) {
   const highPriorityMissing = publication.sources
     .filter((source) => source.citationPriority === "high" && !source.officialUrl)
     .map((source) => source.id);
+  const traceableClaims = publication.claims.filter((claim) => claim.sources.length && claim.confidence && claim.revisionHistory.length);
+  const traceabilityPercent = Number(((traceableClaims.length / publication.claims.length) * 100).toFixed(2));
   return {
     generatedAt: new Date().toISOString(),
+    buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
+    audits: publication.audits.length,
+    sections: publication.sections.length,
     htmlPages: countHtmlFiles(publicDir),
     sources: publication.sources.length,
     citationCoverage: {
@@ -926,7 +1278,9 @@ function buildPlatformMetrics(searchIndex, traceRecords) {
     },
     decisionLogs: publication.decisions.length,
     openQuestions: publication.openQuestions.length,
-    claims: publication.traceClaims.length,
+    claims: publication.claims.length,
+    traceabilityPercent,
+    platformHealth: highPriorityMissing.length ? "degraded" : "healthy",
     traceRecords: {
       sections: traceRecords.sections.length,
       claims: traceRecords.claims.length
@@ -949,9 +1303,28 @@ function buildPlatformMetrics(searchIndex, traceRecords) {
 function build() {
   const searchIndex = buildSearchIndex();
   const traceRecords = buildTraceRecords();
+  const claimDatabase = buildClaimDatabase();
+  const crossReferences = buildCrossReferenceTables();
+  const evidenceGraph = buildEvidenceGraph();
+  const manifestOutputs = [
+    "/claims.html",
+    "/platform.html",
+    "/data/claim-database.json",
+    "/data/cross-reference-tables.json",
+    "/data/evidence-graph.json",
+    "/data/platform-metrics.json",
+    "/data/platform-status.json",
+    "/data/publication-manifest.json",
+    "/data/publication-search.json",
+    "/data/trace-records.json"
+  ];
   writeFile("sources.html", renderSourceIndex());
   for (const source of publication.sources) {
     writeFile(`sources/${source.slug}.html`, renderSourceDetail(source));
+  }
+  writeFile("claims.html", renderClaimIndex());
+  for (const claim of publication.claims) {
+    writeFile(`claims/${claim.id.toLowerCase()}.html`, renderClaimDetail(claim));
   }
   writeFile("open-questions.html", renderOpenQuestionIndex());
   for (const item of publication.openQuestions) {
@@ -969,11 +1342,22 @@ function build() {
   writeFile("explorer.html", renderExplorerPage());
   writeFile("audit/appendix-a-open-questions.html", renderAppendixA());
   writeFile("audit/appendix-b-transparency-scorecard.html", renderAppendixB());
+  writeFile("data/claim-database.json", `${JSON.stringify(claimDatabase, null, 2)}\n`);
+  writeFile("data/cross-reference-tables.json", `${JSON.stringify(crossReferences, null, 2)}\n`);
+  writeFile("data/evidence-graph.json", `${JSON.stringify(evidenceGraph, null, 2)}\n`);
   writeFile("data/publication-search.json", `${JSON.stringify(searchIndex, null, 2)}\n`);
   writeFile("data/trace-records.json", `${JSON.stringify(traceRecords, null, 2)}\n`);
+  const provisionalMetrics = buildPlatformMetrics(searchIndex, traceRecords);
+  writeFile("platform.html", renderPlatformPage(provisionalMetrics));
+  const platformMetrics = buildPlatformMetrics(searchIndex, traceRecords);
+  const platformStatus = buildPlatformStatus(platformMetrics);
+  const manifest = buildManifest(manifestOutputs);
+  writeFile("platform.html", renderPlatformPage(platformMetrics));
+  writeFile("data/platform-status.json", `${JSON.stringify(platformStatus, null, 2)}\n`);
+  writeFile("data/publication-manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
   writeFile(
     "data/platform-metrics.json",
-    `${JSON.stringify(buildPlatformMetrics(searchIndex, traceRecords), null, 2)}\n`
+    `${JSON.stringify(platformMetrics, null, 2)}\n`
   );
 }
 

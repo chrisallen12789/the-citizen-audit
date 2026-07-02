@@ -663,7 +663,7 @@ function renderClaimExplorer() {
             (claim) => `<article class="card stack">
               <div>
                 <p class="row-kicker">${claim.id} - ${claim.section}</p>
-                <h3 class="row-title">${claim.title}</h3>
+                <h3 class="row-title"><a href="/claims/${claim.id.toLowerCase()}.html">${claim.title}</a></h3>
               </div>
               <p>${claim.summary}</p>
               <p><strong>Section</strong><br><a class="tag" href="${claim.sectionRecord || "#"}">${claim.section}</a></p>
@@ -679,6 +679,38 @@ function renderClaimExplorer() {
   if (initialQuery && !input.value) input.value = initialQuery;
   render();
   input.addEventListener("input", render);
+}
+
+function injectSectionClaimsPanel() {
+  const record = runtimeTraceabilityByPath[location.pathname];
+  const actions = document.querySelector(".actions");
+  if (!record || !actions || document.querySelector("[data-section-claims]")) return;
+
+  const claims = runtimeTraceClaims.filter((claim) => claim.section === record.id);
+  if (!claims.length) return;
+
+  const section = document.createElement("section");
+  section.className = "panel";
+  section.setAttribute("data-section-claims", "");
+  section.innerHTML = `<h2>Claims In This Section</h2>
+    <p>Reviewers should be able to move from section to claim without hunting through the explorer.</p>
+    <div class="grid">${claims
+      .map(
+        (claim) => `<article class="card stack">
+          <p class="row-kicker">${claim.id}</p>
+          <h3><a href="/claims/${claim.id.toLowerCase()}.html">${claim.title}</a></h3>
+          <p>${claim.summary}</p>
+          <p><strong>Sources</strong><br>${renderTagLinks(claim.sources, "/sources/")}</p>
+        </article>`
+      )
+      .join("")}</div>`;
+
+  const verificationPanel = document.querySelector("[data-verification-panel]");
+  if (verificationPanel) {
+    verificationPanel.insertAdjacentElement("afterend", section);
+    return;
+  }
+  actions.insertAdjacentElement("afterend", section);
 }
 
 function calcDollar() {
@@ -880,6 +912,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadTraceabilityData();
   ensureTraceDrawer();
   injectVerificationPanel();
+  injectSectionClaimsPanel();
   injectTraceCards();
   calcDollar();
   renderTraceabilityExplorer();

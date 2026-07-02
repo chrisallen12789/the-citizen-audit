@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T01:23:24.336Z",
+  "generatedAt": "2026-07-02T01:59:15.989Z",
   "sections": [
     {
       "id": "Section 1",
@@ -429,6 +429,51 @@
         "Section 14",
         "Section 15"
       ]
+    },
+    {
+      "id": "Appendix A",
+      "title": "Open Questions Register",
+      "url": "/audit/appendix-a-open-questions.html",
+      "summary": "Canonical appendix register for unresolved measurement questions.",
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 15",
+        "Section 16"
+      ]
+    },
+    {
+      "id": "Appendix B",
+      "title": "Transparency Scorecard",
+      "url": "/audit/appendix-b-transparency-scorecard.html",
+      "summary": "Canonical appendix scorecard for measurable versus unresolved transparency lanes.",
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Section 13",
+        "Section 15"
+      ]
+    },
+    {
+      "id": "Repository assets",
+      "title": "Repository Assets",
+      "url": "/platform.html",
+      "summary": "Generated repository-backed publication assets including dashboard, manifests, and trace outputs.",
+      "sources": [],
+      "decisions": [
+        "D-026"
+      ],
+      "openQuestions": [],
+      "relatedSections": [
+        "Appendix A",
+        "Appendix B"
+      ]
     }
   ],
   "claims": [
@@ -453,6 +498,19 @@
         "A-028",
         "A-037"
       ],
+      "relatedClaims": [
+        "C-002",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-014",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
       "sectionRecord": "/audit/section-01-executive-summary.html"
     },
     {
@@ -474,6 +532,13 @@
       ],
       "openQuestions": [
         "A-002"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-006",
+        "C-009",
+        "C-010",
+        "C-011"
       ],
       "sectionRecord": "/audit/section-02-definitions-methodology.html"
     },
@@ -501,6 +566,16 @@
         "A-004",
         "A-005"
       ],
+      "relatedClaims": [
+        "C-001",
+        "C-004",
+        "C-005",
+        "C-006",
+        "C-007",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
       "sectionRecord": "/audit/section-03-international-assistance.html"
     },
     {
@@ -526,6 +601,11 @@
         "A-011",
         "A-012"
       ],
+      "relatedClaims": [
+        "C-003",
+        "C-005",
+        "C-006"
+      ],
       "sectionRecord": "/audit/section-04-ukraine-israel-examples.html"
     },
     {
@@ -547,6 +627,11 @@
         "A-006",
         "A-007",
         "A-008"
+      ],
+      "relatedClaims": [
+        "C-003",
+        "C-004",
+        "C-006"
       ],
       "sectionRecord": "/audit/section-04-ukraine-israel-examples.html"
     },
@@ -581,6 +666,16 @@
         "A-016",
         "A-017"
       ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-014",
+        "C-016",
+        "C-018"
+      ],
       "sectionRecord": "/audit/section-05-military-aid.html"
     },
     {
@@ -602,6 +697,21 @@
         "A-020",
         "A-021"
       ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
       "sectionRecord": "/audit/section-06-refugee-resettlement.html"
     },
     {
@@ -622,6 +732,20 @@
         "A-018",
         "A-019",
         "A-021"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-007",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
       ],
       "sectionRecord": "/audit/section-06-refugee-resettlement.html"
     },
@@ -646,6 +770,21 @@
         "A-024",
         "A-037"
       ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
       "sectionRecord": "/audit/section-07-medicaid-emergency-medical.html"
     },
     {
@@ -663,6 +802,18 @@
       "openQuestions": [
         "A-025",
         "A-026"
+      ],
+      "relatedClaims": [
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-018"
       ],
       "sectionRecord": "/audit/section-08-food-assistance.html"
     },
@@ -685,6 +836,21 @@
         "A-028",
         "A-029"
       ],
+      "relatedClaims": [
+        "C-001",
+        "C-002",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
       "sectionRecord": "/audit/section-09-cash-welfare-income.html"
     },
     {
@@ -704,6 +870,16 @@
         "A-030",
         "A-031"
       ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-013",
+        "C-014",
+        "C-015"
+      ],
       "sectionRecord": "/audit/section-10-federal-housing.html"
     },
     {
@@ -720,6 +896,16 @@
       "openQuestions": [
         "A-032",
         "A-033"
+      ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-014",
+        "C-015"
       ],
       "sectionRecord": "/audit/section-11-education-public-services.html"
     },
@@ -738,6 +924,20 @@
       ],
       "openQuestions": [
         "A-034"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-015",
+        "C-016",
+        "C-018"
       ],
       "sectionRecord": "/audit/section-12-state-administered-federal-dollars.html"
     },
@@ -762,6 +962,16 @@
         "A-034",
         "A-035",
         "A-036"
+      ],
+      "relatedClaims": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014"
       ],
       "sectionRecord": "/audit/section-13-programs-without-citizenship-breakouts.html"
     },
@@ -788,6 +998,18 @@
         "A-018",
         "A-037"
       ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-014",
+        "C-017",
+        "C-018"
+      ],
       "sectionRecord": "/audit/section-14-conservative-total.html"
     },
     {
@@ -808,6 +1030,16 @@
         "A-018",
         "A-028",
         "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-011",
+        "C-016",
+        "C-018"
       ],
       "sectionRecord": "/audit/section-15-what-is-missing.html"
     },
@@ -830,6 +1062,19 @@
         "A-018",
         "A-028",
         "A-037"
+      ],
+      "relatedClaims": [
+        "C-001",
+        "C-003",
+        "C-006",
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-014",
+        "C-016",
+        "C-017"
       ],
       "sectionRecord": "/audit/section-16-final-argument.html"
     }
@@ -1623,6 +1868,48 @@
         "Section 1",
         "Section 2",
         "Section 9"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 1",
+        "Section 2",
+        "Section 9"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-001",
+        "C-002",
+        "C-011"
+      ],
+      "sourceIds": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-072",
+        "S-075"
+      ],
+      "openQuestionIds": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-002",
+        "A-027",
+        "A-029"
       ]
     },
     {
@@ -1632,6 +1919,32 @@
       "body": "Lawful permanent residents, refugees, asylees, parolees, temporary statuses, and undocumented persons are analytically distinct categories and are never merged into one undifferentiated headline.",
       "references": [
         "Section 2"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 2"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-002"
+      ],
+      "sourceIds": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006"
+      ],
+      "openQuestionIds": [
+        "A-002"
       ]
     },
     {
@@ -1642,6 +1955,50 @@
       "references": [
         "Section 2",
         "Section 5"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 2",
+        "Section 5"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-002",
+        "C-006"
+      ],
+      "sourceIds": [
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005",
+        "S-006",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestionIds": [
+        "A-002",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
       ]
     },
     {
@@ -1653,6 +2010,45 @@
         "Section 3",
         "Section 4",
         "Section 6"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 3",
+        "Section 4",
+        "Section 6"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-003",
+        "C-007"
+      ],
+      "sourceIds": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-060",
+        "S-062",
+        "S-070"
+      ],
+      "openQuestionIds": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-018",
+        "A-020",
+        "A-021"
       ]
     },
     {
@@ -1663,6 +2059,45 @@
       "references": [
         "Section 3",
         "Section 14"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 3",
+        "Section 14"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-003",
+        "C-016"
+      ],
+      "sourceIds": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestionIds": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-017",
+        "A-018",
+        "A-037"
       ]
     },
     {
@@ -1675,6 +2110,69 @@
         "Section 4",
         "Section 5",
         "Section 14"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 3",
+        "Section 4",
+        "Section 5",
+        "Section 14"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-003",
+        "C-004",
+        "C-005",
+        "C-006"
+      ],
+      "sourceIds": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestionIds": [
+        "A-001",
+        "A-003",
+        "A-004",
+        "A-005",
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
       ]
     },
     {
@@ -1684,6 +2182,40 @@
       "body": "Illustrative sections may publish their search path, source classes, and unresolved pulls so readers can see what was investigated even when those sections are non-additive.",
       "references": [
         "Section 4"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-004",
+        "C-005"
+      ],
+      "sourceIds": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048"
+      ],
+      "openQuestionIds": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-007",
+        "A-008"
       ]
     },
     {
@@ -1694,6 +2226,52 @@
       "references": [
         "Section 4",
         "Section 5"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4",
+        "Section 5"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-004",
+        "C-006"
+      ],
+      "sourceIds": [
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-049",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "openQuestionIds": [
+        "A-006",
+        "A-010",
+        "A-011",
+        "A-012",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017"
       ]
     },
     {
@@ -1707,6 +2285,63 @@
         "Section 12",
         "Section 14",
         "Section 16"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 1",
+        "Section 5",
+        "Section 12",
+        "Section 14",
+        "Section 16"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-001",
+        "C-006",
+        "C-014",
+        "C-016",
+        "C-018"
+      ],
+      "sourceIds": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-062",
+        "S-065",
+        "S-064",
+        "S-074"
+      ],
+      "openQuestionIds": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037",
+        "A-013",
+        "A-014",
+        "A-015",
+        "A-016",
+        "A-017",
+        "A-034"
       ]
     },
     {
@@ -1723,6 +2358,81 @@
         "Section 11",
         "Section 12",
         "Section 13"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 6",
+        "Section 7",
+        "Section 8",
+        "Section 9",
+        "Section 10",
+        "Section 11",
+        "Section 12",
+        "Section 13"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-007",
+        "C-008",
+        "C-009",
+        "C-010",
+        "C-011",
+        "C-012",
+        "C-013",
+        "C-014",
+        "C-015"
+      ],
+      "sourceIds": [
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-061",
+        "S-063",
+        "S-071",
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-074",
+        "S-072",
+        "S-073",
+        "S-075",
+        "S-067",
+        "S-068",
+        "S-077",
+        "S-069",
+        "S-076"
+      ],
+      "openQuestionIds": [
+        "A-018",
+        "A-020",
+        "A-021",
+        "A-019",
+        "A-022",
+        "A-023",
+        "A-024",
+        "A-037",
+        "A-025",
+        "A-026",
+        "A-027",
+        "A-028",
+        "A-029",
+        "A-030",
+        "A-031",
+        "A-032",
+        "A-033",
+        "A-034",
+        "A-035",
+        "A-036"
       ]
     },
     {
@@ -1732,6 +2442,34 @@
       "body": "The conservative-total section is built to a fixed blueprint that preserves lane separation, forbids invented gap estimates, and requires reproducibility from the locked source sections.",
       "references": [
         "Section 14"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 14"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-016"
+      ],
+      "sourceIds": [
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestionIds": [
+        "A-017",
+        "A-018",
+        "A-037"
       ]
     },
     {
@@ -1741,6 +2479,34 @@
       "body": "After the blueprint was populated and checked, Section 14 was locked as the publication's conservative set-of-subtotals representation.",
       "references": [
         "Section 14"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 14"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-016"
+      ],
+      "sourceIds": [
+        "S-038",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-073"
+      ],
+      "openQuestionIds": [
+        "A-017",
+        "A-018",
+        "A-037"
       ]
     },
     {
@@ -1750,6 +2516,33 @@
       "body": "The limitations section was locked to carry forward the publication's missing-record constraints without backfilling them with modeled certainty.",
       "references": [
         "Section 15"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 15"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-017"
+      ],
+      "sourceIds": [
+        "S-038",
+        "S-072",
+        "S-078"
+      ],
+      "openQuestionIds": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
       ]
     },
     {
@@ -1759,6 +2552,33 @@
       "body": "The final argument was locked after assembly so the publication's closing synthesis reflects the same basis-separation and limitation rules as the rest of Version 1.0.",
       "references": [
         "Section 16"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 16"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-018"
+      ],
+      "sourceIds": [
+        "S-064",
+        "S-073",
+        "S-074"
+      ],
+      "openQuestionIds": [
+        "A-005",
+        "A-018",
+        "A-028",
+        "A-037"
       ]
     },
     {
@@ -1770,7 +2590,25 @@
         "Appendix A",
         "Appendix B",
         "Repository assets"
-      ]
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Appendix A",
+        "Appendix B",
+        "Repository assets"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Decision record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [],
+      "sourceIds": [],
+      "openQuestionIds": []
     }
   ],
   "openQuestions": [
@@ -1787,6 +2625,35 @@
       "recordNeeded": "A version-stamped primary extraction from ForeignAssistance.gov showing the live sum and retrieval date used for the locked figure.",
       "relatedSources": [
         "S-038"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 3"
+      ],
+      "sourceIds": [
+        "S-038",
+        "S-001",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-003"
+      ],
+      "decisionIds": [
+        "D-013",
+        "D-014",
+        "D-017"
       ]
     },
     {
@@ -1804,6 +2671,35 @@
       "relatedSources": [
         "S-005",
         "S-006"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 2",
+        "Section 3"
+      ],
+      "sourceIds": [
+        "S-005",
+        "S-006",
+        "S-002",
+        "S-003",
+        "S-004"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-002"
+      ],
+      "decisionIds": [
+        "D-001",
+        "D-005",
+        "D-012"
       ]
     },
     {
@@ -1820,6 +2716,35 @@
       "relatedSources": [
         "S-040",
         "S-042"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 3"
+      ],
+      "sourceIds": [
+        "S-040",
+        "S-042",
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-043"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-003"
+      ],
+      "decisionIds": [
+        "D-013",
+        "D-014",
+        "D-017"
       ]
     },
     {
@@ -1833,7 +2758,36 @@
       "whyItMatters": "International financial institution support can score differently from direct grant aid, so IMF-related treatment affects scope discipline in the international-assistance universe.",
       "currentState": "The publication flags IMF scoring treatment instead of assuming a simple add-or-exclude rule where the budget basis may differ.",
       "recordNeeded": "A primary budget-scoring record clarifying how the relevant IMF support should be treated on the audit's chosen basis.",
-      "relatedSources": []
+      "relatedSources": [],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 3"
+      ],
+      "sourceIds": [
+        "S-001",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-042",
+        "S-043"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-003"
+      ],
+      "decisionIds": [
+        "D-013",
+        "D-014",
+        "D-017"
+      ]
     },
     {
       "id": "A-005",
@@ -1851,6 +2805,48 @@
         "S-038",
         "S-039",
         "S-040"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 1",
+        "Section 3"
+      ],
+      "sourceIds": [
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-001",
+        "S-042",
+        "S-043",
+        "S-072",
+        "S-078",
+        "S-064",
+        "S-074"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-001",
+        "C-003",
+        "C-017",
+        "C-018"
+      ],
+      "decisionIds": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-014",
+        "D-017",
+        "D-024",
+        "D-025"
       ]
     },
     {
@@ -1867,6 +2863,37 @@
       "relatedSources": [
         "S-044",
         "S-045"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4"
+      ],
+      "sourceIds": [
+        "S-044",
+        "S-045",
+        "S-043",
+        "S-046",
+        "S-049",
+        "S-047",
+        "S-048"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-004",
+        "C-005"
+      ],
+      "decisionIds": [
+        "D-017",
+        "D-018",
+        "D-019"
       ]
     },
     {
@@ -1884,6 +2911,34 @@
         "S-046",
         "S-053",
         "S-054"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4"
+      ],
+      "sourceIds": [
+        "S-046",
+        "S-053",
+        "S-054",
+        "S-044",
+        "S-047",
+        "S-048"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-005"
+      ],
+      "decisionIds": [
+        "D-017",
+        "D-018"
       ]
     },
     {
@@ -1900,6 +2955,33 @@
       "relatedSources": [
         "S-044",
         "S-045"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4"
+      ],
+      "sourceIds": [
+        "S-044",
+        "S-045",
+        "S-046",
+        "S-047",
+        "S-048"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-005"
+      ],
+      "decisionIds": [
+        "D-017",
+        "D-018"
       ]
     },
     {
@@ -1915,7 +2997,25 @@
       "recordNeeded": "A fully staged primary record that ties MOU, supplemental, and execution-state views into one reference chain.",
       "relatedSources": [
         "S-049"
-      ]
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4"
+      ],
+      "sourceIds": [
+        "S-049"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [],
+      "decisionIds": []
     },
     {
       "id": "A-010",
@@ -1934,6 +3034,37 @@
         "S-047",
         "S-049",
         "S-057"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4",
+        "Section 5"
+      ],
+      "sourceIds": [
+        "S-043",
+        "S-047",
+        "S-049",
+        "S-057",
+        "S-044",
+        "S-045",
+        "S-046"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-004"
+      ],
+      "decisionIds": [
+        "D-017",
+        "D-018",
+        "D-019"
       ]
     },
     {
@@ -1949,6 +3080,34 @@
       "recordNeeded": "A current primary record for the exact OSP share and its implementation window.",
       "relatedSources": [
         "S-049"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4"
+      ],
+      "sourceIds": [
+        "S-049",
+        "S-043",
+        "S-044",
+        "S-045",
+        "S-046"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-004"
+      ],
+      "decisionIds": [
+        "D-017",
+        "D-018",
+        "D-019"
       ]
     },
     {
@@ -1965,6 +3124,34 @@
       "relatedSources": [
         "S-045",
         "S-049"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 4"
+      ],
+      "sourceIds": [
+        "S-045",
+        "S-049",
+        "S-043",
+        "S-044",
+        "S-046"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-004"
+      ],
+      "decisionIds": [
+        "D-017",
+        "D-018",
+        "D-019"
       ]
     },
     {
@@ -1982,6 +3169,41 @@
         "S-055",
         "S-058",
         "S-059"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 5"
+      ],
+      "sourceIds": [
+        "S-055",
+        "S-058",
+        "S-059",
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-056",
+        "S-057"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-006"
+      ],
+      "decisionIds": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
       ]
     },
     {
@@ -1997,6 +3219,41 @@
       "recordNeeded": "A primary cost treatment record showing the marginal taxpayer cost basis for EDA transfers.",
       "relatedSources": [
         "S-050"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 5"
+      ],
+      "sourceIds": [
+        "S-050",
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-006"
+      ],
+      "decisionIds": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
       ]
     },
     {
@@ -2012,6 +3269,41 @@
       "recordNeeded": "A primary record separating transferred WRSA value from stock that remains U.S.-owned or merely positioned.",
       "relatedSources": [
         "S-050"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 5"
+      ],
+      "sourceIds": [
+        "S-050",
+        "S-043",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-006"
+      ],
+      "decisionIds": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
       ]
     },
     {
@@ -2025,7 +3317,42 @@
       "whyItMatters": "The Special Defense Acquisition Fund could look like an added military-aid pool if its revolving nature is ignored.",
       "currentState": "Appendix A marks this resolved: SDAF is revolving, nets to approximately $0 in the audit frame, and is excluded from adopted totals.",
       "recordNeeded": "No further record needed for v1.0; carried as resolved in the register.",
-      "relatedSources": []
+      "relatedSources": [],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 5"
+      ],
+      "sourceIds": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-006"
+      ],
+      "decisionIds": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020"
+      ]
     },
     {
       "id": "A-017",
@@ -2040,6 +3367,48 @@
       "recordNeeded": "A lawful harmonization method that keeps measure type, period, and duplication risks separated.",
       "relatedSources": [
         "S-043"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 5"
+      ],
+      "sourceIds": [
+        "S-043",
+        "S-050",
+        "S-051",
+        "S-052",
+        "S-053",
+        "S-054",
+        "S-055",
+        "S-056",
+        "S-057",
+        "S-058",
+        "S-059",
+        "S-038",
+        "S-064",
+        "S-073"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-006",
+        "C-016"
+      ],
+      "decisionIds": [
+        "D-012",
+        "D-017",
+        "D-019",
+        "D-020",
+        "D-014",
+        "D-022",
+        "D-023"
       ]
     },
     {
@@ -2058,6 +3427,57 @@
         "S-060",
         "S-062",
         "S-070"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 1",
+        "Section 6"
+      ],
+      "sourceIds": [
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-061",
+        "S-063",
+        "S-071",
+        "S-055",
+        "S-058",
+        "S-064",
+        "S-072",
+        "S-078",
+        "S-074"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-001",
+        "C-007",
+        "C-008",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "decisionIds": [
+        "D-001",
+        "D-020",
+        "D-013",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025"
       ]
     },
     {
@@ -2075,6 +3495,31 @@
         "S-060",
         "S-061",
         "S-063"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 6"
+      ],
+      "sourceIds": [
+        "S-060",
+        "S-061",
+        "S-063",
+        "S-071"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-008"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2091,6 +3536,31 @@
       "relatedSources": [
         "S-060",
         "S-070"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 6"
+      ],
+      "sourceIds": [
+        "S-060",
+        "S-070",
+        "S-062"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-007"
+      ],
+      "decisionIds": [
+        "D-013",
+        "D-021"
       ]
     },
     {
@@ -2107,6 +3577,35 @@
       "relatedSources": [
         "S-061",
         "S-071"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 6"
+      ],
+      "sourceIds": [
+        "S-061",
+        "S-071",
+        "S-060",
+        "S-062",
+        "S-070",
+        "S-063"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-007",
+        "C-008"
+      ],
+      "decisionIds": [
+        "D-013",
+        "D-021"
       ]
     },
     {
@@ -2123,6 +3622,32 @@
       "relatedSources": [
         "S-065",
         "S-078"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 7"
+      ],
+      "sourceIds": [
+        "S-065",
+        "S-078",
+        "S-003",
+        "S-064",
+        "S-079"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-009"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2138,6 +3663,34 @@
       "recordNeeded": "A published eligible-immigrant Medicaid outlay series on a federal basis.",
       "relatedSources": [
         "S-065"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 7"
+      ],
+      "sourceIds": [
+        "S-065",
+        "S-003",
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-009",
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2155,6 +3708,32 @@
         "S-064",
         "S-078",
         "S-079"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 7"
+      ],
+      "sourceIds": [
+        "S-064",
+        "S-078",
+        "S-079",
+        "S-003",
+        "S-065"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-009"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2170,6 +3749,31 @@
       "recordNeeded": "A published SNAP spending breakout isolating noncitizen-attributable benefits net of citizen-child portions.",
       "relatedSources": [
         "S-074"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 8"
+      ],
+      "sourceIds": [
+        "S-074",
+        "S-003",
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-010",
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2183,7 +3787,30 @@
       "whyItMatters": "Programs without status conditions may be legally or operationally unable to generate a noncitizen-specific spending line.",
       "currentState": "The publication treats these programs as unresolved Section 13 gaps rather than inferring a noncitizen share.",
       "recordNeeded": "A lawful published record showing whether any status-based breakout exists for these status-neutral nutrition programs.",
-      "relatedSources": []
+      "relatedSources": [],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 8"
+      ],
+      "sourceIds": [
+        "S-003",
+        "S-074"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-010"
+      ],
+      "decisionIds": [
+        "D-021"
+      ]
     },
     {
       "id": "A-027",
@@ -2198,6 +3825,33 @@
       "recordNeeded": "A published TANF breakout for eligible noncitizen benefits net of ORR-routed assistance.",
       "relatedSources": [
         "S-075"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 9"
+      ],
+      "sourceIds": [
+        "S-075",
+        "S-072",
+        "S-073",
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-011",
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-001",
+        "D-021"
       ]
     },
     {
@@ -2215,6 +3869,44 @@
       "relatedSources": [
         "S-072",
         "S-073"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 1",
+        "Section 9"
+      ],
+      "sourceIds": [
+        "S-072",
+        "S-073",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-075",
+        "S-078",
+        "S-064",
+        "S-074"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-001",
+        "C-011",
+        "C-017",
+        "C-018"
+      ],
+      "decisionIds": [
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-024",
+        "D-025"
       ]
     },
     {
@@ -2228,7 +3920,32 @@
       "whyItMatters": "Tax-credit flows can involve ITIN filers and citizen children, which makes noncitizen-specific attribution impossible without a published IRS breakout.",
       "currentState": "Section 9 names the gap and routes it to Section 13 instead of deriving a figure from mixed-status tax filing patterns.",
       "recordNeeded": "An IRS-published breakout isolating ACTC or CTC amounts attributable to the noncitizen population without citizen-child overlap.",
-      "relatedSources": []
+      "relatedSources": [],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 9"
+      ],
+      "sourceIds": [
+        "S-072",
+        "S-073",
+        "S-075"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-011"
+      ],
+      "decisionIds": [
+        "D-001",
+        "D-021"
+      ]
     },
     {
       "id": "A-030",
@@ -2245,6 +3962,32 @@
         "S-067",
         "S-068",
         "S-077"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 10"
+      ],
+      "sourceIds": [
+        "S-067",
+        "S-068",
+        "S-077",
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-012",
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2261,6 +4004,30 @@
       "relatedSources": [
         "S-067",
         "S-068"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 10"
+      ],
+      "sourceIds": [
+        "S-067",
+        "S-068",
+        "S-077"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-012"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2276,6 +4043,30 @@
       "recordNeeded": "No ordinary status-based spending dataset is expected; any lawful resolution would need to respect Plyler's status-collection limits.",
       "relatedSources": [
         "S-069"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 11"
+      ],
+      "sourceIds": [
+        "S-069",
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-013",
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2291,6 +4082,30 @@
       "recordNeeded": "A Department of Education breakout isolating federal student-aid amounts for eligible noncitizens.",
       "relatedSources": [
         "S-069"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 11"
+      ],
+      "sourceIds": [
+        "S-069",
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-013",
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2305,7 +4120,34 @@
       "whyItMatters": "State-administered federal streams can lose citizenship detail in the federal-state-local chain, preventing a clean noncitizen spending breakout.",
       "currentState": "Section 12 documents the reconciliation role and routes these no-breakout programs into the Section 13 gap register.",
       "recordNeeded": "Published program breakouts showing whether any of these state-administered federal streams isolate status-level spending.",
-      "relatedSources": []
+      "relatedSources": [],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 12",
+        "Section 13"
+      ],
+      "sourceIds": [
+        "S-062",
+        "S-065",
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-014",
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-020",
+        "D-021"
+      ]
     },
     {
       "id": "A-035",
@@ -2318,7 +4160,29 @@
       "whyItMatters": "Readers need to know which agency would have to publish a missing status-based breakout before a gap can ever be resolved.",
       "currentState": "Section 13 frames this as part of the gap register rather than pretending every missing line has the same administrative owner.",
       "recordNeeded": "A program-by-program ownership map tying each missing breakout to the responsible federal reporting agency.",
-      "relatedSources": []
+      "relatedSources": [],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 13"
+      ],
+      "sourceIds": [
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-021"
+      ]
     },
     {
       "id": "A-036",
@@ -2333,6 +4197,28 @@
       "recordNeeded": "A bounded inventory of Class C or D estimates that can be published as context without replacing missing primary evidence.",
       "relatedSources": [
         "S-076"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 13"
+      ],
+      "sourceIds": [
+        "S-076"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-015"
+      ],
+      "decisionIds": [
+        "D-021"
       ]
     },
     {
@@ -2353,6 +4239,52 @@
         "S-065",
         "S-078",
         "S-079"
+      ],
+      "auditIds": [
+        "AUDIT-001"
+      ],
+      "sectionIds": [
+        "Section 1",
+        "Section 7"
+      ],
+      "sourceIds": [
+        "S-003",
+        "S-064",
+        "S-065",
+        "S-078",
+        "S-079",
+        "S-038",
+        "S-039",
+        "S-040",
+        "S-073",
+        "S-055",
+        "S-058",
+        "S-072",
+        "S-074"
+      ],
+      "revisionHistory": [
+        {
+          "version": "1.0",
+          "date": "2026-07-01",
+          "summary": "Open-question record extracted into the modular publication data model."
+        }
+      ],
+      "claimIds": [
+        "C-001",
+        "C-009",
+        "C-016",
+        "C-017",
+        "C-018"
+      ],
+      "decisionIds": [
+        "D-001",
+        "D-020",
+        "D-021",
+        "D-014",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025"
       ]
     }
   ]

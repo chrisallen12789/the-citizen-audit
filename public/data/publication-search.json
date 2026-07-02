@@ -805,129 +805,150 @@
     "text": "Closing synthesis bounded by the same evidence and basis-separation rules as the rest of Version 1.0. S-064 S-074 D-020 D-025  Section 14 Section 15"
   },
   {
+    "type": "Section",
+    "id": "Appendix A",
+    "title": "Open Questions Register",
+    "url": "/audit/appendix-a-open-questions.html",
+    "text": "Canonical appendix register for unresolved measurement questions.  D-026  Section 15 Section 16"
+  },
+  {
+    "type": "Section",
+    "id": "Appendix B",
+    "title": "Transparency Scorecard",
+    "url": "/audit/appendix-b-transparency-scorecard.html",
+    "text": "Canonical appendix scorecard for measurable versus unresolved transparency lanes.  D-026  Section 13 Section 15"
+  },
+  {
+    "type": "Section",
+    "id": "Repository assets",
+    "title": "Repository Assets",
+    "url": "/platform.html",
+    "text": "Generated repository-backed publication assets including dashboard, manifests, and trace outputs.  D-026  Appendix A Appendix B"
+  },
+  {
     "type": "Claim",
     "id": "C-001",
     "title": "Executive summary keeps measurable lanes on their native bases",
-    "url": "/explorer.html?q=C-001",
+    "url": "/claims/c-001.html",
     "text": "The opening section preserves lane separation instead of collapsing obligations, outlays, cumulative military lines, and domestic program examples into one number. Section 1 S-038 S-039 S-040 S-073 D-001 D-020 A-005 A-018 A-028 A-037"
   },
   {
     "type": "Claim",
     "id": "C-002",
     "title": "Methodology distinguishes legal status categories and number types",
-    "url": "/explorer.html?q=C-002",
+    "url": "/claims/c-002.html",
     "text": "Qualified status categories, waiting-period rules, appropriations, obligations, outlays, and transfer values are treated as distinct analytical objects. Section 2 S-002 S-003 S-004 S-005 S-006 D-001 D-005 D-012 A-002"
   },
   {
     "type": "Claim",
     "id": "C-003",
     "title": "International assistance obligations and disbursements are not interchangeable",
-    "url": "/explorer.html?q=C-003",
+    "url": "/claims/c-003.html",
     "text": "Section 3 preserves separate accounting states while carrying the unresolved beneficiary-capture share as an open question. Section 3 S-001 S-038 S-039 S-040 S-042 S-043 D-013 D-014 D-017 A-001 A-003 A-004 A-005"
   },
   {
     "type": "Claim",
     "id": "C-004",
     "title": "Ukraine and Israel examples are illustrative and non-additive",
-    "url": "/explorer.html?q=C-004",
+    "url": "/claims/c-004.html",
     "text": "Section 4 exists to show stage differences and beneficiary chains without adding its examples back into the running totals. Section 4 S-043 S-044 S-045 S-046 S-049 D-017 D-018 D-019 A-006 A-010 A-011 A-012"
   },
   {
     "type": "Claim",
     "id": "C-005",
     "title": "Ukraine stage labels cannot be netted casually",
-    "url": "/explorer.html?q=C-005",
+    "url": "/claims/c-005.html",
     "text": "Appropriations, drawdowns, disbursements, and delivered-value estimates sit at different stages and remain analytically separate. Section 4 S-044 S-046 S-047 S-048 D-017 D-018 A-006 A-007 A-008"
   },
   {
     "type": "Claim",
     "id": "C-006",
     "title": "Military aid keeps net-new lanes separate from already-counted foreign assistance",
-    "url": "/explorer.html?q=C-006",
+    "url": "/claims/c-006.html",
     "text": "Section 5 excludes allied-funded sales and already-counted assistance while preserving drawdown value versus replacement-cost separation. Section 5 S-043 S-050 S-051 S-052 S-053 S-054 S-055 S-056 S-057 S-058 S-059 D-012 D-017 D-019 D-020 A-013 A-014 A-015 A-016 A-017"
   },
   {
     "type": "Claim",
     "id": "C-007",
     "title": "ORR is owned as a domestic lane, not an overseas add-on",
-    "url": "/explorer.html?q=C-007",
+    "url": "/claims/c-007.html",
     "text": "Refugee and entrant assistance stays in one canonical domestic section so it is not double-counted against foreign-assistance accounts. Section 6 S-060 S-062 S-070 D-013 D-021 A-018 A-020 A-021"
   },
   {
     "type": "Claim",
     "id": "C-008",
     "title": "ORR provider capture remains a first-class unresolved limitation",
-    "url": "/explorer.html?q=C-008",
+    "url": "/claims/c-008.html",
     "text": "The public record identifies the ORR lane but does not yet publish a defensible entrant-versus-provider split. Section 6 S-060 S-061 S-063 S-071 D-021 A-018 A-019 A-021"
   },
   {
     "type": "Claim",
     "id": "C-009",
     "title": "Emergency Medicaid is measurable on a federal-plus-state basis, not a federal-only basis",
-    "url": "/explorer.html?q=C-009",
+    "url": "/claims/c-009.html",
     "text": "Section 7 preserves the measurable lane while carrying the missing federal-only share as an explicit open question. Section 7 S-003 S-064 S-065 S-078 S-079 D-021 A-022 A-023 A-024 A-037"
   },
   {
     "type": "Claim",
     "id": "C-010",
     "title": "SNAP noncitizen dollars are not backfilled with modeled estimates",
-    "url": "/explorer.html?q=C-010",
+    "url": "/claims/c-010.html",
     "text": "Section 8 documents the eligibility framework and refuses unsupported benefit attribution by population share. Section 8 S-003 S-074 D-021 A-025 A-026"
   },
   {
     "type": "Claim",
     "id": "C-011",
     "title": "SSI is one of the clearest direct-cash domestic lanes",
-    "url": "/explorer.html?q=C-011",
+    "url": "/claims/c-011.html",
     "text": "The current edition relies on SSA-published noncitizen recipient and payment inputs while preserving the point-in-time limitation. Section 9 S-072 S-073 S-075 D-001 D-021 A-027 A-028 A-029"
   },
   {
     "type": "Claim",
     "id": "C-012",
     "title": "Housing eligibility rules already exclude many ineligible uses through Section 214 and proration",
-    "url": "/explorer.html?q=C-012",
+    "url": "/claims/c-012.html",
     "text": "Section 10 is strongest on program mechanics, not on a missing published eligible-noncitizen outlay total. Section 10 S-067 S-068 S-077 D-021 A-030 A-031"
   },
   {
     "type": "Claim",
     "id": "C-013",
     "title": "K-12 and student-aid analysis is constrained by legal collection limits and eligibility structure",
-    "url": "/explorer.html?q=C-013",
+    "url": "/claims/c-013.html",
     "text": "Section 11 treats missing education spending ledgers as a real transparency limit rather than something to impute. Section 11 S-069 D-021 A-032 A-033"
   },
   {
     "type": "Claim",
     "id": "C-014",
     "title": "State-administered federal dollars add zero net-new dollars by design",
-    "url": "/explorer.html?q=C-014",
+    "url": "/claims/c-014.html",
     "text": "Section 12 is a routing and reconciliation lens that guards against double counting once federal money passes through state systems. Section 12 S-062 S-065 D-020 D-021 A-034"
   },
   {
     "type": "Claim",
     "id": "C-015",
     "title": "The gap register is itself a finding, not an empty placeholder",
-    "url": "/explorer.html?q=C-015",
+    "url": "/claims/c-015.html",
     "text": "Section 13 names programs where the record does not support a defensible citizenship breakout and refuses to fabricate missing values. Section 13 S-076 D-021 A-023 A-025 A-027 A-030 A-032 A-033 A-034 A-035 A-036"
   },
   {
     "type": "Claim",
     "id": "C-016",
     "title": "The conservative total is a reproducible set of subtotals, not one synthetic number",
-    "url": "/explorer.html?q=C-016",
+    "url": "/claims/c-016.html",
     "text": "Section 14 is locked to a blueprint that preserves incompatible bases instead of flattening them into a false grand total. Section 14 S-038 S-055 S-058 S-064 S-073 D-014 D-020 D-022 D-023 A-017 A-018 A-037"
   },
   {
     "type": "Claim",
     "id": "C-017",
     "title": "Publication limits remain visible and binding",
-    "url": "/explorer.html?q=C-017",
+    "url": "/claims/c-017.html",
     "text": "Section 15 preserves missing-record constraints as governance rules for what the audit may claim. Section 15 S-038 S-072 S-078 D-024 A-005 A-018 A-028 A-037"
   },
   {
     "type": "Claim",
     "id": "C-018",
     "title": "The final argument inherits the same basis rules and evidence limits",
-    "url": "/explorer.html?q=C-018",
+    "url": "/claims/c-018.html",
     "text": "Section 16 does not create a new theory of the numbers; it restates bounded findings from the locked sections. Section 16 S-064 S-073 S-074 D-020 D-025 A-005 A-018 A-028 A-037"
   }
 ]
