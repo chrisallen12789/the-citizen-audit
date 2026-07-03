@@ -48,12 +48,12 @@ module.exports = [
     "id": "R-005",
     "auditId": "AUDIT-001",
     "version": "1.0.0-rc1",
-    "date": "Release candidate",
-    "title": "Production-ready review candidate",
+    "date": "2026-07-03",
+    "title": "Research-complete publication hold",
     "notes": [
-      "All currently modeled claims, sources, decisions, and open questions now build from structured records.",
-      "Citation verification is complete for the live source library and release artifacts are generated with checksums, QA reporting, and reproducibility notes.",
-      "The public site ships with generated search, evidence graph, source pages, release documentation, and production metadata suitable for independent review."
+      "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements.",
+      "Publication Status: Research Complete. Source Gate Pending Archive Session. Publication Recommendation: NOT READY.",
+      "The site ships with generated search, evidence graph, source pages, release documentation, Version 2 publication metadata, and reproducible release assets."
     ]
   }
 ];

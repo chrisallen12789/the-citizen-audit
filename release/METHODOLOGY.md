@@ -16,7 +16,8 @@
 
 - Each source record tracks publisher, document type, publication date, retrieval date, canonical URL, archive URL or archive status, and verification notes.
 - High-priority sources must carry canonical URLs and normalized metadata before QA passes.
-- Citation verification is frozen for this release candidate unless QA identifies an objective error.
+- Citation verification is frozen for the current publication state unless QA identifies an objective error.
+- The research program is complete for the current claim set, so engineering changes should not strengthen or weaken substantive conclusions without a later edition.
 
 ## Decision logging
 

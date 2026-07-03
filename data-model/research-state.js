@@ -1,0 +1,74 @@
+module.exports = {
+  id: "RESEARCH-STATE-001",
+  title: "Claude Phase H Final Research State",
+  asOf: "2026-07-02",
+  sourcePackage: "citizen-audit-va_final_research_v2.3.zip",
+  publicationMetadataVersion: 2,
+  governingStatement:
+    "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements.",
+  publicationStatus: {
+    researchComplete: true,
+    publicationComplete: false,
+    sourceGateLabel: "Source Gate Pending Archive Session",
+    recommendation: "NOT READY",
+    recommendationIfArchiveGateCleared: "READY WITH EXPLICIT LIMITATIONS",
+    reason: "Author-controlled publication gate outstanding.",
+    readyCondition: "archiveSessionComplete"
+  },
+  archiveSession: {
+    requiredCaptures: 43,
+    completedCaptures: 0,
+    status: "pending"
+  },
+  counts: {
+    sources: 46,
+    verifiedSources: 34,
+    pendingSources: 12,
+    archivedSources: 0,
+    evidenceItems: 271,
+    supportedFindings: 6,
+    claimsValidated: 13,
+    claimsDraft: 1,
+    claimsBibliographic: 5,
+    claimsTotal: 19,
+    graphNodes: 422,
+    graphEdges: 578
+  },
+  authorControlledTasks: [
+    "Complete one archive session using the generated 43-row archive manifest.",
+    "Review the remaining author-gated reads listed in the governing dashboard before broadening the claim set."
+  ],
+  engineeringState: {
+    finalWebsiteAssetsGeneratedByBuild: true,
+    releasePackagingAutomated: true,
+    qaIntegrated: true
+  },
+  reviewWorkflow: [
+    "Review methodology and evidence standards before testing conclusions.",
+    "Check claim-to-source, decision, and open-question links before challenging a record.",
+    "Use the public corrections route with specific claim, page, source, and proposed correction details."
+  ],
+  correctionWorkflow: [
+    "Challenges must identify the exact claim, page, or section at issue.",
+    "Challenges must include a source or archive link and a proposed correction.",
+    "Opinion-only objections do not satisfy the correction standard."
+  ],
+  heatMap: [
+    { section: "Section 2", title: "Scope and Definitions", grade: "WEAK", items: 83, sources: 1, categoriesCovered: 9, note: "" },
+    { section: "Section 3", title: "Funding Flow", grade: "MODERATE", items: 126, sources: 5, categoriesCovered: 9, note: "D-0022 plus Table 8 remain bounded limits." },
+    { section: "Section 4", title: "Department Structure", grade: "WEAK", items: 3, sources: 1, categoriesCovered: 3, note: "" },
+    { section: "Section 5", title: "VHA", grade: "STRONG", items: 45, sources: 3, categoriesCovered: 8, note: "" },
+    { section: "Section 6", title: "VBA", grade: "MODERATE", items: 58, sources: 4, categoriesCovered: 9, note: "FC-0005 layer remains not-ready." },
+    { section: "Section 7", title: "Board", grade: "WEAK", items: 9, sources: 2, categoriesCovered: 2, note: "" },
+    { section: "Section 8", title: "Community Care", grade: "MODERATE", items: 14, sources: 6, categoriesCovered: 5, note: "Full bodies queued; dated coverage only." },
+    { section: "Section 9", title: "Mental Health and Suicide", grade: "MODERATE", items: 72, sources: 2, categoriesCovered: 9, note: "" },
+    { section: "Section 10", title: "Homelessness", grade: "WEAK", items: 4, sources: 1, categoriesCovered: 3, note: "" },
+    { section: "Section 11", title: "Contracting", grade: "MODERATE", items: 13, sources: 3, categoriesCovered: 6, note: "" },
+    { section: "Section 12", title: "IT and EHRM", grade: "MODERATE", items: 10, sources: 2, categoriesCovered: 5, note: "Currency and recommendation text remain bounded." },
+    { section: "Section 13", title: "Admin Overhead", grade: "MODERATE", items: 58, sources: 2, categoriesCovered: 9, note: "" },
+    { section: "Section 14", title: "Journey Map", grade: "ABSENT", items: 0, sources: 0, categoriesCovered: 0, note: "" },
+    { section: "Section 15", title: "Oversight", grade: "WEAK", items: 6, sources: 2, categoriesCovered: 5, note: "UQ-0001 remains author-gated." },
+    { section: "Section 16", title: "State-by-State", grade: "STRONG", items: 74, sources: 3, categoriesCovered: 8, note: "" },
+    { section: "Section 17", title: "Metrics Dashboard", grade: "WEAK", items: 5, sources: 1, categoriesCovered: 3, note: "" }
+  ]
+};

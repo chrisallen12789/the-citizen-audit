@@ -1,7 +1,21 @@
 {
-  "generatedAt": "2026-07-03T16:25:17.107Z",
+  "generatedAt": "2026-07-03T17:36:02.553Z",
   "buildVersion": "1.0.0-rc1",
   "auditId": "AUDIT-001",
+  "publicationMetadataVersion": 2,
+  "publicationReadiness": {
+    "statement": "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements.",
+    "researchComplete": true,
+    "publicationComplete": false,
+    "sourceGate": "Source Gate Pending Archive Session",
+    "recommendation": "NOT READY",
+    "reason": "Author-controlled publication gate outstanding.",
+    "archiveSession": {
+      "requiredCaptures": 43,
+      "completedCaptures": 0,
+      "status": "pending"
+    }
+  },
   "outputs": [
     "/start-here.html",
     "/audit.html",
@@ -167,7 +181,9 @@
     "/data/platform-metrics.json",
     "/data/platform-status.json",
     "/data/publication-manifest.json",
+    "/data/publication-metadata-v2.json",
     "/data/publication-search.json",
+    "/data/research-state.json",
     "/data/trace-records.json"
   ],
   "counts": {

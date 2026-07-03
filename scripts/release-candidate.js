@@ -95,14 +95,21 @@ function buildReleaseNotes(metrics) {
 
 ## Summary
 
-${version} is the first production-ready release candidate for The Citizen Audit evidence platform. The Version 1.0 analytical edition remains locked while the web publication, source library, claim records, and review artifacts are packaged for independent scrutiny.
+${version} packages the current evidence platform around the locked Version 1.0 analytical edition. The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements.
 
-## Included in this release candidate
+## Publication status
+
+- Research Complete
+- Source Gate Pending Archive Session
+- Publication Recommendation: NOT READY
+- Reason: Author-controlled publication gate outstanding.
+
+## Included in this release package
 
 - Generated public website with structured section, claim, source, decision, and open-question pages
 - Canonical PDF publication packaged as the controlling locked-edition artifact
 - Source library with verified citation metadata and archive-status fields
-- Claim database, search index, evidence graph, cross-reference tables, manifest, metrics, and status outputs
+- Claim database, search index, evidence graph, cross-reference tables, manifest, metrics, status outputs, and Version 2 publication metadata
 - Release engineering artifacts under \`/release\`, including checksums, QA report, reproducible-build notes, known limitations, and methodology summary
 
 ## Current platform counts
@@ -119,7 +126,7 @@ ${version} is the first production-ready release candidate for The Citizen Audit
 function buildKnownLimitations(metrics) {
   return `# Known Limitations
 
-This document describes boundaries and unresolved areas in the release-candidate publication. It does not defend conclusions; it records where evidence remains incomplete or where reasonable reviewers may disagree.
+This document describes boundaries and unresolved areas in the current publication state. It does not defend conclusions; it records where evidence remains incomplete or where reasonable reviewers may disagree.
 
 ## Methodology boundaries
 
@@ -132,6 +139,7 @@ This document describes boundaries and unresolved areas in the release-candidate
 - Some federal programs do not publish citizenship-status breakouts needed to isolate attributable dollars; those lanes remain routed to gap treatment instead of counted totals.
 - Several sections depend on agency reporting that is structurally incomplete for recipient-level or beneficiary-chain measurement.
 - Congressional Research Service pages can be hard to fetch automatically, so verification depends on official product metadata and linked CRS PDF artifacts where direct machine access is blocked.
+- The archive session remains author-controlled and incomplete, so publication readiness remains below launch recommendation even though the current claim set is frozen.
 
 ## Open uncertainties
 
@@ -144,6 +152,7 @@ This document describes boundaries and unresolved areas in the release-candidate
 - Additional primary records could reduce open-question exposure in domestic benefit sections.
 - Federal reconciliation across aid stages, recipient value, and domestic provider capture remains a high-value future transparency target.
 - Future releases may add broader archival coverage, richer export formats, and deeper reviewer tooling without changing locked v1.0 conclusions.
+- If the archive session is completed later, publication recommendation should advance automatically to READY WITH EXPLICIT LIMITATIONS without further engineering changes.
 
 ## Current release snapshot
 
@@ -172,7 +181,8 @@ function buildMethodologyDoc(metrics) {
 
 - Each source record tracks publisher, document type, publication date, retrieval date, canonical URL, archive URL or archive status, and verification notes.
 - High-priority sources must carry canonical URLs and normalized metadata before QA passes.
-- Citation verification is frozen for this release candidate unless QA identifies an objective error.
+- Citation verification is frozen for the current publication state unless QA identifies an objective error.
+- The research program is complete for the current claim set, so engineering changes should not strengthen or weaken substantive conclusions without a later edition.
 
 ## Decision logging
 
@@ -291,7 +301,7 @@ function buildQaReport(metrics, status, manifest, gitInfo) {
   const qaChecks = metrics.qaStatus.checksEnforced || [];
   return `# QA Report
 
-## Release candidate
+## Publication state
 
 - Version: ${version}
 - Commit: ${gitInfo.commit}
@@ -299,6 +309,8 @@ function buildQaReport(metrics, status, manifest, gitInfo) {
 - Build timestamp: ${manifest.generatedAt}
 - QA status: ${metrics.qaStatus.status}
 - Platform health: ${status.status}
+- Publication recommendation: ${metrics.publicationReadiness.recommendation}
+- Publication reason: ${metrics.publicationReadiness.reason}
 
 ## Build verification
 
@@ -320,6 +332,7 @@ ${formatList(qaChecks)}
 - Release artifacts hashed with SHA-256
 - No pending source-verification records remain in the current publication data
 - No unexpected public HTML artifacts remain after removal of the internal test page
+- Readiness messaging is synchronized across metrics, status, roadmap, review, corrections, and transparency pages
 `;
 }
 
@@ -327,6 +340,7 @@ function main() {
   const metrics = readJson("public/data/platform-metrics.json");
   const status = readJson("public/data/platform-status.json");
   const manifest = readJson("public/data/publication-manifest.json");
+  const publicationMetadata = readJson("public/data/publication-metadata-v2.json");
   const claimDatabase = readJson("public/data/claim-database.json");
   const packageJson = readJson("package.json");
   const packageLock = readJson("package-lock.json");
@@ -360,6 +374,7 @@ function main() {
   writeReleaseFile("REPRODUCIBLE-BUILD.md", buildReproducibleBuildDoc(metrics, generatorVersions));
   writeReleaseFile("UI-AUDIT.md", buildUiAudit(metrics));
   writeReleaseFile("QA-REPORT.md", buildQaReport(metrics, status, manifest, gitInfo));
+  writeReleaseFile("PUBLICATION-METADATA-v2.json", `${JSON.stringify(publicationMetadata, null, 2)}\n`);
 
   const websiteZip = path.join(artifactsDir, `${artifactPrefix}-site.zip`);
   createZip(siteDir, websiteZip);
@@ -375,7 +390,8 @@ function main() {
     "METHODOLOGY.md",
     "REPRODUCIBLE-BUILD.md",
     "UI-AUDIT.md",
-    "QA-REPORT.md"
+    "QA-REPORT.md",
+    "PUBLICATION-METADATA-v2.json"
   ]) {
     fs.copyFileSync(path.join(releaseDir, docName), path.join(stagingDir, docName));
   }

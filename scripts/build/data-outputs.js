@@ -3,6 +3,29 @@ const path = require("path");
 const { unique } = require("../renderers/shared");
 
 function createDataOutputBuilders(publication, publicDir) {
+  function getPublicationReadiness() {
+    const researchState = publication.researchState;
+    const archiveSessionComplete =
+      researchState.archiveSession.completedCaptures >= researchState.archiveSession.requiredCaptures;
+    return {
+      statement: researchState.governingStatement,
+      researchComplete: true,
+      publicationComplete: archiveSessionComplete,
+      sourceGate: archiveSessionComplete ? "Archive Session Complete" : researchState.publicationStatus.sourceGateLabel,
+      recommendation: archiveSessionComplete
+        ? researchState.publicationStatus.recommendationIfArchiveGateCleared
+        : researchState.publicationStatus.recommendation,
+      reason: archiveSessionComplete
+        ? "Archive session complete. Publication still carries the explicit limitations already stated in the research record."
+        : researchState.publicationStatus.reason,
+      archiveSession: {
+        requiredCaptures: researchState.archiveSession.requiredCaptures,
+        completedCaptures: researchState.archiveSession.completedCaptures,
+        status: archiveSessionComplete ? "complete" : researchState.archiveSession.status
+      }
+    };
+  }
+
   function buildSearchIndex() {
     const items = [];
     for (const page of publication.pages) {
@@ -244,10 +267,13 @@ function createDataOutputBuilders(publication, publicDir) {
 
   function buildManifest(outputs) {
     const generatedSectionPages = publication.sections.filter((section) => /^Section \d+$/.test(section.id));
+    const publicationReadiness = getPublicationReadiness();
     return {
       generatedAt: new Date().toISOString(),
       buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
       auditId: publication.primaryAudit?.id || null,
+      publicationMetadataVersion: publication.researchState.publicationMetadataVersion,
+      publicationReadiness,
       outputs,
       counts: {
         generatedPublicationPages: publication.pages.length,
@@ -269,6 +295,7 @@ function createDataOutputBuilders(publication, publicDir) {
       status: metrics.platformHealth,
       qaStatus: metrics.qaStatus.status,
       buildVersion: metrics.buildVersion,
+      publicationReadiness: metrics.publicationReadiness,
       traceabilityPercent: metrics.traceabilityPercent,
       citationCoveragePercent: metrics.citationCoverage.percentVerified,
       generatedPublicationPages: metrics.generatedPublicationPages,
@@ -331,6 +358,7 @@ function createDataOutputBuilders(publication, publicDir) {
   }
 
   function buildPlatformMetrics(searchIndex, traceRecords) {
+    const publicationReadiness = getPublicationReadiness();
     const verifiedSources = publication.sources.filter((source) => source.verificationStatus === "verified");
     const pendingSources = publication.sources.filter((source) => source.verificationStatus !== "verified");
     const archiveCoveredSources = publication.sources.filter((source) => source.archiveUrl);
@@ -350,6 +378,7 @@ function createDataOutputBuilders(publication, publicDir) {
     return {
       generatedAt: new Date().toISOString(),
       buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
+      publicationMetadataVersion: publication.researchState.publicationMetadataVersion,
       audits: publication.audits.length,
       sections: publication.sections.length,
       htmlPages: countHtmlFiles(publicDir),
@@ -374,6 +403,14 @@ function createDataOutputBuilders(publication, publicDir) {
       claims: publication.claims.length,
       traceabilityPercent,
       platformHealth: highPriorityMissing.length ? "degraded" : "healthy",
+      publicationReadiness,
+      researchProgram: {
+        asOf: publication.researchState.asOf,
+        statement: publication.researchState.governingStatement,
+        counts: publication.researchState.counts,
+        authorControlledTasks: publication.researchState.authorControlledTasks,
+        heatMap: publication.researchState.heatMap
+      },
       traceRecords: {
         sections: traceRecords.sections.length,
         claims: traceRecords.claims.length
@@ -393,6 +430,46 @@ function createDataOutputBuilders(publication, publicDir) {
     };
   }
 
+  function buildResearchStateOutput() {
+    const publicationReadiness = getPublicationReadiness();
+    return {
+      generatedAt: new Date().toISOString(),
+      ...publication.researchState,
+      publicationReadiness
+    };
+  }
+
+  function buildPublicationMetadata(platformMetrics, manifest, platformStatus) {
+    return {
+      generatedAt: new Date().toISOString(),
+      version: publication.researchState.publicationMetadataVersion,
+      buildVersion: publication.primaryAudit?.currentReleaseVersion || "0.0",
+      audit: {
+        id: publication.primaryAudit?.id || null,
+        title: publication.primaryAudit?.title || null,
+        canonicalTitle: publication.primaryAudit?.canonicalTitle || null,
+        lockedEdition: publication.primaryAudit?.version || null
+      },
+      publicationReadiness: platformMetrics.publicationReadiness,
+      researchProgram: platformMetrics.researchProgram,
+      publication: {
+        generatedPublicationPages: platformMetrics.generatedPublicationPages,
+        generatedSectionPages: platformMetrics.generatedSectionPages,
+        generatedClaimPages: platformMetrics.generatedClaimPages,
+        htmlPages: platformMetrics.htmlPages,
+        searchRecords: platformMetrics.searchRecords,
+        traceabilityPercent: platformMetrics.traceabilityPercent,
+        citationCoveragePercent: platformMetrics.citationCoverage.percentVerified
+      },
+      qaStatus: platformMetrics.qaStatus,
+      manifest: {
+        outputs: manifest.outputs.length,
+        invariants: manifest.invariants
+      },
+      status: platformStatus
+    };
+  }
+
   return {
     buildSearchIndex,
     buildClaimDatabase,
@@ -401,7 +478,9 @@ function createDataOutputBuilders(publication, publicDir) {
     buildManifest,
     buildPlatformStatus,
     buildTraceRecords,
-    buildPlatformMetrics
+    buildPlatformMetrics,
+    buildResearchStateOutput,
+    buildPublicationMetadata
   };
 }
 

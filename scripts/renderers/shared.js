@@ -32,8 +32,45 @@ function nav() {
   </header>`;
 }
 
+const CONTACT_LINKS = [
+  {
+    label: "General contact",
+    href: "mailto:contact@thecitizenaudit.org?subject=Citizen%20Audit%20General%20Inquiry"
+  },
+  {
+    label: "Corrections",
+    href: "mailto:corrections@thecitizenaudit.org?subject=Citizen%20Audit%20Correction%20Challenge"
+  },
+  {
+    label: "Formal review",
+    href: "mailto:review@thecitizenaudit.org?subject=Citizen%20Audit%20Formal%20Review"
+  },
+  {
+    label: "Media",
+    href: "mailto:media@thecitizenaudit.org?subject=Citizen%20Audit%20Media%20Inquiry"
+  },
+  {
+    label: "Website support",
+    href: "mailto:support@thecitizenaudit.org?subject=Citizen%20Audit%20Website%20Issue"
+  },
+  {
+    label: "Legal",
+    href: "mailto:legal@thecitizenaudit.org?subject=Citizen%20Audit%20Legal%20Inquiry"
+  }
+];
+
 function footer(label) {
-  return `<footer><strong>The Citizen Audit</strong><span>${escapeHtml(label)}</span></footer>`;
+  return `<footer>
+    <div class="footer-brand">
+      <strong>The Citizen Audit</strong>
+      <span>${escapeHtml(label)}</span>
+    </div>
+    <div class="footer-contacts" aria-label="Public contact routes">
+      ${CONTACT_LINKS.map(
+        (link) => `<a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`
+      ).join("")}
+    </div>
+  </footer>`;
 }
 
 function absoluteUrl(pathname = "/") {

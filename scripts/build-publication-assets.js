@@ -33,7 +33,9 @@ const {
   buildManifest,
   buildPlatformStatus,
   buildTraceRecords,
-  buildPlatformMetrics
+  buildPlatformMetrics,
+  buildResearchStateOutput,
+  buildPublicationMetadata
 } = createDataOutputBuilders(publication, publicDir);
 
 function getPage(pageId) {
@@ -67,7 +69,9 @@ function build() {
     "/data/platform-metrics.json",
     "/data/platform-status.json",
     "/data/publication-manifest.json",
+    "/data/publication-metadata-v2.json",
     "/data/publication-search.json",
+    "/data/research-state.json",
     "/data/trace-records.json"
   ];
 
@@ -109,6 +113,8 @@ function build() {
     buildManifest,
     buildPlatformMetrics,
     buildPlatformStatus,
+    buildResearchStateOutput,
+    buildPublicationMetadata,
     searchIndex,
     traceRecords,
     manifestOutputs

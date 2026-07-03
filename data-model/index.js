@@ -8,6 +8,7 @@ const releases = require("./releases");
 const glossary = require("./glossary");
 const sectionContent = require("./section-content");
 const pagesRaw = require("./pages");
+const researchState = require("./research-state");
 
 function unique(values) {
   return [...new Set(values)];
@@ -305,6 +306,7 @@ module.exports = {
   pages,
   releases,
   glossary,
+  researchState,
   crossReferences,
   primaryAudit: auditsEnriched[0] || null,
   transparencyScorecard: glossary.transparencyScorecard || [],

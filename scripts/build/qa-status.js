@@ -9,6 +9,7 @@ function applyQaStatus({
 }) {
   const metricsPath = path.join(root, "public/data/platform-metrics.json");
   const statusPath = path.join(root, "public/data/platform-status.json");
+  const publicationMetadataPath = path.join(root, "public/data/publication-metadata-v2.json");
   const metrics = JSON.parse(fs.readFileSync(metricsPath, "utf8"));
   const platformStatus = JSON.parse(fs.readFileSync(statusPath, "utf8"));
 
@@ -23,6 +24,14 @@ function applyQaStatus({
   platformStatus.qaStatus = status;
   platformStatus.generatedAt = new Date().toISOString();
   fs.writeFileSync(statusPath, `${JSON.stringify(platformStatus, null, 2)}\n`, "utf8");
+
+  if (fs.existsSync(publicationMetadataPath)) {
+    const publicationMetadata = JSON.parse(fs.readFileSync(publicationMetadataPath, "utf8"));
+    publicationMetadata.qaStatus = metrics.qaStatus;
+    publicationMetadata.status = platformStatus;
+    publicationMetadata.generatedAt = new Date().toISOString();
+    fs.writeFileSync(publicationMetadataPath, `${JSON.stringify(publicationMetadata, null, 2)}\n`, "utf8");
+  }
 
   for (const [relativePath, marker] of [
     ["public/platform.html", "platform"],

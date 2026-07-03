@@ -1,18 +1,20 @@
 # QA Report
 
-## Release candidate
+## Publication state
 
 - Version: 1.0.0-rc1
-- Commit: d6d06132438a71e9243b8a3c406e385fc6622760
+- Commit: 8d32a226d1707f15fc69c31a18134b120198fc02
 - Branch: main
-- Build timestamp: 2026-07-02T13:55:43.115Z
+- Build timestamp: 2026-07-03T17:36:02.553Z
 - QA status: passed
 - Platform health: healthy
+- Publication recommendation: NOT READY
+- Publication reason: Author-controlled publication gate outstanding.
 
 ## Build verification
 
-- HTML pages generated: 153
-- Publication pages generated: 18
+- HTML pages generated: 159
+- Publication pages generated: 24
 - Section pages generated: 16
 - Claim pages generated: 18
 - Verified sources: 47
@@ -38,3 +40,4 @@
 - Release artifacts hashed with SHA-256
 - No pending source-verification records remain in the current publication data
 - No unexpected public HTML artifacts remain after removal of the internal test page
+- Readiness messaging is synchronized across metrics, status, roadmap, review, corrections, and transparency pages

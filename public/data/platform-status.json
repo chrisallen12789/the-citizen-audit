@@ -1,12 +1,25 @@
 {
-  "generatedAt": "2026-07-03T16:25:17.624Z",
+  "generatedAt": "2026-07-03T17:36:10.337Z",
   "status": "healthy",
   "qaStatus": "passed",
   "buildVersion": "1.0.0-rc1",
+  "publicationReadiness": {
+    "statement": "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements.",
+    "researchComplete": true,
+    "publicationComplete": false,
+    "sourceGate": "Source Gate Pending Archive Session",
+    "recommendation": "NOT READY",
+    "reason": "Author-controlled publication gate outstanding.",
+    "archiveSession": {
+      "requiredCaptures": 43,
+      "completedCaptures": 0,
+      "status": "pending"
+    }
+  },
   "traceabilityPercent": 100,
   "citationCoveragePercent": 100,
   "generatedPublicationPages": 24,
   "generatedSectionPages": 16,
   "generatedClaimPages": 18,
-  "manifestOutputs": 166
+  "manifestOutputs": 168
 }

@@ -5,7 +5,8 @@ const {
   renderPanelBlock,
   renderCardGrid,
   renderTocBlock,
-  renderSearchFilter
+  renderSearchFilter,
+  renderTable
 } = require("./shared");
 
 function createPageRenderer(publication) {
@@ -124,6 +125,8 @@ function createPageRenderer(publication) {
   }
 
   function renderPlatformMetricsBlock(metrics) {
+    const readiness = metrics.publicationReadiness;
+    const research = metrics.researchProgram;
     const cards = [
       { label: "Published audits", value: metrics.audits },
       { label: "Sections", value: metrics.sections },
@@ -143,7 +146,17 @@ function createPageRenderer(publication) {
       { label: "QA status", value: metrics.qaStatus.status, marker: "platform" },
       { label: "Build version", value: metrics.buildVersion },
       { label: "Platform health", value: metrics.platformHealth },
-      { label: "HTML pages", value: metrics.htmlPages }
+      { label: "HTML pages", value: metrics.htmlPages },
+      { label: "Research complete", value: readiness.researchComplete ? "Yes" : "No" },
+      { label: "Publication complete", value: readiness.publicationComplete ? "Yes" : "No" },
+      { label: "Source gate", value: readiness.sourceGate },
+      { label: "Publication recommendation", value: readiness.recommendation },
+      { label: "Research sources", value: research.counts.sources },
+      { label: "Evidence items", value: research.counts.evidenceItems },
+      { label: "Supported findings", value: research.counts.supportedFindings },
+      { label: "Research claims", value: research.counts.claimsTotal },
+      { label: "Graph nodes", value: research.counts.graphNodes },
+      { label: "Graph edges", value: research.counts.graphEdges }
     ];
     return `<section class="grid">${cards
       .map(
@@ -152,14 +165,30 @@ function createPageRenderer(publication) {
             card.marker ? ` data-qa-status-value="${card.marker}"` : ""
           }>${escapeHtml(String(card.value))}</h2></article>`
       )
-      .join("")}</section>`;
+      .join("")}</section>
+      <section class="panel stack">
+        <h2>Readiness statement</h2>
+        <p>${escapeHtml(readiness.statement)}</p>
+        <p><strong>Reason:</strong> ${escapeHtml(readiness.reason)}</p>
+        <p><strong>Archive session:</strong> ${escapeHtml(
+          `${readiness.archiveSession.completedCaptures}/${readiness.archiveSession.requiredCaptures} captures complete`
+        )}</p>
+        <ul>${research.authorControlledTasks
+          .map((task) => `<li>${escapeHtml(task)}</li>`)
+          .join("")}</ul>
+      </section>`;
   }
 
   function renderStatusSummaryBlock(metrics, status, manifest) {
+    const readiness = status.publicationReadiness;
     const cards = [
       { label: "Platform health", value: status.status },
       { label: "QA status", value: status.qaStatus, marker: "status" },
       { label: "Build version", value: status.buildVersion },
+      { label: "Research complete", value: readiness.researchComplete ? "Yes" : "No" },
+      { label: "Publication complete", value: readiness.publicationComplete ? "Yes" : "No" },
+      { label: "Source gate", value: readiness.sourceGate },
+      { label: "Publication recommendation", value: readiness.recommendation },
       { label: "Citation coverage", value: `${status.citationCoveragePercent}%` },
       { label: "Traceability coverage", value: `${status.traceabilityPercent}%` },
       { label: "Generated publication pages", value: metrics.generatedPublicationPages },
@@ -176,11 +205,40 @@ function createPageRenderer(publication) {
       )
       .join("")}</section>
       <section class="panel stack">
+        <h2>Publication status</h2>
+        <p>${escapeHtml(readiness.statement)}</p>
+        <p><strong>Publication Status:</strong> ${escapeHtml(
+          readiness.researchComplete ? "Research Complete" : "Research Incomplete"
+        )}</p>
+        <p><strong>Source Gate:</strong> ${escapeHtml(readiness.sourceGate)}</p>
+        <p><strong>Publication Recommendation:</strong> ${escapeHtml(readiness.recommendation)}</p>
+        <p><strong>Reason:</strong> ${escapeHtml(readiness.reason)}</p>
+      </section>
+      <section class="panel stack">
         <h2>Generated counts</h2>
         <p>The build currently publishes ${escapeHtml(String(metrics.generatedPublicationPages))} modeled publication pages, ${escapeHtml(
           String(metrics.generatedSectionPages)
         )} modeled numbered section pages, and ${escapeHtml(String(metrics.generatedClaimPages))} claim detail pages.</p>
         <p>View raw manifest and status data directly at <a href="/data/publication-manifest.json">/data/publication-manifest.json</a> and <a href="/data/platform-status.json">/data/platform-status.json</a>.</p>
+      </section>`;
+  }
+
+  function renderResearchHeatMapBlock(metrics) {
+    const research = metrics.researchProgram;
+    return `<section class="panel">
+        <h2>Research heat map</h2>
+        <p>The heat map below reflects the authoritative Phase H final recalculation and is presented separately from publication-page counts.</p>
+        ${renderTable({
+          headers: ["Section", "Grade", "Items", "Sources", "Cats/11", "Note"],
+          rows: research.heatMap.map((item) => [
+            `${item.section} - ${item.title}`,
+            item.grade,
+            String(item.items),
+            String(item.sources),
+            String(item.categoriesCovered),
+            item.note || ""
+          ])
+        })}
       </section>`;
   }
 
@@ -305,6 +363,8 @@ function createPageRenderer(publication) {
         return renderPlatformMetricsBlock(context.metrics);
       case "statusSummary":
         return renderStatusSummaryBlock(context.metrics, context.status, context.manifest);
+      case "researchHeatMap":
+        return renderResearchHeatMapBlock(context.metrics);
       case "searchInterface":
         return renderSearchInterface();
       case "explorerInterface":

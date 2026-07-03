@@ -41,6 +41,11 @@ function closeTrace() {
   document.querySelector("[data-trace-drawer]")?.classList.remove("open");
 }
 
+function closeMenu() {
+  document.body.classList.remove("nav-open");
+  document.querySelectorAll("[data-menu]").forEach(updateMenuState);
+}
+
 function updateMenuState(button) {
   button.setAttribute(
     "aria-expanded",
@@ -237,6 +242,11 @@ document.addEventListener("click", (event) => {
   if (menuButton) {
     document.body.classList.toggle("nav-open");
     updateMenuState(menuButton);
+    return;
+  }
+
+  if (!event.target.closest("[data-nav]") && !event.target.closest("[data-menu]")) {
+    closeMenu();
   }
 
   const traceButton = event.target.closest("[data-trace-title]");
@@ -252,6 +262,13 @@ document.addEventListener("click", (event) => {
 
   if (event.target.closest("[data-close-trace]")) {
     closeTrace();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeTrace();
+    closeMenu();
   }
 });
 

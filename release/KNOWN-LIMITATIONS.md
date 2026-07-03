@@ -1,6 +1,6 @@
 # Known Limitations
 
-This document describes boundaries and unresolved areas in the release-candidate publication. It does not defend conclusions; it records where evidence remains incomplete or where reasonable reviewers may disagree.
+This document describes boundaries and unresolved areas in the current publication state. It does not defend conclusions; it records where evidence remains incomplete or where reasonable reviewers may disagree.
 
 ## Methodology boundaries
 
@@ -13,6 +13,7 @@ This document describes boundaries and unresolved areas in the release-candidate
 - Some federal programs do not publish citizenship-status breakouts needed to isolate attributable dollars; those lanes remain routed to gap treatment instead of counted totals.
 - Several sections depend on agency reporting that is structurally incomplete for recipient-level or beneficiary-chain measurement.
 - Congressional Research Service pages can be hard to fetch automatically, so verification depends on official product metadata and linked CRS PDF artifacts where direct machine access is blocked.
+- The archive session remains author-controlled and incomplete, so publication readiness remains below launch recommendation even though the current claim set is frozen.
 
 ## Open uncertainties
 
@@ -25,6 +26,7 @@ This document describes boundaries and unresolved areas in the release-candidate
 - Additional primary records could reduce open-question exposure in domestic benefit sections.
 - Federal reconciliation across aid stages, recipient value, and domestic provider capture remains a high-value future transparency target.
 - Future releases may add broader archival coverage, richer export formats, and deeper reviewer tooling without changing locked v1.0 conclusions.
+- If the archive session is completed later, publication recommendation should advance automatically to READY WITH EXPLICIT LIMITATIONS without further engineering changes.
 
 ## Current release snapshot
 

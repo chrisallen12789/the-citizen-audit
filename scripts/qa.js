@@ -221,10 +221,12 @@ const requiredFiles = [
   "public/data/claim-database.json",
   "public/data/cross-reference-tables.json",
   "public/data/evidence-graph.json",
+  "public/data/publication-metadata-v2.json",
   "public/data/platform-metrics.json",
   "public/data/platform-status.json",
   "public/data/publication-manifest.json",
   "public/data/publication-search.json",
+  "public/data/research-state.json",
   "public/data/trace-records.json",
   "public/downloads/the-citizen-audit-v1.0.pdf",
   "public/robots.txt",
@@ -407,7 +409,9 @@ const evidenceGraph = readJson("public/data/evidence-graph.json");
 const manifest = readJson("public/data/publication-manifest.json");
 const metrics = readJson("public/data/platform-metrics.json");
 const publicationSearch = readJson("public/data/publication-search.json");
+const publicationMetadata = readJson("public/data/publication-metadata-v2.json");
 const platformStatus = readJson("public/data/platform-status.json");
+const researchState = readJson("public/data/research-state.json");
 const traceRecords = readJson("public/data/trace-records.json");
 const siteJs = fs.readFileSync(path.join(root, "public/site.js"), "utf8");
 const detailsRenderer = fs.readFileSync(path.join(root, "scripts/renderers/details.js"), "utf8");
@@ -686,6 +690,11 @@ if (fs.existsSync(buildScriptPath)) {
 if (!manifest.outputs.includes("/data/evidence-graph.json")) {
   problems.push("public/data/publication-manifest.json: missing evidence graph output");
 }
+for (const output of ["/data/publication-metadata-v2.json", "/data/research-state.json"]) {
+  if (!manifest.outputs.includes(output)) {
+    problems.push(`public/data/publication-manifest.json: missing output ${output}`);
+  }
+}
 for (const page of publication.pages) {
   if (!manifest.outputs.includes(page.url)) {
     problems.push(`public/data/publication-manifest.json: missing page output ${page.url}`);
@@ -693,6 +702,34 @@ for (const page of publication.pages) {
 }
 if (platformStatus.buildVersion !== metrics.buildVersion) {
   problems.push("public/data/platform-status.json: build version mismatch");
+}
+const requiredReadinessStatement =
+  "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements.";
+if (metrics.publicationReadiness?.statement !== requiredReadinessStatement) {
+  problems.push("public/data/platform-metrics.json: readiness statement mismatch");
+}
+if (platformStatus.publicationReadiness?.statement !== requiredReadinessStatement) {
+  problems.push("public/data/platform-status.json: readiness statement mismatch");
+}
+if (publicationMetadata.publicationReadiness?.statement !== requiredReadinessStatement) {
+  problems.push("public/data/publication-metadata-v2.json: readiness statement mismatch");
+}
+if (researchState.governingStatement !== requiredReadinessStatement) {
+  problems.push("public/data/research-state.json: governing statement mismatch");
+}
+if (publicationMetadata.version !== 2) {
+  problems.push("public/data/publication-metadata-v2.json: metadata version must be 2");
+}
+if (researchState.publicationMetadataVersion !== 2) {
+  problems.push("public/data/research-state.json: publication metadata version must be 2");
+}
+if (metrics.publicationReadiness?.recommendation === "NOT READY") {
+  if (!String(metrics.publicationReadiness?.sourceGate || "").includes("Archive")) {
+    problems.push("public/data/platform-metrics.json: NOT READY state must identify archive gate");
+  }
+  if (metrics.publicationReadiness?.reason !== "Author-controlled publication gate outstanding.") {
+    problems.push("public/data/platform-metrics.json: NOT READY reason mismatch");
+  }
 }
 
 if (metrics.audits !== publication.audits.length) {
@@ -764,6 +801,15 @@ if (platformStatus.generatedClaimPages !== metrics.generatedClaimPages) {
 if (platformStatus.qaStatus !== metrics.qaStatus.status) {
   problems.push("QA status is not propagated consistently");
 }
+if (platformStatus.publicationReadiness?.recommendation !== metrics.publicationReadiness?.recommendation) {
+  problems.push("public/data/platform-status.json: publication recommendation mismatch");
+}
+if (publicationMetadata.publicationReadiness?.recommendation !== metrics.publicationReadiness?.recommendation) {
+  problems.push("public/data/publication-metadata-v2.json: publication recommendation mismatch");
+}
+if (researchState.publicationReadiness?.recommendation !== metrics.publicationReadiness?.recommendation) {
+  problems.push("public/data/research-state.json: publication recommendation mismatch");
+}
 
 const platformHtml = fs.existsSync(path.join(root, "public/platform.html"))
   ? fs.readFileSync(path.join(root, "public/platform.html"), "utf8")
@@ -782,6 +828,18 @@ if (
   !statusHtml.includes(`data-qa-status-value="status">${platformStatus.qaStatus}</h2>`)
 ) {
   problems.push("status.html QA status display is inconsistent");
+}
+for (const [relative, html] of [
+  ["public/platform.html", platformHtml],
+  ["public/status.html", statusHtml],
+  ["public/roadmap.html", fs.existsSync(path.join(root, "public/roadmap.html")) ? fs.readFileSync(path.join(root, "public/roadmap.html"), "utf8") : ""],
+  ["public/review.html", fs.existsSync(path.join(root, "public/review.html")) ? fs.readFileSync(path.join(root, "public/review.html"), "utf8") : ""],
+  ["public/corrections.html", fs.existsSync(path.join(root, "public/corrections.html")) ? fs.readFileSync(path.join(root, "public/corrections.html"), "utf8") : ""],
+  ["public/transparency.html", fs.existsSync(path.join(root, "public/transparency.html")) ? fs.readFileSync(path.join(root, "public/transparency.html"), "utf8") : ""]
+]) {
+  if (html && !html.includes(requiredReadinessStatement)) {
+    problems.push(`${relative}: required readiness statement missing`);
+  }
 }
 
 if (problems.length) {

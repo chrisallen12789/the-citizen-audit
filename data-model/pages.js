@@ -23,6 +23,10 @@ const summaryClaimIds = ["C-001", "C-006", "C-009", "C-011", "C-015", "C-016", "
 const summarySourceIds = ["S-038", "S-055", "S-058", "S-064", "S-073", "S-074"];
 const summaryDecisionIds = ["D-001", "D-020", "D-021", "D-022", "D-023", "D-024", "D-025"];
 const summaryOpenQuestionIds = ["A-005", "A-017", "A-018", "A-028", "A-037"];
+const correctionMailto =
+  "mailto:corrections@thecitizenaudit.org?subject=Citizen%20Audit%20Correction%20Challenge";
+const reviewMailto =
+  "mailto:review@thecitizenaudit.org?subject=Citizen%20Audit%20Formal%20Review";
 
 const sectionTocEntries = sections
   .filter((section) => /^Section \d+$/.test(section.id) || /^Appendix /.test(section.id))
@@ -120,7 +124,7 @@ module.exports = [
     description: "Audit reader for The Citizen Audit with appendices and verification links.",
     eyebrow: "Audit Reader",
     lede:
-      "This release candidate publishes the locked Version 1.0 audit as a structured web reader while preserving the canonical PDF, numbered sections, source records, appendices, and traceability pathways used for independent review.",
+      "This web edition publishes the locked Version 1.0 audit as a structured web reader while preserving the canonical PDF, numbered sections, source records, appendices, and traceability pathways used for independent review.",
     footerLabel: "Audit reader",
     relatedAuditIds: ["AUDIT-001"],
     relatedSectionIds: [...numberedSectionIds, ...appendixSectionIds],
@@ -240,6 +244,15 @@ module.exports = [
     relatedOpenQuestionIds: [],
     contentBlocks: [
       {
+        type: "actions",
+        links: [
+          { label: "How to verify this work", href: "/verify.html", variant: "primary" },
+          { label: "Browse source library", href: "/sources.html" },
+          { label: "Review decision log", href: "/decision-log.html" },
+          { label: "Read the full audit", href: "/audit.html" }
+        ]
+      },
+      {
         type: "panel",
         heading: "Binding Rules",
         table: {
@@ -345,6 +358,24 @@ module.exports = [
         texts: [
           "Identify the exact claim, page, or section involved. Then show the source trail you believe is incomplete, inconsistent, or contradicted by a stronger public record.",
           "Opinion-only objections are not enough. The platform is built for evidence-backed review, including disagreement that narrows or overturns a published claim."
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Submit a correction or challenge",
+        paragraphs: [
+          `<p>Email <a href="${correctionMailto}">corrections@thecitizenaudit.org</a> with the subject line <strong>Citizen Audit Correction Challenge</strong>.</p>`
+        ],
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Claim or page being challenged",
+              "Source or archive link",
+              "Explanation of the proposed correction",
+              "Whether the issue is factual, methodological, citation-related, or wording-related"
+            ]
+          }
         ]
       }
     ]
@@ -484,10 +515,10 @@ module.exports = [
       {
         type: "actions",
         links: [
-          { label: "Read correction policy", href: "/corrections.html", variant: "primary" },
+          { label: "Browse claims", href: "/claims.html", variant: "primary" },
+          { label: "Browse sources", href: "/sources.html" },
           { label: "How to verify this work", href: "/verify.html" },
-          { label: "Browse claims", href: "/claims.html" },
-          { label: "Browse sources", href: "/sources.html" }
+          { label: "Read correction policy", href: "/corrections.html" }
         ]
       },
       {
@@ -527,11 +558,45 @@ module.exports = [
       },
       {
         type: "panel",
+        heading: "Practical review path",
+        contentBlocks: [
+          {
+            type: "list",
+            ordered: true,
+            items: [
+              "Open the relevant claim, section, or source page so the exact record under dispute is identified.",
+              "Compare the published wording against the linked source, decision, and open-question trail.",
+              "Write the narrowest correction the evidence supports, rather than a broader policy objection.",
+              "Check the corrections page to see how a valid challenge should appear in public release history."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
         heading: "What is not enough",
         stack: true,
         texts: [
           "Opinion-only objections, broad political disagreement, or unsupported claims that a figure feels too high or too low are not enough to correct the publication.",
           "The standard is evidence-first: if a challenge is sound, it should survive direct comparison against the linked claim, source, decision, and open-question trail."
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Submit a correction or challenge",
+        paragraphs: [
+          `<p>Email <a href="${correctionMailto}">corrections@thecitizenaudit.org</a> with the subject line <strong>Citizen Audit Correction Challenge</strong>.</p>`
+        ],
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Claim or page being challenged",
+              "Source or archive link",
+              "Explanation of the proposed correction",
+              "Whether the issue is factual, methodological, citation-related, or wording-related"
+            ]
+          }
         ]
       }
     ]
@@ -568,7 +633,8 @@ module.exports = [
         stack: true,
         texts: [
           "Start from a section page, open its verification panel, then follow each claim into its source, decision, and open-question records. The platform is designed so readers can move from published prose to supporting evidence without changing the Version 1.0 conclusions.",
-          "Where the public record is incomplete, the platform keeps that incompleteness visible instead of filling it with modeled certainty."
+          "Where the public record is incomplete, the platform keeps that incompleteness visible instead of filling it with modeled certainty.",
+          "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements."
         ]
       },
       {
@@ -602,6 +668,40 @@ module.exports = [
       },
       {
         type: "panel",
+        heading: "Formal review contact",
+        paragraphs: [
+          `<p>Email <a href="${reviewMailto}">review@thecitizenaudit.org</a> with the subject line <strong>Citizen Audit Formal Review</strong>.</p>`
+        ],
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Reviewer background",
+              "Scope of review",
+              "Section reviewed",
+              "Findings"
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Recommended reviewer sequence",
+        contentBlocks: [
+          {
+            type: "list",
+            ordered: true,
+            items: [
+              "Start with methodology so the basis rules are clear.",
+              "Move to the relevant section or claim page.",
+              "Check the linked source and decision records before judging the figure.",
+              "Use the challenge and corrections pages only after you can name the exact record that should change."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
         heading: "How corrections are tracked",
         stack: true,
         texts: [
@@ -619,7 +719,7 @@ module.exports = [
     description: "What is next for The Citizen Audit, including future volumes, revision practice, and verification priorities.",
     eyebrow: "What Is Next",
     lede:
-      "The current publication is a released Volume I evidence platform. Future work should expand the research program without quietly rewriting the locked v1.0 conclusions.",
+      "The current publication preserves a locked Volume I evidence platform. Future work should expand publication readiness and later editions without quietly rewriting the locked v1.0 conclusions.",
     footerLabel: "Research roadmap",
     relatedAuditIds: ["AUDIT-001"],
     relatedSectionIds: overviewSectionIds,
@@ -642,13 +742,13 @@ module.exports = [
         cards: [
           {
             eyebrow: "Current status",
-            title: "Volume I published",
-            body: "The current audit is available as a locked web reader, source library, decision log, and release package."
+            title: "Research complete",
+            body: "The current claim set is complete in the governing research state and remains available through the locked audit, source library, decision log, and release assets."
           },
           {
-            eyebrow: "Next release cycle",
-            title: "Volume II in progress",
-            body: "Future work should build on the structured publication system while preserving the frozen Version 1.0 conclusions."
+            eyebrow: "Publication state",
+            title: "Publication pending archive session",
+            body: "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements."
           },
           {
             eyebrow: "Revision rule",
@@ -664,9 +764,9 @@ module.exports = [
           {
             type: "list",
             items: [
-              "Deeper domestic program transparency where public citizenship-status breakouts are still missing.",
-              "Expanded archive coverage and stronger alternate-artifact preservation for unstable source systems.",
-              "Future volumes or companion audits that extend the method to adjacent public-spending questions without weakening evidence rules."
+              "Complete the author-controlled archive session so publication status can advance automatically without reopening claims.",
+              "Package later volumes or companion audits as separate editions rather than rewriting the locked Version 1.0 claim set.",
+              "Preserve open questions, release history, and challenge records as later publication layers accumulate."
             ]
           }
         ]
@@ -678,9 +778,9 @@ module.exports = [
           {
             type: "list",
             items: [
-              "Archive more official and alternate stable copies of key cited records.",
-              "Resolve open questions where additional public records can narrow a lane materially.",
-              "Continue strengthening claim-to-source and challenge-to-correction workflows."
+              "Execute the archive manifest session against the author-controlled capture list.",
+              "Keep the review and corrections workflow pointed at exact claims, pages, and source trails.",
+              "Publish later engineering refinements without changing the current claim set unless a later edition is issued."
             ]
           }
         ]
@@ -739,7 +839,8 @@ module.exports = [
         heading: "Release artifacts",
         paragraphs: [
           "<p><a class=\"tag\" href=\"/release-notes.html\">Release notes</a><a class=\"tag\" href=\"/version-history.html\">Version history</a><a class=\"tag\" href=\"/changelog.html\">Changelog</a></p>",
-          "<p>Version 1.0 is analytically frozen. Future evidence creates v1.1+ and does not silently rewrite locked conclusions.</p>"
+          "<p>Version 1.0 is analytically frozen. Future evidence creates v1.1+ and does not silently rewrite locked conclusions.</p>",
+          "<p>The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements.</p>"
         ]
       }
     ]
@@ -766,7 +867,8 @@ module.exports = [
         heading: "Correction Standard",
         texts: [
           "A correction request should identify the claim, section, table if applicable, Source ID, alleged error, replacement evidence, and proposed correction. If the challenge is correct, the correction should be logged publicly.",
-          "Readers who want to challenge a claim should use the evidence-first standard set out on the challenge page rather than submitting generalized disagreement."
+          "Readers who want to challenge a claim should use the evidence-first standard set out on the challenge page rather than submitting generalized disagreement.",
+          "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements."
         ]
       },
       {
@@ -774,6 +876,7 @@ module.exports = [
         links: [
           { label: "Challenge the audit", href: "/challenge.html", variant: "primary" },
           { label: "How to verify this work", href: "/verify.html" },
+          { label: "Browse claims", href: "/claims.html" },
           { label: "Release notes", href: "/release-notes.html" }
         ]
       },
@@ -782,6 +885,40 @@ module.exports = [
         heading: "Version Rule",
         texts: [
           "Version 1.0 is analytically frozen. Corrections or new evidence create a later version rather than silently rewriting the locked edition."
+        ]
+      },
+      {
+        type: "panel",
+        heading: "How a valid correction should move",
+        contentBlocks: [
+          {
+            type: "list",
+            ordered: true,
+            items: [
+              "A reviewer identifies a specific claim, section, table, or source record.",
+              "The reviewer provides replacement evidence strong enough to test the published record.",
+              "The challenge is checked against the current claim, source, decision, and open-question trail.",
+              "If sustained, the correction is logged publicly in release notes, version history, and changelog rather than hidden in place."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Submit a correction or challenge",
+        paragraphs: [
+          `<p>Email <a href="${correctionMailto}">corrections@thecitizenaudit.org</a> with the subject line <strong>Citizen Audit Correction Challenge</strong>.</p>`
+        ],
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Claim or page being challenged",
+              "Source or archive link",
+              "Explanation of the proposed correction",
+              "Whether the issue is factual, methodological, citation-related, or wording-related"
+            ]
+          }
         ]
       },
       {
@@ -820,6 +957,9 @@ module.exports = [
       {
         type: "panel",
         heading: "Known limitations",
+        texts: [
+          "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements."
+        ],
         contentBlocks: [
           {
             type: "list",
@@ -864,7 +1004,7 @@ module.exports = [
     description: "Release notes for The Citizen Audit platform.",
     eyebrow: "Release Notes",
     lede:
-      "Each release slice should explain what shipped, what remains, and what changed in the publication platform.",
+      "Each publication state should explain what shipped, what remains author-gated, and what changed in the platform around the locked edition.",
     footerLabel: "release notes - platform history",
     relatedAuditIds: ["AUDIT-001"],
     relatedSectionIds: [],
@@ -1058,7 +1198,7 @@ module.exports = [
     description: "Build status, generated output status, and locked-edition invariants for The Citizen Audit.",
     eyebrow: "Publication Status",
     lede:
-      "This page reports build health, generated output coverage, and the invariants the platform keeps around the locked Version 1.0 edition.",
+      "This page reports build health, publication readiness, generated output coverage, and the invariants the platform keeps around the locked Version 1.0 edition.",
     footerLabel: "Publication status",
     relatedAuditIds: ["AUDIT-001"],
     relatedSectionIds: allSectionIds,
@@ -1079,6 +1219,9 @@ module.exports = [
         type: "statusSummary"
       },
       {
+        type: "researchHeatMap"
+      },
+      {
         type: "panel",
         heading: "Locked-edition invariants",
         stack: true,
@@ -1097,7 +1240,7 @@ module.exports = [
     description: "Platform dashboard for publication status, traceability, QA, and build health in The Citizen Audit.",
     eyebrow: "Platform Dashboard",
     lede:
-      "The platform now treats structured data as the source of truth and generates the evidence surfaces around it.",
+      "The platform treats structured data as the source of truth and distinguishes completed research from author-gated publication readiness.",
     footerLabel: "Platform dashboard",
     relatedAuditIds: ["AUDIT-001"],
     relatedSectionIds: allSectionIds,
@@ -1118,11 +1261,15 @@ module.exports = [
         type: "platformMetrics"
       },
       {
+        type: "researchHeatMap"
+      },
+      {
         type: "panel",
         heading: "Dashboard notes",
         stack: true,
         texts: [
           "This dashboard is generated from the same structured records that drive claim pages, source pages, search, explorer data, graph outputs, and QA.",
+          "The research program is complete for the current claim set. Publication remains blocked only by author-controlled publication requirements.",
           "Adding a future audit should mean adding new audit, section, claim, source, decision, and open-question records, then running the build again without infrastructure changes."
         ]
       }

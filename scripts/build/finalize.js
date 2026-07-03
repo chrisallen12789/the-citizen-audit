@@ -20,6 +20,8 @@ function finalizeBuild({
   buildManifest,
   buildPlatformMetrics,
   buildPlatformStatus,
+  buildResearchStateOutput,
+  buildPublicationMetadata,
   searchIndex,
   traceRecords,
   manifestOutputs
@@ -45,6 +47,8 @@ function finalizeBuild({
 
   const platformMetrics = buildPlatformMetrics(searchIndex, traceRecords);
   const platformStatus = buildPlatformStatus(platformMetrics, manifest);
+  const researchState = buildResearchStateOutput();
+  const publicationMetadata = buildPublicationMetadata(platformMetrics, manifest, platformStatus);
 
   writeFile(
     publicDir,
@@ -62,8 +66,10 @@ function finalizeBuild({
   );
   writeFile(publicDir, "data/platform-status.json", `${JSON.stringify(platformStatus, null, 2)}\n`);
   writeFile(publicDir, "data/publication-manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFile(publicDir, "data/publication-metadata-v2.json", `${JSON.stringify(publicationMetadata, null, 2)}\n`);
   writeFile(publicDir, "data/platform-metrics.json", `${JSON.stringify(platformMetrics, null, 2)}\n`);
   writeFile(publicDir, "sitemap.xml", buildSitemap(manifest.outputs));
+  writeFile(publicDir, "data/research-state.json", `${JSON.stringify(researchState, null, 2)}\n`);
   writeFile(publicDir, "robots.txt", buildRobots());
 
   return {

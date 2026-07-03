@@ -33,6 +33,6 @@
 
 ## Current audit snapshot
 
-- HTML pages reviewed by QA: 153
-- Generated publication pages: 18
+- HTML pages reviewed by QA: 159
+- Generated publication pages: 24
 - Generated section pages: 16
