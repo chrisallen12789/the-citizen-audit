@@ -147,8 +147,8 @@ function createDetailRenderers(publication, relationships) {
     )}`;
 
     return layout({
-      title: `${source.id} | The Citizen Audit`,
-      description: `${source.id} source record for The Citizen Audit.`,
+      title: `${source.id} - ${source.title} | Source Record | The Citizen Audit`,
+      description: `${source.id} source record for ${source.title}, including citation metadata, archive status, and linked claims in The Citizen Audit.`,
       eyebrow: "Source Record",
       heading: `${source.id} - ${source.title}`,
       lede:
@@ -247,8 +247,8 @@ function createDetailRenderers(publication, relationships) {
     )}`;
 
     return layout({
-      title: `${item.id} | The Citizen Audit`,
-      description: `${item.id} open-question record for The Citizen Audit.`,
+      title: `${item.id} - ${item.title} | Open Question | The Citizen Audit`,
+      description: `${item.id} open-question record explaining the current evidence gap, why it matters, and what would resolve it in The Citizen Audit.`,
       eyebrow: "Open Question",
       heading: `${item.id} - ${item.title}`,
       lede: "Open questions are published to keep the limits of the current record explicit.",
@@ -342,8 +342,8 @@ function createDetailRenderers(publication, relationships) {
     )}`;
 
     return layout({
-      title: `${item.id} | The Citizen Audit`,
-      description: `${item.id} decision-log record for The Citizen Audit.`,
+      title: `${item.id} - ${item.title} | Decision Log | The Citizen Audit`,
+      description: `${item.id} decision-log record describing the published methodology rule, linked sections, and related evidence in The Citizen Audit.`,
       eyebrow: "Decision Record",
       heading: `${item.id} - ${item.title}`,
       lede: "Decision records keep the publication's numbered methodology rules visible and linkable.",
@@ -483,8 +483,8 @@ function createDetailRenderers(publication, relationships) {
     )}`;
 
     return layout({
-      title: `${claim.id} | The Citizen Audit`,
-      description: `${claim.id} claim record for The Citizen Audit.`,
+      title: `${claim.id} - ${claim.title} | Claim Record | The Citizen Audit`,
+      description: `${claim.id} claim record with linked sources, decisions, open questions, and section ownership in The Citizen Audit.`,
       eyebrow: "Claim Record",
       heading: `${claim.id} - ${claim.title}`,
       lede:

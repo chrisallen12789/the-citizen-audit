@@ -1,6 +1,7 @@
 const path = require("path");
+const fs = require("fs");
 const publication = require("./publication-data");
-const { writeFile } = require("./build/io");
+const { writeFile, copyFile } = require("./build/io");
 const { finalizeBuild } = require("./build/finalize");
 const { createRelationships } = require("./renderers/relationships");
 const { createPageRenderer } = require("./renderers/page-model");
@@ -10,6 +11,10 @@ const { createDataOutputBuilders } = require("./build/data-outputs");
 
 const root = path.resolve(__dirname, "..");
 const publicDir = path.join(root, "public");
+const canonicalPdfSource =
+  process.env.CANONICAL_PDF_PATH ||
+  path.join(process.env.USERPROFILE || "C:\\Users\\Chris", "Downloads", "The Citizen Audit - v1.0(1).pdf");
+const canonicalPdfPublicPath = "downloads/the-citizen-audit-v1.0.pdf";
 
 const relationships = createRelationships(publication);
 const { renderPublicationPage } = createPageRenderer(publication);
@@ -36,6 +41,12 @@ function getPage(pageId) {
 }
 
 function build() {
+  if (!fs.existsSync(canonicalPdfSource)) {
+    throw new Error(`Canonical PDF not found at ${canonicalPdfSource}`);
+  }
+
+  copyFile(publicDir, canonicalPdfPublicPath, canonicalPdfSource);
+
   const searchIndex = buildSearchIndex();
   const traceRecords = buildTraceRecords();
   const claimDatabase = buildClaimDatabase();
@@ -49,6 +60,7 @@ function build() {
     ...publication.claims.map((claim) => `/claims/${claim.id.toLowerCase()}.html`),
     ...publication.openQuestions.map((item) => `/open-questions/${item.slug}.html`),
     ...publication.decisions.map((decision) => `/decision-log/${decision.slug}.html`),
+    `/${canonicalPdfPublicPath}`,
     "/data/claim-database.json",
     "/data/cross-reference-tables.json",
     "/data/evidence-graph.json",

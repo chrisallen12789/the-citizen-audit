@@ -11,7 +11,14 @@ function writeFile(publicDir, relativePath, content) {
   fs.writeFileSync(target, content, "utf8");
 }
 
+function copyFile(publicDir, relativePath, sourcePath) {
+  const target = path.join(publicDir, relativePath);
+  ensureDir(path.dirname(target));
+  fs.copyFileSync(sourcePath, target);
+}
+
 module.exports = {
   ensureDir,
-  writeFile
+  writeFile,
+  copyFile
 };

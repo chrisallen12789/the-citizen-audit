@@ -9,7 +9,7 @@ function buildSitemap(outputs) {
 }
 
 function buildRobots() {
-  return `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl("/sitemap.xml")}\n`;
+  return `User-agent: *\nAllow: /\nDisallow: /data/\nDisallow: /release/\n\nSitemap: ${absoluteUrl("/sitemap.xml")}\n`;
 }
 
 function finalizeBuild({

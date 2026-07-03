@@ -1,16 +1,22 @@
 {
-  "generatedAt": "2026-07-02T13:55:43.115Z",
+  "generatedAt": "2026-07-03T16:25:17.107Z",
   "buildVersion": "1.0.0-rc1",
   "auditId": "AUDIT-001",
   "outputs": [
+    "/start-here.html",
     "/audit.html",
+    "/executive-summary.html",
     "/methodology.html",
+    "/verify.html",
     "/sources.html",
     "/open-questions.html",
     "/decision-log.html",
+    "/challenge.html",
     "/review.html",
+    "/roadmap.html",
     "/downloads.html",
     "/corrections.html",
+    "/transparency.html",
     "/release-notes.html",
     "/version-history.html",
     "/changelog.html",
@@ -154,6 +160,7 @@
     "/decision-log/d-024.html",
     "/decision-log/d-025.html",
     "/decision-log/d-026.html",
+    "/downloads/the-citizen-audit-v1.0.pdf",
     "/data/claim-database.json",
     "/data/cross-reference-tables.json",
     "/data/evidence-graph.json",
@@ -164,7 +171,7 @@
     "/data/trace-records.json"
   ],
   "counts": {
-    "generatedPublicationPages": 18,
+    "generatedPublicationPages": 24,
     "generatedSectionPages": 16,
     "generatedClaimPages": 18
   },

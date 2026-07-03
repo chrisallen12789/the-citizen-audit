@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-02T13:55:43.702Z",
+  "generatedAt": "2026-07-03T16:25:17.624Z",
   "status": "healthy",
   "qaStatus": "passed",
   "buildVersion": "1.0.0-rc1",
   "traceabilityPercent": 100,
   "citationCoveragePercent": 100,
-  "generatedPublicationPages": 18,
+  "generatedPublicationPages": 24,
   "generatedSectionPages": 16,
   "generatedClaimPages": 18,
-  "manifestOutputs": 159
+  "manifestOutputs": 166
 }

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T13:55:43.125Z",
+  "generatedAt": "2026-07-03T16:25:17.136Z",
   "buildVersion": "1.0.0-rc1",
   "audits": 1,
   "sections": 19,
-  "htmlPages": 153,
-  "generatedPublicationPages": 18,
+  "htmlPages": 159,
+  "generatedPublicationPages": 24,
   "generatedSectionPages": 16,
   "generatedClaimPages": 18,
   "sources": 47,
@@ -29,11 +29,11 @@
     "sections": 19,
     "claims": 18
   },
-  "searchRecords": 154,
+  "searchRecords": 160,
   "qaStatus": {
     "status": "passed",
-    "validatedAt": "2026-07-02T13:55:43.700Z",
-    "htmlPagesChecked": 153,
+    "validatedAt": "2026-07-03T16:25:17.621Z",
+    "htmlPagesChecked": 159,
     "checksEnforced": [
       "claim sources",
       "decision references",

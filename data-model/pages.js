@@ -17,6 +17,12 @@ const allClaimIds = claims.map((claim) => claim.id);
 const allSourceIds = sources.map((source) => source.id);
 const allDecisionIds = decisions.map((decision) => decision.id);
 const allOpenQuestionIds = openQuestions.map((question) => question.id);
+const overviewSectionIds = ["Section 1", "Section 2", "Section 14", "Section 15", "Section 16"];
+const overviewClaimIds = ["C-001", "C-002", "C-016", "C-017", "C-018"];
+const summaryClaimIds = ["C-001", "C-006", "C-009", "C-011", "C-015", "C-016", "C-017", "C-018"];
+const summarySourceIds = ["S-038", "S-055", "S-058", "S-064", "S-073", "S-074"];
+const summaryDecisionIds = ["D-001", "D-020", "D-021", "D-022", "D-023", "D-024", "D-025"];
+const summaryOpenQuestionIds = ["A-005", "A-017", "A-018", "A-028", "A-037"];
 
 const sectionTocEntries = sections
   .filter((section) => /^Section \d+$/.test(section.id) || /^Appendix /.test(section.id))
@@ -27,6 +33,85 @@ const sectionTocEntries = sections
   }));
 
 module.exports = [
+  {
+    id: "PAGE-START-HERE",
+    title: "Start Here | The Citizen Audit",
+    heading: "Start Here",
+    slug: "start-here",
+    description: "Orientation page for first-time readers of The Citizen Audit.",
+    eyebrow: "Reader Orientation",
+    lede:
+      "The Citizen Audit is built as a civic research publication: readers should be able to understand what is being claimed, how those claims are bounded, and how to verify them without relying on institutional trust alone.",
+    footerLabel: "Reader orientation",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: overviewSectionIds,
+    relatedClaimIds: overviewClaimIds,
+    relatedSourceIds: summarySourceIds,
+    relatedDecisionIds: ["D-001", "D-020", "D-021", "D-024"],
+    relatedOpenQuestionIds: ["A-005", "A-018", "A-028", "A-037"],
+    contentBlocks: [
+      {
+        type: "actions",
+        links: [
+          { label: "Read the executive summary", href: "/executive-summary.html", variant: "primary" },
+          { label: "How to verify this work", href: "/verify.html" },
+          { label: "Open the full audit", href: "/audit.html" },
+          { label: "Challenge the audit", href: "/challenge.html" }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "What The Citizen Audit is",
+        stack: true,
+        texts: [
+          "The Citizen Audit is a structured public publication focused on identifiable federal spending lanes, the records used to support them, and the point where public evidence stops.",
+          "It is not a commentary site, personality brand, or opinion feed. The project is organized around claims, sources, decisions, limitations, and revision history so readers can inspect the work directly."
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Why it exists",
+        stack: true,
+        texts: [
+          "Public disputes over government spending often collapse into slogans, selective screenshots, or blended numbers that hide incompatible accounting bases.",
+          "This project exists to separate what can be documented from what cannot yet be documented, publish the reasoning in public, and leave unresolved gaps visible instead of smoothing them over."
+        ]
+      },
+      {
+        type: "panel",
+        heading: "How this differs from opinion content",
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Claims are linked to Source IDs, Decision Log rules, Open Question records, and section context.",
+              "Unsupported estimates are excluded instead of inserted for rhetorical effect.",
+              "Known limitations remain visible even when they weaken a cleaner narrative.",
+              "Corrections are expected to identify a specific claim, page, section, and source trail."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Reading path for first-time visitors",
+        contentBlocks: [
+          {
+            type: "list",
+            ordered: true,
+            items: [
+              "Start here for orientation and publication scope.",
+              "Read the executive summary for the bounded findings and major takeaways.",
+              "Read the methodology before treating any topline as interchangeable with another basis.",
+              "Inspect the source library and decision log.",
+              "Read the full audit and appendices.",
+              "Use the challenge page if you believe a claim should be corrected."
+            ]
+          }
+        ]
+      }
+    ]
+  },
   {
     id: "PAGE-AUDIT",
     title: "Audit Reader",
@@ -57,6 +142,83 @@ module.exports = [
         type: "toc",
         heading: "Sections",
         entries: sectionTocEntries
+      }
+    ]
+  },
+  {
+    id: "PAGE-EXECUTIVE-SUMMARY",
+    title: "Executive Summary | The Citizen Audit",
+    heading: "Executive Summary",
+    slug: "executive-summary",
+    description: "Concise summary of the current published audit, its key findings, and what readers should review next.",
+    eyebrow: "Current Published Audit",
+    lede:
+      "Version 1.0 is presented as a bounded, evidence-first publication. Its strongest claim is not that every spending lane is fully measured, but that measurable lanes, unresolved limits, and non-additive bases are disclosed clearly enough for independent review.",
+    footerLabel: "Executive summary",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: overviewSectionIds,
+    relatedClaimIds: summaryClaimIds,
+    relatedSourceIds: summarySourceIds,
+    relatedDecisionIds: summaryDecisionIds,
+    relatedOpenQuestionIds: summaryOpenQuestionIds,
+    contentBlocks: [
+      {
+        type: "actions",
+        links: [
+          { label: "Read the full audit", href: "/audit.html", variant: "primary" },
+          { label: "Read methodology", href: "/methodology.html" },
+          { label: "Browse source library", href: "/sources.html" },
+          { label: "Review decision log", href: "/decision-log.html" }
+        ]
+      },
+      {
+        type: "cardGrid",
+        cards: [
+          {
+            eyebrow: "Key finding",
+            title: "The publication keeps measurable lanes on their native bases",
+            body: "Appropriations, obligations, drawdowns, outlays, and domestic program examples are not blended into a synthetic grand total."
+          },
+          {
+            eyebrow: "Key finding",
+            title: "The conservative total is a reproducible set of subtotals",
+            body: "The platform preserves lane discipline and makes the supporting blueprint visible instead of asking readers to trust a flattened topline."
+          },
+          {
+            eyebrow: "Key finding",
+            title: "Evidence gaps remain part of the publication",
+            body: "Open questions and non-measurable programs stay visible so the site does not claim certainty where public records do not support it."
+          },
+          {
+            eyebrow: "Key finding",
+            title: "The final argument is bounded by the same rules as the rest of the audit",
+            body: "The publication does not introduce a looser theory at the end than it uses in the numbered sections."
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Major takeaways",
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "This is a verification-oriented audit, not a persuasion-first narrative.",
+              "Some lanes are publishable now; others remain governed by missing federal breakout data.",
+              "Domestic examples such as ORR, emergency Medicaid, and SSI are treated differently because the public record supports them differently.",
+              "The gap register is itself a substantive transparency finding."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "What to review next",
+        stack: true,
+        texts: [
+          "If you are testing the work, read methodology before comparing numbers across sections. Then inspect the source records, decision rules, and open-question pages that sit behind the published claims.",
+          "If you want the full wording of the locked edition, continue into the audit reader or download the canonical PDF from the downloads page."
+        ]
       }
     ]
   },
@@ -108,6 +270,81 @@ module.exports = [
         heading: "Evidence Classes",
         texts: [
           "Evidence hierarchy: federal accounting records and statutes first; non-partisan analyses next; then peer-reviewed sources; then policy organizations; advocacy sources last."
+        ]
+      }
+    ]
+  },
+  {
+    id: "PAGE-VERIFY",
+    title: "How to Verify This Work | The Citizen Audit",
+    heading: "How To Verify This Work",
+    slug: "verify",
+    description: "Step-by-step verification guidance for readers reviewing The Citizen Audit.",
+    eyebrow: "Verification Path",
+    lede:
+      "Readers should not trust the audit blindly. The publication is designed so claims can be checked against methodology rules, source records, archived artifacts where available, and documented decision history.",
+    footerLabel: "Verification path",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: overviewSectionIds,
+    relatedClaimIds: overviewClaimIds,
+    relatedSourceIds: allSourceIds,
+    relatedDecisionIds: allDecisionIds,
+    relatedOpenQuestionIds: allOpenQuestionIds,
+    contentBlocks: [
+      {
+        type: "actions",
+        links: [
+          { label: "Read methodology", href: "/methodology.html", variant: "primary" },
+          { label: "Browse source library", href: "/sources.html" },
+          { label: "Open decision log", href: "/decision-log.html" },
+          { label: "Challenge the audit", href: "/challenge.html" }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Verification checklist",
+        contentBlocks: [
+          {
+            type: "list",
+            ordered: true,
+            items: [
+              "Read the methodology so basis discipline, exclusions, and evidence classes are clear before comparing numbers.",
+              "Open the source pages attached to the claim or section you want to test.",
+              "Review archive links or alternate official artifacts where available.",
+              "Check the decision log entries that explain inclusion, exclusion, or reconciliation choices.",
+              "Compare the published claim against the primary source record whenever the source library points to one.",
+              "If you believe a claim fails the record, submit a challenge with evidence rather than a generalized objection."
+            ]
+          }
+        ]
+      },
+      {
+        type: "cardGrid",
+        cards: [
+          {
+            eyebrow: "Method first",
+            title: "Do not compare unlike figures",
+            body: "A disagreement is not resolved until the figure type, accounting stage, and beneficiary basis match."
+          },
+          {
+            eyebrow: "Source trail",
+            title: "Start with primary records where possible",
+            body: "The source library labels official and secondary artifacts so readers can prioritize the strongest available evidence."
+          },
+          {
+            eyebrow: "Transparency rule",
+            title: "Treat open questions as part of the result",
+            body: "If a lane still depends on missing records, that limit belongs in the evaluation rather than outside it."
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "What a serious challenge should do",
+        stack: true,
+        texts: [
+          "Identify the exact claim, page, or section involved. Then show the source trail you believe is incomplete, inconsistent, or contradicted by a stronger public record.",
+          "Opinion-only objections are not enough. The platform is built for evidence-backed review, including disagreement that narrows or overturns a published claim."
         ]
       }
     ]
@@ -228,6 +465,78 @@ module.exports = [
     ]
   },
   {
+    id: "PAGE-CHALLENGE",
+    title: "Challenge The Audit | The Citizen Audit",
+    heading: "Challenge The Audit",
+    slug: "challenge",
+    description: "Evidence-first correction and challenge guidance for The Citizen Audit.",
+    eyebrow: "Challenge And Correction Standard",
+    lede:
+      "Readers are invited to challenge the publication, but challenges should identify the exact record at issue and provide evidence strong enough to test or correct the claim.",
+    footerLabel: "Challenge standard",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: allSectionIds,
+    relatedClaimIds: allClaimIds,
+    relatedSourceIds: allSourceIds,
+    relatedDecisionIds: allDecisionIds,
+    relatedOpenQuestionIds: allOpenQuestionIds,
+    contentBlocks: [
+      {
+        type: "actions",
+        links: [
+          { label: "Read correction policy", href: "/corrections.html", variant: "primary" },
+          { label: "How to verify this work", href: "/verify.html" },
+          { label: "Browse claims", href: "/claims.html" },
+          { label: "Browse sources", href: "/sources.html" }
+        ]
+      },
+      {
+        type: "cardGrid",
+        cards: [
+          {
+            eyebrow: "Identify the target",
+            title: "Name the specific claim, page, or section",
+            body: "A usable challenge should point to the exact place in the publication that you believe is wrong or incomplete."
+          },
+          {
+            eyebrow: "Bring the record",
+            title: "Supply a source or archived source",
+            body: "Link the primary record, official artifact, or archived copy you believe changes the published result."
+          },
+          {
+            eyebrow: "Explain the change",
+            title: "State the proposed correction clearly",
+            body: "Explain what should change and why the evidence supports that change better than the current record set."
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Minimum standard for a challenge",
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Identify the claim ID, section, page, or table you are challenging.",
+              "Cite the source record you believe is controlling, including an archive link if the live source is unstable.",
+              "Explain whether the issue is a factual error, a source mismatch, a basis mismatch, or an omission.",
+              "Describe the proposed correction precisely enough that it could be logged in public release history."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "What is not enough",
+        stack: true,
+        texts: [
+          "Opinion-only objections, broad political disagreement, or unsupported claims that a figure feels too high or too low are not enough to correct the publication.",
+          "The standard is evidence-first: if a challenge is sound, it should survive direct comparison against the linked claim, source, decision, and open-question trail."
+        ]
+      }
+    ]
+  },
+  {
     id: "PAGE-REVIEW",
     title: "Reviewer Portal | The Citizen Audit",
     heading: "Review And Verify The Audit",
@@ -247,9 +556,10 @@ module.exports = [
       {
         type: "actions",
         links: [
-          { label: "Open Explorer", href: "/explorer.html", variant: "primary" },
+          { label: "How to verify this work", href: "/verify.html", variant: "primary" },
+          { label: "Open Explorer", href: "/explorer.html" },
           { label: "Browse sources", href: "/sources.html" },
-          { label: "Corrections page", href: "/corrections.html" }
+          { label: "Challenge the audit", href: "/challenge.html" }
         ]
       },
       {
@@ -302,6 +612,82 @@ module.exports = [
     ]
   },
   {
+    id: "PAGE-ROADMAP",
+    title: "Research Roadmap | The Citizen Audit",
+    heading: "Research Roadmap",
+    slug: "roadmap",
+    description: "What is next for The Citizen Audit, including future volumes, revision practice, and verification priorities.",
+    eyebrow: "What Is Next",
+    lede:
+      "The current publication is a released Volume I evidence platform. Future work should expand the research program without quietly rewriting the locked v1.0 conclusions.",
+    footerLabel: "Research roadmap",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: overviewSectionIds,
+    relatedClaimIds: ["C-016", "C-017", "C-018"],
+    relatedSourceIds: ["S-038", "S-064", "S-073"],
+    relatedDecisionIds: ["D-020", "D-024", "D-025"],
+    relatedOpenQuestionIds: ["A-005", "A-018", "A-028", "A-037"],
+    contentBlocks: [
+      {
+        type: "actions",
+        links: [
+          { label: "View release notes", href: "/release-notes.html", variant: "primary" },
+          { label: "Review open questions", href: "/open-questions.html" },
+          { label: "Challenge the audit", href: "/challenge.html" },
+          { label: "Browse downloads", href: "/downloads.html" }
+        ]
+      },
+      {
+        type: "cardGrid",
+        cards: [
+          {
+            eyebrow: "Current status",
+            title: "Volume I published",
+            body: "The current audit is available as a locked web reader, source library, decision log, and release package."
+          },
+          {
+            eyebrow: "Next release cycle",
+            title: "Volume II in progress",
+            body: "Future work should build on the structured publication system while preserving the frozen Version 1.0 conclusions."
+          },
+          {
+            eyebrow: "Revision rule",
+            title: "Corrections create visible history",
+            body: "Challenges, metadata fixes, and future evidence should appear in release notes, version history, and public correction records."
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Future audit topics",
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Deeper domestic program transparency where public citizenship-status breakouts are still missing.",
+              "Expanded archive coverage and stronger alternate-artifact preservation for unstable source systems.",
+              "Future volumes or companion audits that extend the method to adjacent public-spending questions without weakening evidence rules."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Verification priorities",
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Archive more official and alternate stable copies of key cited records.",
+              "Resolve open questions where additional public records can narrow a lane materially.",
+              "Continue strengthening claim-to-source and challenge-to-correction workflows."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     id: "PAGE-DOWNLOADS",
     title: "Downloads | The Citizen Audit",
     heading: "Downloads",
@@ -322,8 +708,14 @@ module.exports = [
         type: "cardGrid",
         cards: [
           {
+            href: "/downloads/the-citizen-audit-v1.0.pdf",
             title: "Audit PDF",
-            body: "Canonical Version 1.0 publication. Repository asset still needs to be added."
+            body: "Download the canonical Version 1.0 audit PDF as the locked publication artifact."
+          },
+          {
+            href: "/start-here.html",
+            title: "Start Here",
+            body: "Orientation page for first-time readers before they enter the full audit or source system."
           },
           {
             href: "/sources.html",
@@ -373,7 +765,16 @@ module.exports = [
         type: "panel",
         heading: "Correction Standard",
         texts: [
-          "A correction request should identify the claim, section, table if applicable, Source ID, alleged error, replacement evidence, and proposed correction. If the challenge is correct, the correction should be logged publicly."
+          "A correction request should identify the claim, section, table if applicable, Source ID, alleged error, replacement evidence, and proposed correction. If the challenge is correct, the correction should be logged publicly.",
+          "Readers who want to challenge a claim should use the evidence-first standard set out on the challenge page rather than submitting generalized disagreement."
+        ]
+      },
+      {
+        type: "actions",
+        links: [
+          { label: "Challenge the audit", href: "/challenge.html", variant: "primary" },
+          { label: "How to verify this work", href: "/verify.html" },
+          { label: "Release notes", href: "/release-notes.html" }
         ]
       },
       {
@@ -387,6 +788,71 @@ module.exports = [
         type: "panel",
         heading: "Current Public Corrections",
         texts: ["No public corrections logged in this web release."]
+      }
+    ]
+  },
+  {
+    id: "PAGE-TRANSPARENCY",
+    title: "How We Could Be Wrong | The Citizen Audit",
+    heading: "How We Could Be Wrong",
+    slug: "transparency",
+    description: "Known limitations, open questions, evidence gaps, and future-correction pathways for The Citizen Audit.",
+    eyebrow: "Transparency And Limits",
+    lede:
+      "Credible research publishes not only what it thinks it knows, but also where the record is incomplete, where interpretations remain contestable, and where future corrections may change the platform around the locked edition.",
+    footerLabel: "Transparency and limits",
+    relatedAuditIds: ["AUDIT-001"],
+    relatedSectionIds: allSectionIds,
+    relatedClaimIds: ["C-009", "C-015", "C-016", "C-017", "C-018"],
+    relatedSourceIds: ["S-038", "S-064", "S-072", "S-073", "S-078"],
+    relatedDecisionIds: ["D-021", "D-024", "D-025"],
+    relatedOpenQuestionIds: allOpenQuestionIds,
+    contentBlocks: [
+      {
+        type: "actions",
+        links: [
+          { label: "Review open questions", href: "/open-questions.html", variant: "primary" },
+          { label: "Read known limitations", href: "/downloads.html" },
+          { label: "Challenge the audit", href: "/challenge.html" },
+          { label: "Read the full audit", href: "/audit.html" }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Known limitations",
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Some program lanes do not publish citizenship-status breakouts needed for a defensible count.",
+              "Several domestic examples are strongest on legal framework or program mechanics rather than recipient-attributable outlays.",
+              "Certain lanes remain measurable only on a blended federal-plus-state or point-in-time basis."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "Areas still under review",
+        contentBlocks: [
+          {
+            type: "list",
+            items: [
+              "Beneficiary-versus-provider capture in ORR-related spending.",
+              "Federal-only emergency Medicaid breakout clarity.",
+              "Programs listed in the gap register where public records still do not support a citizenship breakout."
+            ]
+          }
+        ]
+      },
+      {
+        type: "panel",
+        heading: "How future corrections should work",
+        stack: true,
+        texts: [
+          "Future corrections should tighten metadata, add records, or revise later editions in public. They should not hide the fact that the record was incomplete at the time of Version 1.0 publication.",
+          "Readers can review the open-question register, release notes, and changelog to see where the platform remains provisional even while the current edition stays locked."
+        ]
       }
     ]
   },

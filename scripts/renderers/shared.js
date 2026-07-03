@@ -17,6 +17,7 @@ function nav() {
     <a class="brand" href="/"><span class="seal">CA</span><span>The Citizen Audit</span></a>
     <button class="menu" data-menu aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav" data-nav aria-label="Primary">
+      <a href="/start-here.html">Start Here</a>
       <a href="/audit.html">Audit</a>
       <a href="/claims.html">Claims</a>
       <a href="/sources.html">Sources</a>
@@ -49,9 +50,11 @@ function layout({
   body,
   footerLabel,
   canonicalPath = "/",
-  ogType = "website"
+  ogType = "website",
+  socialImagePath = "/og-image.png"
 }) {
   const canonicalUrl = absoluteUrl(canonicalPath);
+  const socialImageUrl = absoluteUrl(socialImagePath);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -59,20 +62,31 @@ function layout({
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
+  <meta name="robots" content="index,follow">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:type" content="${escapeHtml(ogType)}">
   <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
+  <meta property="og:image" content="${escapeHtml(socialImageUrl)}">
   <meta property="og:site_name" content="The Citizen Audit">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">
+  <meta name="twitter:image" content="${escapeHtml(socialImageUrl)}">
   <meta name="theme-color" content="#f5f0e8">
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   ${nav()}
-  <main class="page">
+  <main id="main-content" class="page" tabindex="-1">
     <p class="eyebrow">${escapeHtml(eyebrow)}</p>
     <h1>${escapeHtml(heading)}</h1>
     <p class="lede">${escapeHtml(lede)}</p>

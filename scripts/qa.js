@@ -80,9 +80,17 @@ function collectIds(records, label, problems) {
 
 const htmlFiles = walk(publicDir);
 const problems = [];
+const seenTitles = new Map();
+const seenDescriptions = new Map();
 const strictMetaFiles = new Set([
   "public/index.html",
   "public/audit.html",
+  "public/start-here.html",
+  "public/executive-summary.html",
+  "public/verify.html",
+  "public/challenge.html",
+  "public/roadmap.html",
+  "public/transparency.html",
   "public/methodology.html",
   "public/claims.html",
   "public/sources.html",
@@ -121,8 +129,57 @@ for (const filePath of htmlFiles) {
   if (strictMetaFiles.has(relative) && !html.includes('property="og:description"')) {
     problems.push(`${relative}: missing Open Graph description`);
   }
+  if (strictMetaFiles.has(relative) && !html.includes('property="og:image"')) {
+    problems.push(`${relative}: missing Open Graph image`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('name="twitter:title"')) {
+    problems.push(`${relative}: missing Twitter title`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('name="twitter:description"')) {
+    problems.push(`${relative}: missing Twitter description`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('name="twitter:image"')) {
+    problems.push(`${relative}: missing Twitter image`);
+  }
   if (strictMetaFiles.has(relative) && !html.includes('rel="icon"')) {
     problems.push(`${relative}: missing favicon link`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('rel="apple-touch-icon"')) {
+    problems.push(`${relative}: missing apple-touch-icon link`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('rel="manifest"')) {
+    problems.push(`${relative}: missing site manifest link`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('href="#main-content"')) {
+    problems.push(`${relative}: missing skip-to-content link`);
+  }
+  if (strictMetaFiles.has(relative) && !html.includes('<main id="main-content"')) {
+    problems.push(`${relative}: missing main landmark target for skip link`);
+  }
+  for (const match of html.matchAll(/<img\b[^>]*>/g)) {
+    if (!/\salt=/.test(match[0])) {
+      problems.push(`${relative}: image missing alt attribute`);
+    }
+  }
+  const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+  if (titleMatch) {
+    const title = titleMatch[1].trim();
+    if (seenTitles.has(title)) {
+      problems.push(`${relative}: duplicate title also used by ${seenTitles.get(title)}`);
+    } else {
+      seenTitles.set(title, relative);
+    }
+  }
+  const descriptionMatch = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
+  if (descriptionMatch) {
+    const description = descriptionMatch[1].trim();
+    if (seenDescriptions.has(description)) {
+      problems.push(
+        `${relative}: duplicate meta description also used by ${seenDescriptions.get(description)}`
+      );
+    } else {
+      seenDescriptions.set(description, relative);
+    }
   }
   if (
     html.includes("Ãƒâ€š") ||
@@ -169,9 +226,18 @@ const requiredFiles = [
   "public/data/publication-manifest.json",
   "public/data/publication-search.json",
   "public/data/trace-records.json",
+  "public/downloads/the-citizen-audit-v1.0.pdf",
   "public/robots.txt",
   "public/sitemap.xml",
-  "public/favicon.svg"
+  "public/favicon.svg",
+  "public/favicon.ico",
+  "public/favicon-16x16.png",
+  "public/favicon-32x32.png",
+  "public/apple-touch-icon.png",
+  "public/android-chrome-192x192.png",
+  "public/android-chrome-512x512.png",
+  "public/og-image.png",
+  "public/site.webmanifest"
 ];
 
 for (const relative of requiredFiles) {
@@ -188,7 +254,13 @@ const decisionIds = collectIds(publication.decisions, "decisions", problems);
 const openQuestionIds = collectIds(publication.openQuestions, "open questions", problems);
 const pageIds = collectIds(publication.pages, "pages", problems);
 const expectedModeledPageSlugs = new Set([
+  "start-here",
   "audit",
+  "executive-summary",
+  "verify",
+  "challenge",
+  "roadmap",
+  "transparency",
   "methodology",
   "sources",
   "open-questions",
