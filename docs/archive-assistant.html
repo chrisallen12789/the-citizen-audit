@@ -1,0 +1,2477 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Archive Assistant | The Citizen Audit</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f0e8;
+      --panel: #fffdf8;
+      --line: #d9cebc;
+      --text: #1f1a16;
+      --muted: #6c6258;
+      --accent: #284b63;
+      --accent-soft: #dbe8ef;
+      --good: #2f6b3c;
+      --warn: #8a5a00;
+      --bad: #8b2d2d;
+      --shadow: 0 10px 30px rgba(31, 26, 22, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font: 16px/1.5 Georgia, "Times New Roman", serif;
+      background: linear-gradient(180deg, #f7f2ea 0%, #efe6d8 100%);
+      color: var(--text);
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.1;
+    }
+
+    .hero ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 18px;
+    }
+
+    .button,
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      background: white;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .button.primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .button.active-filter {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .button[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .button[hidden] {
+      display: none;
+    }
+
+    .file-label input {
+      display: none;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      padding: 16px;
+    }
+
+    .stat h2 {
+      margin: 0;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .stat p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel h2,
+    .panel h3 {
+      margin-top: 0;
+    }
+
+    .manifest-list {
+      max-height: 70vh;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .record-card {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      padding: 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      scroll-margin-top: 24px;
+    }
+
+    .record-card.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .record-card.complete {
+      border-color: #b6d4bc;
+    }
+
+    .record-card h3 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+    }
+
+    .record-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      border: 1px solid var(--line);
+      background: #faf7f0;
+    }
+
+    .pill.good {
+      border-color: #b6d4bc;
+      color: var(--good);
+      background: #eef7f0;
+    }
+
+    .pill.warn {
+      border-color: #e2c48e;
+      color: var(--warn);
+      background: #fff7e8;
+    }
+
+    .pill.bad {
+      border-color: #e0b1b1;
+      color: var(--bad);
+      background: #fff0f0;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      font-weight: 700;
+    }
+
+    .field small {
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      color: var(--text);
+    }
+
+    .field textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .readonly {
+      background: #f6f2ea;
+    }
+
+    .link-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .issues {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--bad);
+    }
+
+    .warnings {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--warn);
+    }
+
+    .subtle {
+      color: var(--muted);
+    }
+
+    .empty {
+      padding: 24px;
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .export-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #faf7f0;
+      border: 1px solid var(--line);
+    }
+
+    .status-banner {
+      margin-bottom: 20px;
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: #fffaf2;
+      box-shadow: var(--shadow);
+    }
+
+    .status-banner strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.1rem;
+    }
+
+    .status-banner.good {
+      border-color: #b6d4bc;
+      background: #eef7f0;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .manifest-list {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        padding: 16px;
+      }
+
+      .editor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p>Manual Archive Workflow</p>
+      <h1>Archive Assistant</h1>
+      <p>This utility keeps the archive methodology strict while reducing repetitive operator work. It does not fabricate captures, hashes, or statuses, and it only exports what you explicitly confirm.</p>
+      <ul>
+        <li>Load `archive_manifest.csv`.</li>
+        <li>Open the canonical URL and the Save Page Now URL for each record.</li>
+        <li>If Save Page Now fails, use <strong>Check Existing Archives</strong> to look for older Wayback snapshots.</li>
+        <li>Paste the returned archive URL or select a real snapshot. If Capture Date is blank, the assistant uses the Wayback timestamp first and only falls back to today when needed.</li>
+        <li>If the archive attempt fails, document the failure without marking the row complete, then retry later.</li>
+        <li>Finish verifier names, review the auto-status, and export the updated manifest regularly.</li>
+      </ul>
+      <div class="toolbar">
+        <label class="file-label">
+          <input id="manifestFile" type="file" accept=".csv,text/csv">
+          Load `archive_manifest.csv`
+        </label>
+        <button id="loadBundled" class="button" type="button">Load bundled manifest</button>
+        <button id="reloadManifest" class="button" type="button" disabled>Reload manifest</button>
+        <button id="exportCsv" class="button primary" type="button" disabled>Export completed CSV</button>
+        <button id="exportAuditLog" class="button" type="button" disabled>Export Audit Log</button>
+        <button id="validateAll" class="button" type="button" disabled>Validate all rows</button>
+        <span id="fileName" class="subtle">No manifest loaded.</span>
+        <span id="draftStatus" class="subtle">Local auto-save inactive.</span>
+      </div>
+      <p class="subtle">Shortcuts: `Ctrl+Enter` save and jump to the next pending row, `Ctrl+S` export CSV, `Ctrl+R` reload the bundled manifest, `Ctrl+H` retry hash generation.</p>
+    </section>
+
+    <section class="stats" aria-label="Progress">
+      <article class="panel stat">
+        <h2 id="statTotal">0</h2>
+        <p>Total rows</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statArchived">0</h2>
+        <p>Archived</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statFailed">0</h2>
+        <p>Failed attempts</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statRemaining">0</h2>
+        <p>Pending</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statCompletionPercent">0%</h2>
+        <p>Completion %</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statValidationIssues">0</h2>
+        <p>Validation issues</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statDuplicateCanonical">0</h2>
+        <p>Duplicate canonical URLs</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statDuplicateArchive">0</h2>
+        <p>Duplicate archive URLs</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statDuplicateSha">0</h2>
+        <p>Duplicate SHA-256 hashes</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statAverageSeconds">0s</h2>
+        <p>Average seconds per handled row</p>
+      </article>
+      <article class="panel stat">
+        <h2 id="statEta">0s</h2>
+        <p>Estimated remaining time</p>
+      </article>
+    </section>
+
+    <section id="finalReview" class="status-banner good" hidden>
+      <strong>Source Gate Complete</strong>
+      <p id="finalReviewText">Every row validates. Export the final manifest, then proceed to Claude recalculation.</p>
+      <div class="link-actions">
+        <button id="exportFinalManifest" class="button primary" type="button">Export Final Manifest</button>
+      </div>
+      <div class="export-box">
+        <h3>Final check</h3>
+        <ul id="finalCheckIssues" class="issues"></ul>
+        <ul id="finalCheckWarnings" class="warnings"></ul>
+        <p id="manifestHashLabel" class="subtle" hidden>Source Gate Manifest SHA-256:</p>
+        <pre id="manifestHashValue" class="subtle" hidden style="white-space: pre-wrap;"></pre>
+      </div>
+    </section>
+
+    <section class="layout">
+      <section class="panel">
+        <h2>Manifest rows</h2>
+        <p class="subtle">Select a row to edit it. Completion only reflects required fields being present and valid; it does not alter status values on its own.</p>
+        <div class="filter-row" aria-label="Row filters">
+          <button id="filterPending" class="button active-filter" type="button">Show Pending</button>
+          <button id="filterRetry" class="button" type="button">Show Retry</button>
+          <button id="filterComplete" class="button" type="button">Show Complete</button>
+          <button id="filterAll" class="button" type="button">Show All</button>
+        </div>
+        <div id="manifestList" class="manifest-list">
+          <div class="empty">Load `archive_manifest.csv` to begin.</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Row editor</h2>
+        <div id="editorEmpty" class="empty">Select a manifest row after loading the CSV.</div>
+        <form id="editorForm" hidden>
+          <div class="editor-grid">
+            <div class="field">
+              <label for="sourceId">Source ID</label>
+              <input id="sourceId" class="readonly" type="text" readonly>
+            </div>
+
+            <div class="field">
+              <label for="archiveStatus">Archive status</label>
+              <input id="archiveStatus" list="archiveStatusOptions" type="text" placeholder="Example: PENDING or CAPTURED">
+              <datalist id="archiveStatusOptions">
+                <option value="PENDING"></option>
+                <option value="CAPTURED"></option>
+                <option value="FAILED"></option>
+                <option value="BLOCKED"></option>
+                <option value="ATTEMPT_FAILED"></option>
+              </datalist>
+              <small>Manual field. This assistant will never set it for you.</small>
+            </div>
+
+            <div class="field full">
+              <label for="canonicalUrl">Canonical URL</label>
+              <input id="canonicalUrl" class="readonly" type="text" readonly>
+              <div class="link-actions">
+                <button id="openCanonical" class="button" type="button">Open canonical URL</button>
+                <button id="checkExistingArchives" class="button" type="button">Check Existing Archives</button>
+              </div>
+            </div>
+
+            <div class="field full">
+              <label for="savePageUrl">Save Page Now URL</label>
+              <input id="savePageUrl" class="readonly" type="text" readonly>
+              <div class="link-actions">
+                <button id="openSavePage" class="button" type="button">Open Save Page Now URL</button>
+                <button id="retryArchiveAttempt" class="button" type="button">Retry</button>
+              </div>
+            </div>
+
+            <div class="field full">
+              <label for="captureUrl">Returned archive URL</label>
+              <textarea id="captureUrl" placeholder="Paste the returned archive URL here"></textarea>
+            </div>
+
+            <div class="field">
+              <label for="captureDate">Capture date</label>
+              <input id="captureDate" type="date">
+            </div>
+
+            <div class="field">
+              <label for="sha256">SHA-256 hash</label>
+              <input id="sha256" type="text" placeholder="64-character SHA-256 hash">
+              <div class="link-actions">
+                <button id="generateSha256" class="button" type="button" hidden>Retry Hash</button>
+              </div>
+              <small>Only hashes the resource behind the pasted archive URL. It never invents a value.</small>
+            </div>
+
+            <div class="field">
+              <label for="verifiedBy">Verified by</label>
+              <input id="verifiedBy" type="text" placeholder="Verifier name or initials">
+              <small>Required before a PENDING row can auto-promote to ARCHIVED.</small>
+            </div>
+
+            <div class="field">
+              <label for="completionToggle">Completion check</label>
+              <input id="completionToggle" class="readonly" type="text" readonly>
+            </div>
+          </div>
+
+          <div class="link-actions" style="margin-top: 16px;">
+            <button id="saveNextPending" class="button primary" type="button">Save &amp; Next Pending</button>
+            <button id="refreshCurrentRow" class="button" type="button">Refresh Current Row</button>
+          </div>
+
+          <div class="export-box">
+            <h3>Existing archives</h3>
+            <p id="archiveLookupStatus" class="subtle">Use Check Existing Archives to look for older Wayback snapshots of the canonical URL.</p>
+            <div id="archiveLookupHelperBox" hidden>
+              <p class="subtle">If direct Wayback lookup is blocked in this browser context, start the optional local helper and try again:</p>
+              <pre id="archiveLookupHelperCommand" class="subtle" style="white-space: pre-wrap;"></pre>
+            </div>
+            <div id="archiveSnapshotList" class="subtle"></div>
+          </div>
+
+          <div class="export-box">
+            <h3>Failed archive attempt</h3>
+            <p class="subtle">Use this only when Save Page Now fails. It records the failed attempt for auditability, but it does not satisfy the Source Gate.</p>
+            <div class="editor-grid">
+              <div class="field">
+                <label for="failureDate">Failure date</label>
+                <input id="failureDate" class="readonly" type="text" readonly>
+              </div>
+
+              <div class="field">
+                <label for="attemptedUrl">Attempted URL</label>
+                <input id="attemptedUrl" class="readonly" type="text" readonly>
+              </div>
+
+              <div class="field full">
+                <label for="failureReason">Failure reason</label>
+                <textarea id="failureReason" placeholder='Example: "Sorry - Job failed."'></textarea>
+              </div>
+            </div>
+            <div class="link-actions">
+              <button id="markArchiveFailed" class="button" type="button">Archive Attempt Failed</button>
+            </div>
+          </div>
+
+          <div class="export-box">
+            <h3>Hash helper</h3>
+            <p id="hashStatus" class="subtle">Paste an archive URL, then use Generate SHA-256.</p>
+            <div id="hashHelperBox" hidden>
+              <p class="subtle">If browser fetch security blocks direct hashing, start the optional local helper or run the one-off command below and paste the returned hash:</p>
+              <pre id="hashHelperServerCommand" class="subtle" style="white-space: pre-wrap;"></pre>
+              <pre id="hashHelperCommand" class="subtle" style="white-space: pre-wrap;"></pre>
+            </div>
+          </div>
+
+          <div class="export-box">
+            <h3>Validation</h3>
+            <ul id="rowIssues" class="issues"></ul>
+            <ul id="rowWarnings" class="warnings"></ul>
+            <p id="rowValid" class="subtle"></p>
+          </div>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "citizen-audit-archive-assistant-state-v3";
+    const REQUIRED_HEADERS = ["source_id", "canonical_url", "save_page_now_url"];
+    const REQUIRED_COMPLETION_FIELDS = [
+      "archive_status",
+      "capture_url_recorded",
+      "archive_date",
+      "sha256_recorded",
+      "verified_by"
+    ];
+    const AUTO_HASH_DELAY_MS = 450;
+
+    function createDefaultMeta() {
+      return {
+        dirtySinceExport: false,
+        sessionStartedAt: Date.now(),
+        nextExportReminderAt: 5,
+        lastExportAt: null,
+        restoredFromLocal: false,
+        auditLog: [],
+        manifestHash: ""
+      };
+    }
+
+    const state = {
+      fileName: "archive_manifest.csv",
+      loadMode: "none",
+      headers: [],
+      records: [],
+      activeIndex: -1,
+      filterMode: "pending",
+      snapshotLookup: {},
+      meta: createDefaultMeta(),
+      transient: {
+        hashRetryByKey: {},
+        hashInFlightKey: "",
+        autoHashTimeoutId: null,
+        lastClipboardCheckAt: 0,
+        verificationByKey: {},
+        verificationInFlightKey: "",
+        completionJustHandledByKey: {}
+      }
+    };
+
+    const elements = {
+      manifestFile: document.getElementById("manifestFile"),
+      loadBundled: document.getElementById("loadBundled"),
+      reloadManifest: document.getElementById("reloadManifest"),
+      exportCsv: document.getElementById("exportCsv"),
+      exportAuditLog: document.getElementById("exportAuditLog"),
+      validateAll: document.getElementById("validateAll"),
+      fileName: document.getElementById("fileName"),
+      draftStatus: document.getElementById("draftStatus"),
+      statTotal: document.getElementById("statTotal"),
+      statArchived: document.getElementById("statArchived"),
+      statFailed: document.getElementById("statFailed"),
+      statRemaining: document.getElementById("statRemaining"),
+      statCompletionPercent: document.getElementById("statCompletionPercent"),
+      statValidationIssues: document.getElementById("statValidationIssues"),
+      statDuplicateCanonical: document.getElementById("statDuplicateCanonical"),
+      statDuplicateArchive: document.getElementById("statDuplicateArchive"),
+      statDuplicateSha: document.getElementById("statDuplicateSha"),
+      statAverageSeconds: document.getElementById("statAverageSeconds"),
+      statEta: document.getElementById("statEta"),
+      finalReview: document.getElementById("finalReview"),
+      finalReviewText: document.getElementById("finalReviewText"),
+      exportFinalManifest: document.getElementById("exportFinalManifest"),
+      finalCheckIssues: document.getElementById("finalCheckIssues"),
+      finalCheckWarnings: document.getElementById("finalCheckWarnings"),
+      manifestHashLabel: document.getElementById("manifestHashLabel"),
+      manifestHashValue: document.getElementById("manifestHashValue"),
+      filterPending: document.getElementById("filterPending"),
+      filterRetry: document.getElementById("filterRetry"),
+      filterComplete: document.getElementById("filterComplete"),
+      filterAll: document.getElementById("filterAll"),
+      manifestList: document.getElementById("manifestList"),
+      editorEmpty: document.getElementById("editorEmpty"),
+      editorForm: document.getElementById("editorForm"),
+      sourceId: document.getElementById("sourceId"),
+      archiveStatus: document.getElementById("archiveStatus"),
+      canonicalUrl: document.getElementById("canonicalUrl"),
+      savePageUrl: document.getElementById("savePageUrl"),
+      captureUrl: document.getElementById("captureUrl"),
+      captureDate: document.getElementById("captureDate"),
+      sha256: document.getElementById("sha256"),
+      generateSha256: document.getElementById("generateSha256"),
+      checkExistingArchives: document.getElementById("checkExistingArchives"),
+      retryArchiveAttempt: document.getElementById("retryArchiveAttempt"),
+      markArchiveFailed: document.getElementById("markArchiveFailed"),
+      verifiedBy: document.getElementById("verifiedBy"),
+      completionToggle: document.getElementById("completionToggle"),
+      saveNextPending: document.getElementById("saveNextPending"),
+      refreshCurrentRow: document.getElementById("refreshCurrentRow"),
+      failureDate: document.getElementById("failureDate"),
+      attemptedUrl: document.getElementById("attemptedUrl"),
+      failureReason: document.getElementById("failureReason"),
+      archiveLookupStatus: document.getElementById("archiveLookupStatus"),
+      archiveLookupHelperBox: document.getElementById("archiveLookupHelperBox"),
+      archiveLookupHelperCommand: document.getElementById("archiveLookupHelperCommand"),
+      archiveSnapshotList: document.getElementById("archiveSnapshotList"),
+      hashStatus: document.getElementById("hashStatus"),
+      hashHelperBox: document.getElementById("hashHelperBox"),
+      hashHelperServerCommand: document.getElementById("hashHelperServerCommand"),
+      hashHelperCommand: document.getElementById("hashHelperCommand"),
+      rowIssues: document.getElementById("rowIssues"),
+      rowWarnings: document.getElementById("rowWarnings"),
+      rowValid: document.getElementById("rowValid"),
+      openCanonical: document.getElementById("openCanonical"),
+      openSavePage: document.getElementById("openSavePage")
+    };
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [];
+      let value = "";
+      let inQuotes = false;
+
+      for (let index = 0; index < text.length; index += 1) {
+        const char = text[index];
+        const next = text[index + 1];
+
+        if (char === "\"") {
+          if (inQuotes && next === "\"") {
+            value += "\"";
+            index += 1;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+
+        if (char === "," && !inQuotes) {
+          row.push(value);
+          value = "";
+          continue;
+        }
+
+        if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") {
+            index += 1;
+          }
+          row.push(value);
+          value = "";
+          if (row.some((cell) => cell !== "")) {
+            rows.push(row);
+          }
+          row = [];
+          continue;
+        }
+
+        value += char;
+      }
+
+      row.push(value);
+      if (row.some((cell) => cell !== "")) {
+        rows.push(row);
+      }
+
+      return rows;
+    }
+
+    function encodeCsv(rows) {
+      return rows
+        .map((row) =>
+          row
+            .map((value) => {
+              const text = String(value ?? "");
+              if (/[",\n\r]/.test(text)) {
+                return `"${text.replace(/"/g, "\"\"")}"`;
+              }
+              return text;
+            })
+            .join(",")
+        )
+        .join("\r\n");
+    }
+
+    function normalizeHeaders(headers) {
+      return headers.map((header) => String(header || "").trim());
+    }
+
+    function ensureHeaders(headers) {
+      const missing = REQUIRED_HEADERS.filter((header) => !headers.includes(header));
+      if (missing.length) {
+        throw new Error("Missing required headers: " + missing.join(", "));
+      }
+
+      for (const header of [
+        "capture_url_recorded",
+        "archive_date",
+        "sha256_recorded",
+        "archive_status",
+        "archive_failure_date",
+        "archive_failure_reason",
+        "archive_attempted_url",
+        "verified_by"
+      ]) {
+        if (!headers.includes(header)) {
+          headers.push(header);
+        }
+      }
+
+      return headers;
+    }
+
+    function rowToRecord(headers, row) {
+      const record = {};
+      headers.forEach((header, index) => {
+        record[header] = (row[index] || "").trim();
+      });
+      return record;
+    }
+
+    function recordToRow(headers, record) {
+      return headers.map((header) => record[header] || "");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function isLikelyUrl(value) {
+      return /^https?:\/\//i.test(String(value || "").trim());
+    }
+
+    function looksLikeWaybackCaptureUrl(value) {
+      return /^https?:\/\/web\.archive\.org\/web\/\d{8,14}\//i.test(String(value || "").trim());
+    }
+
+    function isSha256(value) {
+      return /^[a-f0-9]{64}$/i.test(String(value || "").trim());
+    }
+
+    function currentLocalDate() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function currentIsoDateTime() {
+      return new Date().toISOString();
+    }
+
+    function normalizeComparableUrl(value) {
+      return String(value || "")
+        .trim()
+        .replace(/^https?:\/\//i, "")
+        .replace(/\/+$/, "")
+        .toLowerCase();
+    }
+
+    function extractWaybackOriginalUrl(value) {
+      const match = String(value || "").trim().match(/^https?:\/\/web\.archive\.org\/web\/\d{8,14}(?:[a-z_]+)?\/(https?:\/\/.+)$/i);
+      return match ? decodeURIComponent(match[1]) : "";
+    }
+
+    function extractWaybackCaptureDate(value) {
+      const match = String(value || "").trim().match(/^https?:\/\/web\.archive\.org\/web\/(\d{8,14})(?:[a-z_]+)?\//i);
+      if (!match) {
+        return "";
+      }
+      const timestamp = match[1];
+      return `${timestamp.slice(0, 4)}-${timestamp.slice(4, 6)}-${timestamp.slice(6, 8)}`;
+    }
+
+    function toHex(buffer) {
+      return Array.from(new Uint8Array(buffer))
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function formatDuration(totalSeconds) {
+      const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+      if (seconds < 60) {
+        return `${seconds}s`;
+      }
+      if (seconds < 3600) {
+        const minutes = Math.floor(seconds / 60);
+        const remainder = seconds % 60;
+        return `${minutes}m ${remainder}s`;
+      }
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${hours}h ${minutes}m`;
+    }
+
+    function buildHashHelperCommand(url) {
+      const escaped = String(url || "").replace(/"/g, '\\"');
+      return `node scripts/archive-sha256.js "${escaped}"`;
+    }
+
+    function buildHelperServerCommand() {
+      return "node scripts/archive-assistant-helper.js";
+    }
+
+    function getLookupKey(record = state.records[state.activeIndex]) {
+      if (!record) return "";
+      return record.source_id || record.canonical_url || String(state.activeIndex);
+    }
+
+    function parseManifestText(text) {
+      const rows = parseCsv(text);
+      if (!rows.length) {
+        throw new Error("The selected CSV file is empty.");
+      }
+
+      const headers = ensureHeaders(normalizeHeaders(rows[0]));
+      const records = rows.slice(1).map((row) => rowToRecord(headers, row));
+      return { headers, records };
+    }
+
+    function buildDuplicateMap(fieldName, validator = (value) => Boolean(value), normalizer = (value) => String(value || "").trim()) {
+      const buckets = new Map();
+      state.records.forEach((record) => {
+        const rawValue = record[fieldName];
+        if (!validator(rawValue)) {
+          return;
+        }
+        const key = normalizer(rawValue);
+        if (!key) {
+          return;
+        }
+        if (!buckets.has(key)) {
+          buckets.set(key, []);
+        }
+        buckets.get(key).push(record.source_id || "(unknown)");
+      });
+
+      const duplicates = new Map();
+      for (const [key, sourceIds] of buckets.entries()) {
+        if (sourceIds.length > 1) {
+          duplicates.set(key, sourceIds);
+        }
+      }
+      return duplicates;
+    }
+
+    function getDuplicateMaps() {
+      return {
+        canonical: buildDuplicateMap("canonical_url", isLikelyUrl, normalizeComparableUrl),
+        archive: buildDuplicateMap("capture_url_recorded", isLikelyUrl, normalizeComparableUrl),
+        sha: buildDuplicateMap("sha256_recorded", isSha256, (value) => String(value || "").trim().toLowerCase())
+      };
+    }
+
+    function getRowWarnings(record) {
+      const warnings = [];
+      const duplicates = getDuplicateMaps();
+      const canonicalKey = normalizeComparableUrl(record.canonical_url);
+      const archiveKey = normalizeComparableUrl(record.capture_url_recorded);
+      const shaKey = String(record.sha256_recorded || "").trim().toLowerCase();
+
+      if (canonicalKey && duplicates.canonical.has(canonicalKey)) {
+        warnings.push(`Duplicate canonical URL also used by: ${duplicates.canonical.get(canonicalKey).filter((sourceId) => sourceId !== record.source_id).join(", ")}`);
+      }
+
+      if (archiveKey && duplicates.archive.has(archiveKey)) {
+        warnings.push(`Duplicate archive URL also used by: ${duplicates.archive.get(archiveKey).filter((sourceId) => sourceId !== record.source_id).join(", ")}`);
+      }
+
+      if (shaKey && duplicates.sha.has(shaKey)) {
+        warnings.push(`Duplicate SHA-256 also used by: ${duplicates.sha.get(shaKey).filter((sourceId) => sourceId !== record.source_id).join(", ")}`);
+      }
+
+      const verification = getArchiveVerification(record);
+      if (verification && verification.status === "failed") {
+        warnings.push(`Archive URL verification failed: ${verification.message}`);
+      } else if (verification && verification.status === "unverified") {
+        warnings.push("Archive URL not verified by tool yet.");
+      }
+
+      return warnings;
+    }
+
+    function getValidationIssueCount() {
+      return state.records.reduce((total, record) => total + getRowIssues(record).length, 0);
+    }
+
+    function getRowIssues(record) {
+      const issues = [];
+
+      if (!record.source_id) {
+        issues.push("Missing source ID.");
+      }
+
+      if (!isLikelyUrl(record.canonical_url)) {
+        issues.push("Canonical URL is missing or invalid.");
+      }
+
+      if (!isLikelyUrl(record.save_page_now_url)) {
+        issues.push("Save Page Now URL is missing or invalid.");
+      }
+
+      if (!record.archive_status) {
+        issues.push("Archive Status is required.");
+      }
+
+      if (!record.capture_url_recorded) {
+        issues.push("Returned archive URL is required.");
+      } else if (!isLikelyUrl(record.capture_url_recorded)) {
+        issues.push("Returned archive URL must look like an http or https URL.");
+      }
+
+      if (!record.archive_date) {
+        issues.push("Capture Date is required.");
+      }
+
+      if (!record.sha256_recorded) {
+        issues.push("SHA-256 hash is required.");
+      } else if (!isSha256(record.sha256_recorded)) {
+        issues.push("SHA-256 hash must be a 64-character hexadecimal value.");
+      }
+
+      if (!String(record.verified_by || "").trim()) {
+        issues.push("Verified By is required.");
+      }
+
+      return issues;
+    }
+
+    function hasArchiveCompletionFields(record) {
+      return (
+        isLikelyUrl(record.capture_url_recorded) &&
+        Boolean(record.archive_date) &&
+        isSha256(record.sha256_recorded) &&
+        Boolean(String(record.verified_by || "").trim())
+      );
+    }
+
+    function applyAutoArchiveStatus(record) {
+      if (!record || record.archive_status !== "PENDING") {
+        return false;
+      }
+
+      if (hasArchiveCompletionFields(record)) {
+        record.archive_status = "ARCHIVED";
+        return true;
+      }
+      return false;
+    }
+
+    function isRowComplete(record) {
+      return REQUIRED_COMPLETION_FIELDS.every((field) => String(record[field] || "").trim()) && getRowIssues(record).length === 0;
+    }
+
+    function isFailedStatus(record) {
+      const status = String(record.archive_status || "").trim().toUpperCase();
+      return status === "ATTEMPT_FAILED" || status === "FAILED";
+    }
+
+    function getArchivedCount() {
+      return state.records.filter((record) => isRowComplete(record) && !isFailedStatus(record)).length;
+    }
+
+    function getFailedCount() {
+      return state.records.filter(isFailedStatus).length;
+    }
+
+    function getRemainingCount() {
+      return Math.max(0, state.records.length - getArchivedCount() - getFailedCount());
+    }
+
+    function getPendingCount() {
+      return state.records.filter((record) => !isRowComplete(record) && !isFailedStatus(record)).length;
+    }
+
+    function getCompletionPercent() {
+      if (!state.records.length) {
+        return 0;
+      }
+      return Math.round(((getArchivedCount() + getFailedCount()) / state.records.length) * 100);
+    }
+
+    function getAverageSecondsPerHandledRow() {
+      const handled = getArchivedCount() + getFailedCount();
+      if (!handled) {
+        return 0;
+      }
+      return (Date.now() - state.meta.sessionStartedAt) / 1000 / handled;
+    }
+
+    function getActiveRecord() {
+      return state.records[state.activeIndex] || null;
+    }
+
+    function getActiveRecordIndex() {
+      return state.activeIndex;
+    }
+
+    function addAuditLog(action, record, oldValue = "", newValue = "", extra = {}) {
+      state.meta.auditLog.push({
+        timestamp: currentIsoDateTime(),
+        sourceId: record ? record.source_id || "" : "",
+        action,
+        oldValue,
+        newValue,
+        ...extra
+      });
+    }
+
+    function setArchiveVerification(record, payload) {
+      const key = getLookupKey(record);
+      if (!key) return;
+      state.transient.verificationByKey[key] = payload;
+    }
+
+    function clearArchiveVerification(record) {
+      const key = getLookupKey(record);
+      if (!key) return;
+      delete state.transient.verificationByKey[key];
+    }
+
+    function getArchiveVerification(record) {
+      return state.transient.verificationByKey[getLookupKey(record)] || null;
+    }
+
+    function clearCompletionHandled(record) {
+      const key = getLookupKey(record);
+      if (!key) return;
+      delete state.transient.completionJustHandledByKey[key];
+    }
+
+    function setHashRetry(record, message) {
+      const key = getLookupKey(record);
+      if (!key) return;
+      state.transient.hashRetryByKey[key] = { message };
+    }
+
+    function clearHashRetry(record) {
+      const key = getLookupKey(record);
+      if (!key) return;
+      delete state.transient.hashRetryByKey[key];
+    }
+
+    function getHashRetry(record) {
+      return state.transient.hashRetryByKey[getLookupKey(record)] || null;
+    }
+
+    function persistLocalState() {
+      try {
+        const payload = {
+          fileName: state.fileName,
+          loadMode: state.loadMode,
+          headers: state.headers,
+          records: state.records,
+          activeIndex: state.activeIndex,
+          filterMode: state.filterMode,
+          meta: state.meta,
+          savedAt: currentIsoDateTime()
+        };
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (error) {
+        elements.draftStatus.textContent = `Local auto-save failed: ${error.message}`;
+      }
+    }
+
+    function restoreLocalState() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          return false;
+        }
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed.headers) || !Array.isArray(parsed.records)) {
+          return false;
+        }
+
+        state.fileName = parsed.fileName || "archive_manifest.csv";
+        state.loadMode = parsed.loadMode || "none";
+        state.filterMode = parsed.filterMode || "pending";
+        state.headers = ensureHeaders(normalizeHeaders(parsed.headers));
+        state.records = parsed.records.map((record) => rowToRecord(state.headers, state.headers.map((header) => record[header] || "")));
+        state.activeIndex = Math.min(Math.max(Number(parsed.activeIndex) || 0, 0), Math.max(0, state.records.length - 1));
+        state.snapshotLookup = {};
+        state.meta = {
+          ...createDefaultMeta(),
+          ...(parsed.meta || {}),
+          restoredFromLocal: true
+        };
+        state.transient.verificationByKey = {};
+        state.transient.verificationInFlightKey = "";
+        state.transient.completionJustHandledByKey = {};
+        return state.records.length > 0;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function updateStats() {
+      const total = state.records.length;
+      const archived = getArchivedCount();
+      const failed = getFailedCount();
+      const pending = getPendingCount();
+      const completionPercent = getCompletionPercent();
+      const averageSeconds = getAverageSecondsPerHandledRow();
+      const estimatedRemaining = averageSeconds * pending;
+      const duplicates = getDuplicateMaps();
+
+      elements.statTotal.textContent = total;
+      elements.statArchived.textContent = archived;
+      elements.statFailed.textContent = failed;
+      elements.statRemaining.textContent = pending;
+      elements.statCompletionPercent.textContent = `${completionPercent}%`;
+      elements.statValidationIssues.textContent = getValidationIssueCount();
+      elements.statDuplicateCanonical.textContent = duplicates.canonical.size;
+      elements.statDuplicateArchive.textContent = duplicates.archive.size;
+      elements.statDuplicateSha.textContent = duplicates.sha.size;
+      elements.statAverageSeconds.textContent = formatDuration(averageSeconds);
+      elements.statEta.textContent = formatDuration(estimatedRemaining);
+    }
+
+    function updateDraftStatus() {
+      if (!state.records.length) {
+        elements.draftStatus.textContent = "Local auto-save inactive.";
+        return;
+      }
+
+      if (state.meta.dirtySinceExport) {
+        elements.draftStatus.textContent = state.meta.restoredFromLocal
+          ? "Restored local draft. Auto-save is active, but export is still required."
+          : "Auto-save is active. Export CSV before closing the session.";
+        return;
+      }
+
+      elements.draftStatus.textContent = state.meta.lastExportAt
+        ? "Local draft matches the latest export."
+        : "Auto-save is active. No export has been created yet.";
+    }
+
+    function renderFinalReview() {
+      const ready = state.records.length > 0 && state.records.every((record) => isRowComplete(record));
+      elements.finalReview.hidden = !ready;
+      elements.manifestHashLabel.hidden = !state.meta.manifestHash;
+      elements.manifestHashValue.hidden = !state.meta.manifestHash;
+      elements.manifestHashValue.textContent = state.meta.manifestHash || "";
+      if (!ready) {
+        elements.finalCheckIssues.innerHTML = "";
+        elements.finalCheckWarnings.innerHTML = "";
+        return;
+      }
+      if (ready) {
+        const duplicates = getDuplicateMaps();
+        const warningParts = [];
+        if (duplicates.canonical.size) warningParts.push(`${duplicates.canonical.size} duplicate canonical URL group(s)`);
+        if (duplicates.archive.size) warningParts.push(`${duplicates.archive.size} duplicate archive URL group(s)`);
+        if (duplicates.sha.size) warningParts.push(`${duplicates.sha.size} duplicate SHA-256 group(s)`);
+        elements.finalReviewText.textContent = warningParts.length
+          ? `Every row validates. Review the remaining warnings, then run Final Export. ${warningParts.join("; ")}.`
+          : "Every row validates. Run Final Export when you are ready. Ready for Claude Recalculation.";
+      }
+    }
+
+    function renderManifestList() {
+      if (!state.records.length) {
+        elements.manifestList.innerHTML = '<div class="empty">Load `archive_manifest.csv` to begin.</div>';
+        return;
+      }
+
+      const indexes = state.records.map((_, index) => index);
+      const orderedIndexes = indexes.sort((left, right) => {
+        const leftRecord = state.records[left];
+        const rightRecord = state.records[right];
+        const rank = (record) => (isRowComplete(record) ? 2 : isFailedStatus(record) ? 1 : 0);
+        return rank(leftRecord) - rank(rightRecord) || left - right;
+      });
+
+      const filteredIndexes = orderedIndexes.filter((index) => {
+        const record = state.records[index];
+        if (state.filterMode === "pending") return !isRowComplete(record) && !isFailedStatus(record);
+        if (state.filterMode === "retry") return isFailedStatus(record);
+        if (state.filterMode === "complete") return isRowComplete(record);
+        return true;
+      });
+
+      if (!filteredIndexes.length) {
+        elements.manifestList.innerHTML = '<div class="empty">No rows match the current queue filter.</div>';
+        return;
+      }
+
+      elements.manifestList.innerHTML = filteredIndexes
+        .map((index) => {
+          const record = state.records[index];
+          const issues = getRowIssues(record);
+          const warnings = getRowWarnings(record);
+          const complete = isRowComplete(record);
+          const failed = isFailedStatus(record);
+          const activeClass = state.activeIndex === index ? " active" : "";
+          const completeClass = complete ? " complete" : "";
+          const archiveStatus = record.archive_status || "No manual status yet";
+          const pillClass = complete ? "good" : failed ? "warn" : "bad";
+          const pillText = complete
+            ? "Archived and valid"
+            : failed
+            ? "Failed attempt recorded"
+            : "Needs attention";
+
+          return `
+            <button class="record-card${activeClass}${completeClass}" type="button" data-record-index="${index}">
+              <h3>${escapeHtml(record.source_id || "Unnamed row")}</h3>
+              <p>${escapeHtml(archiveStatus)}</p>
+              <div class="pill-row">
+                <span class="pill ${pillClass}">${pillText}</span>
+                <span class="pill">${escapeHtml(record.archive_date || "No date")}</span>
+                ${issues.length ? `<span class="pill">${issues.length} issue(s)</span>` : ""}
+                ${warnings.length ? `<span class="pill warn">${warnings.length} warning(s)</span>` : ""}
+              </div>
+            </button>
+          `;
+        })
+        .join("");
+    }
+
+    function renderSnapshotLookup(record) {
+      const lookup = state.snapshotLookup[getLookupKey(record)];
+      if (!lookup) {
+        elements.archiveLookupStatus.textContent = "Use Check Existing Archives to look for older Wayback snapshots of the canonical URL.";
+        elements.archiveLookupHelperBox.hidden = true;
+        elements.archiveLookupHelperCommand.textContent = "";
+        elements.archiveSnapshotList.innerHTML = "";
+        return;
+      }
+
+      elements.archiveLookupStatus.textContent = lookup.statusText;
+      elements.archiveLookupHelperBox.hidden = !lookup.showHelper;
+      elements.archiveLookupHelperCommand.textContent = lookup.showHelper ? buildHelperServerCommand() : "";
+
+      if (!lookup.snapshots || !lookup.snapshots.length) {
+        elements.archiveSnapshotList.innerHTML = "";
+        return;
+      }
+
+      elements.archiveSnapshotList.innerHTML = lookup.snapshots
+        .map((snapshot, index) => `
+          <article class="export-box" style="margin-top: 12px;">
+            <h4 style="margin: 0 0 8px;">Snapshot ${index + 1}</h4>
+            <p class="subtle" style="margin: 0 0 8px;">Timestamp: ${escapeHtml(snapshot.timestamp)} | Capture date: ${escapeHtml(snapshot.captureDate)}</p>
+            <p class="subtle" style="margin: 0 0 10px; word-break: break-word;">${escapeHtml(snapshot.archiveUrl)}</p>
+            <div class="link-actions">
+              <a class="button" href="${escapeHtml(snapshot.archiveUrl)}" target="_blank" rel="noopener">Open snapshot</a>
+              <button class="button" type="button" data-use-snapshot="${index}">Use this snapshot</button>
+            </div>
+          </article>
+        `)
+        .join("");
+    }
+
+    function renderEditor() {
+      const record = getActiveRecord();
+      if (!record) {
+        elements.editorEmpty.hidden = false;
+        elements.editorForm.hidden = true;
+        return;
+      }
+
+      const issues = getRowIssues(record);
+      const warnings = getRowWarnings(record);
+      const complete = isRowComplete(record);
+      const hashRetry = getHashRetry(record);
+      const hashInFlight = state.transient.hashInFlightKey === getLookupKey(record);
+
+      elements.editorEmpty.hidden = true;
+      elements.editorForm.hidden = false;
+
+      elements.sourceId.value = record.source_id || "";
+      elements.archiveStatus.value = record.archive_status || "";
+      elements.canonicalUrl.value = record.canonical_url || "";
+      elements.savePageUrl.value = record.save_page_now_url || "";
+      elements.captureUrl.value = record.capture_url_recorded || "";
+      elements.captureDate.value = record.archive_date || "";
+      elements.sha256.value = record.sha256_recorded || "";
+      elements.verifiedBy.value = record.verified_by || "";
+      elements.failureDate.value = record.archive_failure_date || "";
+      elements.attemptedUrl.value = record.archive_attempted_url || "";
+      elements.failureReason.value = record.archive_failure_reason || "";
+      elements.completionToggle.value = complete
+        ? "All required archive fields are present."
+        : isFailedStatus(record)
+        ? "Failed attempt recorded. This row still needs a real archive URL, capture date, SHA-256, and verifier."
+        : `${issues.length} action item(s) remaining.`;
+
+      renderSnapshotLookup(record);
+
+      elements.generateSha256.hidden = !hashRetry;
+      elements.generateSha256.disabled = false;
+      elements.hashHelperBox.hidden = !hashRetry;
+      elements.hashHelperServerCommand.textContent = hashRetry ? buildHelperServerCommand() : "";
+      elements.hashHelperCommand.textContent = hashRetry ? buildHashHelperCommand(record.capture_url_recorded) : "";
+
+      if (hashInFlight) {
+        elements.hashStatus.textContent = "Generating SHA-256 from the archived resource...";
+      } else if (hashRetry) {
+        elements.hashStatus.textContent = hashRetry.message;
+      } else if (record.capture_url_recorded && isSha256(record.sha256_recorded)) {
+        elements.hashStatus.textContent = "SHA-256 is present for this row.";
+      } else if (record.capture_url_recorded) {
+        elements.hashStatus.textContent = "Archive URL recorded. Automatic SHA-256 generation will run when possible.";
+      } else {
+        elements.hashStatus.textContent = "Paste an archive URL, select a snapshot, or use Refresh Current Row to detect a copied Wayback URL.";
+      }
+
+      elements.rowIssues.innerHTML = issues.length
+        ? issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")
+        : "";
+      elements.rowWarnings.innerHTML = warnings.length
+        ? warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join("")
+        : "";
+      elements.rowValid.textContent = "";
+    }
+
+    function refreshAll({ persist = false, triggerReminder = false } = {}) {
+      updateStats();
+      renderManifestList();
+      renderEditor();
+      renderFinalReview();
+      updateDraftStatus();
+
+      const loaded = state.records.length > 0;
+      const canReload = loaded && state.loadMode === "bundled";
+      elements.reloadManifest.disabled = !canReload;
+      elements.exportCsv.disabled = !loaded;
+      elements.exportAuditLog.disabled = !loaded;
+      elements.validateAll.disabled = !loaded;
+      elements.exportFinalManifest.disabled = !loaded;
+      elements.fileName.textContent = loaded
+        ? `${state.fileName} loaded.${canReload ? " Reload merges in bundled manifest changes without discarding your local draft." : ""}`
+        : "No manifest loaded.";
+
+      [
+        ["pending", elements.filterPending],
+        ["retry", elements.filterRetry],
+        ["complete", elements.filterComplete],
+        ["all", elements.filterAll]
+      ].forEach(([mode, element]) => {
+        element.classList.toggle("active-filter", state.filterMode === mode);
+      });
+
+      if (persist) {
+        persistLocalState();
+      }
+
+      if (triggerReminder) {
+        maybeShowExportReminder();
+      }
+    }
+
+    function scrollActiveRowIntoView() {
+      if (typeof document.querySelector !== "function") {
+        return;
+      }
+      const node = document.querySelector(`[data-record-index="${state.activeIndex}"]`);
+      if (node && typeof node.scrollIntoView === "function") {
+        node.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+    }
+
+    function focusNextRequiredField() {
+      const record = getActiveRecord();
+      if (!record) return;
+
+      if (!record.capture_url_recorded) {
+        elements.captureUrl.focus();
+        return;
+      }
+
+      if (!record.archive_date) {
+        elements.captureDate.focus();
+        return;
+      }
+
+      if (!record.sha256_recorded) {
+        if (!elements.generateSha256.hidden) {
+          elements.generateSha256.focus();
+        }
+        return;
+      }
+
+      if (!String(record.verified_by || "").trim()) {
+        focusVerifiedBy();
+        return;
+      }
+    }
+
+    function setActiveRecord(index, { focusNext = false } = {}) {
+      state.activeIndex = index;
+      refreshAll({ persist: true });
+      scrollActiveRowIntoView();
+      if (focusNext) {
+        focusNextRequiredField();
+      }
+    }
+
+    function markDirty() {
+      state.meta.dirtySinceExport = true;
+      state.meta.restoredFromLocal = false;
+    }
+
+    function updateActiveRecord(field, value, { persist = true, triggerReminder = true } = {}) {
+      const record = getActiveRecord();
+      if (!record) return;
+      const beforeComplete = isRowComplete(record);
+      const previousValue = String(record[field] || "");
+      if (previousValue === value) {
+        return;
+      }
+      record[field] = value;
+      clearCompletionHandled(record);
+      const statusAutoChanged = applyAutoArchiveStatus(record);
+      if (field === "archive_status") {
+        addAuditLog("status changed", record, previousValue, value);
+      } else if (field === "archive_date") {
+        addAuditLog("capture date set", record, previousValue, value);
+      } else if (field === "verified_by") {
+        addAuditLog("verifier changed", record, previousValue, value);
+      } else if (field === "sha256_recorded") {
+        addAuditLog("hash generated", record, previousValue, value);
+      } else if (field === "archive_failure_reason" && value) {
+        addAuditLog("failed attempt recorded", record, previousValue, value);
+      }
+      if (statusAutoChanged) {
+        addAuditLog("status changed", record, "PENDING", "ARCHIVED");
+      }
+      markDirty();
+      refreshAll({ persist, triggerReminder });
+      maybeHandleRowCompletionTransition(record, beforeComplete);
+    }
+
+    function focusVerifiedBy() {
+      window.setTimeout(() => {
+        elements.verifiedBy.focus();
+        elements.verifiedBy.select();
+      }, 0);
+    }
+
+    function maybeHandleRowCompletionTransition(record, beforeComplete) {
+      const afterComplete = isRowComplete(record) && String(record.archive_status || "").trim().toUpperCase() === "ARCHIVED";
+      if (beforeComplete || !afterComplete || isFailedStatus(record)) {
+        return;
+      }
+
+      const key = getLookupKey(record);
+      if (state.transient.completionJustHandledByKey[key]) {
+        return;
+      }
+      state.transient.completionJustHandledByKey[key] = true;
+
+      addAuditLog("row completed", record, "incomplete", "complete");
+      persistLocalState();
+
+      const nextIndex = getNextPendingIndex(getActiveRecordIndex());
+      if (nextIndex === -1) {
+        if (typeof elements.finalReview.scrollIntoView === "function") {
+          elements.finalReview.scrollIntoView({ block: "start", behavior: "smooth" });
+        }
+        return;
+      }
+
+      window.setTimeout(() => {
+        setActiveRecord(nextIndex, { focusNext: true });
+      }, 120);
+    }
+
+    function scheduleAutoHashAttempt() {
+      const record = getActiveRecord();
+      if (!record || !isLikelyUrl(record.capture_url_recorded) || isSha256(record.sha256_recorded)) {
+        return;
+      }
+
+      window.clearTimeout(state.transient.autoHashTimeoutId);
+      state.transient.autoHashTimeoutId = window.setTimeout(() => {
+        generateSha256ForActiveRecord({ automatic: true }).catch(() => {});
+      }, AUTO_HASH_DELAY_MS);
+    }
+
+    function handleArchiveUrlRecorded({ source = "manual", oldValue = "" } = {}) {
+      const record = getActiveRecord();
+      if (!record) return;
+      const beforeComplete = isRowComplete(record);
+      clearCompletionHandled(record);
+
+      if (!record.archive_date) {
+        record.archive_date = extractWaybackCaptureDate(record.capture_url_recorded) || currentLocalDate();
+        addAuditLog("capture date set", record, "", record.archive_date, { source });
+      }
+
+      if (String(record.capture_url_recorded || "").trim() && String(oldValue || "").trim() !== String(record.capture_url_recorded || "").trim()) {
+        addAuditLog("archive URL added", record, oldValue, record.capture_url_recorded, { source });
+      }
+
+      const statusAutoChanged = applyAutoArchiveStatus(record);
+      if (statusAutoChanged) {
+        addAuditLog("status changed", record, "PENDING", "ARCHIVED");
+      }
+      clearHashRetry(record);
+      clearArchiveVerification(record);
+      markDirty();
+      refreshAll({ persist: true, triggerReminder: true });
+      verifyArchiveUrlForRecord(record).catch(() => {});
+      maybeHandleRowCompletionTransition(record, beforeComplete);
+
+      if (isSha256(record.sha256_recorded)) {
+        focusVerifiedBy();
+        return;
+      }
+
+      scheduleAutoHashAttempt();
+      if (source === "snapshot") {
+        elements.hashStatus.textContent = "Snapshot selected. Automatic SHA-256 generation is starting.";
+      }
+    }
+
+    function getNextPendingIndex(startIndex = state.activeIndex) {
+      if (!state.records.length) {
+        return -1;
+      }
+
+      const indexes = state.records.map((_, index) => index);
+      const ordered = indexes.slice(startIndex + 1).concat(indexes.slice(0, startIndex + 1));
+      return ordered.find((index) => !isRowComplete(state.records[index]) && !isFailedStatus(state.records[index])) ?? -1;
+    }
+
+    function maybeShowExportReminder() {
+      const archived = getArchivedCount();
+      if (archived >= state.meta.nextExportReminderAt && archived > 0) {
+        window.alert(`Batch export reminder: ${archived} row(s) now validate as archived. Export the CSV before continuing.`);
+        while (archived >= state.meta.nextExportReminderAt) {
+          state.meta.nextExportReminderAt += 5;
+        }
+        persistLocalState();
+      }
+    }
+
+    function formatArchiveDate(timestamp) {
+      const value = String(timestamp || "").trim();
+      if (!/^\d{14}$/.test(value)) {
+        return "";
+      }
+      return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
+    }
+
+    function buildArchiveUrl(timestamp, originalUrl) {
+      return `https://web.archive.org/web/${timestamp}/${originalUrl}`;
+    }
+
+    async function verifyArchiveUrlViaBrowser(archiveUrl, canonicalUrl) {
+      const response = await fetch(archiveUrl, { cache: "no-store" });
+      const finalUrl = response.url || archiveUrl;
+      const extractedOriginal = extractWaybackOriginalUrl(archiveUrl) || extractWaybackOriginalUrl(finalUrl);
+      const matchesCanonical =
+        normalizeComparableUrl(extractedOriginal) === normalizeComparableUrl(canonicalUrl) ||
+        normalizeComparableUrl(finalUrl).includes(normalizeComparableUrl(canonicalUrl));
+
+      return {
+        status: response.ok ? "verified" : "failed",
+        verifiedBy: "browser",
+        reachable: response.ok,
+        finalUrl,
+        matchesCanonical,
+        message: response.ok
+          ? matchesCanonical
+            ? "Archive URL verified by browser."
+            : "Archive URL reachable, but the canonical URL did not match."
+          : `Browser verification failed with status ${response.status}.`
+      };
+    }
+
+    async function verifyArchiveUrlViaHelper(archiveUrl, canonicalUrl) {
+      const response = await fetch(
+        `http://127.0.0.1:4317/verify?url=${encodeURIComponent(archiveUrl)}&canonical=${encodeURIComponent(canonicalUrl)}`,
+        { cache: "no-store" }
+      );
+      if (!response.ok) {
+        throw new Error(`Local helper verification failed with status ${response.status}.`);
+      }
+      const payload = await response.json();
+      return {
+        status: payload.reachable && payload.matchesCanonical ? "verified" : "failed",
+        verifiedBy: "helper",
+        reachable: Boolean(payload.reachable),
+        finalUrl: payload.finalUrl || archiveUrl,
+        matchesCanonical: Boolean(payload.matchesCanonical),
+        message: payload.reachable
+          ? payload.matchesCanonical
+            ? "Archive URL verified by helper."
+            : "Archive URL reachable, but the canonical URL did not match."
+          : payload.message || "Archive URL was not reachable."
+      };
+    }
+
+    async function verifyArchiveUrlForRecord(record) {
+      if (!record || !isLikelyUrl(record.capture_url_recorded)) {
+        return null;
+      }
+
+      const key = getLookupKey(record);
+      state.transient.verificationInFlightKey = key;
+
+      if (!looksLikeWaybackCaptureUrl(record.capture_url_recorded)) {
+        const result = {
+          status: "failed",
+          verifiedBy: "rule",
+          reachable: false,
+          matchesCanonical: false,
+          finalUrl: record.capture_url_recorded,
+          message: "Archive URL must start with https://web.archive.org/web/."
+        };
+        setArchiveVerification(record, result);
+        state.transient.verificationInFlightKey = "";
+        refreshAll({ persist: false });
+        return result;
+      }
+
+      try {
+        const browserResult = await verifyArchiveUrlViaBrowser(record.capture_url_recorded, record.canonical_url);
+        setArchiveVerification(record, browserResult);
+        state.transient.verificationInFlightKey = "";
+        refreshAll({ persist: false });
+        return browserResult;
+      } catch (browserError) {
+        try {
+          const helperResult = await verifyArchiveUrlViaHelper(record.capture_url_recorded, record.canonical_url);
+          setArchiveVerification(record, helperResult);
+          state.transient.verificationInFlightKey = "";
+          refreshAll({ persist: false });
+          return helperResult;
+        } catch (helperError) {
+          const result = {
+            status: "unverified",
+            verifiedBy: "tool-unavailable",
+            reachable: null,
+            matchesCanonical: null,
+            finalUrl: record.capture_url_recorded,
+            message: "Archive URL not verified by tool."
+          };
+          setArchiveVerification(record, result);
+          state.transient.verificationInFlightKey = "";
+          refreshAll({ persist: false });
+          return result;
+        }
+      }
+    }
+
+    function setLookupState(nextState, record = getActiveRecord()) {
+      const key = getLookupKey(record);
+      if (!key) return;
+      state.snapshotLookup[key] = nextState;
+      renderSnapshotLookup(record);
+    }
+
+    async function fetchWaybackSnapshotsDirect(canonicalUrl) {
+      const lookupUrl = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(canonicalUrl)}&output=json&fl=timestamp,original,statuscode&filter=statuscode:200`;
+      const response = await fetch(lookupUrl, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Wayback lookup failed with status ${response.status}.`);
+      }
+      return response.json();
+    }
+
+    async function fetchWaybackSnapshotsViaHelper(canonicalUrl) {
+      const helperUrl = `http://127.0.0.1:4317/wayback?url=${encodeURIComponent(canonicalUrl)}`;
+      const response = await fetch(helperUrl, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Local helper lookup failed with status ${response.status}.`);
+      }
+      const payload = await response.json();
+      return payload.snapshots || [];
+    }
+
+    function normalizeWaybackRows(rows) {
+      const bodyRows = Array.isArray(rows) ? rows.slice(1) : [];
+      return bodyRows
+        .filter((row) => Array.isArray(row) && row[0] && row[1])
+        .map((row) => ({
+          timestamp: row[0],
+          archiveUrl: buildArchiveUrl(row[0], row[1]),
+          captureDate: formatArchiveDate(row[0])
+        }))
+        .filter((snapshot) => snapshot.captureDate);
+    }
+
+    async function checkExistingArchivesForActiveRecord() {
+      const record = getActiveRecord();
+      if (!record) {
+        throw new Error("No active manifest row selected.");
+      }
+
+      const canonicalUrl = String(record.canonical_url || "").trim();
+      if (!isLikelyUrl(canonicalUrl)) {
+        throw new Error("The canonical URL is missing or invalid.");
+      }
+
+      elements.checkExistingArchives.disabled = true;
+      setLookupState({
+        statusText: "Checking Internet Archive for existing snapshots...",
+        snapshots: [],
+        showHelper: false
+      }, record);
+
+      try {
+        const rows = await fetchWaybackSnapshotsDirect(canonicalUrl);
+        const snapshots = normalizeWaybackRows(rows);
+        setLookupState({
+          statusText: snapshots.length
+            ? `Found ${snapshots.length} archived snapshot${snapshots.length === 1 ? "" : "s"} in chronological order. Select one to populate the archive URL and capture date.`
+            : "No archived snapshots found.",
+          snapshots,
+          showHelper: false
+        }, record);
+      } catch (directError) {
+        try {
+          const snapshots = await fetchWaybackSnapshotsViaHelper(canonicalUrl);
+          setLookupState({
+            statusText: snapshots.length
+              ? `Found ${snapshots.length} archived snapshot${snapshots.length === 1 ? "" : "s"} using the local helper. Select one to populate the archive URL and capture date.`
+              : "No archived snapshots found.",
+            snapshots,
+            showHelper: false
+          }, record);
+        } catch (helperError) {
+          setLookupState({
+            statusText: `Archive lookup failed in this browser context: ${directError.message}`,
+            snapshots: [],
+            showHelper: true
+          }, record);
+        }
+      } finally {
+        elements.checkExistingArchives.disabled = false;
+      }
+    }
+
+    function useSnapshotForActiveRecord(snapshotIndex) {
+      const record = getActiveRecord();
+      const lookup = state.snapshotLookup[getLookupKey(record)];
+      const snapshot = lookup && lookup.snapshots ? lookup.snapshots[snapshotIndex] : null;
+      if (!record || !snapshot) {
+        return;
+      }
+
+      const previousUrl = String(record.capture_url_recorded || "").trim();
+      record.capture_url_recorded = snapshot.archiveUrl;
+      record.archive_date = snapshot.captureDate || record.archive_date || currentLocalDate();
+      if (previousUrl !== snapshot.archiveUrl) {
+        record.sha256_recorded = "";
+      }
+      handleArchiveUrlRecorded({ source: "snapshot", oldValue: previousUrl });
+    }
+
+    function currentIsoDate() {
+      return currentLocalDate();
+    }
+
+    function markArchiveAttemptFailed() {
+      const record = getActiveRecord();
+      if (!record) {
+        throw new Error("No active manifest row selected.");
+      }
+
+      const failureReason = String(elements.failureReason.value || "").trim();
+      if (!failureReason) {
+        throw new Error("Enter the archive failure reason before marking the attempt as failed.");
+      }
+
+      const previousStatus = record.archive_status;
+      record.archive_status = "ATTEMPT_FAILED";
+      record.archive_failure_reason = failureReason;
+      record.archive_failure_date = currentIsoDate();
+      record.archive_attempted_url = String(record.save_page_now_url || "").trim();
+      addAuditLog("failed attempt recorded", record, "", failureReason);
+      if (previousStatus !== "ATTEMPT_FAILED") {
+        addAuditLog("status changed", record, previousStatus, "ATTEMPT_FAILED");
+      }
+      markDirty();
+      refreshAll({ persist: true, triggerReminder: true });
+    }
+
+    async function fetchShaViaBrowser(archiveUrl) {
+      if (!window.crypto || !window.crypto.subtle) {
+        throw new Error("This browser does not expose crypto.subtle for SHA-256 hashing.");
+      }
+      const response = await fetch(archiveUrl, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Archive request failed with status ${response.status}.`);
+      }
+      const buffer = await response.arrayBuffer();
+      const digest = await window.crypto.subtle.digest("SHA-256", buffer);
+      return toHex(digest);
+    }
+
+    async function fetchShaViaHelper(archiveUrl) {
+      const response = await fetch(`http://127.0.0.1:4317/hash?url=${encodeURIComponent(archiveUrl)}`, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Local helper hash request failed with status ${response.status}.`);
+      }
+      const payload = await response.json();
+      if (!payload.sha256 || !isSha256(payload.sha256)) {
+        throw new Error("Local helper did not return a valid SHA-256 value.");
+      }
+      return payload.sha256;
+    }
+
+    async function generateSha256ForActiveRecord({ automatic = false } = {}) {
+      const record = getActiveRecord();
+      if (!record) {
+        throw new Error("No active manifest row selected.");
+      }
+      const beforeComplete = isRowComplete(record);
+
+      const archiveUrl = String(record.capture_url_recorded || "").trim();
+      if (!archiveUrl) {
+        throw new Error("Paste the returned archive URL before generating the SHA-256 hash.");
+      }
+
+      if (!isLikelyUrl(archiveUrl)) {
+        throw new Error("The pasted archive URL must look like an http or https URL.");
+      }
+
+      state.transient.hashInFlightKey = getLookupKey(record);
+      clearHashRetry(record);
+      refreshAll({ persist: false });
+
+      let sha = "";
+      let directError = null;
+
+      try {
+        sha = await fetchShaViaBrowser(archiveUrl);
+      } catch (error) {
+        directError = error;
+      }
+
+      if (!sha) {
+        try {
+          sha = await fetchShaViaHelper(archiveUrl);
+        } catch (helperError) {
+          state.transient.hashInFlightKey = "";
+          setHashRetry(record, `${automatic ? "Automatic" : "Manual"} hash generation failed: ${(directError || helperError).message}`);
+          refreshAll({ persist: false });
+          return false;
+        }
+      }
+
+      record.sha256_recorded = sha;
+      addAuditLog("hash generated", record, "", sha, { automatic });
+      const statusAutoChanged = applyAutoArchiveStatus(record);
+      if (statusAutoChanged) {
+        addAuditLog("status changed", record, "PENDING", "ARCHIVED");
+      }
+      clearHashRetry(record);
+      state.transient.hashInFlightKey = "";
+      markDirty();
+      refreshAll({ persist: true, triggerReminder: true });
+      maybeHandleRowCompletionTransition(record, beforeComplete);
+      focusVerifiedBy();
+      elements.hashStatus.textContent = "SHA-256 generated and inserted into the field.";
+      return true;
+    }
+
+    function loadManifestText(text, fileName, loadMode = "manual") {
+      const parsed = parseManifestText(text);
+      state.fileName = fileName || "archive_manifest.csv";
+      state.loadMode = loadMode;
+      state.headers = parsed.headers;
+      state.records = parsed.records;
+      state.activeIndex = parsed.records.length ? 0 : -1;
+      state.filterMode = "pending";
+      state.snapshotLookup = {};
+      state.meta = createDefaultMeta();
+      state.meta.nextExportReminderAt = Math.max(5, Math.floor(getArchivedCount() / 5) * 5 + 5);
+      state.transient.hashRetryByKey = {};
+      state.transient.hashInFlightKey = "";
+      state.transient.verificationByKey = {};
+      state.transient.verificationInFlightKey = "";
+      state.transient.completionJustHandledByKey = {};
+      refreshAll({ persist: true });
+      const activeRecord = getActiveRecord();
+      if (activeRecord && activeRecord.capture_url_recorded) {
+        verifyArchiveUrlForRecord(activeRecord).catch(() => {});
+      }
+    }
+
+    async function loadManifest(file) {
+      const text = await file.text();
+      loadManifestText(text, file.name || "archive_manifest.csv", "manual");
+    }
+
+    async function fetchBundledManifestText() {
+      let response;
+      try {
+        response = await fetch("./archive_manifest.csv", { cache: "no-store" });
+      } catch (error) {
+        throw new Error(
+          "Bundled manifest could not be fetched in this browser context. If you opened this page directly from the filesystem, use the file-upload button instead."
+        );
+      }
+
+      if (!response.ok) {
+        throw new Error(`Bundled manifest request failed with status ${response.status}.`);
+      }
+
+      return response.text();
+    }
+
+    async function loadBundledManifest() {
+      const text = await fetchBundledManifestText();
+      loadManifestText(text, "archive_manifest.csv", "bundled");
+    }
+
+    function mergeRecordsFromExternal(externalRecords, { sourceIdOnly = null } = {}) {
+      const externalById = new Map(externalRecords.map((record) => [record.source_id, record]));
+      let changed = false;
+
+      state.records.forEach((record) => {
+        if (sourceIdOnly && record.source_id !== sourceIdOnly) {
+          return;
+        }
+
+        const incoming = externalById.get(record.source_id);
+        if (!incoming) {
+          return;
+        }
+
+        state.headers.forEach((header) => {
+          const nextValue = String(incoming[header] || "").trim();
+          if (nextValue && record[header] !== nextValue) {
+            record[header] = nextValue;
+            changed = true;
+          }
+        });
+
+        applyAutoArchiveStatus(record);
+      });
+
+      return changed;
+    }
+
+    async function reloadBundledManifestMerge({ currentRowOnly = false } = {}) {
+      const text = await fetchBundledManifestText();
+      const parsed = parseManifestText(text);
+      const activeRecord = getActiveRecord();
+      const beforeComplete = activeRecord ? isRowComplete(activeRecord) : false;
+      const changed = mergeRecordsFromExternal(parsed.records, {
+        sourceIdOnly: currentRowOnly && activeRecord ? activeRecord.source_id : null
+      });
+      if (changed && activeRecord && activeRecord.capture_url_recorded) {
+        verifyArchiveUrlForRecord(activeRecord).catch(() => {});
+      }
+      refreshAll({ persist: true });
+      if (changed && activeRecord) {
+        maybeHandleRowCompletionTransition(activeRecord, beforeComplete);
+      }
+      return changed;
+    }
+
+    function serializeManifestCsv() {
+      const rows = [
+        state.headers,
+        ...state.records.map((record) => recordToRow(state.headers, record))
+      ];
+      return `${encodeCsv(rows)}\r\n`;
+    }
+
+    function downloadTextFile(fileName, text, mimeType = "text/plain;charset=utf-8") {
+      const blob = new Blob([text], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportManifest() {
+      const csv = serializeManifestCsv();
+      downloadTextFile(state.fileName || "archive_manifest.csv", csv, "text/csv;charset=utf-8");
+      addAuditLog("manifest exported", getActiveRecord(), "", state.fileName || "archive_manifest.csv", { finalExport: false });
+      state.meta.dirtySinceExport = false;
+      state.meta.lastExportAt = currentIsoDateTime();
+      persistLocalState();
+      refreshAll({ persist: false });
+    }
+
+    async function computeManifestHash(csvText) {
+      const buffer = new TextEncoder().encode(csvText);
+      const digest = await window.crypto.subtle.digest("SHA-256", buffer);
+      return toHex(digest);
+    }
+
+    async function runFinalConsistencyCheck() {
+      const requiredIssues = [];
+      const warnings = [];
+      const duplicates = getDuplicateMaps();
+
+      if (state.records.length !== 43) {
+        requiredIssues.push(`Expected 43 total rows, found ${state.records.length}.`);
+      }
+
+      state.records.forEach((record) => {
+        const prefix = record.source_id || "(unknown source)";
+        if (!isLikelyUrl(record.canonical_url)) requiredIssues.push(`${prefix}: canonical URL missing or invalid.`);
+        if (!isLikelyUrl(record.capture_url_recorded)) requiredIssues.push(`${prefix}: archive URL missing or invalid.`);
+        if (!record.archive_date) requiredIssues.push(`${prefix}: capture date missing.`);
+        if (!isSha256(record.sha256_recorded)) requiredIssues.push(`${prefix}: SHA-256 missing or invalid.`);
+        if (!String(record.verified_by || "").trim()) requiredIssues.push(`${prefix}: verified by missing.`);
+        if (String(record.archive_status || "").trim().toUpperCase() !== "ARCHIVED") requiredIssues.push(`${prefix}: archive status must be ARCHIVED.`);
+        if (record.capture_url_recorded && !looksLikeWaybackCaptureUrl(record.capture_url_recorded)) {
+          requiredIssues.push(`${prefix}: archive URL must start with https://web.archive.org/web/.`);
+        }
+      });
+
+      if (duplicates.canonical.size) warnings.push(`${duplicates.canonical.size} duplicate canonical URL group(s) detected.`);
+      if (duplicates.archive.size) warnings.push(`${duplicates.archive.size} duplicate archive URL group(s) detected.`);
+      if (duplicates.sha.size) warnings.push(`${duplicates.sha.size} duplicate SHA-256 group(s) detected.`);
+      if (getFailedCount()) warnings.push(`${getFailedCount()} failed-attempt row(s) still present.`);
+      if (getPendingCount()) warnings.push(`${getPendingCount()} pending row(s) still present.`);
+
+      const verifiableRows = state.records.filter((record) => isLikelyUrl(record.capture_url_recorded));
+      for (const record of verifiableRows) {
+        const verification = await verifyArchiveUrlForRecord(record);
+        if (verification && verification.status === "failed") {
+          requiredIssues.push(`${record.source_id}: ${verification.message}`);
+        } else if (verification && verification.status === "unverified") {
+          warnings.push(`${record.source_id}: archive URL not verified by tool.`);
+        }
+      }
+
+      return { requiredIssues, warnings };
+    }
+
+    async function exportFinalManifest() {
+      const result = await runFinalConsistencyCheck();
+      elements.finalCheckIssues.innerHTML = result.requiredIssues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("");
+      elements.finalCheckWarnings.innerHTML = result.warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join("");
+
+      if (result.requiredIssues.length) {
+        if (typeof elements.finalReview.scrollIntoView === "function") {
+          elements.finalReview.scrollIntoView({ block: "start", behavior: "smooth" });
+        }
+        window.alert(`Final Export blocked. ${result.requiredIssues.length} required issue(s) remain.`);
+        return false;
+      }
+
+      const csv = serializeManifestCsv();
+      const manifestHash = await computeManifestHash(csv);
+      const sidecarText = `${manifestHash}  archive_manifest.csv\r\n`;
+
+      state.meta.manifestHash = manifestHash;
+      addAuditLog("manifest exported", getActiveRecord(), "", state.fileName || "archive_manifest.csv", {
+        finalExport: true,
+        manifestHash
+      });
+      downloadTextFile(state.fileName || "archive_manifest.csv", csv, "text/csv;charset=utf-8");
+      downloadTextFile("archive_manifest.sha256.txt", sidecarText, "text/plain;charset=utf-8");
+      state.meta.dirtySinceExport = false;
+      state.meta.lastExportAt = currentIsoDateTime();
+      persistLocalState();
+      refreshAll({ persist: false });
+      return true;
+    }
+
+    function exportAuditLog() {
+      const payload = JSON.stringify(state.meta.auditLog, null, 2);
+      downloadTextFile("archive_manifest_audit_log.json", payload, "application/json;charset=utf-8");
+    }
+
+    function validateAllRows() {
+      const invalid = state.records
+        .map((record, index) => ({ record, index, issues: getRowIssues(record) }))
+        .filter((item) => item.issues.length);
+
+      if (!invalid.length) {
+        window.alert("Source Gate Complete. Every row currently validates.");
+        return;
+      }
+
+      const preview = invalid
+        .slice(0, 12)
+        .map((item) => `${item.record.source_id || "Row " + (item.index + 1)}: ${item.issues.join(" ")}`)
+        .join("\n\n");
+
+      window.alert(
+        `Validation found ${invalid.length} row(s) that still need action.\n\n${preview}${
+          invalid.length > 12 ? "\n\nAdditional rows also need attention." : ""
+        }`
+      );
+    }
+
+    async function maybeApplyClipboardArchiveUrl({ manual = false } = {}) {
+      const record = getActiveRecord();
+      if (!record || !navigator.clipboard || !navigator.clipboard.readText) {
+        return false;
+      }
+
+      if (!manual && Date.now() - state.transient.lastClipboardCheckAt < 1000) {
+        return false;
+      }
+
+      state.transient.lastClipboardCheckAt = Date.now();
+
+      let clipboardText = "";
+      try {
+        clipboardText = String(await navigator.clipboard.readText() || "").trim();
+      } catch (error) {
+        return false;
+      }
+
+      if (!looksLikeWaybackCaptureUrl(clipboardText)) {
+        return false;
+      }
+
+      const currentValue = String(record.capture_url_recorded || "").trim();
+      if (currentValue && currentValue !== clipboardText) {
+        if (manual) {
+          elements.hashStatus.textContent = "Clipboard contains a Wayback URL, but this row already has a different archive URL. Review it manually.";
+        }
+        return false;
+      }
+
+      if (currentValue === clipboardText) {
+        return false;
+      }
+
+      record.capture_url_recorded = clipboardText;
+      record.sha256_recorded = "";
+      handleArchiveUrlRecorded({ source: "clipboard", oldValue: currentValue });
+      elements.hashStatus.textContent = "Detected a Wayback URL on your clipboard and applied it to this row.";
+      return true;
+    }
+
+    async function refreshCurrentRow() {
+      const clipboardApplied = await maybeApplyClipboardArchiveUrl({ manual: true });
+      if (clipboardApplied) {
+        return;
+      }
+
+      if (state.loadMode === "bundled") {
+        const changed = await reloadBundledManifestMerge({ currentRowOnly: true });
+        elements.hashStatus.textContent = changed
+          ? "Current row refreshed from the bundled manifest."
+          : "No new manifest values were found for the current row.";
+        return;
+      }
+
+      elements.hashStatus.textContent = "No clipboard archive URL detected. Reload the updated CSV from disk if the manual file changed.";
+    }
+
+    function handleSaveAndNextPending() {
+      markDirty();
+      refreshAll({ persist: true, triggerReminder: true });
+      const nextIndex = getNextPendingIndex();
+      if (nextIndex === -1) {
+        elements.hashStatus.textContent = "No additional pending rows remain in the queue.";
+        return;
+      }
+      setActiveRecord(nextIndex, { focusNext: true });
+    }
+
+    function handleVisibilityReturn() {
+      maybeApplyClipboardArchiveUrl({ manual: false }).catch(() => {});
+    }
+
+    function handleKeyboardShortcuts(event) {
+      if (!event.ctrlKey) {
+        return;
+      }
+
+      const key = String(event.key || "").toLowerCase();
+      if (key === "s") {
+        event.preventDefault();
+        if (!elements.exportCsv.disabled) {
+          exportManifest();
+        }
+        return;
+      }
+
+      if (key === "r") {
+        event.preventDefault();
+        if (!elements.reloadManifest.disabled) {
+          reloadBundledManifestMerge().catch((error) => window.alert(error.message));
+        }
+        return;
+      }
+
+      if (key === "h") {
+        event.preventDefault();
+        generateSha256ForActiveRecord({ automatic: false }).catch((error) => window.alert(error.message));
+        return;
+      }
+
+      if (key === "enter") {
+        event.preventDefault();
+        handleSaveAndNextPending();
+      }
+    }
+
+    elements.manifestFile.addEventListener("change", async (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      try {
+        await loadManifest(file);
+      } catch (error) {
+        window.alert(error.message);
+      } finally {
+        event.target.value = "";
+      }
+    });
+
+    elements.loadBundled.addEventListener("click", async () => {
+      try {
+        await loadBundledManifest();
+      } catch (error) {
+        window.alert(error.message);
+      }
+    });
+
+    elements.reloadManifest.addEventListener("click", async () => {
+      if (state.loadMode !== "bundled") {
+        window.alert("Reload manifest is available for the bundled manifest. For a manually selected file, load it again from disk after external changes.");
+        return;
+      }
+
+      try {
+        await reloadBundledManifestMerge();
+      } catch (error) {
+        window.alert(error.message);
+      }
+    });
+
+    elements.exportCsv.addEventListener("click", exportManifest);
+    elements.exportAuditLog.addEventListener("click", exportAuditLog);
+    elements.exportFinalManifest.addEventListener("click", () => {
+      exportFinalManifest().catch((error) => window.alert(error.message));
+    });
+    elements.validateAll.addEventListener("click", validateAllRows);
+    elements.filterPending.addEventListener("click", () => {
+      state.filterMode = "pending";
+      refreshAll({ persist: true });
+    });
+    elements.filterRetry.addEventListener("click", () => {
+      state.filterMode = "retry";
+      refreshAll({ persist: true });
+    });
+    elements.filterComplete.addEventListener("click", () => {
+      state.filterMode = "complete";
+      refreshAll({ persist: true });
+    });
+    elements.filterAll.addEventListener("click", () => {
+      state.filterMode = "all";
+      refreshAll({ persist: true });
+    });
+
+    elements.manifestList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-record-index]");
+      if (!button) return;
+      setActiveRecord(Number(button.getAttribute("data-record-index")));
+    });
+
+    elements.archiveSnapshotList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-use-snapshot]");
+      if (!button) return;
+      useSnapshotForActiveRecord(Number(button.getAttribute("data-use-snapshot")));
+    });
+
+    elements.archiveStatus.addEventListener("input", (event) => updateActiveRecord("archive_status", event.target.value.trim()));
+    elements.captureDate.addEventListener("input", (event) => updateActiveRecord("archive_date", event.target.value.trim()));
+    elements.sha256.addEventListener("input", (event) => updateActiveRecord("sha256_recorded", event.target.value.trim()));
+    elements.verifiedBy.addEventListener("input", (event) => updateActiveRecord("verified_by", event.target.value.trim()));
+    elements.failureReason.addEventListener("input", (event) => updateActiveRecord("archive_failure_reason", event.target.value.trim()));
+
+    elements.captureUrl.addEventListener("input", (event) => {
+      const record = getActiveRecord();
+      if (!record) return;
+      const nextValue = event.target.value.trim();
+      const previousValue = String(record.capture_url_recorded || "").trim();
+      record.capture_url_recorded = nextValue;
+      clearCompletionHandled(record);
+      if (nextValue !== previousValue) {
+        record.sha256_recorded = "";
+      }
+
+      if (!nextValue || !isLikelyUrl(nextValue)) {
+        clearHashRetry(record);
+        clearArchiveVerification(record);
+        markDirty();
+        refreshAll({ persist: true, triggerReminder: true });
+        return;
+      }
+
+      handleArchiveUrlRecorded({ source: "manual", oldValue: previousValue });
+    });
+
+    elements.checkExistingArchives.addEventListener("click", () => {
+      checkExistingArchivesForActiveRecord().catch((error) => {
+        window.alert(error.message);
+      });
+    });
+
+    elements.retryArchiveAttempt.addEventListener("click", () => {
+      const record = getActiveRecord();
+      if (record && record.save_page_now_url) {
+        window.open(record.save_page_now_url, "_blank", "noopener");
+      }
+    });
+
+    elements.markArchiveFailed.addEventListener("click", () => {
+      try {
+        markArchiveAttemptFailed();
+      } catch (error) {
+        window.alert(error.message);
+      }
+    });
+
+    elements.generateSha256.addEventListener("click", () => {
+      generateSha256ForActiveRecord({ automatic: false }).catch((error) => {
+        window.alert(error.message);
+      });
+    });
+
+    elements.saveNextPending.addEventListener("click", handleSaveAndNextPending);
+    elements.refreshCurrentRow.addEventListener("click", () => {
+      refreshCurrentRow().catch((error) => window.alert(error.message));
+    });
+
+    elements.openCanonical.addEventListener("click", () => {
+      const record = getActiveRecord();
+      if (record && record.canonical_url) {
+        window.open(record.canonical_url, "_blank", "noopener");
+      }
+    });
+
+    elements.openSavePage.addEventListener("click", () => {
+      const record = getActiveRecord();
+      if (record && record.save_page_now_url) {
+        window.open(record.save_page_now_url, "_blank", "noopener");
+      }
+    });
+
+    window.addEventListener("keydown", handleKeyboardShortcuts);
+    window.addEventListener("beforeunload", (event) => {
+      if (!state.meta.dirtySinceExport) {
+        return;
+      }
+      event.preventDefault();
+      event.returnValue = "";
+    });
+    window.addEventListener("focus", handleVisibilityReturn);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        handleVisibilityReturn();
+      }
+    });
+
+    if (restoreLocalState()) {
+      refreshAll({ persist: false });
+      const activeRecord = getActiveRecord();
+      if (activeRecord && activeRecord.capture_url_recorded) {
+        verifyArchiveUrlForRecord(activeRecord).catch(() => {});
+      }
+    } else {
+      refreshAll({ persist: false });
+    }
+  </script>
+</body>
+</html>

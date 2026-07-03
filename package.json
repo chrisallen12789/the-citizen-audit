@@ -6,6 +6,7 @@
     "build:publication": "node scripts/build-publication-assets.js",
     "qa": "node scripts/qa.js",
     "release:rc": "node scripts/release-candidate.js",
+    "archive:hash": "node scripts/archive-batch.js",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
