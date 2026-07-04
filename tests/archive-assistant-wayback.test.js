@@ -191,3 +191,82 @@ test("a second reload from stale legacy rows preserves 42 archived rows with no 
     assert.match(record.capture_url_recorded, /^https:\/\/web\.archive\.org\/web\/\d{14}\//);
   });
 });
+
+test("save page request URLs are repaired to timestamped snapshots before export", async () => {
+  const record = buildNeedsRecaptureRecord("S-0099");
+  record.capture_url_recorded = `https://web.archive.org/save/${record.canonical_url}`;
+
+  const result = wayback.applyLegacyWaybackRepair(record, [buildSnapshotForRecord(record)]);
+  assert.equal(result.repaired, true);
+  validation.applyAutoArchiveStatus(record);
+
+  const artifacts = await exportApi.buildFinalExportArtifacts({
+    headers: HEADERS,
+    records: [record, ...Array.from({ length: 42 }, (_, index) => buildArchivedRecord(`S-A${String(index).padStart(3, "0")}`))],
+    computeManifestHash
+  });
+
+  const exportedRecords = recordsFromCsv(artifacts.csvText);
+  assert.equal(
+    exportedRecords.some((item) => /^https?:\/\/web\.archive\.org\/save\//i.test(item.capture_url_recorded || "")),
+    false
+  );
+  assert.match(exportedRecords[0].capture_url_recorded, /^https:\/\/web\.archive\.org\/web\/\d{14}\//);
+});
+
+test("failed Save Page jobs remain NEEDS_RECAPTURE and never promote to ARCHIVED", () => {
+  const record = buildNeedsRecaptureRecord("S-0100");
+  record.capture_url_recorded = `https://web.archive.org/save/${record.canonical_url}`;
+
+  const result = wayback.applyLegacyWaybackRepair(record, []);
+  validation.applyAutoArchiveStatus(record);
+
+  assert.equal(result.repaired, false);
+  assert.equal(record.capture_url_recorded, "");
+  assert.equal(record.archive_status, "NEEDS_RECAPTURE");
+  assert.equal(validation.isArchivedComplete(record), false);
+});
+
+test("reloading cannot convert a timestamped archive URL back into a Save Page request URL", () => {
+  const record = buildArchivedRecord("S-0101");
+  const incoming = {
+    ...record,
+    archive_status: "PENDING",
+    capture_url_recorded: `https://web.archive.org/save/${record.canonical_url}`
+  };
+
+  wayback.mergeIncomingRecord(record, incoming, HEADERS);
+  validation.applyAutoArchiveStatus(record);
+
+  assert.match(record.capture_url_recorded, /^https:\/\/web\.archive\.org\/web\/\d{14}\//);
+  assert.equal(record.archive_status, "ARCHIVED");
+});
+
+test("export, reload, and export again remain idempotent for repaired timestamped URLs", async () => {
+  const { records, recaptureIds } = buildRepairableRecords();
+  recaptureIds.forEach((sourceId) => {
+    const record = records.find((item) => item.source_id === sourceId);
+    record.capture_url_recorded = `https://web.archive.org/save/${record.canonical_url}`;
+    const result = wayback.applyLegacyWaybackRepair(record, [buildSnapshotForRecord(record)]);
+    assert.equal(result.repaired, true);
+    validation.applyAutoArchiveStatus(record);
+  });
+
+  const first = await exportApi.buildFinalExportArtifacts({
+    headers: HEADERS,
+    records,
+    computeManifestHash
+  });
+  const reloaded = recordsFromCsv(first.csvText);
+  const second = await exportApi.buildFinalExportArtifacts({
+    headers: HEADERS,
+    records: reloaded,
+    computeManifestHash
+  });
+
+  assert.equal(first.csvText, second.csvText);
+  assert.equal(
+    recordsFromCsv(second.csvText).some((item) => /^https?:\/\/web\.archive\.org\/save\//i.test(item.capture_url_recorded || "")),
+    false
+  );
+});

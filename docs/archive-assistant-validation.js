@@ -25,6 +25,10 @@
     return /^https?:\/\/web\.archive\.org\/web\/https?:\/\/\S+$/i.test(trimValue(value));
   }
 
+  function isSavePageNowUrl(value) {
+    return /^https?:\/\/web\.archive\.org\/save\/https?:\/\/\S+$/i.test(trimValue(value));
+  }
+
   function isSha256(value) {
     return /^[a-f0-9]{64}$/i.test(trimValue(value));
   }
@@ -131,6 +135,8 @@
       issues.push("Returned archive URL is required.");
     } else if (!isLikelyUrl(record && record.capture_url_recorded)) {
       issues.push("Returned archive URL must look like an http or https URL.");
+    } else if (isSavePageNowUrl(record && record.capture_url_recorded)) {
+      issues.push("Returned archive URL cannot be a Save Page Now request URL. Store the timestamped Wayback snapshot URL instead.");
     } else if (isLegacyWaybackCaptureUrl(record && record.capture_url_recorded)) {
       issues.push("Returned archive URL is a legacy Wayback URL without a timestamp. Repair or reselect the timestamped snapshot before export.");
     } else if (!looksLikeWaybackCaptureUrl(record && record.capture_url_recorded)) {
@@ -247,6 +253,7 @@
     isFailedStatus,
     isLegacyWaybackCaptureUrl,
     isLikelyUrl,
+    isSavePageNowUrl,
     isNeedsRecaptureStatus,
     isRowComplete,
     isSha256,

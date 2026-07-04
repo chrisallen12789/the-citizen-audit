@@ -106,6 +106,24 @@ test("ARCHIVED with a legacy Wayback URL without a timestamp fails validation", 
   assert.equal(isRowComplete(record), false);
 });
 
+test("ARCHIVED with a Save Page Now URL in returned archive URL fails validation", () => {
+  const record = buildBaseRecord({
+    archive_status: "ARCHIVED",
+    capture_url_recorded: "https://web.archive.org/save/https://www.vaoig.gov/reports",
+    archive_date: "2026-07-04",
+    sha256_recorded: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  });
+
+  const issues = getRowIssues(record);
+
+  assert.equal(
+    issues.includes("Returned archive URL cannot be a Save Page Now request URL. Store the timestamped Wayback snapshot URL instead."),
+    true
+  );
+  assert.equal(isArchivedComplete(record), false);
+  assert.equal(isRowComplete(record), false);
+});
+
 test("NEEDS_RECAPTURE explains which archive evidence fields are still missing", () => {
   const record = buildBaseRecord({
     archive_status: "NEEDS_RECAPTURE",

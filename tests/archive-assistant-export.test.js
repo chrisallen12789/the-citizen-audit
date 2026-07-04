@@ -124,6 +124,27 @@ test("local final export validation rejects legacy Wayback URLs without timestam
   );
 });
 
+test("local final export validation rejects Save Page Now URLs in returned archive URL", () => {
+  const records = buildValidManifestRecords();
+  records[0].capture_url_recorded = "https://web.archive.org/save/https://example.com/s-0001.pdf";
+
+  const result = runLocalFinalConsistencyCheck({
+    records,
+    duplicates: {
+      canonical: new Map(),
+      archive: new Map(),
+      sha: new Map()
+    },
+    expectedRowCount: 43
+  });
+
+  assert.ok(
+    result.requiredIssues.some((issue) =>
+      /Save Page Now request URL|timestamped Wayback snapshot URL/i.test(issue)
+    )
+  );
+});
+
 test("helper unavailable warnings do not block authoritative export artifacts", async () => {
   const records = buildValidManifestRecords();
   const warnings = await runAdvisoryVerificationSweep({

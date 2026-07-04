@@ -93,12 +93,30 @@
   }
 
   function applyLegacyWaybackRepair(record, snapshots) {
-    if (!record || !validation.isLegacyWaybackCaptureUrl(record.capture_url_recorded)) {
+    if (
+      !record ||
+      (!validation.isLegacyWaybackCaptureUrl(record.capture_url_recorded) &&
+        !validation.isSavePageNowUrl(record.capture_url_recorded))
+    ) {
       return { repaired: false, attention: false };
     }
 
     const resolution = selectLegacyRepairSnapshot(record, snapshots);
     if (!resolution.snapshot) {
+      if (validation.isSavePageNowUrl(record.capture_url_recorded)) {
+        const previousUrl = trimValue(record.capture_url_recorded);
+        record.capture_url_recorded = "";
+        if (trimValue(record.archive_status).toUpperCase() !== "ATTEMPT_FAILED") {
+          record.archive_status = "NEEDS_RECAPTURE";
+        }
+        return {
+          repaired: false,
+          attention: true,
+          previousUrl,
+          message:
+            "Save Page Now returned no timestamped snapshot. Row remains NEEDS_RECAPTURE until a real Wayback capture exists."
+        };
+      }
       return {
         repaired: false,
         attention: true,
@@ -173,11 +191,18 @@
 
       if (
         header === "capture_url_recorded" &&
-        validation.isLegacyWaybackCaptureUrl(currentValue) &&
+        (validation.isLegacyWaybackCaptureUrl(currentValue) || validation.isSavePageNowUrl(currentValue)) &&
         validation.looksLikeWaybackCaptureUrl(nextValue)
       ) {
         currentRecord[header] = nextValue;
         changed = true;
+        return;
+      }
+
+      if (
+        header === "capture_url_recorded" &&
+        validation.isSavePageNowUrl(nextValue)
+      ) {
         return;
       }
 

@@ -1755,7 +1755,12 @@
 
     function scheduleAutoHashAttempt() {
       const record = getActiveRecord();
-      if (!record || !isLikelyUrl(record.capture_url_recorded) || isSha256(record.sha256_recorded)) {
+      if (
+        !record ||
+        !isLikelyUrl(record.capture_url_recorded) ||
+        archiveValidation.isSavePageNowUrl(record.capture_url_recorded) ||
+        isSha256(record.sha256_recorded)
+      ) {
         return;
       }
 
@@ -1771,7 +1776,7 @@
       const beforeComplete = isRowComplete(record);
       clearCompletionHandled(record);
 
-      if (!record.archive_date) {
+      if (!record.archive_date && looksLikeWaybackCaptureUrl(record.capture_url_recorded)) {
         record.archive_date = extractWaybackCaptureDate(record.capture_url_recorded) || currentLocalDate();
         addAuditLog("capture date set", record, "", record.archive_date, { source });
       }
@@ -1996,7 +2001,11 @@
     }
 
     async function repairLegacyWaybackRecord(record) {
-      if (!record || !isLegacyWaybackCaptureUrl(record.capture_url_recorded)) {
+      if (
+        !record ||
+        (!isLegacyWaybackCaptureUrl(record.capture_url_recorded) &&
+          !archiveValidation.isSavePageNowUrl(record.capture_url_recorded))
+      ) {
         clearImportRepairState(record);
         return { repaired: false, attention: false };
       }
@@ -2014,6 +2023,9 @@
         if (!resolution.repaired) {
           const message = resolution.message || "Legacy archive URL is missing a Wayback timestamp and needs manual review.";
           setImportRepairState(record, { status: "attention", message, provider });
+          if (resolution.previousUrl && !record.capture_url_recorded) {
+            addAuditLog("save request URL cleared", record, resolution.previousUrl, "", { provider });
+          }
           return { repaired: false, attention: true, message, provider };
         }
         clearArchiveVerification(record);
