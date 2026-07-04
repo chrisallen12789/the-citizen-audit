@@ -411,7 +411,7 @@
         <li>Open the canonical URL and the Save Page Now URL for each record.</li>
         <li>If Save Page Now fails, use <strong>Check Existing Archives</strong> to look for older Wayback snapshots.</li>
         <li>Paste the returned archive URL or select a real snapshot. If Capture Date is blank, the assistant uses the Wayback timestamp first and only falls back to today when needed.</li>
-        <li>If the archive attempt fails, document the failure without marking the row complete, then retry later.</li>
+        <li>If the archive attempt fails and no real snapshot exists, document the failure state. That validates as a documented archive failure, but it does not create archive evidence.</li>
         <li>Finish verifier names, review the auto-status, and export the updated manifest regularly.</li>
         <li>Recommended setup: run <code>npm run archive:assistant</code> and use the localhost URL instead of opening this file directly from disk.</li>
       </ul>
@@ -624,7 +624,7 @@
 
           <div class="export-box">
             <h3>Failed archive attempt</h3>
-            <p class="subtle">Use this only when Save Page Now fails. It records the failed attempt for auditability, but it does not satisfy the Source Gate.</p>
+            <p class="subtle">Use this only when Save Page Now fails and no real snapshot exists. It records a documented archive failure for auditability, but it does not create archive evidence.</p>
             <div class="editor-grid">
               <div class="field">
                 <label for="failureDate">Failure date</label>
@@ -667,18 +667,13 @@
     </section>
   </main>
 
+  <script src="./archive-assistant-validation.js"></script>
   <script>
     const STORAGE_KEY = "citizen-audit-archive-assistant-state-v3";
     const ARCHIVE_ASSISTANT_URL = "http://127.0.0.1:4175/archive-assistant.html";
     const ARCHIVE_HELPER_HEALTH_URL = "http://127.0.0.1:4317/health";
+    const archiveValidation = window.ArchiveAssistantValidation;
     const REQUIRED_HEADERS = ["source_id", "canonical_url", "save_page_now_url"];
-    const REQUIRED_COMPLETION_FIELDS = [
-      "archive_status",
-      "capture_url_recorded",
-      "archive_date",
-      "sha256_recorded",
-      "verified_by"
-    ];
     const AUTO_HASH_DELAY_MS = 450;
 
     function createDefaultMeta() {
@@ -1159,54 +1154,11 @@
     }
 
     function getRowIssues(record) {
-      const issues = [];
-
-      if (!record.source_id) {
-        issues.push("Missing source ID.");
-      }
-
-      if (!isLikelyUrl(record.canonical_url)) {
-        issues.push("Canonical URL is missing or invalid.");
-      }
-
-      if (!isLikelyUrl(record.save_page_now_url)) {
-        issues.push("Save Page Now URL is missing or invalid.");
-      }
-
-      if (!record.archive_status) {
-        issues.push("Archive Status is required.");
-      }
-
-      if (!record.capture_url_recorded) {
-        issues.push("Returned archive URL is required.");
-      } else if (!isLikelyUrl(record.capture_url_recorded)) {
-        issues.push("Returned archive URL must look like an http or https URL.");
-      }
-
-      if (!record.archive_date) {
-        issues.push("Capture Date is required.");
-      }
-
-      if (!record.sha256_recorded) {
-        issues.push("SHA-256 hash is required.");
-      } else if (!isSha256(record.sha256_recorded)) {
-        issues.push("SHA-256 hash must be a 64-character hexadecimal value.");
-      }
-
-      if (!String(record.verified_by || "").trim()) {
-        issues.push("Verified By is required.");
-      }
-
-      return issues;
+      return archiveValidation.getRowIssues(record);
     }
 
     function hasArchiveCompletionFields(record) {
-      return (
-        isLikelyUrl(record.capture_url_recorded) &&
-        Boolean(record.archive_date) &&
-        isSha256(record.sha256_recorded) &&
-        Boolean(String(record.verified_by || "").trim())
-      );
+      return archiveValidation.hasArchiveCompletionFields(record);
     }
 
     function applyAutoArchiveStatus(record) {
@@ -1222,20 +1174,27 @@
     }
 
     function isRowComplete(record) {
-      return REQUIRED_COMPLETION_FIELDS.every((field) => String(record[field] || "").trim()) && getRowIssues(record).length === 0;
+      return archiveValidation.isRowComplete(record);
     }
 
     function isFailedStatus(record) {
-      const status = String(record.archive_status || "").trim().toUpperCase();
-      return status === "ATTEMPT_FAILED" || status === "FAILED";
+      return archiveValidation.isFailedStatus(record);
+    }
+
+    function isArchivedComplete(record) {
+      return archiveValidation.isArchivedComplete(record);
+    }
+
+    function isDocumentedFailure(record) {
+      return archiveValidation.isDocumentedFailure(record);
     }
 
     function getArchivedCount() {
-      return state.records.filter((record) => isRowComplete(record) && !isFailedStatus(record)).length;
+      return state.records.filter((record) => isArchivedComplete(record)).length;
     }
 
     function getFailedCount() {
-      return state.records.filter(isFailedStatus).length;
+      return state.records.filter((record) => isDocumentedFailure(record)).length;
     }
 
     function getRemainingCount() {
@@ -1373,7 +1332,7 @@
       const total = state.records.length;
       const archived = getArchivedCount();
       const failed = getFailedCount();
-      const pending = getPendingCount();
+      const pending = getRemainingCount();
       const completionPercent = getCompletionPercent();
       const averageSeconds = getAverageSecondsPerHandledRow();
       const estimatedRemaining = averageSeconds * pending;
@@ -1424,6 +1383,7 @@
       if (ready) {
         const duplicates = getDuplicateMaps();
         const warningParts = [];
+        if (getFailedCount()) warningParts.push(`${getFailedCount()} documented archive failure row(s)`);
         if (duplicates.canonical.size) warningParts.push(`${duplicates.canonical.size} duplicate canonical URL group(s)`);
         if (duplicates.archive.size) warningParts.push(`${duplicates.archive.size} duplicate archive URL group(s)`);
         if (duplicates.sha.size) warningParts.push(`${duplicates.sha.size} duplicate SHA-256 group(s)`);
@@ -1467,14 +1427,17 @@
           const warnings = getRowWarnings(record);
           const complete = isRowComplete(record);
           const failed = isFailedStatus(record);
+          const documentedFailure = isDocumentedFailure(record);
           const activeClass = state.activeIndex === index ? " active" : "";
           const completeClass = complete ? " complete" : "";
           const archiveStatus = record.archive_status || "No manual status yet";
-          const pillClass = complete ? "good" : failed ? "warn" : "bad";
-          const pillText = complete
+          const pillClass = documentedFailure ? "warn" : complete ? "good" : failed ? "warn" : "bad";
+          const pillText = documentedFailure
+            ? "Documented failure"
+            : complete
             ? "Archived and valid"
             : failed
-            ? "Failed attempt recorded"
+            ? "Failure docs incomplete"
             : "Needs attention";
 
           return `
@@ -1555,11 +1518,7 @@
       elements.failureDate.value = record.archive_failure_date || "";
       elements.attemptedUrl.value = record.archive_attempted_url || "";
       elements.failureReason.value = record.archive_failure_reason || "";
-      elements.completionToggle.value = complete
-        ? "All required archive fields are present."
-        : isFailedStatus(record)
-        ? "Failed attempt recorded. This row still needs a real archive URL, capture date, SHA-256, and verifier."
-        : `${issues.length} action item(s) remaining.`;
+      elements.completionToggle.value = archiveValidation.getCompletionMessage(record, issues);
 
       renderSnapshotLookup(record);
 
@@ -1803,10 +1762,10 @@
     }
 
     function maybeShowExportReminder() {
-      const archived = getArchivedCount();
-      if (archived >= state.meta.nextExportReminderAt && archived > 0) {
-        window.alert(`Batch export reminder: ${archived} row(s) now validate as archived. Export the CSV before continuing.`);
-        while (archived >= state.meta.nextExportReminderAt) {
+      const completed = getArchivedCount() + getFailedCount();
+      if (completed >= state.meta.nextExportReminderAt && completed > 0) {
+        window.alert(`Batch export reminder: ${completed} row(s) now validate as complete or documented failure states. Export the CSV before continuing.`);
+        while (completed >= state.meta.nextExportReminderAt) {
           state.meta.nextExportReminderAt += 5;
         }
         persistLocalState();
@@ -2147,7 +2106,7 @@
       state.filterMode = "pending";
       state.snapshotLookup = {};
       state.meta = createDefaultMeta();
-      state.meta.nextExportReminderAt = Math.max(5, Math.floor(getArchivedCount() / 5) * 5 + 5);
+      state.meta.nextExportReminderAt = Math.max(5, Math.floor((getArchivedCount() + getFailedCount()) / 5) * 5 + 5);
       state.transient.hashRetryByKey = {};
       state.transient.hashInFlightKey = "";
       state.transient.verificationByKey = {};
@@ -2279,6 +2238,9 @@
       const requiredIssues = [];
       const warnings = [];
       const duplicates = getDuplicateMaps();
+      let documentedFailureCount = 0;
+      let missingArchiveEvidenceCount = 0;
+      let undocumentedFailureCount = 0;
 
       if (state.records.length !== 43) {
         requiredIssues.push(`Expected 43 total rows, found ${state.records.length}.`);
@@ -2286,22 +2248,26 @@
 
       state.records.forEach((record) => {
         const prefix = record.source_id || "(unknown source)";
-        if (!isLikelyUrl(record.canonical_url)) requiredIssues.push(`${prefix}: canonical URL missing or invalid.`);
-        if (!isLikelyUrl(record.capture_url_recorded)) requiredIssues.push(`${prefix}: archive URL missing or invalid.`);
-        if (!record.archive_date) requiredIssues.push(`${prefix}: capture date missing.`);
-        if (!isSha256(record.sha256_recorded)) requiredIssues.push(`${prefix}: SHA-256 missing or invalid.`);
-        if (!String(record.verified_by || "").trim()) requiredIssues.push(`${prefix}: verified by missing.`);
-        if (String(record.archive_status || "").trim().toUpperCase() !== "ARCHIVED") requiredIssues.push(`${prefix}: archive status must be ARCHIVED.`);
-        if (record.capture_url_recorded && !looksLikeWaybackCaptureUrl(record.capture_url_recorded)) {
+        const rowIssues = getRowIssues(record);
+        rowIssues.forEach((issue) => requiredIssues.push(`${prefix}: ${issue}`));
+        if (isArchivedComplete(record) && record.capture_url_recorded && !looksLikeWaybackCaptureUrl(record.capture_url_recorded)) {
           requiredIssues.push(`${prefix}: archive URL must start with https://web.archive.org/web/.`);
+        }
+        if (isDocumentedFailure(record)) {
+          documentedFailureCount += 1;
+        } else if (isFailedStatus(record)) {
+          undocumentedFailureCount += 1;
+        } else if (!isRowComplete(record)) {
+          missingArchiveEvidenceCount += 1;
         }
       });
 
       if (duplicates.canonical.size) warnings.push(`${duplicates.canonical.size} duplicate canonical URL group(s) detected.`);
       if (duplicates.archive.size) warnings.push(`${duplicates.archive.size} duplicate archive URL group(s) detected.`);
       if (duplicates.sha.size) warnings.push(`${duplicates.sha.size} duplicate SHA-256 group(s) detected.`);
-      if (getFailedCount()) warnings.push(`${getFailedCount()} failed-attempt row(s) still present.`);
-      if (getPendingCount()) warnings.push(`${getPendingCount()} pending row(s) still present.`);
+      if (documentedFailureCount) warnings.push(`${documentedFailureCount} documented archive failure row(s) present.`);
+      if (undocumentedFailureCount) warnings.push(`${undocumentedFailureCount} archive failure row(s) still need failure documentation.`);
+      if (missingArchiveEvidenceCount) warnings.push(`${missingArchiveEvidenceCount} row(s) still missing archive evidence.`);
 
       const verifiableRows = state.records.filter((record) => isLikelyUrl(record.capture_url_recorded));
       for (const record of verifiableRows) {
@@ -2358,7 +2324,7 @@
         .filter((item) => item.issues.length);
 
       if (!invalid.length) {
-        window.alert("Source Gate Complete. Every row currently validates.");
+        window.alert("Source Gate Complete. Every row currently validates, including any documented archive failures.");
         return;
       }
 
