@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T17:36:02.560Z",
+  "generatedAt": "2026-07-04T12:05:09.669Z",
   "buildVersion": "1.0.0-rc1",
   "publicationMetadataVersion": 2,
   "audits": 1,
@@ -214,7 +214,7 @@
   "searchRecords": 160,
   "qaStatus": {
     "status": "passed",
-    "validatedAt": "2026-07-03T17:36:10.335Z",
+    "validatedAt": "2026-07-04T12:05:10.517Z",
     "htmlPagesChecked": 159,
     "checksEnforced": [
       "claim sources",

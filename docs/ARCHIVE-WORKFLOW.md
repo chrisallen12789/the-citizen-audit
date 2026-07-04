@@ -1,20 +1,32 @@
 # Archive Workflow
 
 ## Step 1
-Start the optional local helper:
+Start the supported local Archive Assistant stack:
 
 ```bash
-node scripts/archive-assistant-helper.js
+npm run archive:assistant
 ```
 
-This gives the Archive Assistant a local fallback for:
+This starts:
+
+- the local Archive Assistant helper on `http://127.0.0.1:4317`
+- the local Archive Assistant page server on `http://127.0.0.1:4175/archive-assistant.html`
+
+If you need to start them separately instead, use:
+
+```bash
+npm run archive:helper
+npm run archive:serve
+```
+
+The helper gives the Archive Assistant a local fallback for:
 
 - Wayback snapshot lookup
 - archive URL verification
 - SHA-256 generation when the browser is blocked by CORS
 
 ## Step 2
-Open [docs/archive-assistant.html](C:/Users/Chris/OneDrive/Documents/TheCitizenAudit/docs/archive-assistant.html).
+Open [http://127.0.0.1:4175/archive-assistant.html](http://127.0.0.1:4175/archive-assistant.html).
 
 - Load the bundled manifest or upload `archive_manifest.csv`.
 - The assistant auto-saves progress locally.

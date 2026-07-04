@@ -345,6 +345,40 @@
       margin: 12px 0 16px;
     }
 
+    .setup-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .setup-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .setup-card h2 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+    }
+
+    .setup-card.good {
+      border-color: #b6d4bc;
+      background: #eef7f0;
+    }
+
+    .setup-card.warn {
+      border-color: #e2c48e;
+      background: #fff7e8;
+    }
+
+    .setup-card.bad {
+      border-color: #e0b1b1;
+      background: #fff0f0;
+    }
+
     @media (max-width: 980px) {
       .layout {
         grid-template-columns: 1fr;
@@ -379,7 +413,34 @@
         <li>Paste the returned archive URL or select a real snapshot. If Capture Date is blank, the assistant uses the Wayback timestamp first and only falls back to today when needed.</li>
         <li>If the archive attempt fails, document the failure without marking the row complete, then retry later.</li>
         <li>Finish verifier names, review the auto-status, and export the updated manifest regularly.</li>
+        <li>Recommended setup: run <code>npm run archive:assistant</code> and use the localhost URL instead of opening this file directly from disk.</li>
       </ul>
+      <div class="export-box" aria-live="polite">
+        <div class="link-actions" style="justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0;">Setup status</h2>
+          <button id="refreshSetup" class="button" type="button">Refresh setup status</button>
+        </div>
+        <div class="setup-grid">
+          <article id="setupModeCard" class="setup-card">
+            <h2>Page mode</h2>
+            <p id="setupModeStatus" style="margin: 0 0 6px;">Checking page mode...</p>
+            <p id="setupModeDetail" class="subtle" style="margin: 0;"></p>
+          </article>
+          <article id="setupBundledCard" class="setup-card">
+            <h2>Bundled manifest</h2>
+            <p id="setupBundledStatus" style="margin: 0 0 6px;">Checking bundled manifest access...</p>
+            <p id="setupBundledDetail" class="subtle" style="margin: 0;"></p>
+          </article>
+          <article id="setupHelperCard" class="setup-card">
+            <h2>Local helper</h2>
+            <p id="setupHelperStatus" style="margin: 0 0 6px;">Checking helper availability...</p>
+            <p id="setupHelperDetail" class="subtle" style="margin: 0;"></p>
+          </article>
+        </div>
+        <p id="setupRecommendedAction" class="subtle" style="margin: 0 0 8px;"></p>
+        <pre id="setupCommand" class="subtle" style="white-space: pre-wrap; margin: 0 0 8px;"></pre>
+        <pre id="setupUrl" class="subtle" style="white-space: pre-wrap; margin: 0;"></pre>
+      </div>
       <div class="toolbar">
         <label class="file-label">
           <input id="manifestFile" type="file" accept=".csv,text/csv">
@@ -461,7 +522,7 @@
     <section class="layout">
       <section class="panel">
         <h2>Manifest rows</h2>
-        <p class="subtle">Select a row to edit it. Completion only reflects required fields being present and valid; it does not alter status values on its own.</p>
+        <p class="subtle">Select a row to edit it. If a row is still `PENDING` and all required archive fields become valid, the assistant auto-promotes it to `ARCHIVED` without overriding failed-attempt or custom statuses.</p>
         <div class="filter-row" aria-label="Row filters">
           <button id="filterPending" class="button active-filter" type="button">Show Pending</button>
           <button id="filterRetry" class="button" type="button">Show Retry</button>
@@ -487,13 +548,14 @@
               <label for="archiveStatus">Archive status</label>
               <input id="archiveStatus" list="archiveStatusOptions" type="text" placeholder="Example: PENDING or CAPTURED">
               <datalist id="archiveStatusOptions">
+                <option value="ARCHIVED"></option>
                 <option value="PENDING"></option>
                 <option value="CAPTURED"></option>
                 <option value="FAILED"></option>
                 <option value="BLOCKED"></option>
                 <option value="ATTEMPT_FAILED"></option>
               </datalist>
-              <small>Manual field. This assistant will never set it for you.</small>
+              <small>If a row remains `PENDING` and the required archive fields validate, the assistant auto-promotes it to `ARCHIVED`.</small>
             </div>
 
             <div class="field full">
@@ -607,6 +669,8 @@
 
   <script>
     const STORAGE_KEY = "citizen-audit-archive-assistant-state-v3";
+    const ARCHIVE_ASSISTANT_URL = "http://127.0.0.1:4175/archive-assistant.html";
+    const ARCHIVE_HELPER_HEALTH_URL = "http://127.0.0.1:4317/health";
     const REQUIRED_HEADERS = ["source_id", "canonical_url", "save_page_now_url"];
     const REQUIRED_COMPLETION_FIELDS = [
       "archive_status",
@@ -645,7 +709,12 @@
         lastClipboardCheckAt: 0,
         verificationByKey: {},
         verificationInFlightKey: "",
-        completionJustHandledByKey: {}
+        completionJustHandledByKey: {},
+        setupStatus: {
+          helperState: "checking",
+          helperMessage: "Checking helper availability...",
+          helperOnline: false
+        }
       }
     };
 
@@ -653,11 +722,24 @@
       manifestFile: document.getElementById("manifestFile"),
       loadBundled: document.getElementById("loadBundled"),
       reloadManifest: document.getElementById("reloadManifest"),
+      refreshSetup: document.getElementById("refreshSetup"),
       exportCsv: document.getElementById("exportCsv"),
       exportAuditLog: document.getElementById("exportAuditLog"),
       validateAll: document.getElementById("validateAll"),
       fileName: document.getElementById("fileName"),
       draftStatus: document.getElementById("draftStatus"),
+      setupModeCard: document.getElementById("setupModeCard"),
+      setupModeStatus: document.getElementById("setupModeStatus"),
+      setupModeDetail: document.getElementById("setupModeDetail"),
+      setupBundledCard: document.getElementById("setupBundledCard"),
+      setupBundledStatus: document.getElementById("setupBundledStatus"),
+      setupBundledDetail: document.getElementById("setupBundledDetail"),
+      setupHelperCard: document.getElementById("setupHelperCard"),
+      setupHelperStatus: document.getElementById("setupHelperStatus"),
+      setupHelperDetail: document.getElementById("setupHelperDetail"),
+      setupRecommendedAction: document.getElementById("setupRecommendedAction"),
+      setupCommand: document.getElementById("setupCommand"),
+      setupUrl: document.getElementById("setupUrl"),
       statTotal: document.getElementById("statTotal"),
       statArchived: document.getElementById("statArchived"),
       statFailed: document.getElementById("statFailed"),
@@ -902,8 +984,95 @@
       return `node scripts/archive-sha256.js "${escaped}"`;
     }
 
+    function buildAssistantLaunchCommand() {
+      return "npm run archive:assistant";
+    }
+
+    function buildAssistantServeCommand() {
+      return "npm run archive:serve";
+    }
+
     function buildHelperServerCommand() {
-      return "node scripts/archive-assistant-helper.js";
+      return "npm run archive:helper";
+    }
+
+    function isFilesystemMode() {
+      return window.location.protocol === "file:";
+    }
+
+    function renderSetupStatus() {
+      const filesystemMode = isFilesystemMode();
+      const helperState = state.transient.setupStatus.helperState;
+      const helperOnline = helperState === "online";
+
+      elements.setupModeCard.className = `setup-card ${filesystemMode ? "warn" : "good"}`;
+      elements.setupModeStatus.textContent = filesystemMode
+        ? "Opened from file:// (limited setup)"
+        : "Served over http://127.0.0.1 (recommended)";
+      elements.setupModeDetail.textContent = filesystemMode
+        ? "Use the manual CSV upload in this tab, or relaunch over localhost so bundled manifest loading and browser-integrated checks work cleanly."
+        : "This mode supports bundled manifest loading, refresh, and clearer browser-network behavior.";
+
+      elements.setupBundledCard.className = `setup-card ${filesystemMode ? "warn" : "good"}`;
+      elements.setupBundledStatus.textContent = filesystemMode
+        ? "Bundled manifest loading should be treated as unavailable in file mode."
+        : "Bundled manifest loading and reload are available.";
+      elements.setupBundledDetail.textContent = filesystemMode
+        ? "Recommended fix: run the local assistant server and open the localhost URL below."
+        : "Use Load bundled manifest for the in-repo Source Gate file, or upload a CSV manually when needed.";
+
+      elements.setupHelperCard.className = `setup-card ${helperOnline ? "good" : "warn"}`;
+      elements.setupHelperStatus.textContent = helperOnline
+        ? "Local helper is online."
+        : state.transient.setupStatus.helperMessage;
+      elements.setupHelperDetail.textContent = helperOnline
+        ? "Wayback lookup, archive verification, and SHA-256 fallback hashing can use the local helper."
+        : "If hash generation or existing-archive lookup fails in the browser, start the helper or launch the full assistant stack.";
+
+      elements.setupRecommendedAction.textContent = filesystemMode || !helperOnline
+        ? "Recommended setup command:"
+        : "Recommended setup is satisfied for the supported workflow.";
+      elements.setupCommand.textContent = [
+        buildAssistantLaunchCommand(),
+        buildHelperServerCommand(),
+        buildAssistantServeCommand()
+      ].join("\n");
+      elements.setupUrl.textContent = `Assistant URL: ${ARCHIVE_ASSISTANT_URL}`;
+      elements.loadBundled.title = filesystemMode
+        ? `Open ${ARCHIVE_ASSISTANT_URL} after running ${buildAssistantLaunchCommand()} to use the bundled manifest button.`
+        : "";
+    }
+
+    async function refreshSetupStatus() {
+      state.transient.setupStatus = {
+        helperState: "checking",
+        helperMessage: "Checking helper availability...",
+        helperOnline: false
+      };
+      renderSetupStatus();
+
+      try {
+        const response = await fetch(ARCHIVE_HELPER_HEALTH_URL, { cache: "no-store" });
+        state.transient.setupStatus = response.ok
+          ? {
+              helperState: "online",
+              helperMessage: "Local helper is online.",
+              helperOnline: true
+            }
+          : {
+              helperState: "offline",
+              helperMessage: `Local helper responded with status ${response.status}.`,
+              helperOnline: false
+            };
+      } catch (error) {
+        state.transient.setupStatus = {
+          helperState: "offline",
+          helperMessage: "Local helper is offline. Start it before relying on fallback hash generation or archive lookup.",
+          helperOnline: false
+        };
+      }
+
+      renderSetupStatus();
     }
 
     function getLookupKey(record = state.records[state.activeIndex]) {
@@ -1422,6 +1591,7 @@
     }
 
     function refreshAll({ persist = false, triggerReminder = false } = {}) {
+      renderSetupStatus();
       updateStats();
       renderManifestList();
       renderEditor();
@@ -1996,12 +2166,18 @@
     }
 
     async function fetchBundledManifestText() {
+      if (isFilesystemMode()) {
+        throw new Error(
+          `Bundled manifest loading is not supported from file:// mode. Run ${buildAssistantLaunchCommand()} and open ${ARCHIVE_ASSISTANT_URL}, or use the file-upload button in this session.`
+        );
+      }
+
       let response;
       try {
         response = await fetch("./archive_manifest.csv", { cache: "no-store" });
       } catch (error) {
         throw new Error(
-          "Bundled manifest could not be fetched in this browser context. If you opened this page directly from the filesystem, use the file-upload button instead."
+          `Bundled manifest could not be fetched in this browser context. Run ${buildAssistantLaunchCommand()} and open ${ARCHIVE_ASSISTANT_URL}, or use the file-upload button instead.`
         );
       }
 
@@ -2269,6 +2445,7 @@
     }
 
     function handleVisibilityReturn() {
+      refreshSetupStatus().catch(() => {});
       maybeApplyClipboardArchiveUrl({ manual: false }).catch(() => {});
     }
 
@@ -2324,6 +2501,17 @@
       } catch (error) {
         window.alert(error.message);
       }
+    });
+
+    elements.refreshSetup.addEventListener("click", () => {
+      refreshSetupStatus().catch((error) => {
+        state.transient.setupStatus = {
+          helperState: "offline",
+          helperMessage: `Setup refresh failed: ${error.message}`,
+          helperOnline: false
+        };
+        renderSetupStatus();
+      });
     });
 
     elements.reloadManifest.addEventListener("click", async () => {
@@ -2472,6 +2660,8 @@
     } else {
       refreshAll({ persist: false });
     }
+
+    refreshSetupStatus().catch(() => {});
   </script>
 </body>
 </html>

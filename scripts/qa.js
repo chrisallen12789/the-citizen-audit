@@ -2,9 +2,18 @@ const fs = require("fs");
 const path = require("path");
 const publication = require("./publication-data");
 const { applyQaStatus } = require("./build/qa-status");
+const {
+  loadManifestConfig,
+  readCsvFile,
+  validateManifestPreservation,
+  validateManifestRows
+} = require("./archive-manifest-generator");
 
 const root = path.resolve(__dirname, "..");
 const publicDir = path.join(root, "public");
+const archiveManifestPath = path.join(root, "docs", "archive_manifest.csv");
+const authoritativeArchiveManifestPath = path.join(root, "docs", "archive_manifest_authoritative.csv");
+const archiveManifestConfigPath = path.join(root, "scripts", "archive-manifest-config.json");
 
 function walk(dir) {
   const results = [];
@@ -417,6 +426,30 @@ const siteJs = fs.readFileSync(path.join(root, "public/site.js"), "utf8");
 const detailsRenderer = fs.readFileSync(path.join(root, "scripts/renderers/details.js"), "utf8");
 const sectionContentSource = fs.readFileSync(path.join(root, "data-model/section-content.js"), "utf8");
 const pageContentSource = fs.readFileSync(path.join(root, "data-model/pages.js"), "utf8");
+
+if (fs.existsSync(archiveManifestPath) && fs.existsSync(archiveManifestConfigPath)) {
+  try {
+    const archiveManifest = readCsvFile(archiveManifestPath, { ensureManifestHeaders: true });
+    const archiveManifestConfig = loadManifestConfig(archiveManifestConfigPath);
+    validateManifestRows(archiveManifest.records, archiveManifestConfig);
+    if (
+      archiveManifestConfig.manifestSourceIds.length &&
+      archiveManifest.records.length !== archiveManifestConfig.manifestSourceIds.length
+    ) {
+      problems.push(
+        `docs/archive_manifest.csv: expected ${archiveManifestConfig.manifestSourceIds.length} archive rows, found ${archiveManifest.records.length}`
+      );
+    }
+    if (fs.existsSync(authoritativeArchiveManifestPath)) {
+      const authoritativeArchiveManifest = readCsvFile(authoritativeArchiveManifestPath, {
+        ensureManifestHeaders: true
+      });
+      validateManifestPreservation(archiveManifest.records, authoritativeArchiveManifest.records);
+    }
+  } catch (error) {
+    problems.push(`docs/archive_manifest.csv: ${error.message}`);
+  }
+}
 
 const generatedSectionFiles = fs
   .readdirSync(path.join(publicDir, "audit"))

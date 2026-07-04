@@ -1,0 +1,66 @@
+{
+  "manifestSourceIds": [
+    "S-0001",
+    "S-0002",
+    "S-0003",
+    "S-0004",
+    "S-0005",
+    "S-0006",
+    "S-0007",
+    "S-0008",
+    "S-0009",
+    "S-0010",
+    "S-0011",
+    "S-0012",
+    "S-0013",
+    "S-0014",
+    "S-0015",
+    "S-0016",
+    "S-0017",
+    "S-0020",
+    "S-0021",
+    "S-0022",
+    "S-0023",
+    "S-0024",
+    "S-0025",
+    "S-0026",
+    "S-0027",
+    "S-0028",
+    "S-0029",
+    "S-0030",
+    "S-0101",
+    "S-0102",
+    "S-0103",
+    "S-0104",
+    "S-0105",
+    "S-0106",
+    "S-0107",
+    "S-0108",
+    "S-0109",
+    "S-0111",
+    "S-0112",
+    "S-0113",
+    "S-0114",
+    "S-0115",
+    "S-0116"
+  ],
+  "sourceOverrides": [
+    {
+      "sourceId": "S-0006",
+      "canonicalUrl": "https://www.congress.gov/bill/119th-congress/house-bill/1968",
+      "reason": "Sweep 4 source_library.csv carried the placeholder field \"https://www.congress.gov (bill record to pin at download)\". The same package identifies the intended source as H.R. 1968 / P.L. 119-4 in the S-0007 deconstruction and the source title."
+    },
+    {
+      "sourceId": "S-0105",
+      "canonicalUrl": "https://www.vaoig.gov/sites/default/files/reports/2025-03/vaoig-24-03692-76_final_redacted.pdf",
+      "reason": "Sweep 4 source_library.csv carried the placeholder field \"https://www.vaoig.gov (report no. 24-03692-76)\". The same package's S-0105_S-0106 deconstruction records the specific PDF URL as the authoritative document location."
+    },
+    {
+      "sourceId": "S-0106",
+      "canonicalUrl": "https://www.vaoig.gov/sites/default/files/reports/2025-05/vaoig-24-03127-66-final-locked.pdf",
+      "reason": "Sweep 4 source_library.csv carried the placeholder field \"https://www.vaoig.gov (report no. 24-03127-66)\". The same package's S-0105_S-0106 deconstruction records the specific PDF URL as the authoritative document location."
+    }
+  ],
+  "duplicateCanonicalUrlWhitelist": [],
+  "duplicateSha256Whitelist": []
+}
