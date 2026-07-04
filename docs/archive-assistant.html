@@ -668,11 +668,13 @@
   </main>
 
   <script src="./archive-assistant-validation.js"></script>
+  <script src="./archive-assistant-export.js"></script>
   <script>
     const STORAGE_KEY = "citizen-audit-archive-assistant-state-v3";
     const ARCHIVE_ASSISTANT_URL = "http://127.0.0.1:4175/archive-assistant.html";
     const ARCHIVE_HELPER_HEALTH_URL = "http://127.0.0.1:4317/health";
     const archiveValidation = window.ArchiveAssistantValidation;
+    const archiveExport = window.ArchiveAssistantExport;
     const REQUIRED_HEADERS = ["source_id", "canonical_url", "save_page_now_url"];
     const AUTO_HASH_DELAY_MS = 450;
 
@@ -704,6 +706,7 @@
         lastClipboardCheckAt: 0,
         verificationByKey: {},
         verificationInFlightKey: "",
+        importRepairByKey: {},
         completionJustHandledByKey: {},
         setupStatus: {
           helperState: "checking",
@@ -912,7 +915,11 @@
     }
 
     function looksLikeWaybackCaptureUrl(value) {
-      return /^https?:\/\/web\.archive\.org\/web\/\d{8,14}\//i.test(String(value || "").trim());
+      return archiveValidation.looksLikeWaybackCaptureUrl(value);
+    }
+
+    function isLegacyWaybackCaptureUrl(value) {
+      return archiveValidation.isLegacyWaybackCaptureUrl(value);
     }
 
     function isSha256(value) {
@@ -1146,6 +1153,11 @@
         warnings.push("Archive URL not verified by tool yet.");
       }
 
+      const repairState = getImportRepairState(record);
+      if (repairState && repairState.message) {
+        warnings.push(repairState.message);
+      }
+
       return warnings;
     }
 
@@ -1162,15 +1174,32 @@
     }
 
     function applyAutoArchiveStatus(record) {
-      if (!record || record.archive_status !== "PENDING") {
-        return false;
-      }
+      return archiveValidation.applyAutoArchiveStatus(record);
+    }
 
-      if (hasArchiveCompletionFields(record)) {
-        record.archive_status = "ARCHIVED";
-        return true;
+    function promoteRecordIfEligible(record, { logTransition = false } = {}) {
+      const transition = applyAutoArchiveStatus(record);
+      if (transition.changed && logTransition) {
+        addAuditLog("status changed", record, transition.fromStatus || "", transition.toStatus);
       }
-      return false;
+      return transition;
+    }
+
+    function promoteEligibleRecords({ sourceIdOnly = null, logTransitions = false } = {}) {
+      let promotedCount = 0;
+
+      state.records.forEach((record) => {
+        if (sourceIdOnly && record.source_id !== sourceIdOnly) {
+          return;
+        }
+
+        const transition = promoteRecordIfEligible(record, { logTransition: logTransitions });
+        if (transition.changed) {
+          promotedCount += 1;
+        }
+      });
+
+      return promotedCount;
     }
 
     function isRowComplete(record) {
@@ -1255,6 +1284,22 @@
       return state.transient.verificationByKey[getLookupKey(record)] || null;
     }
 
+    function setImportRepairState(record, payload) {
+      const key = getLookupKey(record);
+      if (!key) return;
+      state.transient.importRepairByKey[key] = payload;
+    }
+
+    function clearImportRepairState(record) {
+      const key = getLookupKey(record);
+      if (!key) return;
+      delete state.transient.importRepairByKey[key];
+    }
+
+    function getImportRepairState(record) {
+      return state.transient.importRepairByKey[getLookupKey(record)] || null;
+    }
+
     function clearCompletionHandled(record) {
       const key = getLookupKey(record);
       if (!key) return;
@@ -1312,6 +1357,9 @@
         state.filterMode = parsed.filterMode || "pending";
         state.headers = ensureHeaders(normalizeHeaders(parsed.headers));
         state.records = parsed.records.map((record) => rowToRecord(state.headers, state.headers.map((header) => record[header] || "")));
+        state.records.forEach((record) => {
+          promoteRecordIfEligible(record);
+        });
         state.activeIndex = Math.min(Math.max(Number(parsed.activeIndex) || 0, 0), Math.max(0, state.records.length - 1));
         state.snapshotLookup = {};
         state.meta = {
@@ -1319,6 +1367,7 @@
           ...(parsed.meta || {}),
           restoredFromLocal: true
         };
+        state.transient.importRepairByKey = {};
         state.transient.verificationByKey = {};
         state.transient.verificationInFlightKey = "";
         state.transient.completionJustHandledByKey = {};
@@ -1647,7 +1696,7 @@
       }
       record[field] = value;
       clearCompletionHandled(record);
-      const statusAutoChanged = applyAutoArchiveStatus(record);
+      const statusTransition = promoteRecordIfEligible(record);
       if (field === "archive_status") {
         addAuditLog("status changed", record, previousValue, value);
       } else if (field === "archive_date") {
@@ -1659,8 +1708,8 @@
       } else if (field === "archive_failure_reason" && value) {
         addAuditLog("failed attempt recorded", record, previousValue, value);
       }
-      if (statusAutoChanged) {
-        addAuditLog("status changed", record, "PENDING", "ARCHIVED");
+      if (statusTransition.changed) {
+        addAuditLog("status changed", record, statusTransition.fromStatus || "", statusTransition.toStatus);
       }
       markDirty();
       refreshAll({ persist, triggerReminder });
@@ -1729,9 +1778,9 @@
         addAuditLog("archive URL added", record, oldValue, record.capture_url_recorded, { source });
       }
 
-      const statusAutoChanged = applyAutoArchiveStatus(record);
-      if (statusAutoChanged) {
-        addAuditLog("status changed", record, "PENDING", "ARCHIVED");
+      const statusTransition = promoteRecordIfEligible(record);
+      if (statusTransition.changed) {
+        addAuditLog("status changed", record, statusTransition.fromStatus || "", statusTransition.toStatus);
       }
       clearHashRetry(record);
       clearArchiveVerification(record);
@@ -1782,6 +1831,25 @@
 
     function buildArchiveUrl(timestamp, originalUrl) {
       return `https://web.archive.org/web/${timestamp}/${originalUrl}`;
+    }
+
+    function normalizeSnapshotRecord(snapshot) {
+      if (!snapshot || typeof snapshot !== "object") {
+        return null;
+      }
+
+      const timestamp = String(snapshot.timestamp || "").trim();
+      const archiveUrl = String(snapshot.archiveUrl || "").trim();
+      const captureDate = String(snapshot.captureDate || "").trim() || formatArchiveDate(timestamp);
+      if (!timestamp || !captureDate || !looksLikeWaybackCaptureUrl(archiveUrl)) {
+        return null;
+      }
+
+      return {
+        timestamp,
+        archiveUrl,
+        captureDate
+      };
     }
 
     async function verifyArchiveUrlViaBrowser(archiveUrl, canonicalUrl) {
@@ -1866,13 +1934,22 @@
           refreshAll({ persist: false });
           return helperResult;
         } catch (helperError) {
+          console.warn(
+            `Archive verification tools unavailable for ${record.source_id || "(unknown source)"}.`,
+            {
+              browserError,
+              helperError
+            }
+          );
           const result = {
             status: "unverified",
             verifiedBy: "tool-unavailable",
             reachable: null,
             matchesCanonical: null,
             finalUrl: record.capture_url_recorded,
-            message: "Archive URL not verified by tool."
+            message: `Archive URL not verified by tool. Browser check failed: ${browserError.message}. Helper check failed: ${helperError.message}.`,
+            browserError: browserError.message,
+            helperError: helperError.message
           };
           setArchiveVerification(record, result);
           state.transient.verificationInFlightKey = "";
@@ -1905,19 +1982,142 @@
         throw new Error(`Local helper lookup failed with status ${response.status}.`);
       }
       const payload = await response.json();
-      return payload.snapshots || [];
+      return Array.isArray(payload.snapshots)
+        ? payload.snapshots.map(normalizeSnapshotRecord).filter(Boolean)
+        : [];
     }
 
     function normalizeWaybackRows(rows) {
       const bodyRows = Array.isArray(rows) ? rows.slice(1) : [];
       return bodyRows
         .filter((row) => Array.isArray(row) && row[0] && row[1])
-        .map((row) => ({
-          timestamp: row[0],
-          archiveUrl: buildArchiveUrl(row[0], row[1]),
-          captureDate: formatArchiveDate(row[0])
-        }))
-        .filter((snapshot) => snapshot.captureDate);
+        .map((row) =>
+          normalizeSnapshotRecord({
+            timestamp: row[0],
+            archiveUrl: buildArchiveUrl(row[0], row[1]),
+            captureDate: formatArchiveDate(row[0])
+          })
+        )
+        .filter(Boolean);
+    }
+
+    async function lookupWaybackSnapshots(canonicalUrl) {
+      try {
+        const snapshots = await fetchWaybackSnapshotsViaHelper(canonicalUrl);
+        return {
+          snapshots,
+          provider: "helper"
+        };
+      } catch (helperError) {
+        const rows = await fetchWaybackSnapshotsDirect(canonicalUrl);
+        return {
+          snapshots: normalizeWaybackRows(rows),
+          provider: "direct",
+          helperError
+        };
+      }
+    }
+
+    function selectLegacyRepairSnapshot(record, snapshots) {
+      const normalizedCanonical = normalizeComparableUrl(record && record.canonical_url);
+      const matchingSnapshots = (Array.isArray(snapshots) ? snapshots : []).filter(
+        (snapshot) =>
+          snapshot &&
+          looksLikeWaybackCaptureUrl(snapshot.archiveUrl) &&
+          archiveValidation.archiveUrlMatchesCanonical(snapshot.archiveUrl, normalizedCanonical)
+      );
+
+      if (!matchingSnapshots.length) {
+        return { snapshot: null, reason: "No archived snapshots matched the canonical URL." };
+      }
+
+      const captureDate = String(record && record.archive_date || "").trim();
+      if (captureDate) {
+        const datedMatches = matchingSnapshots.filter((snapshot) => snapshot.captureDate === captureDate);
+        if (datedMatches.length === 1) {
+          return { snapshot: datedMatches[0], reason: "" };
+        }
+        if (datedMatches.length > 1) {
+          return {
+            snapshot: null,
+            reason: "Multiple archived snapshots share the recorded capture date. Select the correct timestamped snapshot manually."
+          };
+        }
+      }
+
+      if (matchingSnapshots.length === 1) {
+        return { snapshot: matchingSnapshots[0], reason: "" };
+      }
+
+      return {
+        snapshot: null,
+        reason: "Multiple archived snapshots exist for this canonical URL. Select the correct timestamped snapshot manually."
+      };
+    }
+
+    async function repairLegacyWaybackRecord(record) {
+      if (!record || !isLegacyWaybackCaptureUrl(record.capture_url_recorded)) {
+        clearImportRepairState(record);
+        return { repaired: false, attention: false };
+      }
+
+      const canonicalUrl = String(record.canonical_url || "").trim();
+      if (!isLikelyUrl(canonicalUrl)) {
+        const message = "Legacy archive URL could not be repaired because the canonical URL is missing or invalid.";
+        setImportRepairState(record, { status: "attention", message });
+        return { repaired: false, attention: true, message };
+      }
+
+      try {
+        const { snapshots, provider } = await lookupWaybackSnapshots(canonicalUrl);
+        const resolution = selectLegacyRepairSnapshot(record, snapshots);
+        if (!resolution.snapshot) {
+          const message = `Legacy archive URL is missing a Wayback timestamp. ${resolution.reason}`;
+          setImportRepairState(record, { status: "attention", message, provider });
+          return { repaired: false, attention: true, message, provider };
+        }
+
+        const previousUrl = String(record.capture_url_recorded || "").trim();
+        record.capture_url_recorded = resolution.snapshot.archiveUrl;
+        if (!String(record.archive_date || "").trim()) {
+          record.archive_date = resolution.snapshot.captureDate;
+        }
+        if (previousUrl !== resolution.snapshot.archiveUrl) {
+          record.sha256_recorded = "";
+        }
+        clearArchiveVerification(record);
+        clearImportRepairState(record);
+        addAuditLog("legacy archive URL repaired", record, previousUrl, resolution.snapshot.archiveUrl, { provider });
+        return { repaired: true, attention: false, provider };
+      } catch (error) {
+        const message = `Legacy archive URL is missing a Wayback timestamp and could not be repaired automatically: ${error.message}`;
+        setImportRepairState(record, { status: "attention", message });
+        return { repaired: false, attention: true, message };
+      }
+    }
+
+    async function repairLegacyWaybackRows(records, { sourceIdOnly = null } = {}) {
+      const report = {
+        repaired: [],
+        attention: []
+      };
+
+      for (const record of records) {
+        if (sourceIdOnly && record.source_id !== sourceIdOnly) {
+          continue;
+        }
+        const result = await repairLegacyWaybackRecord(record);
+        if (result.repaired) {
+          report.repaired.push(record.source_id || "(unknown source)");
+        } else if (result.attention) {
+          report.attention.push({
+            sourceId: record.source_id || "(unknown source)",
+            message: result.message || "Legacy archive URL needs manual review."
+          });
+        }
+      }
+
+      return report;
     }
 
     async function checkExistingArchivesForActiveRecord() {
@@ -1939,8 +2139,8 @@
       }, record);
 
       try {
-        const rows = await fetchWaybackSnapshotsDirect(canonicalUrl);
-        const snapshots = normalizeWaybackRows(rows);
+        const lookupResult = await lookupWaybackSnapshots(canonicalUrl);
+        const snapshots = lookupResult.snapshots;
         setLookupState({
           statusText: snapshots.length
             ? `Found ${snapshots.length} archived snapshot${snapshots.length === 1 ? "" : "s"} in chronological order. Select one to populate the archive URL and capture date.`
@@ -1948,23 +2148,12 @@
           snapshots,
           showHelper: false
         }, record);
-      } catch (directError) {
-        try {
-          const snapshots = await fetchWaybackSnapshotsViaHelper(canonicalUrl);
-          setLookupState({
-            statusText: snapshots.length
-              ? `Found ${snapshots.length} archived snapshot${snapshots.length === 1 ? "" : "s"} using the local helper. Select one to populate the archive URL and capture date.`
-              : "No archived snapshots found.",
-            snapshots,
-            showHelper: false
-          }, record);
-        } catch (helperError) {
-          setLookupState({
-            statusText: `Archive lookup failed in this browser context: ${directError.message}`,
-            snapshots: [],
-            showHelper: true
-          }, record);
-        }
+      } catch (lookupError) {
+        setLookupState({
+          statusText: `Archive lookup failed in this browser context: ${lookupError.message}`,
+          snapshots: [],
+          showHelper: true
+        }, record);
       } finally {
         elements.checkExistingArchives.disabled = false;
       }
@@ -2082,9 +2271,9 @@
 
       record.sha256_recorded = sha;
       addAuditLog("hash generated", record, "", sha, { automatic });
-      const statusAutoChanged = applyAutoArchiveStatus(record);
-      if (statusAutoChanged) {
-        addAuditLog("status changed", record, "PENDING", "ARCHIVED");
+      const statusTransition = promoteRecordIfEligible(record);
+      if (statusTransition.changed) {
+        addAuditLog("status changed", record, statusTransition.fromStatus || "", statusTransition.toStatus);
       }
       clearHashRetry(record);
       state.transient.hashInFlightKey = "";
@@ -2096,16 +2285,19 @@
       return true;
     }
 
-    function loadManifestText(text, fileName, loadMode = "manual") {
+    async function loadManifestText(text, fileName, loadMode = "manual") {
       const parsed = parseManifestText(text);
       state.fileName = fileName || "archive_manifest.csv";
       state.loadMode = loadMode;
       state.headers = parsed.headers;
       state.records = parsed.records;
+      state.meta = createDefaultMeta();
+      state.transient.importRepairByKey = {};
+      const repairReport = await repairLegacyWaybackRows(state.records);
+      promoteEligibleRecords();
       state.activeIndex = parsed.records.length ? 0 : -1;
       state.filterMode = "pending";
       state.snapshotLookup = {};
-      state.meta = createDefaultMeta();
       state.meta.nextExportReminderAt = Math.max(5, Math.floor((getArchivedCount() + getFailedCount()) / 5) * 5 + 5);
       state.transient.hashRetryByKey = {};
       state.transient.hashInFlightKey = "";
@@ -2113,6 +2305,15 @@
       state.transient.verificationInFlightKey = "";
       state.transient.completionJustHandledByKey = {};
       refreshAll({ persist: true });
+      if (repairReport.repaired.length || repairReport.attention.length) {
+        const repairedText = repairReport.repaired.length
+          ? `Repaired legacy Wayback URLs for: ${repairReport.repaired.join(", ")}.`
+          : "";
+        const attentionText = repairReport.attention.length
+          ? `Needs manual review: ${repairReport.attention.map((item) => item.sourceId).join(", ")}.`
+          : "";
+        elements.hashStatus.textContent = [repairedText, attentionText].filter(Boolean).join(" ");
+      }
       const activeRecord = getActiveRecord();
       if (activeRecord && activeRecord.capture_url_recorded) {
         verifyArchiveUrlForRecord(activeRecord).catch(() => {});
@@ -2121,7 +2322,7 @@
 
     async function loadManifest(file) {
       const text = await file.text();
-      loadManifestText(text, file.name || "archive_manifest.csv", "manual");
+      await loadManifestText(text, file.name || "archive_manifest.csv", "manual");
     }
 
     async function fetchBundledManifestText() {
@@ -2149,7 +2350,7 @@
 
     async function loadBundledManifest() {
       const text = await fetchBundledManifestText();
-      loadManifestText(text, "archive_manifest.csv", "bundled");
+      await loadManifestText(text, "archive_manifest.csv", "bundled");
     }
 
     function mergeRecordsFromExternal(externalRecords, { sourceIdOnly = null } = {}) {
@@ -2168,13 +2369,23 @@
 
         state.headers.forEach((header) => {
           const nextValue = String(incoming[header] || "").trim();
+          if (
+            header === "capture_url_recorded" &&
+            isLegacyWaybackCaptureUrl(nextValue) &&
+            looksLikeWaybackCaptureUrl(record.capture_url_recorded)
+          ) {
+            return;
+          }
           if (nextValue && record[header] !== nextValue) {
             record[header] = nextValue;
             changed = true;
           }
         });
 
-        applyAutoArchiveStatus(record);
+        const transition = promoteRecordIfEligible(record);
+        if (transition.changed) {
+          changed = true;
+        }
       });
 
       return changed;
@@ -2183,6 +2394,9 @@
     async function reloadBundledManifestMerge({ currentRowOnly = false } = {}) {
       const text = await fetchBundledManifestText();
       const parsed = parseManifestText(text);
+      const repairReport = await repairLegacyWaybackRows(parsed.records, {
+        sourceIdOnly: currentRowOnly && getActiveRecord() ? getActiveRecord().source_id : null
+      });
       const activeRecord = getActiveRecord();
       const beforeComplete = activeRecord ? isRowComplete(activeRecord) : false;
       const changed = mergeRecordsFromExternal(parsed.records, {
@@ -2192,6 +2406,15 @@
         verifyArchiveUrlForRecord(activeRecord).catch(() => {});
       }
       refreshAll({ persist: true });
+      if (repairReport.repaired.length || repairReport.attention.length) {
+        const repairedText = repairReport.repaired.length
+          ? `Repaired legacy Wayback URLs for: ${repairReport.repaired.join(", ")}.`
+          : "";
+        const attentionText = repairReport.attention.length
+          ? `Needs manual review: ${repairReport.attention.map((item) => item.sourceId).join(", ")}.`
+          : "";
+        elements.hashStatus.textContent = [repairedText, attentionText].filter(Boolean).join(" ");
+      }
       if (changed && activeRecord) {
         maybeHandleRowCompletionTransition(activeRecord, beforeComplete);
       }
@@ -2234,56 +2457,31 @@
       return toHex(digest);
     }
 
-    async function runFinalConsistencyCheck() {
-      const requiredIssues = [];
-      const warnings = [];
-      const duplicates = getDuplicateMaps();
-      let documentedFailureCount = 0;
-      let missingArchiveEvidenceCount = 0;
-      let undocumentedFailureCount = 0;
+    function runFinalConsistencyCheck() {
+      promoteEligibleRecords({ logTransitions: true });
+      return archiveExport.runLocalFinalConsistencyCheck({
+        records: state.records,
+        duplicates: getDuplicateMaps(),
+        expectedRowCount: 43
+      });
+    }
 
-      if (state.records.length !== 43) {
-        requiredIssues.push(`Expected 43 total rows, found ${state.records.length}.`);
-      }
-
-      state.records.forEach((record) => {
-        const prefix = record.source_id || "(unknown source)";
-        const rowIssues = getRowIssues(record);
-        rowIssues.forEach((issue) => requiredIssues.push(`${prefix}: ${issue}`));
-        if (isArchivedComplete(record) && record.capture_url_recorded && !looksLikeWaybackCaptureUrl(record.capture_url_recorded)) {
-          requiredIssues.push(`${prefix}: archive URL must start with https://web.archive.org/web/.`);
-        }
-        if (isDocumentedFailure(record)) {
-          documentedFailureCount += 1;
-        } else if (isFailedStatus(record)) {
-          undocumentedFailureCount += 1;
-        } else if (!isRowComplete(record)) {
-          missingArchiveEvidenceCount += 1;
+    async function runAdvisoryVerificationSweepForExport() {
+      return archiveExport.runAdvisoryVerificationSweep({
+        records: state.records,
+        verifyRecord: verifyArchiveUrlForRecord,
+        logWarning: (record, message, verification) => {
+          addAuditLog("export verification warning", record, "", message, {
+            finalExport: true,
+            verificationStatus: verification && verification.status ? verification.status : "",
+            verifiedBy: verification && verification.verifiedBy ? verification.verifiedBy : ""
+          });
         }
       });
-
-      if (duplicates.canonical.size) warnings.push(`${duplicates.canonical.size} duplicate canonical URL group(s) detected.`);
-      if (duplicates.archive.size) warnings.push(`${duplicates.archive.size} duplicate archive URL group(s) detected.`);
-      if (duplicates.sha.size) warnings.push(`${duplicates.sha.size} duplicate SHA-256 group(s) detected.`);
-      if (documentedFailureCount) warnings.push(`${documentedFailureCount} documented archive failure row(s) present.`);
-      if (undocumentedFailureCount) warnings.push(`${undocumentedFailureCount} archive failure row(s) still need failure documentation.`);
-      if (missingArchiveEvidenceCount) warnings.push(`${missingArchiveEvidenceCount} row(s) still missing archive evidence.`);
-
-      const verifiableRows = state.records.filter((record) => isLikelyUrl(record.capture_url_recorded));
-      for (const record of verifiableRows) {
-        const verification = await verifyArchiveUrlForRecord(record);
-        if (verification && verification.status === "failed") {
-          requiredIssues.push(`${record.source_id}: ${verification.message}`);
-        } else if (verification && verification.status === "unverified") {
-          warnings.push(`${record.source_id}: archive URL not verified by tool.`);
-        }
-      }
-
-      return { requiredIssues, warnings };
     }
 
     async function exportFinalManifest() {
-      const result = await runFinalConsistencyCheck();
+      const result = runFinalConsistencyCheck();
       elements.finalCheckIssues.innerHTML = result.requiredIssues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("");
       elements.finalCheckWarnings.innerHTML = result.warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join("");
 
@@ -2295,22 +2493,48 @@
         return false;
       }
 
-      const csv = serializeManifestCsv();
-      const manifestHash = await computeManifestHash(csv);
-      const sidecarText = `${manifestHash}  archive_manifest.csv\r\n`;
-
-      state.meta.manifestHash = manifestHash;
-      addAuditLog("manifest exported", getActiveRecord(), "", state.fileName || "archive_manifest.csv", {
-        finalExport: true,
-        manifestHash
+      const artifacts = await archiveExport.buildFinalExportArtifacts({
+        headers: state.headers,
+        records: state.records,
+        computeManifestHash
       });
-      downloadTextFile(state.fileName || "archive_manifest.csv", csv, "text/csv;charset=utf-8");
-      downloadTextFile("archive_manifest.sha256.txt", sidecarText, "text/plain;charset=utf-8");
+
+      state.meta.manifestHash = artifacts.manifestHash;
+      addAuditLog("manifest exported", getActiveRecord(), "", artifacts.exportFileName, {
+        finalExport: true,
+        manifestHash: artifacts.manifestHash
+      });
+      downloadTextFile(artifacts.exportFileName, artifacts.csvText, "text/csv;charset=utf-8");
+      downloadTextFile(artifacts.sidecarFileName, artifacts.sidecarText, "text/plain;charset=utf-8");
       state.meta.dirtySinceExport = false;
       state.meta.lastExportAt = currentIsoDateTime();
       persistLocalState();
       refreshAll({ persist: false });
+
+      const advisoryWarnings = await runAdvisoryVerificationSweepForExport();
+      if (advisoryWarnings.length) {
+        const combinedWarnings = [...result.warnings, ...advisoryWarnings];
+        elements.finalCheckWarnings.innerHTML = combinedWarnings
+          .map((warning) => `<li>${escapeHtml(warning)}</li>`)
+          .join("");
+        persistLocalState();
+        refreshAll({ persist: false });
+        window.alert(
+          `Final manifest exported with ${advisoryWarnings.length} advisory verification warning(s). Review the warnings list for details.`
+        );
+      }
       return true;
+    }
+
+    async function handleExportFinalManifestClick() {
+      try {
+        await exportFinalManifest();
+      } catch (error) {
+        console.error("Final Export failed.", error);
+        window.alert(
+          `Final Export failed.\n\n${error.name || "Error"}: ${error.message}\n\nSee the browser console for the full stack trace.`
+        );
+      }
     }
 
     function exportAuditLog() {
@@ -2319,6 +2543,16 @@
     }
 
     function validateAllRows() {
+      const activeRecord = getActiveRecord();
+      const beforeComplete = activeRecord ? isRowComplete(activeRecord) : false;
+      const promotedCount = promoteEligibleRecords({ logTransitions: true });
+      if (promotedCount) {
+        refreshAll({ persist: true, triggerReminder: true });
+        if (activeRecord) {
+          maybeHandleRowCompletionTransition(activeRecord, beforeComplete);
+        }
+      }
+
       const invalid = state.records
         .map((record, index) => ({ record, index, issues: getRowIssues(record) }))
         .filter((item) => item.issues.length);
@@ -2400,6 +2634,10 @@
     }
 
     function handleSaveAndNextPending() {
+      const activeRecord = getActiveRecord();
+      if (activeRecord) {
+        promoteRecordIfEligible(activeRecord, { logTransition: true });
+      }
       markDirty();
       refreshAll({ persist: true, triggerReminder: true });
       const nextIndex = getNextPendingIndex();
@@ -2496,7 +2734,7 @@
     elements.exportCsv.addEventListener("click", exportManifest);
     elements.exportAuditLog.addEventListener("click", exportAuditLog);
     elements.exportFinalManifest.addEventListener("click", () => {
-      exportFinalManifest().catch((error) => window.alert(error.message));
+      handleExportFinalManifestClick();
     });
     elements.validateAll.addEventListener("click", validateAllRows);
     elements.filterPending.addEventListener("click", () => {
@@ -2617,17 +2855,36 @@
       }
     });
 
-    if (restoreLocalState()) {
-      refreshAll({ persist: false });
-      const activeRecord = getActiveRecord();
-      if (activeRecord && activeRecord.capture_url_recorded) {
-        verifyArchiveUrlForRecord(activeRecord).catch(() => {});
+    async function initializeArchiveAssistant() {
+      if (restoreLocalState()) {
+        const repairReport = await repairLegacyWaybackRows(state.records);
+        promoteEligibleRecords();
+        refreshAll({ persist: repairReport.repaired.length > 0 || repairReport.attention.length > 0 });
+        if (repairReport.repaired.length || repairReport.attention.length) {
+          const repairedText = repairReport.repaired.length
+            ? `Repaired legacy Wayback URLs for: ${repairReport.repaired.join(", ")}.`
+            : "";
+          const attentionText = repairReport.attention.length
+            ? `Needs manual review: ${repairReport.attention.map((item) => item.sourceId).join(", ")}.`
+            : "";
+          elements.hashStatus.textContent = [repairedText, attentionText].filter(Boolean).join(" ");
+        }
+        const activeRecord = getActiveRecord();
+        if (activeRecord && activeRecord.capture_url_recorded) {
+          verifyArchiveUrlForRecord(activeRecord).catch(() => {});
+        }
+      } else {
+        refreshAll({ persist: false });
       }
-    } else {
-      refreshAll({ persist: false });
+
+      refreshSetupStatus().catch(() => {});
     }
 
-    refreshSetupStatus().catch(() => {});
+    initializeArchiveAssistant().catch((error) => {
+      console.error("Archive Assistant initialization failed.", error);
+      refreshAll({ persist: false });
+      refreshSetupStatus().catch(() => {});
+    });
   </script>
 </body>
 </html>

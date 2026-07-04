@@ -18,11 +18,27 @@
   }
 
   function looksLikeWaybackCaptureUrl(value) {
-    return /^https?:\/\/web\.archive\.org\/web\/\d{6,14}(?:[a-z_]{1,4})?\/https?:\/\/\S+$/i.test(trimValue(value));
+    return /^https?:\/\/web\.archive\.org\/web\/\d{14}(?:[a-z_]{1,4})?\/https?:\/\/\S+$/i.test(trimValue(value));
+  }
+
+  function isLegacyWaybackCaptureUrl(value) {
+    return /^https?:\/\/web\.archive\.org\/web\/https?:\/\/\S+$/i.test(trimValue(value));
   }
 
   function isSha256(value) {
     return /^[a-f0-9]{64}$/i.test(trimValue(value));
+  }
+
+  function normalizeComparableUrl(value) {
+    return trimValue(value)
+      .replace(/^https?:\/\//i, "")
+      .replace(/\/+$/, "")
+      .toLowerCase();
+  }
+
+  function extractWaybackOriginalUrl(value) {
+    const match = trimValue(value).match(/^https?:\/\/web\.archive\.org\/web\/\d{6,14}(?:[a-z_]{1,4})?\/(https?:\/\/.+)$/i);
+    return match ? decodeURIComponent(match[1]) : "";
   }
 
   function isFailedStatus(recordOrStatus) {
@@ -53,6 +69,17 @@
       isSha256(record && record.sha256_recorded) &&
       Boolean(trimValue(record && record.verified_by))
     );
+  }
+
+  function archiveUrlMatchesCanonical(captureUrl, canonicalUrl) {
+    const normalizedCanonical = normalizeComparableUrl(canonicalUrl);
+    if (!normalizedCanonical) {
+      return false;
+    }
+
+    const originalUrl = extractWaybackOriginalUrl(captureUrl);
+    const comparableCapture = normalizeComparableUrl(originalUrl || captureUrl);
+    return Boolean(comparableCapture) && comparableCapture === normalizedCanonical;
   }
 
   function getRowIssues(record, options = {}) {
@@ -104,6 +131,10 @@
       issues.push("Returned archive URL is required.");
     } else if (!isLikelyUrl(record && record.capture_url_recorded)) {
       issues.push("Returned archive URL must look like an http or https URL.");
+    } else if (isLegacyWaybackCaptureUrl(record && record.capture_url_recorded)) {
+      issues.push("Returned archive URL is a legacy Wayback URL without a timestamp. Repair or reselect the timestamped snapshot before export.");
+    } else if (!looksLikeWaybackCaptureUrl(record && record.capture_url_recorded)) {
+      issues.push("Returned archive URL must be a timestamped Wayback snapshot URL.");
     }
 
     if (!trimValue(record && record.archive_date)) {
@@ -120,6 +151,14 @@
       issues.push("Verified By is required.");
     }
 
+    if (
+      isNeedsRecaptureStatus(status) &&
+      hasArchiveCompletionFields(record) &&
+      !archiveUrlMatchesCanonical(record && record.capture_url_recorded, record && record.canonical_url)
+    ) {
+      issues.push("Returned archive URL does not match the current canonical URL for recapture.");
+    }
+
     return issues;
   }
 
@@ -133,6 +172,43 @@
 
   function isRowComplete(record, options = {}) {
     return isArchivedComplete(record, options) || isDocumentedFailure(record, options);
+  }
+
+  function getAutoPromotionTargetStatus(record, options = {}) {
+    const status = normalizeStatus(record && record.archive_status);
+    if (!record || !status || isFailedStatus(status)) {
+      return status;
+    }
+
+    if (status === "PENDING" && hasArchiveCompletionFields(record)) {
+      return "ARCHIVED";
+    }
+
+    if (
+      status === "NEEDS_RECAPTURE" &&
+      hasArchiveCompletionFields(record) &&
+      archiveUrlMatchesCanonical(record.capture_url_recorded, record.canonical_url) &&
+      getRowIssues(record, options).length === 0
+    ) {
+      return "ARCHIVED";
+    }
+
+    return status;
+  }
+
+  function applyAutoArchiveStatus(record, options = {}) {
+    if (!record) {
+      return { changed: false, fromStatus: "", toStatus: "" };
+    }
+
+    const currentStatus = normalizeStatus(record.archive_status);
+    const targetStatus = getAutoPromotionTargetStatus(record, options);
+    if (!targetStatus || targetStatus === currentStatus) {
+      return { changed: false, fromStatus: currentStatus, toStatus: currentStatus };
+    }
+
+    record.archive_status = targetStatus;
+    return { changed: true, fromStatus: currentStatus, toStatus: targetStatus };
   }
 
   function getCompletionMessage(record, issues, options = {}) {
@@ -158,13 +234,18 @@
   }
 
   return {
+    applyAutoArchiveStatus,
+    archiveUrlMatchesCanonical,
+    extractWaybackOriginalUrl,
     getCompletionMessage,
+    getAutoPromotionTargetStatus,
     getRowIssues,
     hasArchiveCompletionFields,
     isArchivedComplete,
     isArchivedStatus,
     isDocumentedFailure,
     isFailedStatus,
+    isLegacyWaybackCaptureUrl,
     isLikelyUrl,
     isNeedsRecaptureStatus,
     isRowComplete,

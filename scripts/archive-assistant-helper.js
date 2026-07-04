@@ -25,6 +25,10 @@ function buildArchiveUrl(timestamp, originalUrl) {
   return `https://web.archive.org/web/${timestamp}/${originalUrl}`;
 }
 
+function looksLikeWaybackCaptureUrl(value) {
+  return /^https?:\/\/web\.archive\.org\/web\/\d{14}(?:[a-z_]{1,4})?\/https?:\/\/\S+$/i.test(String(value || "").trim());
+}
+
 function normalizeComparableUrl(value) {
   return String(value || "")
     .trim()
@@ -46,6 +50,28 @@ function formatArchiveDate(timestamp) {
   return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
 }
 
+function normalizeWaybackSnapshotRows(rows) {
+  return Array.isArray(rows)
+    ? rows.slice(1)
+        .filter((row) => Array.isArray(row) && row[0] && row[1])
+        .map((row) => {
+          const timestamp = String(row[0] || "").trim();
+          const originalUrl = String(row[1] || "").trim();
+          const archiveUrl = buildArchiveUrl(timestamp, originalUrl);
+          return {
+            timestamp,
+            archiveUrl,
+            captureDate: formatArchiveDate(timestamp)
+          };
+        })
+        .filter(
+          (snapshot) =>
+            snapshot.captureDate &&
+            looksLikeWaybackCaptureUrl(snapshot.archiveUrl)
+        )
+    : [];
+}
+
 async function handleWaybackLookup(targetUrl) {
   const lookupUrl = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(targetUrl)}&output=json&fl=timestamp,original,statuscode&filter=statuscode:200`;
   const response = await fetch(lookupUrl, { redirect: "follow" });
@@ -54,16 +80,7 @@ async function handleWaybackLookup(targetUrl) {
   }
 
   const rows = await response.json();
-  return Array.isArray(rows)
-    ? rows.slice(1)
-        .filter((row) => Array.isArray(row) && row[0] && row[1])
-        .map((row) => ({
-          timestamp: row[0],
-          archiveUrl: buildArchiveUrl(row[0], row[1]),
-          captureDate: formatArchiveDate(row[0])
-        }))
-        .filter((snapshot) => snapshot.captureDate)
-    : [];
+  return normalizeWaybackSnapshotRows(rows);
 }
 
 async function handleHash(targetUrl) {
@@ -158,6 +175,19 @@ const server = http.createServer(async (request, response) => {
   }
 });
 
-server.listen(PORT, HOST, () => {
-  process.stdout.write(`Archive Assistant helper listening at http://${HOST}:${PORT}\n`);
-});
+if (require.main === module) {
+  server.listen(PORT, HOST, () => {
+    process.stdout.write(`Archive Assistant helper listening at http://${HOST}:${PORT}\n`);
+  });
+}
+
+module.exports = {
+  buildArchiveUrl,
+  formatArchiveDate,
+  handleHash,
+  handleVerify,
+  handleWaybackLookup,
+  looksLikeWaybackCaptureUrl,
+  normalizeWaybackSnapshotRows,
+  server
+};
