@@ -6,7 +6,7 @@
     "archive:assistant": "node scripts/archive-assistant-launch.js",
     "archive:helper": "node scripts/archive-assistant-helper.js",
     "archive:manifest": "node scripts/archive-manifest-generator.js",
-    "archive:manifest:test": "node --test tests/archive-manifest-generator.test.js tests/archive-assistant-validation.test.js tests/archive-assistant-export.test.js tests/archive-assistant-helper.test.js",
+    "archive:manifest:test": "node --test tests/archive-manifest-generator.test.js tests/archive-assistant-validation.test.js tests/archive-assistant-export.test.js tests/archive-assistant-helper.test.js tests/archive-assistant-wayback.test.js",
     "archive:serve": "node scripts/archive-assistant-serve.js",
     "build:publication": "node scripts/build-publication-assets.js",
     "qa": "node scripts/qa.js",

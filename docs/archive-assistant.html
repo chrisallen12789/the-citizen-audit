@@ -668,12 +668,14 @@
   </main>
 
   <script src="./archive-assistant-validation.js"></script>
+  <script src="./archive-assistant-wayback.js"></script>
   <script src="./archive-assistant-export.js"></script>
   <script>
     const STORAGE_KEY = "citizen-audit-archive-assistant-state-v3";
     const ARCHIVE_ASSISTANT_URL = "http://127.0.0.1:4175/archive-assistant.html";
     const ARCHIVE_HELPER_HEALTH_URL = "http://127.0.0.1:4317/health";
     const archiveValidation = window.ArchiveAssistantValidation;
+    const archiveWayback = window.ArchiveAssistantWayback;
     const archiveExport = window.ArchiveAssistantExport;
     const REQUIRED_HEADERS = ["source_id", "canonical_url", "save_page_now_url"];
     const AUTO_HASH_DELAY_MS = 450;
@@ -1822,34 +1824,15 @@
     }
 
     function formatArchiveDate(timestamp) {
-      const value = String(timestamp || "").trim();
-      if (!/^\d{14}$/.test(value)) {
-        return "";
-      }
-      return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
+      return archiveWayback.formatArchiveDate(timestamp);
     }
 
     function buildArchiveUrl(timestamp, originalUrl) {
-      return `https://web.archive.org/web/${timestamp}/${originalUrl}`;
+      return archiveWayback.buildArchiveUrl(timestamp, originalUrl);
     }
 
     function normalizeSnapshotRecord(snapshot) {
-      if (!snapshot || typeof snapshot !== "object") {
-        return null;
-      }
-
-      const timestamp = String(snapshot.timestamp || "").trim();
-      const archiveUrl = String(snapshot.archiveUrl || "").trim();
-      const captureDate = String(snapshot.captureDate || "").trim() || formatArchiveDate(timestamp);
-      if (!timestamp || !captureDate || !looksLikeWaybackCaptureUrl(archiveUrl)) {
-        return null;
-      }
-
-      return {
-        timestamp,
-        archiveUrl,
-        captureDate
-      };
+      return archiveWayback.normalizeSnapshotRecord(snapshot);
     }
 
     async function verifyArchiveUrlViaBrowser(archiveUrl, canonicalUrl) {
@@ -1988,17 +1971,7 @@
     }
 
     function normalizeWaybackRows(rows) {
-      const bodyRows = Array.isArray(rows) ? rows.slice(1) : [];
-      return bodyRows
-        .filter((row) => Array.isArray(row) && row[0] && row[1])
-        .map((row) =>
-          normalizeSnapshotRecord({
-            timestamp: row[0],
-            archiveUrl: buildArchiveUrl(row[0], row[1]),
-            captureDate: formatArchiveDate(row[0])
-          })
-        )
-        .filter(Boolean);
+      return archiveWayback.normalizeWaybackSnapshotRows(rows);
     }
 
     async function lookupWaybackSnapshots(canonicalUrl) {
@@ -2019,40 +1992,7 @@
     }
 
     function selectLegacyRepairSnapshot(record, snapshots) {
-      const normalizedCanonical = normalizeComparableUrl(record && record.canonical_url);
-      const matchingSnapshots = (Array.isArray(snapshots) ? snapshots : []).filter(
-        (snapshot) =>
-          snapshot &&
-          looksLikeWaybackCaptureUrl(snapshot.archiveUrl) &&
-          archiveValidation.archiveUrlMatchesCanonical(snapshot.archiveUrl, normalizedCanonical)
-      );
-
-      if (!matchingSnapshots.length) {
-        return { snapshot: null, reason: "No archived snapshots matched the canonical URL." };
-      }
-
-      const captureDate = String(record && record.archive_date || "").trim();
-      if (captureDate) {
-        const datedMatches = matchingSnapshots.filter((snapshot) => snapshot.captureDate === captureDate);
-        if (datedMatches.length === 1) {
-          return { snapshot: datedMatches[0], reason: "" };
-        }
-        if (datedMatches.length > 1) {
-          return {
-            snapshot: null,
-            reason: "Multiple archived snapshots share the recorded capture date. Select the correct timestamped snapshot manually."
-          };
-        }
-      }
-
-      if (matchingSnapshots.length === 1) {
-        return { snapshot: matchingSnapshots[0], reason: "" };
-      }
-
-      return {
-        snapshot: null,
-        reason: "Multiple archived snapshots exist for this canonical URL. Select the correct timestamped snapshot manually."
-      };
+      return archiveWayback.selectLegacyRepairSnapshot(record, snapshots);
     }
 
     async function repairLegacyWaybackRecord(record) {
@@ -2070,24 +2010,16 @@
 
       try {
         const { snapshots, provider } = await lookupWaybackSnapshots(canonicalUrl);
-        const resolution = selectLegacyRepairSnapshot(record, snapshots);
-        if (!resolution.snapshot) {
-          const message = `Legacy archive URL is missing a Wayback timestamp. ${resolution.reason}`;
+        const resolution = archiveWayback.applyLegacyWaybackRepair(record, snapshots);
+        if (!resolution.repaired) {
+          const message = resolution.message || "Legacy archive URL is missing a Wayback timestamp and needs manual review.";
           setImportRepairState(record, { status: "attention", message, provider });
           return { repaired: false, attention: true, message, provider };
         }
-
-        const previousUrl = String(record.capture_url_recorded || "").trim();
-        record.capture_url_recorded = resolution.snapshot.archiveUrl;
-        if (!String(record.archive_date || "").trim()) {
-          record.archive_date = resolution.snapshot.captureDate;
-        }
-        if (previousUrl !== resolution.snapshot.archiveUrl) {
-          record.sha256_recorded = "";
-        }
         clearArchiveVerification(record);
         clearImportRepairState(record);
-        addAuditLog("legacy archive URL repaired", record, previousUrl, resolution.snapshot.archiveUrl, { provider });
+        addAuditLog("legacy archive URL repaired", record, resolution.previousUrl, resolution.archiveUrl, { provider });
+        const transition = promoteRecordIfEligible(record, { logTransition: true });
         return { repaired: true, attention: false, provider };
       } catch (error) {
         const message = `Legacy archive URL is missing a Wayback timestamp and could not be repaired automatically: ${error.message}`;
@@ -2366,21 +2298,7 @@
         if (!incoming) {
           return;
         }
-
-        state.headers.forEach((header) => {
-          const nextValue = String(incoming[header] || "").trim();
-          if (
-            header === "capture_url_recorded" &&
-            isLegacyWaybackCaptureUrl(nextValue) &&
-            looksLikeWaybackCaptureUrl(record.capture_url_recorded)
-          ) {
-            return;
-          }
-          if (nextValue && record[header] !== nextValue) {
-            record[header] = nextValue;
-            changed = true;
-          }
-        });
+        changed = archiveWayback.mergeIncomingRecord(record, incoming, state.headers) || changed;
 
         const transition = promoteRecordIfEligible(record);
         if (transition.changed) {

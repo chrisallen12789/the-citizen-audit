@@ -3,6 +3,7 @@
 const http = require("node:http");
 const { URL } = require("node:url");
 const { createHash } = require("node:crypto");
+const wayback = require("../docs/archive-assistant-wayback.js");
 
 const PORT = 4317;
 const HOST = "127.0.0.1";
@@ -19,10 +20,6 @@ function sendJson(response, statusCode, payload) {
     "Access-Control-Allow-Headers": "Content-Type"
   });
   response.end(JSON.stringify(payload));
-}
-
-function buildArchiveUrl(timestamp, originalUrl) {
-  return `https://web.archive.org/web/${timestamp}/${originalUrl}`;
 }
 
 function looksLikeWaybackCaptureUrl(value) {
@@ -42,36 +39,6 @@ function extractWaybackOriginalUrl(value) {
   return match ? decodeURIComponent(match[1]) : "";
 }
 
-function formatArchiveDate(timestamp) {
-  const value = String(timestamp || "").trim();
-  if (!/^\d{14}$/.test(value)) {
-    return "";
-  }
-  return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
-}
-
-function normalizeWaybackSnapshotRows(rows) {
-  return Array.isArray(rows)
-    ? rows.slice(1)
-        .filter((row) => Array.isArray(row) && row[0] && row[1])
-        .map((row) => {
-          const timestamp = String(row[0] || "").trim();
-          const originalUrl = String(row[1] || "").trim();
-          const archiveUrl = buildArchiveUrl(timestamp, originalUrl);
-          return {
-            timestamp,
-            archiveUrl,
-            captureDate: formatArchiveDate(timestamp)
-          };
-        })
-        .filter(
-          (snapshot) =>
-            snapshot.captureDate &&
-            looksLikeWaybackCaptureUrl(snapshot.archiveUrl)
-        )
-    : [];
-}
-
 async function handleWaybackLookup(targetUrl) {
   const lookupUrl = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(targetUrl)}&output=json&fl=timestamp,original,statuscode&filter=statuscode:200`;
   const response = await fetch(lookupUrl, { redirect: "follow" });
@@ -80,7 +47,7 @@ async function handleWaybackLookup(targetUrl) {
   }
 
   const rows = await response.json();
-  return normalizeWaybackSnapshotRows(rows);
+  return wayback.normalizeWaybackSnapshotRows(rows);
 }
 
 async function handleHash(targetUrl) {
@@ -182,12 +149,12 @@ if (require.main === module) {
 }
 
 module.exports = {
-  buildArchiveUrl,
-  formatArchiveDate,
+  buildArchiveUrl: wayback.buildArchiveUrl,
+  formatArchiveDate: wayback.formatArchiveDate,
   handleHash,
   handleVerify,
   handleWaybackLookup,
   looksLikeWaybackCaptureUrl,
-  normalizeWaybackSnapshotRows,
+  normalizeWaybackSnapshotRows: wayback.normalizeWaybackSnapshotRows,
   server
 };

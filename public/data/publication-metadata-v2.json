@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-04T13:42:44.402Z",
+  "generatedAt": "2026-07-04T13:53:42.360Z",
   "version": 2,
   "buildVersion": "1.0.0-rc1",
   "audit": {
@@ -200,7 +200,7 @@
   },
   "qaStatus": {
     "status": "passed",
-    "validatedAt": "2026-07-04T13:42:44.399Z",
+    "validatedAt": "2026-07-04T13:53:42.357Z",
     "htmlPagesChecked": 159,
     "checksEnforced": [
       "claim sources",
@@ -225,7 +225,7 @@
     ]
   },
   "status": {
-    "generatedAt": "2026-07-04T13:42:44.401Z",
+    "generatedAt": "2026-07-04T13:53:42.359Z",
     "status": "healthy",
     "qaStatus": "passed",
     "buildVersion": "1.0.0-rc1",
