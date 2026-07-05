@@ -43,7 +43,7 @@ else for (const problem of problems) lines.push(`- ${problem}`);
 lines.push("");
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-fs.writeFileSync(outputPath, `${lines.join("\n")}\n", "utf8");
+fs.writeFileSync(outputPath, `${lines.join("\n")}\n`, "utf8");
 console.log(`Proposal status report written to ${path.relative(root, outputPath)}`);
 
 if (problems.length) process.exit(1);
