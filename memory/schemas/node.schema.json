@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/memory/schemas/node.schema.json",
+  "title": "Institution Memory Node",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "audit",
+        "claim",
+        "source",
+        "decision",
+        "unknown",
+        "challenge",
+        "release",
+        "agent",
+        "event",
+        "rule",
+        "report",
+        "document"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "path": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
+  }
+}
