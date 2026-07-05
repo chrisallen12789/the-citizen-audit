@@ -73,7 +73,7 @@
     {
       "id": "AGENT-PUBLICATION-BUILDER",
       "name": "Publication Builder Agent",
-      "status": "planned",
+      "status": "active",
       "authorityLevel": 1,
       "command": "npm run agent:publication",
       "dryRunCommand": "npm run agent:publication:dry",
