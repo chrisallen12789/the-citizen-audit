@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/proposals/proposal.schema.json",
+  "title": "Institutional Proposal Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "status",
+    "proposalType",
+    "summary",
+    "rationale",
+    "requiredAuthorityLevel",
+    "created"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^PRP-[0-9]{6}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "pending-review", "approved", "rejected", "implemented", "withdrawn"]
+    },
+    "proposalType": {
+      "type": "string",
+      "enum": ["agent", "governance", "architecture", "qa", "release", "memory", "api", "continuity", "other"]
+    },
+    "summary": { "type": "string", "minLength": 1 },
+    "rationale": { "type": "string", "minLength": 1 },
+    "expectedBenefit": { "type": "string" },
+    "risk": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "requiredAuthorityLevel": { "type": "integer", "minimum": 0, "maximum": 4 },
+    "created": { "type": "string" },
+    "updated": { "type": "string" },
+    "createdBy": { "type": "string" },
+    "affectedRecords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "humanApprovalRequired": { "type": "boolean" },
+    "decisionRecord": { "type": "string" },
+    "notes": { "type": "string" }
+  }
+}
