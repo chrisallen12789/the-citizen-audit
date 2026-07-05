@@ -1,0 +1,158 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "principle": "Agents may automate process. Agents may not automate truth.",
+  "agents": [
+    {
+      "id": "AGENT-REPAIR",
+      "name": "Repair Agent",
+      "status": "active",
+      "authorityLevel": 1,
+      "command": "npm run agent:repair",
+      "dryRunCommand": "npm run agent:repair:dry",
+      "reportPath": "docs/repair-agent-report.md",
+      "allowedActions": [
+        "run ADS export",
+        "run ADS validation",
+        "run publication build",
+        "run QA",
+        "regenerate ADS records",
+        "rebuild generated publication assets",
+        "write repair report"
+      ],
+      "forbiddenActions": [
+        "change claim meaning",
+        "change source verification status",
+        "delete failing records",
+        "weaken QA gates",
+        "change publication readiness conclusions"
+      ]
+    },
+    {
+      "id": "AGENT-SOURCE-STEWARD",
+      "name": "Source Steward Agent",
+      "status": "planned",
+      "authorityLevel": 0,
+      "command": "npm run agent:sources",
+      "dryRunCommand": "npm run agent:sources",
+      "reportPath": "docs/agent-reports/source-steward.md",
+      "allowedActions": [
+        "detect missing archive URLs",
+        "detect stale retrieval dates",
+        "detect inconsistent archive status",
+        "detect high-priority sources without canonical URLs",
+        "write source health report"
+      ],
+      "forbiddenActions": [
+        "mark a source verified without evidence",
+        "replace a source without review",
+        "change source health to pass QA"
+      ]
+    },
+    {
+      "id": "AGENT-ADS-STEWARD",
+      "name": "ADS Steward Agent",
+      "status": "planned",
+      "authorityLevel": 1,
+      "command": "npm run agent:ads",
+      "dryRunCommand": "npm run agent:ads:dry",
+      "reportPath": "docs/agent-reports/ads-steward.md",
+      "allowedActions": [
+        "export ADS records",
+        "validate ADS records",
+        "sort registry records",
+        "detect legacy ID mapping conflicts",
+        "write ADS stewardship report"
+      ],
+      "forbiddenActions": [
+        "change permanent IDs after assignment",
+        "delete ADS records",
+        "silently rewrite audit history"
+      ]
+    },
+    {
+      "id": "AGENT-PUBLICATION-BUILDER",
+      "name": "Publication Builder Agent",
+      "status": "planned",
+      "authorityLevel": 1,
+      "command": "npm run agent:publication",
+      "dryRunCommand": "npm run agent:publication:dry",
+      "reportPath": "docs/agent-reports/publication-builder.md",
+      "allowedActions": [
+        "rebuild publication assets",
+        "regenerate search data",
+        "regenerate trace records",
+        "regenerate evidence graph",
+        "regenerate manifests",
+        "write publication builder report"
+      ],
+      "forbiddenActions": [
+        "edit source data to satisfy generated outputs",
+        "weaken generated page checks"
+      ]
+    },
+    {
+      "id": "AGENT-CHALLENGE-INTAKE",
+      "name": "Challenge Intake Agent",
+      "status": "planned",
+      "authorityLevel": 3,
+      "command": "npm run agent:challenge-intake",
+      "dryRunCommand": "npm run agent:challenge-intake:dry",
+      "reportPath": "docs/agent-reports/challenge-intake.md",
+      "allowedActions": [
+        "classify challenge type",
+        "detect affected claim IDs",
+        "detect affected source IDs",
+        "create draft challenge records",
+        "route challenge to human review"
+      ],
+      "forbiddenActions": [
+        "decide challenge outcome",
+        "edit challenged claim directly",
+        "discard serious challenges"
+      ]
+    },
+    {
+      "id": "AGENT-RELEASE-STEWARD",
+      "name": "Release Steward Agent",
+      "status": "planned",
+      "authorityLevel": 0,
+      "command": "npm run agent:release",
+      "dryRunCommand": "npm run agent:release",
+      "reportPath": "docs/agent-reports/release-steward.md",
+      "allowedActions": [
+        "run full QA",
+        "verify release artifacts exist",
+        "generate release checklist",
+        "calculate checksums",
+        "produce publication package inventory"
+      ],
+      "forbiddenActions": [
+        "publish over failed gates",
+        "change readiness gates",
+        "modify evidence to satisfy release"
+      ]
+    },
+    {
+      "id": "AGENT-CONTENT-HYGIENE",
+      "name": "Content Hygiene Agent",
+      "status": "planned",
+      "authorityLevel": 0,
+      "command": "npm run agent:hygiene",
+      "dryRunCommand": "npm run agent:hygiene",
+      "reportPath": "docs/agent-reports/content-hygiene.md",
+      "allowedActions": [
+        "normalize whitespace reports",
+        "detect duplicate page titles",
+        "flag inconsistent capitalization",
+        "flag broken internal links",
+        "write hygiene report"
+      ],
+      "forbiddenActions": [
+        "rewrite institutional language",
+        "simplify legal language without review",
+        "change claims or evidence descriptions"
+      ]
+    }
+  ]
+}
