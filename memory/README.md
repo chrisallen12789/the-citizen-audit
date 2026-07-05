@@ -1,6 +1,6 @@
 # Memory Engine
 
-Status: v1 foundation
+Status: v1.1 foundation
 
 The Memory Engine is the institutional memory layer for The Citizen Audit.
 
@@ -52,6 +52,28 @@ An edge is a relationship:
 - governed-by;
 - produced-by;
 - included-in.
+
+## Commands
+
+```bash
+npm run memory:status
+npm run memory:query -- NODE-ID
+npm run memory:export
+```
+
+Examples:
+
+```bash
+npm run memory:query -- KERNEL-001
+npm run memory:query -- AGENT-ADS-STEWARD
+```
+
+## Outputs
+
+```text
+memory/reports/status.md
+public/data/memory-graph.json
+```
 
 ## Doctrine
 
