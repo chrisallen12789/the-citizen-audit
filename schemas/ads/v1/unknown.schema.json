@@ -15,7 +15,9 @@
   ],
   "properties": {
     "id": { "type": "string", "pattern": "^UNK-[0-9]{6}$" },
+    "legacyId": { "type": "string", "pattern": "^A-[0-9]+$" },
     "auditId": { "type": "string", "pattern": "^AUD-[0-9]{3}$" },
+    "legacyAuditId": { "type": "string", "pattern": "^AUDIT-[0-9]+$" },
     "title": { "type": "string", "minLength": 1 },
     "status": {
       "type": "string",
@@ -32,9 +34,19 @@
       "items": { "type": "string", "pattern": "^CLM-[0-9]{6}$" },
       "uniqueItems": true
     },
+    "legacyRelatedClaims": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^C-[0-9]+$" },
+      "uniqueItems": true
+    },
     "relatedSources": {
       "type": "array",
       "items": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "legacyRelatedSources": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^S-[0-9]+$" },
       "uniqueItems": true
     },
     "resolution": { "type": "string" },
