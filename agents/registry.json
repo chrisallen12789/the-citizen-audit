@@ -4,6 +4,29 @@
   "principle": "Agents may automate process. Agents may not automate truth.",
   "agents": [
     {
+      "id": "AGENT-CONSTITUTION-GUARDIAN",
+      "name": "Constitution Guardian",
+      "status": "active",
+      "authorityLevel": 0,
+      "command": "npm run guardian:constitution",
+      "dryRunCommand": "npm run guardian:constitution",
+      "reportPath": "guardians/constitution/reports/status.md",
+      "allowedActions": [
+        "inspect institutional doctrine",
+        "inspect permission rules",
+        "inspect agent authority declarations",
+        "inspect proposal authority declarations",
+        "write constitutional guardian report"
+      ],
+      "forbiddenActions": [
+        "rewrite doctrine",
+        "approve truth-bearing changes",
+        "weaken authority rules",
+        "change claims or evidence",
+        "override human approval requirements"
+      ]
+    },
+    {
       "id": "AGENT-REPAIR",
       "name": "Repair Agent",
       "status": "active",
