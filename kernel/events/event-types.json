@@ -1,0 +1,62 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "eventTypes": [
+    {
+      "type": "agent.started",
+      "description": "An agent began execution."
+    },
+    {
+      "type": "agent.completed",
+      "description": "An agent completed execution."
+    },
+    {
+      "type": "agent.failed",
+      "description": "An agent stopped with unresolved failures."
+    },
+    {
+      "type": "report.created",
+      "description": "An agent or service created an institutional report."
+    },
+    {
+      "type": "ads.exported",
+      "description": "ADS records were exported from canonical data."
+    },
+    {
+      "type": "ads.validation.passed",
+      "description": "ADS validation completed successfully."
+    },
+    {
+      "type": "ads.validation.failed",
+      "description": "ADS validation failed."
+    },
+    {
+      "type": "publication.built",
+      "description": "Generated publication assets were rebuilt."
+    },
+    {
+      "type": "qa.passed",
+      "description": "Institutional QA passed."
+    },
+    {
+      "type": "qa.failed",
+      "description": "Institutional QA failed."
+    },
+    {
+      "type": "source.health.warning",
+      "description": "A source stewardship check found a source risk."
+    },
+    {
+      "type": "challenge.received",
+      "description": "A public challenge or correction request was received."
+    },
+    {
+      "type": "release.candidate.created",
+      "description": "A release candidate was created."
+    },
+    {
+      "type": "human.approval.required",
+      "description": "A proposed action requires human approval under authority rules."
+    }
+  ]
+}
