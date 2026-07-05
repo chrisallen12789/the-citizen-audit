@@ -18,9 +18,12 @@ Core ADS locations:
 
 - `docs/architecture/ads-v1.md` — institutional data specification.
 - `docs/architecture/ads-legacy-compatibility.md` — mapping between existing publication IDs and ADS permanent IDs.
+- `docs/architecture/qa-gates.md` — institutional QA gate documentation.
+- `docs/architecture/public-api-contract.md` — planned ADS public API contract.
+- `docs/architecture/platform-v2-roadmap.md` — long-term Platform v2 migration roadmap.
 - `schemas/ads/v1/` — JSON schemas for audit, claim, source, decision, unknown, and registry records.
 - `scripts/export-ads.js` — exports ADS records from the existing `data-model`.
-- `scripts/validate-ads.js` — validates ADS schema presence, registry shape, audit records, and referenced record sets.
+- `scripts/validate-ads.js` — validates ADS schema presence, registry shape, audit records, referenced record sets, duplicate ADS IDs, and record-count metrics.
 - `registry/audits.json` — canonical ADS audit registry.
 - `audits/001/` — ADS export target for Audit 001.
 
