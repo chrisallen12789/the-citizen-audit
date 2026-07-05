@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/ads/v1/unknown.schema.json",
+  "title": "ADS v1 Unknown Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "auditId",
+    "title",
+    "status",
+    "description",
+    "created",
+    "updated"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^UNK-[0-9]{6}$" },
+    "auditId": { "type": "string", "pattern": "^AUD-[0-9]{3}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["open", "partially-resolved", "resolved", "blocked", "withdrawn"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "major", "minor", "informational"]
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "whyItMatters": { "type": "string" },
+    "relatedClaims": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^CLM-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "relatedSources": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "resolution": { "type": "string" },
+    "created": { "type": "string", "format": "date" },
+    "updated": { "type": "string", "format": "date" },
+    "notes": { "type": "string" }
+  }
+}
