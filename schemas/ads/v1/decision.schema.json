@@ -15,6 +15,7 @@
   ],
   "properties": {
     "id": { "type": "string", "pattern": "^DEC-[0-9]{6}$" },
+    "legacyId": { "type": "string", "pattern": "^D-[0-9]+$" },
     "title": { "type": "string", "minLength": 1 },
     "status": {
       "type": "string",
@@ -34,6 +35,11 @@
     "sources": {
       "type": "array",
       "items": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "legacySources": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^S-[0-9]+$" },
       "uniqueItems": true
     },
     "supersedes": {
