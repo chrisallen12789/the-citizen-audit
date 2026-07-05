@@ -6,9 +6,15 @@ const publication = require('../data-model');
 const ROOT = path.resolve(__dirname, '..');
 const ADS_VERSION = '1.0.0';
 const TODAY = new Date().toISOString().slice(0, 10);
+const REGISTRY_PATH = path.join(ROOT, 'registry', 'audits.json');
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function readJsonIfExists(filePath) {
+  if (!fs.existsSync(filePath)) return null;
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
 function writeJson(relativePath, value) {
@@ -204,6 +210,7 @@ function exportAudit(audit) {
     archiveDate: source.archiveDate || undefined,
     health: normalizeSourceHealth(source),
     usedByClaims: (source.claimIds || []).map(adsClaimId),
+    legacyUsedByClaims: source.claimIds || [],
     notes: source.summary || source.urlVerificationNote || ''
   }));
 
@@ -233,7 +240,9 @@ function exportAudit(audit) {
     description: question.currentState || question.recordNeeded || question.whyItMatters || question.title,
     whyItMatters: question.whyItMatters || '',
     relatedClaims: (question.claimIds || []).map(adsClaimId),
+    legacyRelatedClaims: question.claimIds || [],
     relatedSources: (question.sourceIds || question.relatedSources || []).map(adsSourceId),
+    legacyRelatedSources: question.sourceIds || question.relatedSources || [],
     resolution: question.recordNeeded || '',
     created: firstRevisionDate(question),
     updated: firstRevisionDate(question),
@@ -258,10 +267,15 @@ function exportAudit(audit) {
   };
 }
 
+const previousRegistry = readJsonIfExists(REGISTRY_PATH);
+const exportedAudits = publication.audits.map(exportAudit);
+const exportedIds = new Set(exportedAudits.map((audit) => audit.id));
+const preservedAudits = (previousRegistry?.audits || []).filter((audit) => !exportedIds.has(audit.id));
+
 const registry = {
   adsVersion: ADS_VERSION,
   updated: TODAY,
-  audits: publication.audits.map(exportAudit)
+  audits: [...exportedAudits, ...preservedAudits].sort((left, right) => left.id.localeCompare(right.id))
 };
 
 writeJson('registry/audits.json', registry);
