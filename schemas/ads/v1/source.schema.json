@@ -13,6 +13,7 @@
   ],
   "properties": {
     "id": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+    "legacyId": { "type": "string", "pattern": "^S-[0-9]+$" },
     "title": { "type": "string", "minLength": 1 },
     "sourceType": {
       "type": "string",
@@ -43,6 +44,11 @@
     "usedByClaims": {
       "type": "array",
       "items": { "type": "string", "pattern": "^CLM-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "legacyUsedByClaims": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^C-[0-9]+$" },
       "uniqueItems": true
     },
     "notes": { "type": "string" }
