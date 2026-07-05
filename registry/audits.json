@@ -1,0 +1,22 @@
+{
+  "adsVersion": "1.0.0",
+  "updated": "2026-07-05",
+  "audits": [
+    {
+      "id": "AUD-001",
+      "title": "Audit 001",
+      "status": "published",
+      "path": "/audits/001/",
+      "record": "audits/001/audit.json",
+      "publicUrl": "/audits/001/"
+    },
+    {
+      "id": "AUD-002",
+      "title": "Audit 002",
+      "status": "active",
+      "path": "/audits/002/",
+      "record": "audits/002/audit.json",
+      "publicUrl": "/audits/002/"
+    }
+  ]
+}
