@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 const publication = require("./publication-data");
 const { applyQaStatus } = require("./build/qa-status");
 const {
@@ -87,8 +88,31 @@ function collectIds(records, label, problems) {
   return ids;
 }
 
+function runAdsValidation(problems) {
+  const result = spawnSync(process.execPath, [path.join(root, "scripts", "validate-ads.js")], {
+    cwd: root,
+    encoding: "utf8"
+  });
+
+  if (result.error) {
+    problems.push(`ADS validation could not run: ${result.error.message}`);
+    return;
+  }
+
+  if (result.status !== 0) {
+    const output = `${result.stdout || ""}\n${result.stderr || ""}`
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    for (const line of output) {
+      problems.push(`ADS validation: ${line}`);
+    }
+  }
+}
+
 const htmlFiles = walk(publicDir);
 const problems = [];
+runAdsValidation(problems);
 const seenTitles = new Map();
 const seenDescriptions = new Map();
 const strictMetaFiles = new Set([
@@ -193,7 +217,7 @@ for (const filePath of htmlFiles) {
   if (
     html.includes("Ãƒâ€š") ||
     html.includes("ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â") ||
-    html.includes("ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“") ||
+    html.includes("ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Åœ") ||
     html.includes("ÃƒÂ¢Ã¢â€šÂ¬")
   ) {
     problems.push(`${relative}: possible mojibake detected`);
@@ -888,6 +912,7 @@ applyQaStatus({
   status: "passed",
   htmlPagesChecked: htmlFiles.length,
   checksEnforced: [
+    "ADS validation",
     "claim sources",
     "decision references",
     "graph integrity",
