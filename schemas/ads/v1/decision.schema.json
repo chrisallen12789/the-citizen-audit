@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/ads/v1/decision.schema.json",
+  "title": "ADS v1 Decision Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "status",
+    "scope",
+    "decision",
+    "created",
+    "updated"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^DEC-[0-9]{6}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "locked", "superseded", "withdrawn"]
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["institution", "audit", "claim", "source", "publication"]
+    },
+    "appliesTo": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "decision": { "type": "string", "minLength": 1 },
+    "rationale": { "type": "string" },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "supersedes": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^DEC-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "created": { "type": "string", "format": "date" },
+    "updated": { "type": "string", "format": "date" },
+    "locked": { "type": "string", "format": "date" },
+    "notes": { "type": "string" }
+  }
+}
