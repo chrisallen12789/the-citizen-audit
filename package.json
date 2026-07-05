@@ -3,6 +3,8 @@
   "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
+    "agent:repair": "node scripts/repair-agent.js",
+    "agent:repair:dry": "node scripts/repair-agent.js --dry-run",
     "ads:export": "node scripts/export-ads.js",
     "ads:validate": "node scripts/validate-ads.js",
     "ads:sync": "npm run ads:export && npm run ads:validate",
