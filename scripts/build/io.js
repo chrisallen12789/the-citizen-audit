@@ -14,6 +14,11 @@ function writeFile(publicDir, relativePath, content) {
 function copyFile(publicDir, relativePath, sourcePath) {
   const target = path.join(publicDir, relativePath);
   ensureDir(path.dirname(target));
+
+  if (path.resolve(sourcePath) === path.resolve(target)) {
+    return;
+  }
+
   fs.copyFileSync(sourcePath, target);
 }
 
