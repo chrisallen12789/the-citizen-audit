@@ -3,6 +3,7 @@
   "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
+    "memory:status": "node memory/status.js",
     "executive:status": "node kernel/executive/status.js",
     "agent:ads": "node scripts/ads-steward-agent.js",
     "agent:ads:dry": "node scripts/ads-steward-agent.js --dry-run",
