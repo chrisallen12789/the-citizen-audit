@@ -3,6 +3,8 @@
   "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
+    "memory:export": "node memory/export.js",
+    "memory:query": "node memory/query.js",
     "memory:status": "node memory/status.js",
     "executive:status": "node kernel/executive/status.js",
     "agent:ads": "node scripts/ads-steward-agent.js",
