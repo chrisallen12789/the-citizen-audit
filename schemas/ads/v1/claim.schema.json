@@ -14,7 +14,9 @@
   ],
   "properties": {
     "id": { "type": "string", "pattern": "^CLM-[0-9]{6}$" },
+    "legacyId": { "type": "string", "pattern": "^C-[0-9]+$" },
     "auditId": { "type": "string", "pattern": "^AUD-[0-9]{3}$" },
+    "legacyAuditId": { "type": "string", "pattern": "^AUDIT-[0-9]+$" },
     "title": { "type": "string", "minLength": 1 },
     "statement": { "type": "string", "minLength": 1 },
     "status": {
@@ -34,14 +36,29 @@
       "items": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
       "uniqueItems": true
     },
+    "legacySources": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^S-[0-9]+$" },
+      "uniqueItems": true
+    },
     "decisions": {
       "type": "array",
       "items": { "type": "string", "pattern": "^DEC-[0-9]{6}$" },
       "uniqueItems": true
     },
+    "legacyDecisions": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^D-[0-9]+$" },
+      "uniqueItems": true
+    },
     "unknowns": {
       "type": "array",
       "items": { "type": "string", "pattern": "^UNK-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "legacyUnknowns": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^A-[0-9]+$" },
       "uniqueItems": true
     },
     "calculation": {
