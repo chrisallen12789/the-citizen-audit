@@ -1,6 +1,6 @@
 # Citizen Audit Kernel
 
-Status: foundational architecture
+Status: executable foundation
 
 The Citizen Audit Kernel is the institutional runtime for agents, events, permissions, reports, and future automation.
 
@@ -29,6 +29,35 @@ The kernel does not rewrite claims.
 The kernel does not change source verification status without evidence.
 
 The kernel does not erase unknowns, weaken standards, or override the public constitution.
+
+## Current runtime commands
+
+Direct script usage:
+
+```bash
+node kernel/runtime/status.js
+node kernel/runtime/run.js AGENT-REPAIR
+node kernel/runtime/run.js --all
+node kernel/runtime/run.js --all --dry-run
+```
+
+When wired through `package.json`, these map to:
+
+```bash
+npm run kernel:status
+npm run kernel:run -- AGENT-REPAIR
+npm run kernel:run-all
+npm run kernel:run-all:dry
+```
+
+## Runtime outputs
+
+The kernel writes:
+
+```text
+kernel/events/log.jsonl
+docs/agent-reports/kernel-dashboard.md
+```
 
 ## Target structure
 
