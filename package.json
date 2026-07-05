@@ -3,6 +3,8 @@
   "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
+    "agent:ads": "node scripts/ads-steward-agent.js",
+    "agent:ads:dry": "node scripts/ads-steward-agent.js --dry-run",
     "agent:repair": "node scripts/repair-agent.js",
     "agent:repair:dry": "node scripts/repair-agent.js --dry-run",
     "agent:sources": "node scripts/source-steward-agent.js",
