@@ -3,6 +3,7 @@
   "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
+    "ads:validate": "node scripts/validate-ads.js",
     "archive:assistant": "node scripts/archive-assistant-launch.js",
     "archive:helper": "node scripts/archive-assistant-helper.js",
     "archive:manifest": "node scripts/archive-manifest-generator.js",
