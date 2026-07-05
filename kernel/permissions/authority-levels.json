@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "levels": [
+    {
+      "level": 0,
+      "name": "Report Only",
+      "description": "May inspect records and write reports. May not modify canonical or generated records.",
+      "examples": [
+        "source health report",
+        "release checklist",
+        "content hygiene report"
+      ]
+    },
+    {
+      "level": 1,
+      "name": "Derived File Repair",
+      "description": "May regenerate derived files from canonical records. May not change truth-bearing records.",
+      "examples": [
+        "rebuild publication assets",
+        "export ADS records",
+        "regenerate search index",
+        "regenerate manifests"
+      ]
+    },
+    {
+      "level": 2,
+      "name": "Mechanical Canonical Edit",
+      "description": "May make deterministic edits to canonical records where meaning cannot change.",
+      "examples": [
+        "sort registry entries",
+        "normalize JSON formatting",
+        "add missing derived count when computable"
+      ]
+    },
+    {
+      "level": 3,
+      "name": "Draft Institutional Change",
+      "description": "May create draft truth-bearing or governance records for human review. May not activate them.",
+      "examples": [
+        "draft challenge record",
+        "draft correction record",
+        "draft source replacement proposal"
+      ]
+    },
+    {
+      "level": 4,
+      "name": "Human Approval Required",
+      "description": "Reserved for truth-bearing changes, publication readiness, constitutional changes, and final challenge outcomes.",
+      "examples": [
+        "change claim conclusion",
+        "mark source verified",
+        "close challenge",
+        "publish release",
+        "amend constitution"
+      ]
+    }
+  ]
+}
