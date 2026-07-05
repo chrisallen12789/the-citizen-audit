@@ -3,6 +3,7 @@
   "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
+    "proposal:status": "node proposals/status.js",
     "memory:export": "node memory/export.js",
     "memory:query": "node memory/query.js",
     "memory:status": "node memory/status.js",
