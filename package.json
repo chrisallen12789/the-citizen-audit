@@ -12,6 +12,8 @@
     "agent:sources": "node scripts/source-steward-agent.js",
     "agents:list": "node -e \"const r=require('./agents/registry.json'); for (const a of r.agents) console.log(`${a.id} | ${a.status} | L${a.authorityLevel} | ${a.command}`)\"",
     "kernel:run": "node kernel/runtime/run.js",
+    "kernel:run-all": "node kernel/runtime/run.js --all",
+    "kernel:run-all:dry": "node kernel/runtime/run.js --all --dry-run",
     "kernel:status": "node kernel/runtime/status.js",
     "ads:export": "node scripts/export-ads.js",
     "ads:validate": "node scripts/validate-ads.js",
