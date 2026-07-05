@@ -3,7 +3,9 @@
   "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
+    "ads:export": "node scripts/export-ads.js",
     "ads:validate": "node scripts/validate-ads.js",
+    "ads:sync": "npm run ads:export && npm run ads:validate",
     "archive:assistant": "node scripts/archive-assistant-launch.js",
     "archive:helper": "node scripts/archive-assistant-helper.js",
     "archive:manifest": "node scripts/archive-manifest-generator.js",
