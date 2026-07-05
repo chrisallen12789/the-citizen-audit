@@ -12,20 +12,31 @@ Deployment uses Cloudflare Wrangler static assets. Website files live under `pub
 
 Platform v2 is being developed around the Audit Definition Specification (ADS) so future audits can be represented as structured records instead of handcrafted pages.
 
+The current publication platform already includes a structured `data-model`, relationship enrichment, evidence graph generation, search output generation, trace records, and detail renderers. ADS v1 therefore works as an institutional compatibility layer over the existing platform rather than as a rewrite.
+
 Core ADS locations:
 
 - `docs/architecture/ads-v1.md` — institutional data specification.
+- `docs/architecture/ads-legacy-compatibility.md` — mapping between existing publication IDs and ADS permanent IDs.
 - `schemas/ads/v1/` — JSON schemas for audit, claim, source, decision, unknown, and registry records.
-- `registry/audits.json` — canonical audit registry.
-- `audits/001/` and `audits/002/` — initial ADS audit records and record-set placeholders.
+- `scripts/export-ads.js` — exports ADS records from the existing `data-model`.
+- `scripts/validate-ads.js` — validates ADS schema presence, registry shape, audit records, and referenced record sets.
+- `registry/audits.json` — canonical ADS audit registry.
+- `audits/001/` — ADS export target for Audit 001.
 
 ## Local workflow
 
 1. Run `npm install`
-2. Run `npm run ads:validate`
+2. Run `npm run ads:sync`
 3. Run `npm run build:publication`
 4. Run `npm run qa`
 5. Run `npm run release:rc`
+
+ADS-only commands:
+
+- `npm run ads:export`
+- `npm run ads:validate`
+- `npm run ads:sync`
 
 ## Deployment
 
