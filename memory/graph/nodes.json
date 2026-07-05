@@ -1,0 +1,86 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "nodes": [
+    {
+      "id": "DOC-VISION",
+      "type": "document",
+      "title": "The Citizen Audit Long-Term Vision",
+      "status": "active",
+      "path": "institution/vision.md",
+      "summary": "Defines the long-term institutional vision and AI doctrine."
+    },
+    {
+      "id": "DOC-2035",
+      "type": "document",
+      "title": "The Citizen Audit in 2035",
+      "status": "active",
+      "path": "institution/2035.md",
+      "summary": "North Star doctrine for the future institution."
+    },
+    {
+      "id": "DOC-OPERATING-PRINCIPLES",
+      "type": "document",
+      "title": "Operating Principles",
+      "status": "active",
+      "path": "institution/operating-principles.md",
+      "summary": "Core operating principles for the institution, software, agents, and contributors."
+    },
+    {
+      "id": "KERNEL-001",
+      "type": "rule",
+      "title": "Citizen Audit Kernel",
+      "status": "active",
+      "path": "kernel/README.md",
+      "summary": "Institutional runtime for agents, events, permissions, reports, and automation."
+    },
+    {
+      "id": "EXEC-001",
+      "type": "rule",
+      "title": "Executive Layer",
+      "status": "active",
+      "path": "kernel/executive/README.md",
+      "summary": "Coordinates departments without becoming a truth authority."
+    },
+    {
+      "id": "ADS-001",
+      "type": "rule",
+      "title": "Audit Definition Specification v1",
+      "status": "active",
+      "path": "docs/architecture/ads-v1.md",
+      "summary": "Data contract for audits, claims, sources, decisions, unknowns, and registries."
+    },
+    {
+      "id": "AGENT-REPAIR",
+      "type": "agent",
+      "title": "Repair Agent",
+      "status": "active",
+      "path": "scripts/repair-agent.js",
+      "summary": "Runs institutional checks and applies deterministic safe repairs."
+    },
+    {
+      "id": "AGENT-ADS-STEWARD",
+      "type": "agent",
+      "title": "ADS Steward Agent",
+      "status": "active",
+      "path": "scripts/ads-steward-agent.js",
+      "summary": "Exports and validates ADS records."
+    },
+    {
+      "id": "AGENT-SOURCE-STEWARD",
+      "type": "agent",
+      "title": "Source Steward Agent",
+      "status": "active",
+      "path": "scripts/source-steward-agent.js",
+      "summary": "Reports source preservation and metadata risks."
+    },
+    {
+      "id": "AGENT-PUBLICATION-BUILDER",
+      "type": "agent",
+      "title": "Publication Builder Agent",
+      "status": "active",
+      "path": "scripts/publication-builder-agent.js",
+      "summary": "Rebuilds and reports on generated publication outputs."
+    }
+  ]
+}
