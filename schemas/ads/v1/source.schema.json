@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/ads/v1/source.schema.json",
+  "title": "ADS v1 Source Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "sourceType",
+    "health",
+    "updated"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "sourceType": {
+      "type": "string",
+      "enum": ["government", "statute", "court", "dataset", "academic", "press", "institutional", "primary-document", "other"]
+    },
+    "publisher": { "type": "string" },
+    "agency": { "type": "string" },
+    "authors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "published": { "type": "string", "format": "date" },
+    "accessed": { "type": "string", "format": "date" },
+    "updated": { "type": "string", "format": "date" },
+    "url": { "type": "string" },
+    "archiveUrl": { "type": "string" },
+    "archiveDate": { "type": "string", "format": "date" },
+    "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+    "health": {
+      "type": "string",
+      "enum": ["verified", "current-only", "archived-only", "degraded", "missing", "replaced"]
+    },
+    "replaces": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "usedByClaims": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^CLM-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "notes": { "type": "string" }
+  }
+}
