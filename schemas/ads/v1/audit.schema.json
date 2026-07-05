@@ -17,6 +17,7 @@
   ],
   "properties": {
     "id": { "type": "string", "pattern": "^AUD-[0-9]{3}$" },
+    "legacyId": { "type": "string", "pattern": "^AUDIT-[0-9]+$" },
     "numericId": { "type": "string", "pattern": "^[0-9]{3}$" },
     "adsVersion": { "type": "string", "pattern": "^1\\.[0-9]+\\.[0-9]+$" },
     "title": { "type": "string", "minLength": 1 },
