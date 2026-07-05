@@ -1,0 +1,33 @@
+{
+  "id": "AUD-001",
+  "numericId": "001",
+  "adsVersion": "1.0.0",
+  "title": "Audit 001",
+  "status": "published",
+  "version": "1.0.0",
+  "classification": "public",
+  "summary": "Existing public audit record registered for Platform v2 data-driven rendering. Detailed ADS migration remains pending.",
+  "created": "2026-07-05",
+  "updated": "2026-07-05",
+  "permalink": "/audits/001/",
+  "records": {
+    "claims": "audits/001/claims.json",
+    "sources": "audits/001/sources.json",
+    "decisions": "audits/001/decisions.json",
+    "unknowns": "audits/001/unknowns.json",
+    "revisions": "audits/001/revisions.json",
+    "downloads": "audits/001/downloads.json"
+  },
+  "metrics": {
+    "claims": 0,
+    "sources": 0,
+    "decisions": 0,
+    "unknowns": 0,
+    "downloads": 0
+  },
+  "institutionalRules": [
+    "Evidence before opinion",
+    "Transparency before trust",
+    "Verification must be easier than belief"
+  ]
+}
