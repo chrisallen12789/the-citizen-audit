@@ -5,6 +5,8 @@
   "scripts": {
     "agent:ads": "node scripts/ads-steward-agent.js",
     "agent:ads:dry": "node scripts/ads-steward-agent.js --dry-run",
+    "agent:publication": "node scripts/publication-builder-agent.js",
+    "agent:publication:dry": "node scripts/publication-builder-agent.js --dry-run",
     "agent:repair": "node scripts/repair-agent.js",
     "agent:repair:dry": "node scripts/repair-agent.js --dry-run",
     "agent:sources": "node scripts/source-steward-agent.js",
