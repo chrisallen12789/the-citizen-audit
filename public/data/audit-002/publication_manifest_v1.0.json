@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "tag": "source-gate-complete-v1.0",
+  "commit": "2d9edf2",
+  "date": "2026-07-04",
+  "recommendation": "READY WITH EXPLICIT LIMITATIONS",
+  "decision": "D-0043",
+  "gates": {
+    "source": "PASS",
+    "evidence": "PASS",
+    "claim": "PASS",
+    "publication": "PASS"
+  },
+  "counts": {
+    "sources": 46,
+    "archived": 42,
+    "attempt_failed": 1,
+    "supported_findings": 7,
+    "claims_validated": 15,
+    "claims_bibliographic": 5,
+    "evidence_items": 271,
+    "graph_nodes": 438,
+    "graph_edges": 596
+  },
+  "graph_schema": "citizen-audit-graph-v1: source|evidence|entity|event|rabbit_hole|unanswered_question|audit_question|audit_section|claim|finding_candidate|supported_finding|analytical_question",
+  "explicit_limitations": [
+    "Section 8 and Section 12 coverage is dated to cited GAO products; full bodies are not yet deconstructed.",
+    "FY2025 total exists in three official constructions: $326.38B, $367.71B, and $401B; D-0022 quarantines the historical-growth passage.",
+    "The approximately $37B EHRM figure is hearing-provided or press-reported pending hearing-record capture; GAO had not received it.",
+    "The staffing-dispute quotation is press-mediated; no primary VA document exists.",
+    "Chronicity of FY2025 material weaknesses remains undetermined.",
+    "Deferred branches remain for joint VA-DoW accounts and the education-data outage.",
+    "July 2026 currency watches may supersede dated claims, including the EHR 30% withhold deadline and Dole Act suicide report.",
+    "Volume II is a validated claim set, not the full 20-section charter; sections 4, 13, 14, and 17 remain in construction."
+  ]
+}
