@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/ads/v1/registry.schema.json",
+  "title": "ADS v1 Audit Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["adsVersion", "updated", "audits"],
+  "properties": {
+    "adsVersion": { "type": "string", "pattern": "^1\\.[0-9]+\\.[0-9]+$" },
+    "updated": { "type": "string", "format": "date" },
+    "audits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "status", "path"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^AUD-[0-9]{3}$" },
+          "title": { "type": "string", "minLength": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "active", "review", "published", "superseded", "withdrawn"]
+          },
+          "path": { "type": "string", "minLength": 1 },
+          "record": { "type": "string" },
+          "publicUrl": { "type": "string" }
+        }
+      },
+      "uniqueItems": true
+    }
+  }
+}
