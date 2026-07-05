@@ -1,0 +1,69 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "edges": [
+    {
+      "id": "EDGE-00000001",
+      "from": "KERNEL-001",
+      "to": "DOC-VISION",
+      "relationship": "governed-by",
+      "summary": "The kernel exists to enforce the institution's long-term vision."
+    },
+    {
+      "id": "EDGE-00000002",
+      "from": "KERNEL-001",
+      "to": "DOC-OPERATING-PRINCIPLES",
+      "relationship": "governed-by",
+      "summary": "The kernel must follow the operating principles."
+    },
+    {
+      "id": "EDGE-00000003",
+      "from": "EXEC-001",
+      "to": "KERNEL-001",
+      "relationship": "depends-on",
+      "summary": "The executive layer runs through the kernel."
+    },
+    {
+      "id": "EDGE-00000004",
+      "from": "ADS-001",
+      "to": "DOC-OPERATING-PRINCIPLES",
+      "relationship": "governed-by",
+      "summary": "ADS formalizes evidence and transparency principles."
+    },
+    {
+      "id": "EDGE-00000005",
+      "from": "AGENT-REPAIR",
+      "to": "KERNEL-001",
+      "relationship": "governed-by",
+      "summary": "Repair Agent authority is constrained by the kernel."
+    },
+    {
+      "id": "EDGE-00000006",
+      "from": "AGENT-ADS-STEWARD",
+      "to": "ADS-001",
+      "relationship": "depends-on",
+      "summary": "ADS Steward maintains ADS records."
+    },
+    {
+      "id": "EDGE-00000007",
+      "from": "AGENT-SOURCE-STEWARD",
+      "to": "DOC-OPERATING-PRINCIPLES",
+      "relationship": "governed-by",
+      "summary": "Source stewardship supports evidence before opinion."
+    },
+    {
+      "id": "EDGE-00000008",
+      "from": "AGENT-PUBLICATION-BUILDER",
+      "to": "KERNEL-001",
+      "relationship": "governed-by",
+      "summary": "Publication Builder may regenerate outputs but not alter truth-bearing records."
+    },
+    {
+      "id": "EDGE-00000009",
+      "from": "DOC-2035",
+      "to": "DOC-VISION",
+      "relationship": "documents",
+      "summary": "The 2035 North Star extends the long-term vision."
+    }
+  ]
+}
