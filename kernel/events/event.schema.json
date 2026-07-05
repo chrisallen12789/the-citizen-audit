@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/kernel/events/event.schema.json",
+  "title": "Citizen Audit Kernel Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "timestamp", "actor", "summary"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^EVENT-[0-9]{8}$"
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["human", "agent", "system", "external"]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relatedRecords": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "requiresHumanApproval": {
+      "type": "boolean"
+    },
+    "authorityLevel": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4
+    },
+    "reportPath": {
+      "type": "string"
+    }
+  }
+}
