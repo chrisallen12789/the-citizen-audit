@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/memory/schemas/edge.schema.json",
+  "title": "Institution Memory Edge",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "from", "to", "relationship"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^EDGE-[0-9]{8}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relationship": {
+      "type": "string",
+      "enum": [
+        "supports",
+        "cites",
+        "affects",
+        "blocks",
+        "supersedes",
+        "generates",
+        "reviews",
+        "challenges",
+        "governed-by",
+        "produced-by",
+        "included-in",
+        "documents",
+        "depends-on",
+        "related-to"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "string"
+    }
+  }
+}
