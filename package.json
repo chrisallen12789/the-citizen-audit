@@ -11,6 +11,7 @@
     "agent:repair:dry": "node scripts/repair-agent.js --dry-run",
     "agent:sources": "node scripts/source-steward-agent.js",
     "agents:list": "node -e \"const r=require('./agents/registry.json'); for (const a of r.agents) console.log(`${a.id} | ${a.status} | L${a.authorityLevel} | ${a.command}`)\"",
+    "kernel:status": "node kernel/runtime/status.js",
     "ads:export": "node scripts/export-ads.js",
     "ads:validate": "node scripts/validate-ads.js",
     "ads:sync": "npm run ads:export && npm run ads:validate",
