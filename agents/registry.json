@@ -31,7 +31,7 @@
     {
       "id": "AGENT-SOURCE-STEWARD",
       "name": "Source Steward Agent",
-      "status": "planned",
+      "status": "active",
       "authorityLevel": 0,
       "command": "npm run agent:sources",
       "dryRunCommand": "npm run agent:sources",
@@ -52,7 +52,7 @@
     {
       "id": "AGENT-ADS-STEWARD",
       "name": "ADS Steward Agent",
-      "status": "planned",
+      "status": "active",
       "authorityLevel": 1,
       "command": "npm run agent:ads",
       "dryRunCommand": "npm run agent:ads:dry",
