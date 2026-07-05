@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/ads/v1/claim.schema.json",
+  "title": "ADS v1 Claim Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "auditId",
+    "title",
+    "status",
+    "statement",
+    "updated"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^CLM-[0-9]{6}$" },
+    "auditId": { "type": "string", "pattern": "^AUD-[0-9]{3}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "statement": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "supported", "contested", "revised", "withdrawn", "unknown"]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low", "not-rated"]
+    },
+    "claimType": {
+      "type": "string",
+      "enum": ["factual", "methodological", "definition", "calculation", "procedural", "interpretive"]
+    },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^DEC-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "unknowns": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^UNK-[0-9]{6}$" },
+      "uniqueItems": true
+    },
+    "calculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "method": { "type": "string" },
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "output": { "type": "string" }
+      }
+    },
+    "created": { "type": "string", "format": "date" },
+    "updated": { "type": "string", "format": "date" },
+    "notes": { "type": "string" }
+  }
+}
