@@ -1,0 +1,66 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "rules": [
+    {
+      "id": "PERM-0001",
+      "action": "write_report",
+      "minimumAuthorityLevel": 0,
+      "requiresHumanApproval": false
+    },
+    {
+      "id": "PERM-0002",
+      "action": "regenerate_derived_files",
+      "minimumAuthorityLevel": 1,
+      "requiresHumanApproval": false
+    },
+    {
+      "id": "PERM-0003",
+      "action": "export_ads_records",
+      "minimumAuthorityLevel": 1,
+      "requiresHumanApproval": false
+    },
+    {
+      "id": "PERM-0004",
+      "action": "sort_registry",
+      "minimumAuthorityLevel": 2,
+      "requiresHumanApproval": false
+    },
+    {
+      "id": "PERM-0005",
+      "action": "draft_challenge_record",
+      "minimumAuthorityLevel": 3,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": "PERM-0006",
+      "action": "change_claim_meaning",
+      "minimumAuthorityLevel": 4,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": "PERM-0007",
+      "action": "mark_source_verified",
+      "minimumAuthorityLevel": 4,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": "PERM-0008",
+      "action": "change_publication_readiness",
+      "minimumAuthorityLevel": 4,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": "PERM-0009",
+      "action": "amend_institutional_constitution",
+      "minimumAuthorityLevel": 4,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": "PERM-0010",
+      "action": "delete_canonical_record",
+      "minimumAuthorityLevel": 4,
+      "requiresHumanApproval": true
+    }
+  ]
+}
