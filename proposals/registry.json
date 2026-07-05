@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "proposals": [
+    {
+      "id": "PRP-000001",
+      "title": "Build Constitution Guardian Agent",
+      "status": "pending-review",
+      "proposalType": "agent",
+      "summary": "Create a governance agent that checks proposed actions and repository changes against institutional doctrine and authority rules.",
+      "rationale": "The kernel has agents, permissions, memory, and executive structure. The next governance step is an agent capable of saying no before institutional rules are violated.",
+      "expectedBenefit": "Reduces risk of founder, agent, or contributor actions bypassing institutional doctrine.",
+      "risk": "medium",
+      "requiredAuthorityLevel": 3,
+      "created": "2026-07-05",
+      "createdBy": "Chief Architect",
+      "affectedRecords": [
+        "institution/vision.md",
+        "institution/operating-principles.md",
+        "kernel/permissions/rules.json",
+        "agents/registry.json"
+      ],
+      "humanApprovalRequired": true
+    },
+    {
+      "id": "PRP-000002",
+      "title": "Create Founder Independence Index",
+      "status": "draft",
+      "proposalType": "continuity",
+      "summary": "Define and measure how dependent the institution remains on founder knowledge, credentials, and manual judgment.",
+      "rationale": "The long-term vision requires the institution to outlive any one contributor. Founder dependence should become a measurable institutional risk.",
+      "expectedBenefit": "Turns succession and continuity into an explicit engineering metric.",
+      "risk": "low",
+      "requiredAuthorityLevel": 2,
+      "created": "2026-07-05",
+      "createdBy": "Chief Architect",
+      "affectedRecords": [
+        "institution/2035.md",
+        "institution/vision.md"
+      ],
+      "humanApprovalRequired": false
+    }
+  ]
+}
