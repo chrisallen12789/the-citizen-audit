@@ -1,0 +1,68 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "doctrine": "Directors coordinate work. They do not decide institutional truth.",
+  "departments": [
+    {
+      "id": "DEPT-EXECUTIVE",
+      "name": "Executive",
+      "director": "Chief Executive Coordinator",
+      "mission": "Coordinate departments, summarize institutional status, identify blockers, and recommend next actions.",
+      "agents": []
+    },
+    {
+      "id": "DEPT-ENGINEERING",
+      "name": "Engineering",
+      "director": "Engineering Director",
+      "mission": "Maintain build systems, repair workflows, generated outputs, runtime health, and technical infrastructure.",
+      "agents": [
+        "AGENT-REPAIR",
+        "AGENT-PUBLICATION-BUILDER"
+      ]
+    },
+    {
+      "id": "DEPT-EVIDENCE",
+      "name": "Evidence",
+      "director": "Evidence Director",
+      "mission": "Maintain evidence records, ADS synchronization, source stewardship, citation traceability, and preservation awareness.",
+      "agents": [
+        "AGENT-ADS-STEWARD",
+        "AGENT-SOURCE-STEWARD"
+      ]
+    },
+    {
+      "id": "DEPT-RESEARCH",
+      "name": "Research",
+      "director": "Research Director",
+      "mission": "Track unknowns, investigations, unresolved evidence gaps, and future audit development.",
+      "agents": []
+    },
+    {
+      "id": "DEPT-GOVERNANCE",
+      "name": "Governance",
+      "director": "Governance Director",
+      "mission": "Protect the Constitution, Charter, operating principles, contributor standards, and authority boundaries.",
+      "agents": [
+        "AGENT-CHALLENGE-INTAKE"
+      ]
+    },
+    {
+      "id": "DEPT-PUBLICATION",
+      "name": "Publication",
+      "director": "Publication Director",
+      "mission": "Prepare release records, publication packages, public APIs, public pages, and release status reports.",
+      "agents": [
+        "AGENT-RELEASE-STEWARD"
+      ]
+    },
+    {
+      "id": "DEPT-QUALITY",
+      "name": "Quality",
+      "director": "Quality Director",
+      "mission": "Inspect QA, consistency, broken links, metadata, accessibility, and completeness without weakening standards.",
+      "agents": [
+        "AGENT-CONTENT-HYGIENE"
+      ]
+    }
+  ]
+}
