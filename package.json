@@ -3,6 +3,7 @@
   "version": "1.0.0-rc1",
   "private": false,
   "scripts": {
+    "agent:release": "node scripts/release-steward-agent.js",
     "guardian:constitution": "node guardians/constitution/check.js",
     "proposal:status": "node proposals/status.js",
     "memory:export": "node memory/export.js",
