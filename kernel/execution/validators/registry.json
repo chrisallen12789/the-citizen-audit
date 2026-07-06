@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "validators": [
+    {
+      "id": "institution-registry",
+      "module": "institution-registry.js",
+      "description": "Validates canonical institution object identity, paths, dependencies, and required systems."
+    }
+  ]
+}
