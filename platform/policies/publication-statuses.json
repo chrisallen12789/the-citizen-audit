@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0.0",
+  "statuses": [
+    {
+      "id": "proposed",
+      "label": "Proposed",
+      "publicMeaning": "An audit question has been identified but research has not formally begun.",
+      "published": false
+    },
+    {
+      "id": "researching",
+      "label": "Researching",
+      "publicMeaning": "Evidence collection and analysis are active.",
+      "published": false
+    },
+    {
+      "id": "evidence_incomplete",
+      "label": "Evidence incomplete",
+      "publicMeaning": "The audit cannot proceed because required evidence is missing.",
+      "published": false
+    },
+    {
+      "id": "internal_review",
+      "label": "Internal review",
+      "publicMeaning": "The analysis is complete and undergoing verification.",
+      "published": false
+    },
+    {
+      "id": "open_for_challenge",
+      "label": "Open for challenge",
+      "publicMeaning": "A review version is available for external challenge.",
+      "published": true
+    },
+    {
+      "id": "published_with_limitations",
+      "label": "Published with limitations",
+      "publicMeaning": "The audit passed publication gates, but material limitations remain visible.",
+      "published": true,
+      "requiresLimitationSummary": true
+    },
+    {
+      "id": "published",
+      "label": "Published",
+      "publicMeaning": "The audit passed applicable publication gates.",
+      "published": true
+    },
+    {
+      "id": "correction_pending",
+      "label": "Correction pending",
+      "publicMeaning": "A credible issue has been identified and is under review.",
+      "published": true
+    },
+    {
+      "id": "corrected",
+      "label": "Corrected",
+      "publicMeaning": "A published record changed through a correction record.",
+      "published": true,
+      "requiresCorrectionRecord": true
+    },
+    {
+      "id": "superseded",
+      "label": "Superseded",
+      "publicMeaning": "A newer release or audit replaces this record.",
+      "published": true
+    },
+    {
+      "id": "withdrawn",
+      "label": "Withdrawn",
+      "publicMeaning": "The publication is no longer reliable enough to remain an active finding.",
+      "published": true,
+      "requiresWithdrawalReason": true
+    }
+  ]
+}
