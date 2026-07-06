@@ -36,4 +36,17 @@ function nextExecutionId(now = new Date()) {
   return `EXEC-${now.toISOString().replace(/[-:.TZ]/g, "").slice(0, 14)}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
-module.exports = { defaultBoundaryPath, defaultHistoryPath, defaultPolicy, nextExecutionId };
+function normalizeRecordedTransaction(transaction) {
+  return { ...transaction, writeSetHash: transaction.writeSetHash || computeWriteSetHash(transaction.proposedWrites) };
+}
+
+function resolveTransaction(transactionOrId, options) {
+  if (typeof transactionOrId === "string") return getTransaction(transactionOrId, { rootDir: options.rootDir, logPath: options.transactionLogPath });
+  if (!transactionOrId || typeof transactionOrId !== "object") throw new Error("Execution requires a transaction object or transaction id.");
+  if (!options.requireRecorded) return transactionOrId;
+  const recorded = getTransaction(transactionOrId.id, { rootDir: options.rootDir, logPath: options.transactionLogPath });
+  if (canonicalStringify(recorded) !== canonicalStringify(normalizeRecordedTransaction(transactionOrId))) throw new Error(`Transaction input differs from append-only record: ${transactionOrId.id}.`);
+  return recorded;
+}
+
+module.exports = { defaultBoundaryPath, defaultHistoryPath, defaultPolicy, nextExecutionId, resolveTransaction };
