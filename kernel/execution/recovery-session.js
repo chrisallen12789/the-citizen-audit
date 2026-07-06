@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { sha256 } = require("../lib/append-only-log");
 const { decodeWriteContent } = require("../transactions/validate");
-const { institutionFile } = require("./path-safety");
+const { institutionDirectory, institutionFile } = require("./path-safety");
 const { atomicReplaceFile, ensureDirectory, unlinkDurable } = require("./durable-io");
 const {
   acquireExecutionLock,
@@ -75,7 +75,7 @@ function missingParentDirectories(rootDir, relativePath) {
 
 function createPlannedParents(rootDir, planned, options = {}) {
   for (const relative of planned) {
-    ensureDirectory(institutionFile(rootDir, `${relative}/.institution-os-placeholder`).replace(/[\\/]\.institution-os-placeholder$/, ""));
+    ensureDirectory(institutionDirectory(rootDir, relative));
     invokeHook(options, "after_parent_created", { path: relative });
   }
 }
