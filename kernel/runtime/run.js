@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const { checkAction } = require("../authority/engine");
 
 const root = path.resolve(__dirname, "..", "..");
 const registryPath = path.join(root, "agents", "registry.json");
@@ -52,7 +53,30 @@ function commandToParts(command) {
   };
 }
 
+function assertAgentExecutionAllowed(agent) {
+  const reportAuthority = checkAction(agent.id, "write_report");
+  if (!reportAuthority.allowed) {
+    writeEvent("authority.denied", agent, `${agent.id} denied before execution.`, { authorityDecision: reportAuthority });
+    return reportAuthority;
+  }
+
+  writeEvent("authority.allowed", agent, `${agent.id} authorized for report-writing execution.`, { authorityDecision: reportAuthority });
+  return reportAuthority;
+}
+
 function runAgent(agent) {
+  const authorityDecision = assertAgentExecutionAllowed(agent);
+  if (!authorityDecision.allowed) {
+    return {
+      agent,
+      status: 1,
+      stdout: "",
+      stderr: `Authority denied: ${authorityDecision.reason}`,
+      error: authorityDecision.reason,
+      dryRun
+    };
+  }
+
   writeEvent("agent.started", agent, `${agent.id} started.`);
 
   if (dryRun) {
@@ -119,6 +143,7 @@ function writeDashboard(results) {
     lines.push(`Status: ${result.status === 0 ? "passed" : "failed"}`);
     lines.push(`Command: ${result.agent.command}`);
     lines.push(`Authority level: ${result.agent.authorityLevel}`);
+    lines.push(`Capabilities: ${(result.agent.capabilities || []).join(", ") || "None declared"}`);
     lines.push(`Report path: ${result.agent.reportPath || "Not declared"}`);
     if (result.error) lines.push(`Error: ${result.error}`);
     const output = `${result.stdout}\n${result.stderr}`.trim();
