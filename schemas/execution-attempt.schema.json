@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/execution-attempt.schema.json",
+  "title": "Institution OS Execution Attempt",
+  "description": "Immutable execution intent binding created before governed mutation. Later state changes are recorded as separate hash-chained transition records.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "transactionId",
+    "state",
+    "writeSetHash",
+    "actor",
+    "authorityStateHash",
+    "policyHash",
+    "validatorSetHash",
+    "planHash",
+    "preStateManifestHash",
+    "validationResultHash",
+    "rollbackResultHash",
+    "terminalDisposition",
+    "createdAt",
+    "metadata"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^ATTEMPT-[A-Z0-9][A-Z0-9-]{2,63}$"
+    },
+    "version": {
+      "const": "1.0.0"
+    },
+    "transactionId": {
+      "type": "string",
+      "pattern": "^TX-[A-Z0-9][A-Z0-9-]{2,63}$"
+    },
+    "state": {
+      "const": "prepared"
+    },
+    "writeSetHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "actor": {
+      "$ref": "#/$defs/actor"
+    },
+    "authorityStateHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "policyHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "validatorSetHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "planHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "preStateManifestHash": {
+      "type": "null"
+    },
+    "validationResultHash": {
+      "type": "null"
+    },
+    "rollbackResultHash": {
+      "type": "null"
+    },
+    "terminalDisposition": {
+      "type": "null"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": {
+          "enum": ["human", "agent", "system", "external"]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
