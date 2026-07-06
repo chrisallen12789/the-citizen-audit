@@ -2,37 +2,53 @@
 
 Status: **HOLD — NOT SAFE TO ACTIVATE**
 
-PR #8 merged foundational scaffolding into `main`, including:
+## Completed foundations
 
-- transaction record validation and hash-chained storage,
-- execution policy and deterministic plan construction,
-- candidate-state overlay,
-- validator registry scaffolding,
-- structured event writer scaffolding,
-- in-memory snapshot utilities,
-- mutation exclusion journal,
-- low-level write and artifact-preservation helpers.
+### Phase 1 — execution history
 
-The merged code is not a complete execution engine. The following critical capabilities remain incomplete or unintegrated:
+- versioned execution-attempt schema,
+- strict state machine,
+- hash-chained execution ledger,
+- deterministic replay into immutable attempt views,
+- terminal-state immutability,
+- one committed attempt per transaction,
+- focused Execution Engine CI.
 
-- the central validation cycle,
+### Phase 2 — recoverability layer
+
+- institution-controlled durable recovery store,
+- canonical pre-state manifests,
+- content-addressed snapshot blobs,
+- atomic exclusive execution boundary,
+- flushed hash-chained mutation journal,
+- same-directory temporary writes and per-file atomic replacement,
+- reverse-order rollback,
+- restoration verification for bytes, existence, and file mode,
+- restart recovery for interrupted execution and interrupted rollback,
+- explicit recovery takeover,
+- fail-closed `recovery_required` barrier,
+- durable artifact preservation outside `os.tmpdir()`,
+- fault-injection and tamper tests.
+
+## Still incomplete
+
+Execution Engine v2 remains inactive. The following critical capabilities are not yet complete or integrated:
+
 - one authoritative execution orchestrator,
-- durable execution-attempt and outcome ledger,
-- durable pre-state snapshots and crash recovery,
-- verified rollback,
-- exact post-write materialization checks,
-- institutional and action-specific post-write validators,
-- real exclusive execution locking,
-- runtime integration,
+- exact post-write materialization validation,
+- institutional and action-specific live-state validators,
+- affected-object coverage enforcement,
+- current-authority and current-policy rebinding at execution time,
+- agent runtime isolation and transaction capture,
 - event-log consolidation and integrity protection,
-- automated adversarial and fault-injection tests,
-- CI enforcement.
+- repository-wide mutation bypass audit,
+- fully green required CI, including the Institutional QA baseline tracked by issue #11.
 
 The current runtime still executes agent commands directly and may bypass transaction enforcement. Exit code zero must not be interpreted as Institution OS transactional success.
 
-The controlling architecture is documented in:
+The controlling architecture and activation gate are documented in:
 
 - `docs/institution-os/execution-engine-v2-architecture.md`
 - GitHub issue #9
 
-Execution Engine v2 may be marked complete only after issue #9's activation gate is satisfied and independently reviewed.
+Execution Engine v2 may be marked complete only after issues #14 and #15 satisfy issue #9's activation gate and the result is independently reviewed.

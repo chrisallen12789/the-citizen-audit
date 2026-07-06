@@ -8,8 +8,8 @@ on:
       - "kernel/execution/**"
       - "kernel/lib/append-only-log.js"
       - "kernel/lib/canonical-json.js"
-      - "schemas/execution-attempt.schema.json"
-      - "tests/execution-ledger.test.js"
+      - "schemas/execution-*.schema.json"
+      - "tests/execution-*.test.js"
       - "package.json"
       - ".github/workflows/execution-engine-tests.yml"
   pull_request:
@@ -19,8 +19,8 @@ on:
       - "kernel/execution/**"
       - "kernel/lib/append-only-log.js"
       - "kernel/lib/canonical-json.js"
-      - "schemas/execution-attempt.schema.json"
-      - "tests/execution-ledger.test.js"
+      - "schemas/execution-*.schema.json"
+      - "tests/execution-*.test.js"
       - "package.json"
       - ".github/workflows/execution-engine-tests.yml"
 

@@ -1,11 +1,9 @@
-const fs = require("fs");
-const path = require("path");
 const { institutionFile } = require("./path-safety");
+const { atomicReplaceFile } = require("./durable-io");
 
-function writeInstitutionFile(rootDir, relativePath, bytes, mode = 0o600) {
+function writeInstitutionFile(rootDir, relativePath, bytes, mode = 0o600, options = {}) {
   const target = institutionFile(rootDir, relativePath);
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, bytes, { mode });
+  atomicReplaceFile(target, bytes, { mode, token: options.token });
   return target;
 }
 
