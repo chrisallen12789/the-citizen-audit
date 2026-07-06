@@ -8,7 +8,8 @@ on:
       - "scripts/platform/**"
       - "scripts/validate-platform-records.js"
       - "tests/platform-*.test.js"
-      - "tests/helpers/platform-fixtures.js"
+      - "tests/helpers/platform-*.js"
+      - "tests/helpers/sample-*.js"
       - "package.json"
       - ".github/workflows/public-platform-tests.yml"
   pull_request:
@@ -18,7 +19,8 @@ on:
       - "scripts/platform/**"
       - "scripts/validate-platform-records.js"
       - "tests/platform-*.test.js"
-      - "tests/helpers/platform-fixtures.js"
+      - "tests/helpers/platform-*.js"
+      - "tests/helpers/sample-*.js"
       - "package.json"
       - ".github/workflows/public-platform-tests.yml"
 
