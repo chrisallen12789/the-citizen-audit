@@ -1,3 +1,8 @@
+const fs = require("fs");
+const path = require("path");
+const { sha256 } = require("../lib/append-only-log");
+const { decodeWriteContent } = require("../transactions/validate");
+
 function assessPlan(plan, phase) {
   const problems = [];
   if (!plan || !Array.isArray(plan.writes) || plan.writes.length === 0) problems.push("Execution plan has no declared writes.");
