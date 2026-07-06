@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/execution-recovery-manifest.schema.json",
+  "title": "Institution OS Execution Recovery Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "attemptId", "createdAt", "entries", "manifestHash"],
+  "properties": {
+    "version": { "const": "1.0.0" },
+    "attemptId": { "type": "string", "pattern": "^ATTEMPT-[A-Z0-9][A-Z0-9-]{2,63}$" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "manifestHash": { "$ref": "#/$defs/sha256" },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["index", "path", "operation", "existed", "type", "mode", "contentHash", "blobHash"],
+        "properties": {
+          "index": { "type": "integer", "minimum": 0 },
+          "path": { "type": "string", "minLength": 1 },
+          "operation": { "enum": ["write", "delete"] },
+          "existed": { "type": "boolean" },
+          "type": { "enum": ["file", null] },
+          "mode": { "type": ["integer", "null"], "minimum": 0, "maximum": 511 },
+          "contentHash": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+          "blobHash": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

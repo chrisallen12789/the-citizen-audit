@@ -7,14 +7,39 @@ function normalizeInstitutionPath(relativePath) {
   return normalizeRelativePath(relativePath);
 }
 
-function institutionFile(rootDir, relativePath) {
+function institutionPath(rootDir, relativePath, options = {}) {
   const normalized = normalizeInstitutionPath(relativePath);
+  const segments = normalized.split("/");
   let current = rootDir;
-  for (const segment of normalized.split("/")) {
+
+  segments.forEach((segment, index) => {
     current = path.join(current, segment);
-    if (fs.existsSync(current) && fileKind(current) === "link") throw new Error(`Linked execution paths are prohibited: ${relativePath}.`);
-  }
+    if (!fs.existsSync(current)) return;
+    if (fileKind(current) === "link") throw new Error(`Linked execution paths are prohibited: ${relativePath}.`);
+
+    const isFinal = index === segments.length - 1;
+    if (!isFinal && !fs.statSync(current).isDirectory()) {
+      throw new Error(`Execution path contains a non-directory component: ${relativePath}.`);
+    }
+    if (isFinal && options.directory && !fs.statSync(current).isDirectory()) {
+      throw new Error(`Execution directory path is not a directory: ${relativePath}.`);
+    }
+  });
+
   return path.join(rootDir, normalized);
 }
 
-module.exports = { institutionFile, normalizeInstitutionPath };
+function institutionFile(rootDir, relativePath) {
+  return institutionPath(rootDir, relativePath);
+}
+
+function institutionDirectory(rootDir, relativePath) {
+  return institutionPath(rootDir, relativePath, { directory: true });
+}
+
+module.exports = {
+  institutionDirectory,
+  institutionFile,
+  institutionPath,
+  normalizeInstitutionPath
+};
