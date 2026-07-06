@@ -137,6 +137,28 @@
       ]
     },
     {
+      "id": "AGENT-CONTENT-HYGIENE",
+      "name": "Content Hygiene Agent",
+      "status": "active",
+      "authorityLevel": 0,
+      "command": "npm run agent:hygiene",
+      "dryRunCommand": "npm run agent:hygiene",
+      "reportPath": "docs/agent-reports/content-hygiene.md",
+      "allowedActions": [
+        "inspect whitespace consistency",
+        "detect duplicate page titles",
+        "flag inconsistent capitalization",
+        "flag missing active agent reports",
+        "write hygiene report"
+      ],
+      "forbiddenActions": [
+        "rewrite institutional language",
+        "simplify legal language without review",
+        "change claims or evidence descriptions",
+        "modify truth-bearing records"
+      ]
+    },
+    {
       "id": "AGENT-CHALLENGE-INTAKE",
       "name": "Challenge Intake Agent",
       "status": "planned",
@@ -155,27 +177,6 @@
         "decide challenge outcome",
         "edit challenged claim directly",
         "discard serious challenges"
-      ]
-    },
-    {
-      "id": "AGENT-CONTENT-HYGIENE",
-      "name": "Content Hygiene Agent",
-      "status": "planned",
-      "authorityLevel": 0,
-      "command": "npm run agent:hygiene",
-      "dryRunCommand": "npm run agent:hygiene",
-      "reportPath": "docs/agent-reports/content-hygiene.md",
-      "allowedActions": [
-        "normalize whitespace reports",
-        "detect duplicate page titles",
-        "flag inconsistent capitalization",
-        "flag broken internal links",
-        "write hygiene report"
-      ],
-      "forbiddenActions": [
-        "rewrite institutional language",
-        "simplify legal language without review",
-        "change claims or evidence descriptions"
       ]
     }
   ]
