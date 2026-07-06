@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "validators": [
+    {
+      "id": "execution-plan",
+      "module": "execution-plan.js",
+      "description": "Validates that execution retains a declared write set, affected objects, and a deterministic write-set hash."
+    }
+  ]
+}

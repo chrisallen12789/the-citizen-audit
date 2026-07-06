@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-06",
+  "principle": "Execution applies only approved, declared, policy-authorized writes and succeeds only after institutional validation.",
+  "warningPolicy": "nonfatal",
+  "requireAffectedObjectCoverage": false,
+  "requiredValidators": ["execution-plan"],
+  "prohibitedPaths": ["package.json", "kernel/VERSION.md"],
+  "prohibitedPrefixes": [
+    ".git/",
+    "agents/",
+    "audits/",
+    "docs/adr/",
+    "docs/institution-os/",
+    "institution/",
+    "kernel/authority/",
+    "kernel/execution/",
+    "kernel/permissions/",
+    "kernel/registry/",
+    "kernel/transactions/",
+    "schemas/"
+  ],
+  "actions": {
+    "write_report": {
+      "allowedPaths": ["docs/repair-agent-report.md"],
+      "allowedPrefixes": ["docs/agent-reports/"],
+      "allowDelete": false
+    },
+    "regenerate_derived_files": {
+      "allowedPaths": ["public/audits.html"],
+      "allowedPrefixes": ["public/data/"],
+      "allowDelete": false
+    },
+    "export_ads_records": {
+      "allowedPaths": [],
+      "allowedPrefixes": ["public/data/"],
+      "allowDelete": false
+    },
+    "sort_registry": {
+      "allowedPaths": ["registry/audits.json"],
+      "allowedPrefixes": [],
+      "allowDelete": false
+    }
+  }
+}
