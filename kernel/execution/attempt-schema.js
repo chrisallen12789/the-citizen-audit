@@ -4,7 +4,8 @@ const ATTEMPT_SCHEMA_VERSION = "1.0.0";
 const ATTEMPT_ID_PATTERN = /^ATTEMPT-[A-Z0-9][A-Z0-9-]{2,63}$/;
 const TRANSACTION_ID_PATTERN = /^TX-[A-Z0-9][A-Z0-9-]{2,63}$/;
 const HASH_PATTERN = /^[0-9a-f]{64}$/;
-const ACTOR_TYPES = new Set(["human", "agent", "system", "external"]);
+const ACTOR_TYPES = Object.freeze(["human", "agent", "system", "external"]);
+const actorTypeSet = new Set(ACTOR_TYPES);
 const ATTEMPT_FIELDS = new Set([
   "id",
   "version",
@@ -57,7 +58,7 @@ function validateActor(actor, problems) {
   }
   const fields = new Set(["type", "id"]);
   for (const key of Object.keys(actor)) if (!fields.has(key)) problems.push(`Execution attempt actor contains undeclared field: ${key}.`);
-  if (!ACTOR_TYPES.has(actor.type)) problems.push("Execution attempt actor.type is invalid.");
+  if (!actorTypeSet.has(actor.type)) problems.push("Execution attempt actor.type is invalid.");
   if (typeof actor.id !== "string" || !actor.id.trim()) problems.push("Execution attempt actor.id is required.");
 }
 

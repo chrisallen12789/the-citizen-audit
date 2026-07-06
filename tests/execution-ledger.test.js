@@ -4,6 +4,7 @@ const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const { appendEntry } = require("../kernel/lib/append-only-log");
+const { ATTEMPT_SCHEMA_VERSION } = require("../kernel/execution/attempt-schema");
 const { ALLOWED_TRANSITIONS, EXECUTION_STATES, assertExecutionStateTransition } = require("../kernel/execution/state-machine");
 const {
   createExecutionAttempt,
@@ -116,6 +117,7 @@ test("records rolled_back and recovery_required terminal outcomes", () => withLe
   transitionExecutionAttempt("ATTEMPT-ROLLBACK", "rolling_back", { problems: ["write failed"] }, { ledgerPath });
   const rolledBack = transitionExecutionAttempt("ATTEMPT-ROLLBACK", "rolled_back", { rollbackResultHash: H.rollback }, { ledgerPath });
   assert.equal(rolledBack.terminalDisposition, "rolled_back");
+  assert.deepEqual(rolledBack.problems, ["write failed"]);
 
   createExecutionAttempt(attemptInput({ id: "ATTEMPT-RECOVERY", transactionId: "TX-RECOVERY" }), { ledgerPath });
   transitionExecutionAttempt("ATTEMPT-RECOVERY", "recovery_persisted", { preStateManifestHash: H.manifest }, { ledgerPath });
@@ -178,9 +180,29 @@ test("rejects phase hashes before appending an invalid record", () => withLedger
   const before = readExecutionLedger({ ledgerPath });
   assert.throws(
     () => transitionExecutionAttempt("ATTEMPT-001", "applying", { validationResultHash: H.validation }, { ledgerPath }),
-    { code: "INVALID_EXECUTION_LEDGER" }
+    { code: "INVALID_EXECUTION_TRANSITION_BINDING" }
   );
   const after = readExecutionLedger({ ledgerPath });
   assert.equal(after.count, before.count);
   assert.equal(after.headHash, before.headHash);
+}));
+
+
+test("rejects invalid attempt input before appending", () => withLedger(({ ledgerPath }) => {
+  assert.throws(
+    () => createExecutionAttempt(attemptInput({ writeSetHash: "not-a-hash", actor: { type: "system", id: "TEST", extra: true } }), { ledgerPath }),
+    { code: "INVALID_EXECUTION_ATTEMPT" }
+  );
+  assert.equal(readExecutionLedger({ ledgerPath }).count, 0);
+}));
+
+test("rejects unknown attempts without creating ledger entries", () => withLedger(({ ledgerPath }) => {
+  assert.throws(() => transitionExecutionAttempt("ATTEMPT-MISSING", "recovery_persisted", { preStateManifestHash: H.manifest }, { ledgerPath }), { code: "EXECUTION_ATTEMPT_NOT_FOUND" });
+  assert.equal(readExecutionLedger({ ledgerPath }).count, 0);
+}));
+
+test("rejects unsupported ledger schema versions", () => withLedger(({ ledgerPath }) => {
+  appendEntry(ledgerPath, { recordType: "execution.attempt.created", schemaVersion: "9.9.9", attempt: {} }, { label: "execution ledger", recordedAt: "2026-07-06T13:00:00.000Z" });
+  assert.throws(() => readExecutionLedger({ ledgerPath }), { code: "INVALID_EXECUTION_LEDGER" });
+  assert.equal(ATTEMPT_SCHEMA_VERSION, "1.0.0");
 }));

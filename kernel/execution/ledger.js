@@ -59,13 +59,13 @@ function assertTransitionBindings(to, data, context = "Execution transition") {
     throw ledgerError(`${context}: transition to ${to} requires ${requiredHash}.`, "MISSING_EXECUTION_TRANSITION_HASH");
   }
   if (data.preStateManifestHash && to !== "recovery_persisted") {
-    throw ledgerError(`${context}: preStateManifestHash may only be bound by recovery_persisted.`);
+    throw ledgerError(`${context}: preStateManifestHash may only be bound by recovery_persisted.`, "INVALID_EXECUTION_TRANSITION_BINDING");
   }
   if (data.validationResultHash && to !== "committed") {
-    throw ledgerError(`${context}: validationResultHash may only be bound by committed.`);
+    throw ledgerError(`${context}: validationResultHash may only be bound by committed.`, "INVALID_EXECUTION_TRANSITION_BINDING");
   }
   if (data.rollbackResultHash && !["rolled_back", "recovery_required"].includes(to)) {
-    throw ledgerError(`${context}: rollbackResultHash may only be bound by a rollback terminal state.`);
+    throw ledgerError(`${context}: rollbackResultHash may only be bound by a rollback terminal state.`, "INVALID_EXECUTION_TRANSITION_BINDING");
   }
 }
 
@@ -89,8 +89,8 @@ function applyTransition(view, transition, entry) {
     transitionCount: view.transitionCount + 1,
     ledgerSequence: entry.sequence,
     ledgerHash: entry.hash,
-    problems: [...transition.data.problems],
-    warnings: [...transition.data.warnings]
+    problems: [...view.problems, ...transition.data.problems],
+    warnings: [...view.warnings, ...transition.data.warnings]
   };
   if (transition.data.preStateManifestHash) next.preStateManifestHash = transition.data.preStateManifestHash;
   if (transition.data.validationResultHash) next.validationResultHash = transition.data.validationResultHash;
@@ -255,7 +255,6 @@ module.exports = {
   hasCommittedTransaction,
   listExecutionAttempts,
   readExecutionLedger,
-  replayExecutionEntries,
   transitionExecutionAttempt
 };
 
