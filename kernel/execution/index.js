@@ -50,4 +50,23 @@ function resolveTransaction(transactionOrId, options) {
   return recorded;
 }
 
-module.exports = { defaultBoundaryPath, defaultHistoryPath, defaultPolicy, nextExecutionId, resolveTransaction };
+function createExecutionEmitter(writeEvent, context) {
+  return function emit(type, summary, data = {}, severity = "info") {
+    return writeEvent({
+      type,
+      summary,
+      severity,
+      actor: context.actor,
+      relatedRecords: [context.executionId, context.transactionId, ...(context.affectedObjects || [])],
+      data: {
+        executionId: context.executionId,
+        transactionId: context.transactionId,
+        affectedObjects: context.affectedObjects || [],
+        declaredPaths: context.declaredPaths || [],
+        ...data
+      }
+    });
+  };
+}
+
+module.exports = { createExecutionEmitter, defaultBoundaryPath, defaultHistoryPath, defaultPolicy, nextExecutionId, resolveTransaction };
