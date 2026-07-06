@@ -12,6 +12,7 @@ ADRs exist so future contributors and AI agents do not have to reconstruct major
 - [ADR-0004: Transactions Record Before Mutation](ADR-0004-transactions-record-before-mutation.md)
 - [ADR-0005: Execution Applies Approved Writes](ADR-0005-execution-applies-approved-writes.md)
 - [ADR-0006: Separate Institution OS from The Citizen Audit](ADR-0006-separate-institution-os-from-citizen-audit.md)
+- [ADR-0007: Execution Success Requires Post-Write Validation](ADR-0007-execution-success-requires-post-write-validation.md)
 
 ## Rule
 
