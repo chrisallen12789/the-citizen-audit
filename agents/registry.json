@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "updated": "2026-07-05",
   "principle": "Agents may automate process. Agents may not automate truth.",
   "agents": [
@@ -11,6 +11,9 @@
       "command": "npm run guardian:constitution",
       "dryRunCommand": "npm run guardian:constitution",
       "reportPath": "guardians/constitution/reports/status.md",
+      "capabilities": [
+        "write_report"
+      ],
       "allowedActions": [
         "inspect institutional doctrine",
         "inspect permission rules",
@@ -34,6 +37,11 @@
       "command": "npm run agent:repair",
       "dryRunCommand": "npm run agent:repair:dry",
       "reportPath": "docs/repair-agent-report.md",
+      "capabilities": [
+        "write_report",
+        "regenerate_derived_files",
+        "export_ads_records"
+      ],
       "allowedActions": [
         "run ADS export",
         "run ADS validation",
@@ -59,6 +67,9 @@
       "command": "npm run agent:sources",
       "dryRunCommand": "npm run agent:sources",
       "reportPath": "docs/agent-reports/source-steward.md",
+      "capabilities": [
+        "write_report"
+      ],
       "allowedActions": [
         "detect missing archive URLs",
         "detect stale retrieval dates",
@@ -80,6 +91,11 @@
       "command": "npm run agent:ads",
       "dryRunCommand": "npm run agent:ads:dry",
       "reportPath": "docs/agent-reports/ads-steward.md",
+      "capabilities": [
+        "write_report",
+        "export_ads_records",
+        "regenerate_derived_files"
+      ],
       "allowedActions": [
         "export ADS records",
         "validate ADS records",
@@ -101,6 +117,10 @@
       "command": "npm run agent:publication",
       "dryRunCommand": "npm run agent:publication:dry",
       "reportPath": "docs/agent-reports/publication-builder.md",
+      "capabilities": [
+        "write_report",
+        "regenerate_derived_files"
+      ],
       "allowedActions": [
         "rebuild publication assets",
         "regenerate search data",
@@ -122,6 +142,9 @@
       "command": "npm run agent:release",
       "dryRunCommand": "npm run agent:release",
       "reportPath": "docs/agent-reports/release-steward.md",
+      "capabilities": [
+        "write_report"
+      ],
       "allowedActions": [
         "run institutional readiness checks",
         "verify release artifacts exist",
@@ -144,6 +167,9 @@
       "command": "npm run agent:hygiene",
       "dryRunCommand": "npm run agent:hygiene",
       "reportPath": "docs/agent-reports/content-hygiene.md",
+      "capabilities": [
+        "write_report"
+      ],
       "allowedActions": [
         "inspect whitespace consistency",
         "detect duplicate page titles",
@@ -166,6 +192,10 @@
       "command": "npm run agent:challenge-intake",
       "dryRunCommand": "npm run agent:challenge-intake:dry",
       "reportPath": "docs/agent-reports/challenge-intake.md",
+      "capabilities": [
+        "write_report",
+        "draft_challenge_record"
+      ],
       "allowedActions": [
         "classify challenge type",
         "detect affected claim IDs",
