@@ -131,3 +131,59 @@ test("fails closed when a transaction attempts a deletion", () => {
   assert.equal(result.failure.code, "UNSUPPORTED_LIVE_SCOPE");
   assert.equal(fs.readFileSync(path.join(f.rootDir, f.target), "utf8"), "before\n");
 });
+
+test("restores all touched files after a promotion failure", () => {
+  const f = fixture();
+  const second = "docs/agent-reports/second.md";
+  fs.writeFileSync(path.join(f.rootDir, second), "second-before\n", "utf8");
+  const transaction = approvedTransaction([
+    { operation: "write", path: f.target, content: "first-after\n", encoding: "utf8" },
+    { operation: "write", path: second, content: "second-after\n", encoding: "utf8" }
+  ]);
+  const result = executeTransaction(transaction, options(f, {
+    faultInjector(phase, details) {
+      if (phase === "afterPromoteWrite" && details.index === 0) throw new Error("injected promotion failure");
+    }
+  }));
+  assert.equal(result.status, "failed");
+  assert.equal(result.rollback.valid, true);
+  assert.equal(fs.readFileSync(path.join(f.rootDir, f.target), "utf8"), "before\n");
+  assert.equal(fs.readFileSync(path.join(f.rootDir, second), "utf8"), "second-before\n");
+});
+
+test("aborts when a preimage changes before promotion", () => {
+  const f = fixture();
+  const transaction = approvedTransaction({ operation: "write", path: f.target, content: "after\n", encoding: "utf8" });
+  const result = executeTransaction(transaction, options(f, {
+    faultInjector(phase) {
+      if (phase === "beforePreimageVerification") fs.writeFileSync(path.join(f.rootDir, f.target), "concurrent\n", "utf8");
+    }
+  }));
+  assert.equal(result.status, "failed");
+  assert.equal(result.failure.code, "STALE_PREIMAGE");
+  assert.equal(fs.readFileSync(path.join(f.rootDir, f.target), "utf8"), "concurrent\n");
+});
+
+test("rolls back a canonical byte mismatch", () => {
+  const f = fixture();
+  const transaction = approvedTransaction({ operation: "write", path: f.target, content: "after\n", encoding: "utf8" });
+  const result = executeTransaction(transaction, options(f, {
+    faultInjector(phase) {
+      if (phase === "afterPromoteWrite") fs.writeFileSync(path.join(f.rootDir, f.target), "corrupt\n", "utf8");
+    }
+  }));
+  assert.equal(result.status, "failed");
+  assert.equal(result.failure.code, "CANONICAL_VALIDATION_FAILED");
+  assert.equal(result.rollback.valid, true);
+  assert.equal(fs.readFileSync(path.join(f.rootDir, f.target), "utf8"), "before\n");
+});
+
+test("does not apply a successful transaction twice", () => {
+  const f = fixture();
+  const transaction = approvedTransaction({ operation: "write", path: f.target, content: "after\n", encoding: "utf8" });
+  assert.equal(executeTransaction(transaction, options(f)).status, "succeeded");
+  const second = executeTransaction(transaction, options(f));
+  assert.equal(second.status, "failed");
+  assert.equal(second.failure.code, "DUPLICATE_EXECUTION");
+  assert.equal(fs.readFileSync(path.join(f.rootDir, f.target), "utf8"), "after\n");
+});
