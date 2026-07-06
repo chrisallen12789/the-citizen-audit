@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/platform-source.schema.json",
+  "title": "Citizen Audit Platform Source Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sourceId",
+    "title",
+    "issuer",
+    "sourceTier",
+    "evidenceType",
+    "captureIds",
+    "supportedClaimIds",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "sourceId": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "issuer": { "type": "string", "minLength": 1 },
+    "institutionId": { "type": "string", "pattern": "^INST-[A-Z0-9-]+$" },
+    "publicationDate": { "type": "string", "format": "date" },
+    "sourceTier": { "enum": ["A", "B", "C", "D"] },
+    "evidenceType": {
+      "enum": [
+        "statute",
+        "appropriation",
+        "budget_document",
+        "financial_statement",
+        "inspector_general_report",
+        "congressional_report",
+        "agency_dataset",
+        "contract_record",
+        "court_record",
+        "administrative_record",
+        "research_report",
+        "public_statement",
+        "secondary_reporting"
+      ]
+    },
+    "originalUrl": { "type": "string", "format": "uri" },
+    "noOriginalUrlReason": { "type": "string" },
+    "captureIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^CAP-[0-9]{6}$" }
+    },
+    "relevantLocations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label"],
+        "properties": {
+          "label": { "type": "string", "minLength": 1 },
+          "pageStart": { "type": "integer", "minimum": 1 },
+          "pageEnd": { "type": "integer", "minimum": 1 },
+          "section": { "type": "string" }
+        }
+      }
+    },
+    "supportedClaimIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^CLAIM-[0-9]{6}$" }
+    },
+    "reliabilityNotes": { "type": "string" },
+    "status": { "enum": ["active", "superseded", "withdrawn", "disputed"] }
+  },
+  "anyOf": [
+    { "required": ["originalUrl"] },
+    { "required": ["noOriginalUrlReason"] }
+  ]
+}
