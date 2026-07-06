@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/execution-policy.schema.json",
+  "title": "Institution OS Execution Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "updated",
+    "principle",
+    "requireAffectedObjectCoverage",
+    "requiredValidators",
+    "prohibitedPaths",
+    "prohibitedPrefixes",
+    "actions"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "updated": { "type": "string", "format": "date" },
+    "principle": { "type": "string", "minLength": 1 },
+    "requireAffectedObjectCoverage": { "const": true },
+    "requiredValidators": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$" }
+    },
+    "prohibitedPaths": { "$ref": "#/$defs/pathList" },
+    "prohibitedPrefixes": { "$ref": "#/$defs/pathList" },
+    "actions": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/action" }
+    }
+  },
+  "$defs": {
+    "pathList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedPaths", "allowedPrefixes", "allowDelete", "semanticValidators"],
+      "properties": {
+        "allowedPaths": { "$ref": "#/$defs/pathList" },
+        "allowedPrefixes": { "$ref": "#/$defs/pathList" },
+        "allowDelete": { "type": "boolean" },
+        "semanticValidators": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$" }
+        }
+      }
+    }
+  }
+}
