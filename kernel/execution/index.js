@@ -11,6 +11,7 @@ const { assertValidTransaction, computeWriteSetHash, decodeWriteContent } = requ
 const { applyDeclaredChange } = require("./apply-change");
 const { assessPlan } = require("./assurance");
 const { createCandidateState } = require("./candidate-state");
+const { matchesDeclaredWrite } = require("./canonical-assurance");
 const { enterMutationBoundary } = require("./exclusion");
 const { buildExecutionPlan, loadInstitutionRegistry, readJson } = require("./plan");
 const { appendExecutionHistory, previousSuccessfulExecution } = require("./records");
