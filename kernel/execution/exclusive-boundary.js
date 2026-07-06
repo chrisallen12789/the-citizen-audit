@@ -80,7 +80,7 @@ function releaseExecutionLock(rootDir, lock, options = {}) {
   const current = readExecutionLock(rootDir, { lockPath });
   if (!current) return false;
   if (current.attemptId !== lock.attemptId || current.token !== lock.token) {
-    const error = new Error(E|ecution lock ownership mismatch.");
+    const error = new Error("Execution lock ownership mismatch.");
     error.code = "EXECUTION_LOCK_OWNERSHIP_MISMATCH";
     throw error;
   }
