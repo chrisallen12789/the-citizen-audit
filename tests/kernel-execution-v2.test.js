@@ -94,3 +94,40 @@ test("replaces one approved existing file and records success", () => {
   const events = fs.readFileSync(f.eventLogPath, "utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
   assert.equal(events.some((event) => event.type === "execution.succeeded"), true);
 });
+
+test("refuses an unapproved operation without changing the file", () => {
+  const f = fixture();
+  const transaction = approvedTransaction({ operation: "write", path: f.target, content: "after\n", encoding: "utf8" }, { status: "pending_review" });
+  const result = executeTransaction(transaction, options(f));
+  assert.equal(result.status, "failed");
+  assert.equal(result.failure.code, "TRANSACTION_NOT_APPROVED");
+  assert.equal(fs.readFileSync(path.join(f.rootDir, f.target), "utf8"), "before\n");
+});
+
+test("re-checks authority immediately before execution", () => {
+  const f = fixture();
+  const transaction = approvedTransaction({ operation: "write", path: f.target, content: "after\n", encoding: "utf8" });
+  const result = executeTransaction(transaction, options(f, { authorityCheck: () => ({ allowed: false, reason: "revoked" }) }));
+  assert.equal(result.status, "failed");
+  assert.equal(result.failure.code, "AUTHORITY_DENIED");
+  assert.equal(fs.readFileSync(path.join(f.rootDir, f.target), "utf8"), "before\n");
+});
+
+test("fails closed when a transaction attempts to create a new file", () => {
+  const f = fixture();
+  const relativePath = "docs/agent-reports/new.md";
+  const transaction = approvedTransaction({ operation: "write", path: relativePath, content: "new\n", encoding: "utf8" });
+  const result = executeTransaction(transaction, options(f));
+  assert.equal(result.status, "failed");
+  assert.equal(result.failure.code, "UNSUPPORTED_LIVE_SCOPE");
+  assert.equal(fs.existsSync(path.join(f.rootDir, relativePath)), false);
+});
+
+test("fails closed when a transaction attempts a deletion", () => {
+  const f = fixture();
+  const transaction = approvedTransaction({ operation: "delete", path: f.target });
+  const result = executeTransaction(transaction, options(f));
+  assert.equal(result.status, "failed");
+  assert.equal(result.failure.code, "UNSUPPORTED_LIVE_SCOPE");
+  assert.equal(fs.readFileSync(path.join(f.rootDir, f.target), "utf8"), "before\n");
+});
