@@ -4,7 +4,7 @@
   "principle": "Execution applies only approved, declared, policy-authorized writes and succeeds only after institutional validation.",
   "warningPolicy": "nonfatal",
   "requireAffectedObjectCoverage": false,
-  "requiredValidators": ["institution-registry"],
+  "requiredValidators": ["execution-plan"],
   "prohibitedPaths": ["package.json", "kernel/VERSION.md"],
   "prohibitedPrefixes": [
     ".git/",
