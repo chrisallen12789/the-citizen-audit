@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updated": "2026-07-05",
+  "updated": "2026-07-06",
   "principle": "Nothing important exists only because a folder exists.",
   "objects": [
     {
@@ -86,6 +86,49 @@
       "name": "Authority Engine",
       "path": "kernel/authority/engine.js",
       "description": "Executable resolver for agent capabilities and permission rules."
+    },
+    {
+      "id": "SCHEMA-EXECUTION-ATTEMPT",
+      "type": "schema",
+      "name": "Execution Attempt Schema",
+      "path": "schemas/execution-attempt.schema.json",
+      "description": "Machine-readable schema for immutable execution-attempt creation records.",
+      "dependsOn": [
+        "SYSTEM-SCHEMAS"
+      ]
+    },
+    {
+      "id": "ENGINE-EXECUTION-ATTEMPT-VALIDATOR",
+      "type": "engine",
+      "name": "Execution Attempt Validator",
+      "path": "kernel/execution/attempt-schema.js",
+      "description": "Executable validation and normalization for execution attempts and transition records.",
+      "dependsOn": [
+        "SCHEMA-EXECUTION-ATTEMPT",
+        "SYSTEM-KERNEL"
+      ]
+    },
+    {
+      "id": "ENGINE-EXECUTION-STATE-MACHINE",
+      "type": "engine",
+      "name": "Execution State Machine",
+      "path": "kernel/execution/state-machine.js",
+      "description": "Canonical execution-attempt states, terminal states, and allowed transition matrix.",
+      "dependsOn": [
+        "SYSTEM-KERNEL"
+      ]
+    },
+    {
+      "id": "ENGINE-EXECUTION-LEDGER",
+      "type": "engine",
+      "name": "Execution Attempt Ledger",
+      "path": "kernel/execution/ledger.js",
+      "description": "Hash-chained append-only execution-attempt creation and transition ledger with deterministic replay.",
+      "dependsOn": [
+        "ENGINE-EXECUTION-ATTEMPT-VALIDATOR",
+        "ENGINE-EXECUTION-STATE-MACHINE",
+        "SYSTEM-KERNEL"
+      ]
     },
     {
       "id": "REGISTRY-AGENTS",
