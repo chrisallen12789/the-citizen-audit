@@ -115,6 +115,28 @@
       ]
     },
     {
+      "id": "AGENT-RELEASE-STEWARD",
+      "name": "Release Steward Agent",
+      "status": "active",
+      "authorityLevel": 0,
+      "command": "npm run agent:release",
+      "dryRunCommand": "npm run agent:release",
+      "reportPath": "docs/agent-reports/release-steward.md",
+      "allowedActions": [
+        "run institutional readiness checks",
+        "verify release artifacts exist",
+        "generate release checklist",
+        "produce publication package inventory",
+        "write release stewardship report"
+      ],
+      "forbiddenActions": [
+        "publish over failed gates",
+        "change readiness gates",
+        "modify evidence to satisfy release",
+        "change publication readiness conclusions"
+      ]
+    },
+    {
       "id": "AGENT-CHALLENGE-INTAKE",
       "name": "Challenge Intake Agent",
       "status": "planned",
@@ -133,27 +155,6 @@
         "decide challenge outcome",
         "edit challenged claim directly",
         "discard serious challenges"
-      ]
-    },
-    {
-      "id": "AGENT-RELEASE-STEWARD",
-      "name": "Release Steward Agent",
-      "status": "planned",
-      "authorityLevel": 0,
-      "command": "npm run agent:release",
-      "dryRunCommand": "npm run agent:release",
-      "reportPath": "docs/agent-reports/release-steward.md",
-      "allowedActions": [
-        "run full QA",
-        "verify release artifacts exist",
-        "generate release checklist",
-        "calculate checksums",
-        "produce publication package inventory"
-      ],
-      "forbiddenActions": [
-        "publish over failed gates",
-        "change readiness gates",
-        "modify evidence to satisfy release"
       ]
     },
     {
