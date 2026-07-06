@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - execution-engine-v2-phase-3
+  pull_request:
+    branches:
+      - main
 
 jobs:
   snapshot:
