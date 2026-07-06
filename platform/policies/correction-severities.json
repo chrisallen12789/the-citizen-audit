@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0.0",
+  "severities": [
+    { "id": "typographical", "label": "Typographical", "meaning": "A spelling, grammar, formatting, or non-substantive presentation correction." },
+    { "id": "citation", "label": "Citation", "meaning": "A citation, link, source location, or source-description correction." },
+    { "id": "calculation", "label": "Calculation", "meaning": "A numeric, formula, input, rounding, or calculation-lineage correction." },
+    { "id": "factual", "label": "Factual", "meaning": "A factual statement was incorrect or unsupported." },
+    { "id": "methodological", "label": "Methodological", "meaning": "A methodology rule was misstated, misapplied, or changed." },
+    { "id": "finding_level", "label": "Finding-level", "meaning": "A finding changed without reversing the overall audit conclusion." },
+    { "id": "conclusion_level", "label": "Conclusion-level", "meaning": "The overall bottom-line conclusion changed." },
+    { "id": "withdrawal", "label": "Withdrawal", "meaning": "The prior publication is no longer reliable enough to remain active." }
+  ],
+  "rule": "A correction must create a new record and must not silently overwrite the prior release."
+}
