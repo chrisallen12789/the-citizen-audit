@@ -1,38 +1,49 @@
 # Execution Engine v2 Progress
 
-Status: **HOLD — NOT SAFE TO ACTIVATE**
-
-PR #8 merged foundational scaffolding into `main`, including:
-
-- transaction record validation and hash-chained storage,
-- execution policy and deterministic plan construction,
-- candidate-state overlay,
-- validator registry scaffolding,
-- structured event writer scaffolding,
-- in-memory snapshot utilities,
-- mutation exclusion journal,
-- low-level write and artifact-preservation helpers.
-
-The merged code is not a complete execution engine. The following critical capabilities remain incomplete or unintegrated:
-
-- the central validation cycle,
-- one authoritative execution orchestrator,
-- durable execution-attempt and outcome ledger,
-- durable pre-state snapshots and crash recovery,
-- verified rollback,
-- exact post-write materialization checks,
-- institutional and action-specific post-write validators,
-- real exclusive execution locking,
-- runtime integration,
-- event-log consolidation and integrity protection,
-- automated adversarial and fault-injection tests,
-- CI enforcement.
-
-The current runtime still executes agent commands directly and may bypass transaction enforcement. Exit code zero must not be interpreted as Institution OS transactional success.
+Status: **HOLD — PHASE 1 IMPLEMENTED, NOT SAFE TO ACTIVATE**
 
 The controlling architecture is documented in:
 
 - `docs/institution-os/execution-engine-v2-architecture.md`
 - GitHub issue #9
 
-Execution Engine v2 may be marked complete only after issue #9's activation gate is satisfied and independently reviewed.
+## Foundation already on main
+
+PR #8 merged foundational transaction and execution scaffolding, including transaction validation, hash-chained transaction storage, deterministic planning, candidate-state support, event-writing support, and low-level recovery helpers.
+
+That scaffolding is not a complete execution engine and remains non-live.
+
+## Phase 1
+
+Issue #12 implements:
+
+- versioned immutable execution-attempt creation records,
+- executable attempt and transition validation,
+- the accepted execution-attempt state machine,
+- a hash-chained append-only execution ledger,
+- deterministic replay into immutable attempt views,
+- enforcement of one committed attempt per transaction,
+- ledger verification and inspection commands,
+- focused automated tests,
+- Institution Registry entries for the new execution objects.
+
+Phase 1 does not mutate canonical files and does not connect the ledger to the agent runtime.
+
+## Remaining phases
+
+1. Phase 2 — Issue #13: durable recovery store, exclusive lock, write-ahead journal, rollback, and startup recovery.
+2. Phase 3 — Issue #14: deterministic validator planning and complete coverage enforcement.
+3. Phase 4 — Issue #15: orchestration integration, runtime enforcement, and the activation gate.
+
+Issue #11 remains the parallel prerequisite for a reproducible repository baseline.
+
+## Verification
+
+Phase 1 must pass:
+
+- `npm run execution:test`
+- `npm run registry:validate`
+
+## Hold
+
+Execution Engine v2 may be marked complete or active only after Issues #11 through #15 are resolved and the final activation checklist in Issue #9 is explicitly cleared. Exit code zero from the current agent runtime is not Institution OS transactional success.
