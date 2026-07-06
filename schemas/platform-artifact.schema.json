@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/platform-artifact.schema.json",
+  "title": "Citizen Audit Platform Artifact Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "artifactId",
+    "artifactType",
+    "filename",
+    "mediaType",
+    "byteSize",
+    "sha256",
+    "publicPath",
+    "createdAt"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "artifactId": { "type": "string", "pattern": "^ART-[0-9]{6}$" },
+    "releaseId": { "type": "string", "pattern": "^REL-TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}-V[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "artifactType": {
+      "enum": [
+        "public_report",
+        "publication_package",
+        "source_manifest",
+        "findings_export",
+        "calculation_export",
+        "methodology",
+        "decision_log",
+        "correction_history",
+        "hash_manifest",
+        "preserved_source"
+      ]
+    },
+    "filename": { "type": "string", "minLength": 1 },
+    "mediaType": { "type": "string", "minLength": 1 },
+    "byteSize": { "type": "integer", "minimum": 0 },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "publicPath": { "type": "string", "pattern": "^/.*" },
+    "createdAt": { "type": "string", "format": "date-time" }
+  }
+}
