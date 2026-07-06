@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/platform-audit.schema.json",
+  "title": "Citizen Audit Platform Audit Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "auditId",
+    "slug",
+    "title",
+    "question",
+    "status",
+    "currentVersion",
+    "institutionIds",
+    "methodologyId",
+    "confidence",
+    "evidenceCoverage",
+    "findingIds",
+    "sourceIds",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "auditId": { "type": "string", "pattern": "^TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}$" },
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "shortTitle": { "type": "string", "minLength": 1 },
+    "question": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string" },
+    "bottomLine": { "type": "string" },
+    "status": {
+      "enum": [
+        "proposed",
+        "researching",
+        "evidence_incomplete",
+        "internal_review",
+        "open_for_challenge",
+        "published_with_limitations",
+        "published",
+        "correction_pending",
+        "corrected",
+        "superseded",
+        "withdrawn"
+      ]
+    },
+    "currentVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "currentReleaseId": { "type": "string", "pattern": "^REL-TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}-V[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "institutionIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^INST-[A-Z0-9-]+$" }
+    },
+    "subjectTags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "start", "end", "label"],
+      "properties": {
+        "type": { "enum": ["fiscal_year", "calendar_year", "custom"] },
+        "start": { "type": "string", "format": "date" },
+        "end": { "type": "string", "format": "date" },
+        "label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "methodologyId": { "type": "string", "pattern": "^METHOD-[0-9]{3}-V[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "confidence": { "enum": ["high", "moderate", "limited", "indeterminate"] },
+    "confidenceRationale": { "type": "string" },
+    "evidenceCoverage": { "enum": ["fully_evidenced", "substantially_evidenced", "partially_evidenced", "evidence_insufficient"] },
+    "limitationSummary": { "type": "string" },
+    "findingIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}-F[0-9]{2}$" }
+    },
+    "unknownIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^UNK-[0-9]{6}$" }
+    },
+    "calculationIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^CALC-[0-9]{6}$" }
+    },
+    "sourceIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^SRC-[0-9]{6}$" }
+    },
+    "challengeIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^CH-[0-9]{4}-[0-9]{6}$" }
+    },
+    "correctionIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^COR-[0-9]{4}-[0-9]{6}$" }
+    },
+    "releaseIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^REL-TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}-V[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" }
+    },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "publishedAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "published_with_limitations" } }, "required": ["status"] },
+      "then": { "required": ["limitationSummary"] }
+    },
+    {
+      "if": { "properties": { "status": { "enum": ["published", "published_with_limitations", "open_for_challenge", "corrected", "superseded", "withdrawn"] } }, "required": ["status"] },
+      "then": { "required": ["currentReleaseId", "publishedAt", "confidenceRationale"] }
+    }
+  ]
+}
