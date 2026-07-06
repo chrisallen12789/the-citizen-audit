@@ -16,6 +16,7 @@ const { preserveArtifact } = require("./preserve-artifact");
 const { snapshotWrites, verifyRestoration, verifySnapshot } = require("./snapshots");
 const { loadValidatorRegistry, selectValidators } = require("./validators");
 const { writeInstitutionFile } = require("./write-file");
+const executionPlanValidator = require("./validators/execution-plan");
 
 const repositoryRoot = path.resolve(__dirname, "..", "..");
 
@@ -42,4 +43,4 @@ function temporaryPath(relativePath, executionId, index) {
   return directory === "." ? temporaryName : `${directory}/${temporaryName}`;
 }
 
-module.exports = { defaultBoundaryPath, defaultHistoryPath, defaultPolicy, nextExecutionId, temporaryPath };
+module.exports = { defaultBoundaryPath, defaultHistoryPath, defaultPolicy, nextExecutionId, temporaryPath, executionPlanValidator };
