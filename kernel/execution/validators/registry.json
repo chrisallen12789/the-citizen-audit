@@ -3,8 +3,39 @@
   "validators": [
     {
       "id": "execution-plan",
+      "version": "1.0.0",
       "module": "execution-plan.js",
-      "description": "Validates that execution retains a declared write set, affected objects, and a deterministic write-set hash."
+      "phases": ["candidate", "post_write"],
+      "scope": "execution-plan",
+      "deterministic": true,
+      "timeoutMs": 5000
+    },
+    {
+      "id": "exact-materialization",
+      "version": "1.0.0",
+      "module": "exact-materialization.js",
+      "phases": ["post_write"],
+      "scope": "declared-write-set",
+      "deterministic": true,
+      "timeoutMs": 5000
+    },
+    {
+      "id": "institution-registry",
+      "version": "1.0.0",
+      "module": "institution-registry.js",
+      "phases": ["post_write"],
+      "scope": "institution-registry",
+      "deterministic": true,
+      "timeoutMs": 5000
+    },
+    {
+      "id": "dependency-cycles",
+      "version": "1.0.0",
+      "module": "dependency-cycles.js",
+      "phases": ["post_write"],
+      "scope": "institution-dependencies",
+      "deterministic": true,
+      "timeoutMs": 5000
     }
   ]
 }
