@@ -39,6 +39,9 @@
     "qa": "node scripts/qa.js",
     "release:rc": "node scripts/release-candidate.js",
     "archive:hash": "node scripts/archive-batch.js",
+    "platform:validate": "node scripts/validate-platform-records.js",
+    "platform:test": "node --test tests/platform-*.test.js",
+    "platform:check": "npm run platform:validate && npm run platform:test",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
