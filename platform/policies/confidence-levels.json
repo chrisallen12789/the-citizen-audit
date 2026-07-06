@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0.0",
+  "levels": [
+    {
+      "id": "high",
+      "label": "High",
+      "meaning": "Multiple authoritative sources agree, calculations are reproducible, and material evidence gaps are absent or resolved."
+    },
+    {
+      "id": "moderate",
+      "label": "Moderate",
+      "meaning": "Core evidence is authoritative, but limitations remain that may affect details rather than the central conclusion."
+    },
+    {
+      "id": "limited",
+      "label": "Limited",
+      "meaning": "Evidence is incomplete or materially estimated; the conclusion is plausible but sensitive to unresolved information."
+    },
+    {
+      "id": "indeterminate",
+      "label": "Indeterminate",
+      "meaning": "Available evidence does not support a responsible conclusion."
+    }
+  ],
+  "rule": "Confidence is not a probability score unless a validated statistical model is published with the audit."
+}
