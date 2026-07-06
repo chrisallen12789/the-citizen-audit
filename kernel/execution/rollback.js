@@ -1,6 +1,6 @@
 const fs = require("fs");
 const { sha256 } = require("../lib/append-only-log");
-const { institutionFile } = require("./path-safety");
+const { institutionDirectory, institutionFile } = require("./path-safety");
 const { fileState } = require("./file-state");
 const { atomicReplaceFile, unlinkDurable } = require("./durable-io");
 const {
@@ -79,7 +79,7 @@ function restoreFromManifest(rootDir, attemptId, options = {}) {
     .sort((a, b) => b.split("/").length - a.split("/").length || b.localeCompare(a));
   for (const relative of planned) {
     try {
-      const directory = institutionFile(rootDir, `${relative}/.institution-os-placeholder`).replace(/[\\/]\.institution-os-placeholder$/, "");
+      const directory = institutionDirectory(rootDir, relative);
       if (fs.existsSync(directory) && fs.statSync(directory).isDirectory() && fs.readdirSync(directory).length === 0) {
         fs.rmdirSync(directory);
         removedDirectories.push(relative);
