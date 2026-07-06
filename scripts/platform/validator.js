@@ -3,7 +3,7 @@
 const path = require("path");
 const { COLLECTIONS } = require("./config");
 const { sortErrors, stableStringify } = require("./errors");
-const { validatePublicationPolicy } = require("./publication-policy");
+const { validateReleaseRules } = require("./release-rules");
 const { validateReferenceIntegrity } = require("./reference-integrity");
 const { buildIndexes, loadCollections } = require("./catalog");
 const { loadSchemas, validateSchemas, validateSchemaValue } = require("./schema-validator");
@@ -16,7 +16,7 @@ function validatePlatformRecords(options = {}) {
   validateSchemas(collections, schemaDir, errors);
   const indexes = buildIndexes(collections, errors);
   validateReferenceIntegrity(collections, indexes, errors);
-  validatePublicationPolicy(collections, indexes, errors);
+  validateReleaseRules(collections, indexes, errors);
   sortErrors(errors);
   return Object.freeze({
     valid: errors.length === 0,
