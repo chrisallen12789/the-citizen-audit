@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { listAuthorityProblems } = require("../authority/engine");
+const { validateRegistry } = require("../registry/validate");
 
 const root = path.resolve(__dirname, "..", "..");
 const registryPath = path.join(root, "agents", "registry.json");
@@ -23,6 +24,7 @@ const registry = readJson(registryPath);
 const authority = readJson(authorityPath);
 const rules = readJson(rulesPath);
 const institutionRegistry = exists("kernel/registry/institution.json") ? readJson(institutionRegistryPath) : { objects: [] };
+const registryValidation = validateRegistry(institutionRegistry);
 const levels = new Set((authority.levels || []).map((item) => item.level));
 const ruleActions = new Set((rules.rules || []).map((item) => item.action));
 
@@ -32,7 +34,8 @@ for (const file of [
   "institution/architecture.md",
   "institution/roadmap.md",
   "kernel/authority/engine.js",
-  "kernel/registry/institution.json"
+  "kernel/registry/institution.json",
+  "kernel/registry/validate.js"
 ]) {
   if (!exists(file)) problems.push(`Missing institutional operating-system file: ${file}`);
 }
@@ -57,6 +60,14 @@ for (const agent of registry.agents || []) {
 
 for (const authorityProblem of listAuthorityProblems()) {
   problems.push(authorityProblem);
+}
+
+for (const registryProblem of registryValidation.problems) {
+  problems.push(`Registry: ${registryProblem}`);
+}
+
+for (const registryWarning of registryValidation.warnings) {
+  warnings.push(`Registry: ${registryWarning}`);
 }
 
 if (!ruleActions.has("change_claim_meaning")) warnings.push("Permission rules do not explicitly cover claim-meaning changes.");
@@ -86,7 +97,9 @@ console.log(`Agents active: ${activeAgents.length}`);
 console.log(`Agents planned: ${plannedAgents.length}`);
 console.log(`Authority levels: ${authority.levels.length}`);
 console.log(`Permission rules: ${rules.rules.length}`);
-console.log(`Institution registry objects: ${(institutionRegistry.objects || []).length}`);
+console.log(`Institution registry objects: ${registryValidation.objectCount}`);
+console.log(`Registry validation problems: ${registryValidation.problems.length}`);
+console.log(`Registry validation warnings: ${registryValidation.warnings.length}`);
 console.log(`Problems: ${problems.length}`);
 console.log(`Warnings: ${warnings.length}`);
 console.log("");
