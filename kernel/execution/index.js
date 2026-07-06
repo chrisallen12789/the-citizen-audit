@@ -69,4 +69,37 @@ function createExecutionEmitter(writeEvent, context) {
   };
 }
 
-module.exports = { createExecutionEmitter, defaultBoundaryPath, defaultHistoryPath, defaultPolicy, nextExecutionId, resolveTransaction };
+function prepareExecution(transactionOrId, options = {}) {
+  const rootDir = path.resolve(options.rootDir || repositoryRoot);
+  const transaction = normalizeRecordedTransaction(resolveTransaction(transactionOrId, { ...options, rootDir, requireRecorded: options.requireRecorded !== false }));
+  assertValidTransaction(transaction);
+  if (transaction.status !== "approved") {
+    const error = new Error(`Transaction is not approved: ${transaction.id}.`);
+    error.code = "TRANSACTION_NOT_APPROVED";
+    throw error;
+  }
+  const historyPath = options.historyPath || defaultHistoryPath(rootDir);
+  if (previousSuccessfulExecution(historyPath, transaction.id)) {
+    const error = new Error(`Transaction already executed successfully: ${transaction.id}.`);
+    error.code = "DUPLICATE_EXECUTION";
+    throw error;
+  }
+  const authorityDecision = (options.authorityCheck || checkAction)(transaction.actor.id, transaction.action);
+  if (!authorityDecision.allowed) {
+    const error = new Error(`Authority denied at execution time: ${authorityDecision.reason}.`);
+    error.code = "AUTHORITY_DENIED";
+    error.authorityDecision = authorityDecision;
+    throw error;
+  }
+  const policy = options.policy || defaultPolicy(rootDir);
+  const registry = options.registry || loadInstitutionRegistry(rootDir);
+  const plan = buildExecutionPlan(transaction, policy, registry);
+  if (plan.writeSetHash !== transaction.writeSetHash) {
+    const error = new Error("Transaction write-set hash changed before execution.");
+    error.code = "WRITE_SET_MISMATCH";
+    throw error;
+  }
+  return { rootDir, transaction, historyPath, authorityDecision, policy, registry, plan };
+}
+
+module.exports = { createExecutionEmitter, defaultBoundaryPath, defaultHistoryPath, defaultPolicy, nextExecutionId, prepareExecution, resolveTransaction };
