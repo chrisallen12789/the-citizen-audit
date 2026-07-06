@@ -1,0 +1,45 @@
+name: Execution Engine Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "kernel/execution/**"
+      - "kernel/lib/append-only-log.js"
+      - "kernel/lib/canonical-json.js"
+      - "schemas/execution-attempt.schema.json"
+      - "tests/execution-ledger.test.js"
+      - "package.json"
+      - ".github/workflows/execution-engine-tests.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "kernel/execution/**"
+      - "kernel/lib/append-only-log.js"
+      - "kernel/lib/canonical-json.js"
+      - "schemas/execution-attempt.schema.json"
+      - "tests/execution-ledger.test.js"
+      - "package.json"
+      - ".github/workflows/execution-engine-tests.yml"
+
+jobs:
+  execution-engine-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Execution Engine tests
+        run: npm run execution:test

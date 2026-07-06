@@ -20,6 +20,8 @@
     "agent:sources": "node scripts/source-steward-agent.js",
     "agents:list": "node -e \"const r=require('./agents/registry.json'); for (const a of r.agents) console.log(`${a.id} | ${a.status} | L${a.authorityLevel} | ${(a.capabilities||[]).join(',')} | ${a.command}`)\"",
     "authority:check": "node kernel/authority/engine.js",
+    "execution:test": "node --test tests/execution-ledger.test.js",
+    "execution:verify": "node kernel/execution/ledger.js verify",
     "registry:validate": "node kernel/registry/validate.js",
     "kernel:run": "node kernel/runtime/run.js",
     "kernel:run-all": "node kernel/runtime/run.js --all",
