@@ -1,0 +1,112 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-05",
+  "principle": "Nothing important exists only because a folder exists.",
+  "objects": [
+    {
+      "id": "SYSTEM-INSTITUTION",
+      "type": "system",
+      "name": "Institution",
+      "path": "institution/",
+      "description": "Doctrine, governance, institutional identity, and long-term operating principles."
+    },
+    {
+      "id": "SYSTEM-KERNEL",
+      "type": "system",
+      "name": "Kernel",
+      "path": "kernel/",
+      "description": "Runtime, permissions, authority, events, executive coordination, and agent orchestration."
+    },
+    {
+      "id": "SYSTEM-MEMORY",
+      "type": "system",
+      "name": "Memory",
+      "path": "memory/",
+      "description": "Graph-based institutional memory and relationship records."
+    },
+    {
+      "id": "SYSTEM-WORKFORCE",
+      "type": "system",
+      "name": "Workforce",
+      "path": "agents/",
+      "description": "Registered agents, capabilities, authority levels, and future department model."
+    },
+    {
+      "id": "SYSTEM-PLATFORM",
+      "type": "system",
+      "name": "Platform",
+      "path": "public/",
+      "description": "Public website, generated publication assets, and future public interfaces."
+    },
+    {
+      "id": "SYSTEM-AUDITS",
+      "type": "system",
+      "name": "Audits",
+      "path": "audits/",
+      "description": "Structured audit records and ADS export targets."
+    },
+    {
+      "id": "SYSTEM-SCHEMAS",
+      "type": "system",
+      "name": "Schemas",
+      "path": "schemas/",
+      "description": "Machine-readable schemas for institutional and audit records."
+    },
+    {
+      "id": "DOC-AI-BOOTSTRAP",
+      "type": "doctrine",
+      "name": "AI Bootstrap",
+      "path": "institution/ai-bootstrap.md",
+      "description": "Stable operating doctrine for future AI systems joining the project."
+    },
+    {
+      "id": "DOC-RUNTIME",
+      "type": "doctrine",
+      "name": "Institutional Runtime",
+      "path": "institution/runtime.md",
+      "description": "Living operational state for the institution."
+    },
+    {
+      "id": "DOC-ARCHITECTURE",
+      "type": "doctrine",
+      "name": "Institution Operating System Architecture",
+      "path": "institution/architecture.md",
+      "description": "Architecture of the five-system institutional operating model."
+    },
+    {
+      "id": "DOC-ROADMAP",
+      "type": "doctrine",
+      "name": "Institution Operating System Roadmap",
+      "path": "institution/roadmap.md",
+      "description": "Strategic roadmap for institutional operating-system development."
+    },
+    {
+      "id": "ENGINE-AUTHORITY",
+      "type": "engine",
+      "name": "Authority Engine",
+      "path": "kernel/authority/engine.js",
+      "description": "Executable resolver for agent capabilities and permission rules."
+    },
+    {
+      "id": "REGISTRY-AGENTS",
+      "type": "registry",
+      "name": "Agent Registry",
+      "path": "agents/registry.json",
+      "description": "Registered institutional agents, authority levels, commands, and capabilities."
+    },
+    {
+      "id": "REGISTRY-PERMISSIONS",
+      "type": "registry",
+      "name": "Permission Rules",
+      "path": "kernel/permissions/rules.json",
+      "description": "Canonical permission rules resolved by the Authority Engine."
+    },
+    {
+      "id": "REGISTRY-AUTHORITY-LEVELS",
+      "type": "registry",
+      "name": "Authority Levels",
+      "path": "kernel/permissions/authority-levels.json",
+      "description": "Institutional authority levels from report-only authority through human approval."
+    }
+  ]
+}
