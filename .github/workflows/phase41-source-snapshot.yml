@@ -38,6 +38,7 @@ jobs:
             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" transfer
           cd transfer
           echo "be3981cbde759f4b7bf390b5da7dc1add44e2e025721e93dc5c880dfc8aca2e7  .phase41-transfer/remote-status.patch" | sha256sum --check --strict
+          cp .phase41-transfer/remote-status.patch /tmp/phase41-remote-status.patch
           git fetch --quiet --no-tags origin "refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
           current="$(git rev-parse "origin/$TARGET_BRANCH")"
           if [[ "$current" != "$EXPECTED_HEAD" ]]; then
@@ -45,8 +46,8 @@ jobs:
             exit 1
           fi
           git checkout --quiet --detach "$EXPECTED_HEAD"
-          git apply --check .phase41-transfer/remote-status.patch
-          git apply .phase41-transfer/remote-status.patch
+          git apply --check /tmp/phase41-remote-status.patch
+          git apply /tmp/phase41-remote-status.patch
           changed="$(git diff --name-only)"
           expected=$'docs/institution-os/execution-v2-phase-4.1-corrections.md\ndocs/institution-os/execution-v2-progress.md'
           if [[ "$changed" != "$expected" ]]; then
