@@ -57,7 +57,7 @@ echo "4aadf8eddf8f9a4714e6bdda8173de664bc73c761bb0f5cce74c4b63a11ae26e  /tmp/pha
 echo "5592162d31841b4b91a0150e90f863daa22557e2cff1a8f5a99f883d675dd710  /tmp/phase41-patches/0002-Phase-4.1-enforce-AST-transitive-capability-ownershi.patch" | sha256sum --check --strict
 echo "6dd48781e3b9af595ee9ef6697bc699fae3d7ca433e7db74a993a22f34e24bb7  /tmp/phase41-patches/0003-Document-Phase-4.1-corrections-and-verification-gate.patch" | sha256sum --check --strict
 
-git fetch --quiet --no-tags origin "$TARGET_BRANCH"
+git fetch --quiet --no-tags origin "refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
 current="$(git rev-parse "origin/$TARGET_BRANCH")"
 if [[ "$current" != "$EXPECTED_HEAD" ]]; then
   echo "Target branch changed unexpectedly: expected $EXPECTED_HEAD, found $current" >&2
