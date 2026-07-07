@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-07T22:57:18.036Z",
+  "generatedAt": "2026-07-07T23:10:22.143Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -1518,37 +1518,37 @@
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 56
+          "line": 62
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 56
+          "line": 62
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 99
+          "line": 105
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 99
+          "line": 105
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "readVerifiedLog",
-          "line": 104
+          "line": 110
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "appendEntry",
-          "line": 108
+          "line": 121
         },
         {
           "module": "kernel/execution/durable-io.js",
           "exportName": "writeCanonicalJsonAtomic",
-          "line": 116
+          "line": 129
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -5090,6 +5090,31 @@
           "module": "kernel/execution/runtime-isolation-barrier.js",
           "exportName": "assertNoRuntimeIsolationBarrier",
           "line": 183
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "snapshotGovernedTree",
+          "line": 191
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "recordRuntimeIsolationBarrier",
+          "line": 200
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "recordRuntimeIsolationBarrier",
+          "line": 208
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 210
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "assertNoRuntimeIsolationBarrier",
+          "line": 213
         }
       ],
       "sourceBehaviorChecks": "passed",

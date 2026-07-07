@@ -185,3 +185,35 @@ test("direct-delete of the barrier file without authorized clearance keeps execu
   void barrier;
   cleanup(fx);
 });
+
+test("same barrier hash re-raised after authorized clearance remains protected from direct delete", () => {
+  const fx = fixture();
+  const expectedManifest = snapshotGovernedTree(fx.root);
+  const details = {
+    runId: "RUN-RECOVERY-REPEAT",
+    detectedAt: "2026-07-07T14:00:00.000Z",
+    beforeHash: expectedManifest.manifestHash,
+    afterHash: null,
+    expectedManifest,
+    problems: ["repeated deterministic recovery verification required"]
+  };
+  const first = recordRuntimeIsolationBarrier(fx.root, details);
+  const decision = createDecision(fx, first, {
+    decisionId: "REC-DEC-CLEAR-REPEAT",
+    decidedAt: "2026-07-07T14:01:00.000Z"
+  });
+  const recovery = loadRecoveryModuleFresh();
+  recovery.clearRuntimeIsolationBarrierAuthorized(fx.root, decision.decisionId, { clearedAt: "2026-07-07T14:02:00.000Z" });
+
+  const second = recordRuntimeIsolationBarrier(fx.root, details);
+  assert.equal(second.barrierHash, first.barrierHash, "fixture deliberately reuses the deterministic barrier hash");
+  fs.rmSync(runtimeIsolationBarrierPath(fx.root), { force: true });
+
+  const { assertNoRuntimeIsolationBarrier } = require("../kernel/execution/runtime-isolation-barrier");
+  assert.throws(() => assertNoRuntimeIsolationBarrier(fx.root), /removed without an authorized clearance|EXECUTION_RECOVERY_REQUIRED/i,
+    "a later re-raise must supersede the earlier clearance for the same barrier hash");
+  const entries = recovery.readClearanceLedger(fx.root).entries;
+  assert.equal(entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.raised" && entry.barrierHash === first.barrierHash).length, 2);
+  assert.equal(entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.cleared" && entry.originalBarrierHash === first.barrierHash).length, 1);
+  cleanup(fx);
+});

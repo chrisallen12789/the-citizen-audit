@@ -28,13 +28,19 @@ function openBarrierHashes(rootDir) {
     if (error && error.code === "ENOENT") return [];
     throw error;
   }
-  const raised = new Set();
-  const cleared = new Set();
+  // Reconcile in append order. A barrier hash may be cleared and later raised
+  // again (for example, a deterministic retry with the same run metadata). The
+  // latest durable state for that hash is authoritative; set subtraction across
+  // all history would incorrectly treat a later re-raise as already cleared.
+  const states = new Map();
   for (const entry of entries) {
-    if (entry.recordType === "runtime.isolation.barrier.raised" && entry.barrierHash) raised.add(entry.barrierHash);
-    else if (entry.recordType === "runtime.isolation.barrier.cleared" && entry.originalBarrierHash) cleared.add(entry.originalBarrierHash);
+    if (entry.recordType === "runtime.isolation.barrier.raised" && entry.barrierHash) {
+      states.set(entry.barrierHash, "open");
+    } else if (entry.recordType === "runtime.isolation.barrier.cleared" && entry.originalBarrierHash) {
+      states.set(entry.originalBarrierHash, "cleared");
+    }
   }
-  return [...raised].filter((hash) => !cleared.has(hash));
+  return [...states.entries()].filter(([, state]) => state === "open").map(([hash]) => hash);
 }
 
 function readRuntimeIsolationBarrier(rootDir) {
@@ -103,8 +109,15 @@ function recordRuntimeIsolationBarrier(rootDir, details = {}) {
   let priorRaised = [];
   try { priorRaised = readVerifiedLog(barrierClearanceLedgerPath(rootDir), "runtime isolation clearance ledger").entries; }
   catch (error) { if (!error || error.code !== "ENOENT") throw error; }
-  const alreadyRaised = priorRaised.some((entry) => entry.recordType === "runtime.isolation.barrier.raised" && entry.barrierHash === record.barrierHash);
-  if (!alreadyRaised) {
+  let currentState = null;
+  for (const entry of priorRaised) {
+    if (entry.recordType === "runtime.isolation.barrier.raised" && entry.barrierHash === record.barrierHash) currentState = "open";
+    else if (entry.recordType === "runtime.isolation.barrier.cleared" && entry.originalBarrierHash === record.barrierHash) currentState = "cleared";
+  }
+  // Duplicate persistence of an already-open barrier is idempotent. A barrier
+  // with the same deterministic hash that was previously cleared is a new open
+  // cycle and must receive a new raised entry.
+  if (currentState !== "open") {
     appendEntry(barrierClearanceLedgerPath(rootDir), {
       recordType: "runtime.isolation.barrier.raised",
       barrierHash: record.barrierHash,
