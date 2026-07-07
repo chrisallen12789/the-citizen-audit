@@ -40,15 +40,19 @@ jobs:
           from pathlib import Path
           path = Path('.github/scripts/phase41-transfer.sh')
           text = path.read_text()
-          marker = 'if git diff --name-only "$EXPECTED_HEAD"..HEAD | grep -E \'^(platform/|schemas/platform-)\'; then'
-          insertion = '''git restore --source=HEAD^ --staged --worktree -- \\
+          restore_marker = 'git restore .phase41-transfer/part-13\n'
+          restore_insertion = restore_marker + 'git restore .github/scripts/phase41-transfer.sh\n'
+          commit_marker = 'if git diff --name-only "$EXPECTED_HEAD"..HEAD | grep -E \'^(platform/|schemas/platform-)\'; then'
+          commit_insertion = '''git restore --source=HEAD^ --staged --worktree -- \\
             .github/workflows/execution-engine-phase4.yml \\
             .github/workflows/execution-engine-tests.yml
           git commit --quiet --amend --no-edit
 
           '''
-          if text.count(marker) != 1:
+          if text.count(restore_marker) != 1 or text.count(commit_marker) != 1:
               raise SystemExit('transfer-script insertion marker was not unique')
-          path.write_text(text.replace(marker, insertion + marker))
+          text = text.replace(restore_marker, restore_insertion)
+          text = text.replace(commit_marker, commit_insertion + commit_marker)
+          path.write_text(text)
           PY
           bash .github/scripts/phase41-transfer.sh
