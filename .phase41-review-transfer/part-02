@@ -1,0 +1,131 @@
+inline-alias.js", category: 3, justification: "fixture", capabilities: [] });
++  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /filesystemMutation/);
++  cleanup(fx);
++});
++
++test("inline require().member executor alias is detected", () => {
++  const fx = fixture();
++  write(fx.root, "scripts/inline-exec.js", `const spawn=require('child_process').spawnSync;function go(){spawn('sh',['-c','echo']);}module.exports={go};`);
++  updateConfig(fx, { path: "scripts/inline-exec.js", category: 3, justification: "fixture", capabilities: [] });
++  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /processExecution/);
++  cleanup(fx);
++});
++
+ test("destructured renamed filesystem call is detected", () => {
+   const fx = fixture();
+   write(fx.root, "scripts/destructured.js", `const {writeFileSync:put}=require('node:fs');put('x','x');`);
+diff --git a/tests/runtime-isolation-recovery.test.js b/tests/runtime-isolation-recovery.test.js
+index ba4ac79..82877cc 100644
+--- a/tests/runtime-isolation-recovery.test.js
++++ b/tests/runtime-isolation-recovery.test.js
+@@ -154,16 +154,34 @@ test("authorized verified clearance writes append-only evidence before unlink",
+     durableIo.unlinkDurable = originalUnlink;
+   }
+   const ledger = recovery.readClearanceLedger(fx.root);
+-  assert.equal(ledger.entries.length, 1);
+-  assert.equal(ledger.entries[0].originalBarrierHash, barrier.barrierHash);
+-  assert.equal(ledger.entries[0].clearanceDecisionId, decision.decisionId);
+-  assert.equal(ledger.entries[0].verification.verified, true);
++  const clearedEntries = ledger.entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.cleared");
++  const raisedEntries = ledger.entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.raised");
++  assert.equal(raisedEntries.length, 1, "barrier raise is durably recorded for reconciliation");
++  assert.equal(raisedEntries[0].barrierHash, barrier.barrierHash);
++  assert.equal(clearedEntries.length, 1);
++  assert.equal(clearedEntries[0].originalBarrierHash, barrier.barrierHash);
++  assert.equal(clearedEntries[0].clearanceDecisionId, decision.decisionId);
++  assert.equal(clearedEntries[0].verification.verified, true);
+   assert.ok(readRuntimeIsolationBarrier(fx.root), "barrier remains when durable unlink fails");
+ 
+   const finalRecovery = loadRecoveryModuleFresh();
+   const result = finalRecovery.clearRuntimeIsolationBarrierAuthorized(fx.root, decision.decisionId, { clearedAt: "2026-07-07T13:01:00.000Z" });
+   assert.equal(result.cleared, true);
+   assert.equal(fs.existsSync(runtimeIsolationBarrierPath(fx.root)), false);
+-  assert.equal(finalRecovery.readClearanceLedger(fx.root).entries.length, 1, "retry does not duplicate clearance evidence");
++  assert.equal(finalRecovery.readClearanceLedger(fx.root).entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.cleared").length, 1, "retry does not duplicate clearance evidence");
++  cleanup(fx);
++});
++
++test("direct-delete of the barrier file without authorized clearance keeps execution blocked", () => {
++  const fx = fixture();
++  const barrier = createBarrier(fx);
++  const { assertNoRuntimeIsolationBarrier, runtimeIsolationBarrierPath: barrierPathFn } = require("../kernel/execution/runtime-isolation-barrier");
++  assert.throws(() => assertNoRuntimeIsolationBarrier(fx.root), /EXECUTION_RECOVERY_REQUIRED|blocked/i);
++  // administrative shortcut: remove the barrier file directly, no clearance record
++  fs.rmSync(barrierPathFn(fx.root), { force: true });
++  assert.equal(fs.existsSync(barrierPathFn(fx.root)), false);
++  assert.throws(() => assertNoRuntimeIsolationBarrier(fx.root), /removed without an authorized clearance|EXECUTION_RECOVERY_REQUIRED/i,
++    "reconciliation must detect an unauthorized direct-delete and stay failed closed");
++  void barrier;
+   cleanup(fx);
+ });
+-- 
+2.47.3
+
+
+From c9ed20683d611ae9b8ddad4eef404786f546dc06 Mon Sep 17 00:00:00 2001
+From: "The Citizen Audit Phase 4.1 Review"
+ <phase41-review@users.noreply.github.com>
+Date: Tue, 7 Jul 2026 23:12:41 +0000
+Subject: [PATCH 2/2] Harden barrier reconciliation across repeated recovery
+ cycles
+
+---
+ docs/bypass-audit-report.json                 | 41 +++++++++++++++----
+ kernel/execution/runtime-isolation-barrier.js | 27 ++++++++----
+ tests/runtime-isolation-recovery.test.js      | 32 +++++++++++++++
+ 3 files changed, 85 insertions(+), 15 deletions(-)
+
+diff --git a/docs/bypass-audit-report.json b/docs/bypass-audit-report.json
+index e03c8ac..43b770d 100644
+--- a/docs/bypass-audit-report.json
++++ b/docs/bypass-audit-report.json
+@@ -1,5 +1,5 @@
+ {
+-  "generatedAt": "2026-07-07T22:57:18.036Z",
++  "generatedAt": "2026-07-07T23:10:22.143Z",
+   "configVersion": "3.0.0",
+   "categories": {
+     "1": "governed mutation routed through the orchestrator",
+@@ -1518,37 +1518,37 @@
+         {
+           "module": "kernel/lib/append-only-log.js",
+           "exportName": "sha256",
+-          "line": 56
++          "line": 62
+         },
+         {
+           "module": "kernel/lib/canonical-json.js",
+           "exportName": "canonicalStringify",
+-          "line": 56
++          "line": 62
+         },
+         {
+           "module": "kernel/lib/append-only-log.js",
+           "exportName": "sha256",
+-          "line": 99
++          "line": 105
+         },
+         {
+           "module": "kernel/lib/canonical-json.js",
+           "exportName": "canonicalStringify",
+-          "line": 99
++          "line": 105
+         },
+         {
+           "module": "kernel/lib/append-only-log.js",
+           "exportName": "readVerifiedLog",
+-          "line": 104
++          "line": 110
+         },
+         {
+           "module": "kernel/lib/append-only-log.js",
+           "exportName": "appendEntry",
+-          "line": 108
++          "line": 121
+         },
+         {
+           "module": "kernel/execution/durable-io.js",
+           "exportName": "writeCanonicalJsonAtomic",
+-          "line": 116
++          "line": 129
+     
