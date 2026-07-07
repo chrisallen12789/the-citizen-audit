@@ -1,17 +1,20 @@
 name: Phase 4 Branch Bootstrap
 
 on:
-  push:
+  pull_request:
     branches:
-      - execution-engine-v2-phase-4-corrected-review
-    paths:
-      - ".github/workflows/phase4-bootstrap.yml"
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 permissions:
   contents: write
 
 jobs:
   apply:
+    if: github.head_ref == 'execution-engine-v2-phase-4-corrected-review'
     runs-on: ubuntu-latest
     steps:
       - name: Check out review branch
