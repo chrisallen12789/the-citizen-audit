@@ -28,20 +28,12 @@ jobs:
     if: github.event_name == 'push' || github.head_ref == 'tooling/phase-4.1-source-snapshot'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out tooling transfer branch
-        uses: actions/checkout@v4
-        with:
-          ref: tooling/phase-4.1-source-snapshot
-          fetch-depth: 0
-
-      - name: Export chunk 13 for byte comparison
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase41-transfer-part13
-          path: .phase41-transfer/part-13
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Apply verified correction commits
+      - name: Clone transfer branch and apply verified commits
         shell: bash
-        run: bash .github/scripts/phase41-transfer.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git clone --quiet --depth=1 --branch tooling/phase-4.1-source-snapshot \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" transfer
+          cd transfer
+          bash .github/scripts/phase41-transfer.sh
