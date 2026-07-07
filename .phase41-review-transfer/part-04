@@ -1,0 +1,6 @@
+assert.equal(entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.cleared" && entry.originalBarrierHash === first.barrierHash).length, 1);
++  cleanup(fx);
++});
+-- 
+2.47.3
+
