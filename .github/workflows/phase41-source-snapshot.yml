@@ -26,3 +26,15 @@ jobs:
           path: phase41-source.zip
           if-no-files-found: error
           retention-days: 1
+      - name: Generate pinned Acorn dependency update
+        run: |
+          npm install --package-lock-only --save-dev --save-exact acorn@8.15.0
+          npm pack acorn@8.15.0
+          zip -q phase41-acorn.zip package.json package-lock.json acorn-8.15.0.tgz
+      - name: Upload pinned parser package
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase41-acorn
+          path: phase41-acorn.zip
+          if-no-files-found: error
+          retention-days: 1
