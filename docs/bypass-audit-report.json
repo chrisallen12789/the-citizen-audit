@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-07T13:03:24.090Z",
-  "configVersion": "2.0.0",
+  "generatedAt": "2026-07-07T21:04:54.214Z",
+  "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
     "2": "isolated workspace mutation",
@@ -23,9 +23,10 @@
   ],
   "approvedAgentExecutionAdapter": "kernel/runtime/isolation-adapter.js",
   "sandboxHelper": "kernel/runtime/sandbox-exec.c",
+  "assuranceStatement": "AST/import analysis inventories discovered direct and transitive mutation capabilities; unknown or unowned capability fails closed. This is an enforceable inventory, not a claim that textual search proves absence of every bypass.",
   "summary": {
-    "mutationCapableFiles": 50,
-    "classified": 50,
+    "mutationCapableFiles": 83,
+    "classified": 83,
     "securityChecks": 4,
     "unexplained": 0,
     "unacceptable": 0,
@@ -38,45 +39,338 @@
       "file": "guardians/constitution/check.js",
       "category": 3,
       "justification": "Constitution guardian reads governed records and writes only a generated report file (docs/agent-reports/).",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
     {
-      "file": "kernel/events/write.js",
-      "category": 3,
-      "justification": "Non-authoritative operational event log writer (kernel/events/log.jsonl). Superseded for execution history by kernel/events/projection.js, which derives canonical events from the ledger.",
-      "hitCount": 2,
+      "file": "kernel/approvals/decision-store.js",
+      "category": 5,
+      "justification": "Immutable institution-controlled approval-decision record store with exclusive creation and authority verification.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "defaultExecutionStateRoot",
+          "line": 13
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 75
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 75
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 80
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 80
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "ensureDirectory",
+          "line": 84
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 88
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "fsyncDirectory",
+          "line": 93
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/approvals/recovery-decision-store.js",
+      "category": 5,
+      "justification": "Immutable authorized recovery-decision record store with exclusive creation and authority verification.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "defaultExecutionStateRoot",
+          "line": 10
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 25
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 25
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 29
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 29
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "ensureDirectory",
+          "line": 30
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 30
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "fsyncDirectory",
+          "line": 30
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/events/projection.js",
+      "category": 5,
+      "justification": "Canonical schema-validated execution-event projection derived from the verified execution ledger; never writes events.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 15
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 15
+        },
+        {
+          "module": "kernel/events/validate.js",
+          "exportName": "assertValidExecutionEvent",
+          "line": 15
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "defaultExecutionLedgerPath",
+          "line": 18
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 19
+        },
+        {
+          "module": "kernel/events/validate.js",
+          "exportName": "validateExecutionProjection",
+          "line": 20
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 21
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 21
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 23
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 23
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/events/validate.js",
+      "category": 5,
+      "justification": "Strict execution-event schema and deterministic identity validator.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 19
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 19
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/artifact-vault.js",
+      "category": 5,
+      "justification": "Execution artifact path confinement and read support within reviewed execution state.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "defaultExecutionStateRoot",
+          "line": 12
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/candidate-state.js",
+      "category": 5,
+      "justification": "Read-only candidate-state materialization used by validators; transitive capability is inherited from reviewed execution helpers.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "decodeWriteContent",
+          "line": 9
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 16
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 26
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 33
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -84,22 +378,29 @@
       "file": "kernel/execution/durable-io.js",
       "category": 5,
       "justification": "Phase 2 durable IO primitive: atomic same-directory replace, fsync, and durable unlink used exclusively by the execution/recovery layer.",
-      "hitCount": 13,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 64
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -107,22 +408,170 @@
       "file": "kernel/execution/exclusive-boundary.js",
       "category": 5,
       "justification": "Phase 2 exclusive execution lock (O_EXCL create/unlink). The sanctioned mutual-exclusion mechanism.",
-      "hitCount": 3,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "ensureDirectory",
+          "line": 47
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 59
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "fsyncDirectory",
+          "line": 63
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "fsyncDirectory",
+          "line": 88
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "fsyncDirectory",
+          "line": 102
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/file-state.js",
+      "category": 5,
+      "justification": "Execution file-state helper within the governed execution layer.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 5
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/ledger.js",
+      "category": 5,
+      "justification": "Authoritative hash-chained execution ledger and deterministic transaction disposition replay.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 35
+        },
+        {
+          "module": "kernel/execution/state-machine.js",
+          "exportName": "requiredTransitionHash",
+          "line": 57
+        },
+        {
+          "module": "kernel/execution/state-machine.js",
+          "exportName": "assertExecutionStateTransition",
+          "line": 79
+        },
+        {
+          "module": "kernel/execution/state-machine.js",
+          "exportName": "isTerminalExecutionState",
+          "line": 98
+        },
+        {
+          "module": "kernel/execution/attempt-schema.js",
+          "exportName": "assertValidExecutionAttempt",
+          "line": 114
+        },
+        {
+          "module": "kernel/execution/attempt-schema.js",
+          "exportName": "assertValidExecutionTransition",
+          "line": 125
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "readVerifiedLog",
+          "line": 155
+        },
+        {
+          "module": "kernel/execution/attempt-schema.js",
+          "exportName": "normalizeExecutionAttempt",
+          "line": 186
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 187
+        },
+        {
+          "module": "kernel/execution/state-machine.js",
+          "exportName": "isTerminalExecutionState",
+          "line": 203
+        },
+        {
+          "module": "kernel/execution/state-machine.js",
+          "exportName": "assertExecutionStateTransition",
+          "line": 206
+        },
+        {
+          "module": "kernel/execution/attempt-schema.js",
+          "exportName": "normalizeExecutionTransition",
+          "line": 213
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 222
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -130,22 +579,367 @@
       "file": "kernel/execution/move-file.js",
       "category": 5,
       "justification": "Execution infrastructure rename helper used inside the governed mutation path.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/mutation-journal.js",
+      "category": 5,
+      "justification": "Append-only mutation journal within the exclusive execution boundary.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 15
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "journalPath",
+          "line": 15
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "readVerifiedLog",
+          "line": 26
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "journalPath",
+          "line": 26
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/orchestrator.js",
+      "category": 1,
+      "justification": "Sole authoritative governed mutation orchestrator; all durable mutation is delegated to reviewed Phase 2 primitives.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 43
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 43
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "defaultExecutionLedgerPath",
+          "line": 72
+        },
+        {
+          "module": "kernel/transactions/store.js",
+          "exportName": "getTransaction",
+          "line": 100
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "assertValidTransaction",
+          "line": 106
+        },
+        {
+          "module": "kernel/approvals/decision-store.js",
+          "exportName": "verifyApprovalDecisionForIntent",
+          "line": 111
+        },
+        {
+          "module": "kernel/runtime/agent-registry.js",
+          "exportName": "resolveRegisteredAgent",
+          "line": 128
+        },
+        {
+          "module": "kernel/runtime/runtime-provenance.js",
+          "exportName": "reviewedSandboxHelperSourceHash",
+          "line": 138
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 142
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 150
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "hasCommittedTransaction",
+          "line": 155
+        },
+        {
+          "module": "kernel/execution/recovery-session.js",
+          "exportName": "assertNoRecoveryBarrier",
+          "line": 157
+        },
+        {
+          "module": "kernel/authority/engine.js",
+          "exportName": "loadAuthorityStateAtRoot",
+          "line": 166
+        },
+        {
+          "module": "kernel/authority/engine.js",
+          "exportName": "checkActionAtRoot",
+          "line": 167
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 200
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "selectRequiredValidators",
+          "line": 225
+        },
+        {
+          "module": "kernel/execution/plan.js",
+          "exportName": "loadInstitutionRegistry",
+          "line": 240
+        },
+        {
+          "module": "kernel/execution/plan.js",
+          "exportName": "buildExecutionPlan",
+          "line": 241
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 258
+        },
+        {
+          "module": "kernel/execution/candidate-state.js",
+          "exportName": "createCandidateState",
+          "line": 265
+        },
+        {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 267
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "validatorsForPhase",
+          "line": 267
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 273
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 273
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 277
+        },
+        {
+          "module": "kernel/execution/recovery-session.js",
+          "exportName": "beginRecoveryAttempt",
+          "line": 292
+        },
+        {
+          "module": "kernel/execution/recovery-session.js",
+          "exportName": "applyJournaledWrites",
+          "line": 302
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 305
+        },
+        {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 307
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "validatorsForPhase",
+          "line": 307
+        },
+        {
+          "module": "kernel/execution/validation-result-store.js",
+          "exportName": "writeValidationResult",
+          "line": 315
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 317
+        },
+        {
+          "module": "kernel/execution/rollback.js",
+          "exportName": "rollbackExecutionAttempt",
+          "line": 325
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "releaseExecutionLock",
+          "line": 339
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 346
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/parent-directories.js",
+      "category": 5,
+      "justification": "Path parent validation and execution directory helper within the governed boundary.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 6
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/path-safety.js",
+      "category": 5,
+      "justification": "Path confinement helper within the governed execution layer.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "normalizeRelativePath",
+          "line": 7
+        },
+        {
+          "module": "kernel/execution/file-kind.js",
+          "exportName": "fileKind",
+          "line": 18
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/plan.js",
+      "category": 5,
+      "justification": "Deterministic execution plan builder; transitive capability is inherited from reviewed execution helpers.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 76
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -153,22 +947,105 @@
       "file": "kernel/execution/pre-state-manifest.js",
       "category": 5,
       "justification": "Phase 2 recovery infrastructure that durably records the canonical pre-state manifest before governed mutation.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "normalizeRelativePath",
+          "line": 17
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "manifestPath",
+          "line": 26
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 48
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 48
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "writeCanonicalJsonAtomic",
+          "line": 49
+        },
+        {
+          "module": "kernel/execution/file-state.js",
+          "exportName": "fileState",
+          "line": 33
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 35
+        },
+        {
+          "module": "kernel/execution/snapshot-blob-store.js",
+          "exportName": "persistBlob",
+          "line": 44
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "manifestPath",
+          "line": 54
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "assertRegularFile",
+          "line": 60
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 68
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 68
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "normalizeRelativePath",
+          "line": 74
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "blobPath",
+          "line": 76
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "assertRegularFile",
+          "line": 78
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 80
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -176,22 +1053,75 @@
       "file": "kernel/execution/preserve-artifact.js",
       "category": 5,
       "justification": "Phase 2 recovery infrastructure that durably preserves execution artifacts in the institution-controlled execution state store.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 11
+        },
+        {
+          "module": "kernel/execution/artifact-vault.js",
+          "exportName": "vaultPath",
+          "line": 12
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "writeBytesDurable",
+          "line": 13
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/recovery-paths.js",
+      "category": 5,
+      "justification": "Path derivation for reviewed recovery state.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "defaultExecutionStateRoot",
+          "line": 19
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "defaultExecutionStateRoot",
+          "line": 24
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -199,22 +1129,142 @@
       "file": "kernel/execution/recovery-session.js",
       "category": 5,
       "justification": "Phase 2 governed mutation session that applies journaled writes and enforces durable recovery barriers.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "listExecutionAttempts",
+          "line": 26
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "readRuntimeIsolationBarrier",
+          "line": 34
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "readExecutionLock",
+          "line": 46
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 52
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "loadPreStateManifest",
+          "line": 53
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 72
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "ensureDirectory",
+          "line": 84
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionDirectory",
+          "line": 84
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 91
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "acquireExecutionLock",
+          "line": 93
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "createPreStateManifest",
+          "line": 95
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 96
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "manifestPath",
+          "line": 105
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "releaseExecutionLock",
+          "line": 105
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 114
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "decodeWriteContent",
+          "line": 124
+        },
+        {
+          "module": "kernel/execution/mutation-journal.js",
+          "exportName": "appendMutationRecord",
+          "line": 125
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 132
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 136
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "atomicReplaceFile",
+          "line": 139
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "unlinkDurable",
+          "line": 141
+        },
+        {
+          "module": "kernel/execution/mutation-journal.js",
+          "exportName": "appendMutationRecord",
+          "line": 143
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 151
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -222,22 +1272,45 @@
       "file": "kernel/execution/rollback-result-store.js",
       "category": 5,
       "justification": "Phase 2 recovery infrastructure that durably records rollback verification results.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 16
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 16
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "writeCanonicalJsonAtomic",
+          "line": 17
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "rollbackResultPath",
+          "line": 17
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -245,22 +1318,163 @@
       "file": "kernel/execution/rollback.js",
       "category": 5,
       "justification": "Phase 2 rollback restores pre-state through durable IO within the governed recovery layer.",
-      "hitCount": 3,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/file-state.js",
+          "exportName": "fileState",
+          "line": 23
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 29
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "loadPreStateManifest",
+          "line": 39
+        },
+        {
+          "module": "kernel/execution/mutation-journal.js",
+          "exportName": "readMutationJournal",
+          "line": 45
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 53
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "atomicReplaceFile",
+          "line": 55
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "readSnapshotBlob",
+          "line": 55
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "unlinkDurable",
+          "line": 57
+        },
+        {
+          "module": "kernel/execution/mutation-journal.js",
+          "exportName": "appendMutationRecord",
+          "line": 60
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionDirectory",
+          "line": 76
+        },
+        {
+          "module": "kernel/execution/mutation-journal.js",
+          "exportName": "appendMutationRecord",
+          "line": 80
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 96
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 98
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 99
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 102
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 103
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "writeRollbackResult",
+          "line": 124
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 125
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "readExecutionLock",
+          "line": 134
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "releaseExecutionLock",
+          "line": 135
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "releaseRecoveredExecutionLock",
+          "line": 136
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/run.js",
+      "category": 5,
+      "justification": "CLI wrapper for the authoritative orchestrator.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 17
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -268,22 +1482,156 @@
       "file": "kernel/execution/runtime-isolation-barrier.js",
       "category": 5,
       "justification": "Phase 4 recovery infrastructure that durably records an unproven runtime-isolation restoration and blocks later runtime or direct orchestrator execution.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "defaultExecutionStateRoot",
+          "line": 12
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 31
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 31
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 62
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 62
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "writeCanonicalJsonAtomic",
+          "line": 64
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/runtime-isolation-recovery.js",
+      "category": 5,
+      "justification": "Authorized recovery operation that verifies the restoration manifest, appends clearance evidence, then removes the barrier.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "defaultExecutionStateRoot",
+          "line": 18
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "readVerifiedLog",
+          "line": 22
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 52
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 52
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 56
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "acquireExecutionLock",
+          "line": 57
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "readRuntimeIsolationBarrier",
+          "line": 59
+        },
+        {
+          "module": "kernel/approvals/recovery-decision-store.js",
+          "exportName": "loadRecoveryDecision",
+          "line": 62
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "snapshotGovernedTree",
+          "line": 68
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 76
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 76
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 85
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "unlinkDurable",
+          "line": 106
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 106
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "releaseExecutionLock",
+          "line": 115
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -291,22 +1639,115 @@
       "file": "kernel/execution/snapshot-blob-store.js",
       "category": 5,
       "justification": "Phase 2 content-addressed snapshot storage used only by recovery and rollback.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 8
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "blobPath",
+          "line": 9
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "ensureDirectory",
+          "line": 10
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 13
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "writeBytesDurable",
+          "line": 17
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 21
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "blobPath",
+          "line": 28
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "assertRegularFile",
+          "line": 29
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 31
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/snapshots.js",
+      "category": 5,
+      "justification": "Snapshot helper for reviewed recovery operations.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "createPreStateManifest",
+          "line": 11
+        },
+        {
+          "module": "kernel/execution/file-state.js",
+          "exportName": "fileState",
+          "line": 15
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 18
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "loadPreStateManifest",
+          "line": 23
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -314,22 +1755,142 @@
       "file": "kernel/execution/startup-recovery.js",
       "category": 5,
       "justification": "Phase 2 startup reconciliation of interrupted attempts through the recovery layer.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [
+        "transactionRecording"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "listExecutionAttempts",
+          "line": 16
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "manifestPath",
+          "line": 19
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "listExecutionAttempts",
+          "line": 25
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "readExecutionLock",
+          "line": 28
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 36
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "acquireExecutionLock",
+          "line": 39
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "attemptStateDirectory",
+          "line": 46
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "manifestPath",
+          "line": 47
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "loadPreStateManifest",
+          "line": 48
+        },
+        {
+          "module": "kernel/execution/rollback.js",
+          "exportName": "verifyManifestRestoration",
+          "line": 49
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "releaseRecoveredExecutionLock",
+          "line": 57
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "releaseRecoveredExecutionLock",
+          "line": 61
+        },
+        {
+          "module": "kernel/execution/rollback.js",
+          "exportName": "rollbackExecutionAttempt",
+          "line": 64
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/validation-cycle.js",
+      "category": 5,
+      "justification": "Validation dispatcher; validator loading is controlled by the hashed registry.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/validation-results.js",
+          "exportName": "normalizeValidationResult",
+          "line": 9
+        },
+        {
+          "module": "kernel/execution/validation-results.js",
+          "exportName": "normalizeValidationResult",
+          "line": 19
+        },
+        {
+          "module": "kernel/execution/validation-results.js",
+          "exportName": "normalizeValidationResult",
+          "line": 21
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 40
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 40
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -337,22 +1898,310 @@
       "file": "kernel/execution/validation-result-store.js",
       "category": 5,
       "justification": "Phase 3 execution infrastructure that durably records validation artifacts bound to committed ledger transitions.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 20
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 20
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "writeCanonicalJsonAtomic",
+          "line": 21
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "validationResultPath",
+          "line": 21
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/validation-results.js",
+      "category": 5,
+      "justification": "Validation result normalization within the execution layer.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 60
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 60
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/validators/ads-records-semantics.js",
+      "category": 5,
+      "justification": "Action-specific ADS semantic validator.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "decodeWriteContent",
+          "line": 7
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/validators/derived-files-semantics.js",
+      "category": 5,
+      "justification": "Action-specific derived-file semantic validator.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "decodeWriteContent",
+          "line": 7
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/validators/exact-materialization.js",
+      "category": 5,
+      "justification": "Post-write exact materialization validator.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 21
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "decodeWriteContent",
+          "line": 41
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 46
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 47
+        },
+        {
+          "module": "kernel/execution/mutation-journal.js",
+          "exportName": "readMutationJournal",
+          "line": 54
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/validators/index.js",
+      "category": 5,
+      "justification": "Validator registry loader; its dynamic require is confined to a hashed regular module inside the reviewed validators directory.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 41
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 52
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 52
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 53
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 53
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 62
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 62
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/validators/sort-registry-semantics.js",
+      "category": 5,
+      "justification": "Action-specific registry sorting semantic validator.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "decodeWriteContent",
+          "line": 7
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/execution/validators/write-report-semantics.js",
+      "category": 5,
+      "justification": "Action-specific report semantic validator.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "decodeWriteContent",
+          "line": 8
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -360,22 +2209,35 @@
       "file": "kernel/execution/write-file.js",
       "category": 5,
       "justification": "Execution infrastructure wrapper for governed writes; callers remain inside the authoritative execution path.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 5
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "atomicReplaceFile",
+          "line": 6
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -383,22 +2245,23 @@
       "file": "kernel/executive/status.js",
       "category": 3,
       "justification": "Writes a generated executive status output; reads governed records but does not mutate them.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -406,22 +2269,99 @@
       "file": "kernel/lib/append-only-log.js",
       "category": 5,
       "justification": "Hash-chained append-only log primitive backing the execution ledger, mutation journal, and transaction log.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 24
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 33
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/runtime/agent-registry.js",
+      "category": 5,
+      "justification": "Authoritative registered executable resolver and digest verifier.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 22
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 40
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 40
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 41
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 41
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 62
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 64
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 64
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -429,22 +2369,39 @@
       "file": "kernel/runtime/agent-workspace.js",
       "category": 2,
       "justification": "Creates and cleans disposable writable agent workspaces outside the live institution root and copies only declared regular-file inputs.",
-      "hitCount": 10,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 15
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 26
+        },
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 98
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -452,22 +2409,54 @@
       "file": "kernel/runtime/governed-tree-guard.js",
       "category": 5,
       "justification": "Defense-in-depth recovery guard that snapshots, detects, restores, and verifies security-critical governed-tree state after isolated agent execution.",
-      "hitCount": 8,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 43
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 75
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 75
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 79
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 92
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 92
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -475,45 +2464,430 @@
       "file": "kernel/runtime/isolation-adapter.js",
       "category": 2,
       "justification": "The sole approved production agent-execution adapter. It probes Linux namespace/chroot/seccomp capability, builds the reviewed sandbox launcher, exposes only a disposable workspace, and does not mount the live institution root.",
-      "hitCount": 18,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": true,
-        "chrootIsolation": true,
-        "sandboxLauncher": true,
-        "seccompClaim": true,
-        "liveRootNotExposed": true,
-        "namespaceIsolation": true,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/runtime/runtime-provenance.js",
+          "exportName": "reviewedSandboxHelperSourceHash",
+          "line": 17
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 29
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 58
+        },
+        {
+          "module": "kernel/execution/durable-io.js",
+          "exportName": "fsyncDirectory",
+          "line": 64
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 107
+        },
+        {
+          "module": "kernel/runtime/agent-registry.js",
+          "exportName": "verifyResolvedAgent",
+          "line": 132
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 151
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 151
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 151
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 151
+        },
+        {
+          "module": "kernel/runtime/agent-registry.js",
+          "exportName": "verifyResolvedAgent",
+          "line": 161
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
     {
-      "file": "kernel/runtime/run.js",
-      "category": 3,
-      "justification": "Legacy diagnostic/dry-run runtime. Active agent execution is permanently disabled and no child-process spawn path or override flag remains.",
-      "hitCount": 3,
+      "file": "kernel/runtime/proposed-writes.js",
+      "category": 5,
+      "justification": "Strict isolated workspace proposal parser and path validator.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/path-safety.js",
+          "exportName": "institutionFile",
+          "line": 15
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "normalizeRelativePath",
+          "line": 44
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 92
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/runtime/run-transactional.js",
+      "category": 1,
+      "justification": "Production CLI that passes only identifiers to the transactional runtime.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": true,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 23
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/runtime/transaction-intent.js",
+      "category": 1,
+      "justification": "Records only an exact approved transaction bound to an authoritative decision record.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 8
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 8
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 16
+        },
+        {
+          "module": "kernel/approvals/decision-store.js",
+          "exportName": "verifyApprovalDecisionForIntent",
+          "line": 27
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 39
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "assertValidTransaction",
+          "line": 40
+        },
+        {
+          "module": "kernel/transactions/store.js",
+          "exportName": "recordTransaction",
+          "line": 41
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/runtime/transactional-runtime.js",
+      "category": 1,
+      "justification": "Authoritative runtime integration layer: converts isolated agent output to transaction intent and invokes executeApprovedTransaction; it has no direct governed mutation path.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": true,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 36
+        },
+        {
+          "module": "kernel/execution/plan.js",
+          "exportName": "pathMatches",
+          "line": 56
+        },
+        {
+          "module": "kernel/execution/plan.js",
+          "exportName": "pathMatches",
+          "line": 58
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "inspectAndRestoreGovernedTree",
+          "line": 68
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "recordRuntimeIsolationBarrier",
+          "line": 78
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "assertNoRuntimeIsolationBarrier",
+          "line": 109
+        },
+        {
+          "module": "kernel/runtime/agent-registry.js",
+          "exportName": "resolveRegisteredAgent",
+          "line": 113
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 119
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "snapshotGovernedTree",
+          "line": 122
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 127
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "captureProposedWrites",
+          "line": 149
+        },
+        {
+          "module": "kernel/runtime/proposed-writes.js",
+          "exportName": "validateProposedWrites",
+          "line": 150
+        },
+        {
+          "module": "kernel/runtime/transaction-intent.js",
+          "exportName": "buildTransactionIntent",
+          "line": 160
+        },
+        {
+          "module": "kernel/authority/engine.js",
+          "exportName": "checkActionAtRoot",
+          "line": 170
+        },
+        {
+          "module": "kernel/runtime/transaction-intent.js",
+          "exportName": "recordApprovedTransaction",
+          "line": 177
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 184
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/transactions/store.js",
+      "category": 5,
+      "justification": "Authoritative append-only transaction record store.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "readVerifiedLog",
+          "line": 15
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "assertValidTransaction",
+          "line": 19
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "assertValidTransaction",
+          "line": 27
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 35
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 37
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 39
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "kernel/transactions/validate.js",
+      "category": 5,
+      "justification": "Strict transaction validator and write-set hash implementation.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 46
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 46
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 41
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 116
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -521,22 +2895,23 @@
       "file": "memory/export.js",
       "category": 3,
       "justification": "Writes a generated memory export output; does not mutate governed records.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -544,22 +2919,23 @@
       "file": "memory/status.js",
       "category": 3,
       "justification": "Writes a generated memory status report; does not mutate governed records.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -567,22 +2943,23 @@
       "file": "proposals/status.js",
       "category": 3,
       "justification": "Writes a generated proposals status output; does not mutate governed records.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -590,22 +2967,25 @@
       "file": "scripts/ads-steward-agent.js",
       "category": 3,
       "justification": "Writes generated ADS export/report outputs under public/ and docs/agent-reports/; no governed-record mutation.",
-      "hitCount": 4,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -613,22 +2993,21 @@
       "file": "scripts/archive-assistant-launch.js",
       "category": 3,
       "justification": "Operational tooling that launches a local archive assistant process; no governed-record mutation.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": false,
         "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": false
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -636,22 +3015,23 @@
       "file": "scripts/archive-batch.js",
       "category": 3,
       "justification": "Writes a generated archive manifest output.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -659,22 +3039,23 @@
       "file": "scripts/archive-manifest-generator.js",
       "category": 3,
       "justification": "Generates archive manifest output files; not a governed record.",
-      "hitCount": 4,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -682,22 +3063,114 @@
       "file": "scripts/build-publication-assets.js",
       "category": 3,
       "justification": "Publication generator producing public/ assets; generated output outside governed records.",
-      "hitCount": 11,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "scripts/renderers/relationships.js",
+          "exportName": "createRelationships",
+          "line": 19
+        },
+        {
+          "module": "scripts/renderers/page-model.js",
+          "exportName": "createPageRenderer",
+          "line": 20
+        },
+        {
+          "module": "scripts/renderers/sections.js",
+          "exportName": "createSectionRenderer",
+          "line": 21
+        },
+        {
+          "module": "scripts/renderers/details.js",
+          "exportName": "createDetailRenderers",
+          "line": 27
+        },
+        {
+          "module": "scripts/build/data-outputs.js",
+          "exportName": "createDataOutputBuilders",
+          "line": 39
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "copyFile",
+          "line": 50
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 79
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 83
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 87
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 91
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 95
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 99
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 102
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 103
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 104
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 105
+        },
+        {
+          "module": "scripts/build/io.js",
+          "exportName": "writeFile",
+          "line": 106
+        },
+        {
+          "module": "scripts/build/finalize.js",
+          "exportName": "finalizeBuild",
+          "line": 108
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -705,22 +3178,34 @@
       "file": "scripts/build/finalize.js",
       "category": 3,
       "justification": "Publication build finalize step writing generated public/ output.",
-      "hitCount": 11,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "scripts/renderers/shared.js",
+          "exportName": "absoluteUrl",
+          "line": 7
+        },
+        {
+          "module": "scripts/renderers/shared.js",
+          "exportName": "absoluteUrl",
+          "line": 12
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -728,22 +3213,23 @@
       "file": "scripts/build/io.js",
       "category": 3,
       "justification": "Publication build IO helper writing generated public/ output.",
-      "hitCount": 4,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -751,22 +3237,23 @@
       "file": "scripts/build/qa-status.js",
       "category": 3,
       "justification": "Writes generated QA status into public data outputs; not a governed record.",
-      "hitCount": 4,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -774,22 +3261,23 @@
       "file": "scripts/bypass-audit.js",
       "category": 3,
       "justification": "This audit tool writes a generated report to docs/bypass-audit-report.json (outside governed records).",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": true,
-        "callerControlledSentinels": true,
-        "isolationDisableSurface": true,
-        "isolationProbe": true,
-        "chrootIsolation": false,
-        "sandboxLauncher": true,
-        "seccompClaim": true,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -797,22 +3285,23 @@
       "file": "scripts/content-hygiene-agent.js",
       "category": 3,
       "justification": "Legacy agent writing only a generated report; no governed-record mutation.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -820,22 +3309,23 @@
       "file": "scripts/export-ads.js",
       "category": 3,
       "justification": "Exports ADS records to public/data generated output.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -843,22 +3333,59 @@
       "file": "scripts/extract-section-content.js",
       "category": 3,
       "justification": "Generates a derived section-content data file; generated output.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "data-model/sections.js",
+          "exportName": "filter",
+          "line": 69
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "scripts/project-execution-events.js",
+      "category": 3,
+      "justification": "Read-only CLI projection of canonical execution events.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 11
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -866,22 +3393,25 @@
       "file": "scripts/publication-builder-agent.js",
       "category": 3,
       "justification": "Generates public publication assets under public/; generated output outside governed records.",
-      "hitCount": 3,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -889,22 +3419,57 @@
       "file": "scripts/qa.js",
       "category": 3,
       "justification": "Institutional QA: reads records, spawns validate-ads, and writes generated QA status into public data outputs.",
-      "hitCount": 1,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "processExecution"
+      ],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
       "detectedCapabilities": {
-        "filesystemMutation": false,
+        "filesystemMutation": true,
         "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "readCsvFile",
+          "line": 467
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "loadManifestConfig",
+          "line": 468
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "validateManifestRows",
+          "line": 469
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "readCsvFile",
+          "line": 479
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "validateManifestPreservation",
+          "line": 482
+        },
+        {
+          "module": "scripts/build/qa-status.js",
+          "exportName": "applyQaStatus",
+          "line": 921
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -912,22 +3477,25 @@
       "file": "scripts/release-candidate.js",
       "category": 3,
       "justification": "Assembles a release candidate under release/ and public/data generated outputs.",
-      "hitCount": 14,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
-        "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "processExecution": true,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -935,22 +3503,25 @@
       "file": "scripts/release-steward-agent.js",
       "category": 3,
       "justification": "Reads governed records for release checks and writes only a generated report; no governed-record mutation.",
-      "hitCount": 3,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -958,22 +3529,25 @@
       "file": "scripts/repair-agent.js",
       "category": 3,
       "justification": "Legacy analysis agent that writes only a generated report (docs/agent-reports/). Migrating to the transactional runtime is future work; it does not mutate governed records.",
-      "hitCount": 3,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -981,22 +3555,23 @@
       "file": "scripts/source-steward-agent.js",
       "category": 3,
       "justification": "Legacy agent writing only a generated report; no governed-record mutation.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -1004,22 +3579,94 @@
       "file": "tests/archive-manifest-generator.test.js",
       "category": 4,
       "justification": "Test-only mutation in temporary directories.",
-      "hitCount": 13,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "parseAnnotatedUrlField",
+          "line": 67
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "parseAnnotatedUrlField",
+          "line": 79
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "parseAnnotatedUrlField",
+          "line": 82
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "parseAnnotatedUrlField",
+          "line": 96
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "generateArchiveManifest",
+          "line": 135
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "mergeArchiveManifest",
+          "line": 194
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "countManifestStatuses",
+          "line": 228
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "mergeArchiveManifest",
+          "line": 360
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "countManifestStatuses",
+          "line": 367
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "mergeArchiveManifest",
+          "line": 421
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "validateManifestPreservation",
+          "line": 437
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "validateManifestRows",
+          "line": 464
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "validateManifestRows",
+          "line": 487
+        },
+        {
+          "module": "scripts/archive-manifest-generator.js",
+          "exportName": "validateManifestRows",
+          "line": 509
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -1027,22 +3674,94 @@
       "file": "tests/bypass-audit.test.js",
       "category": 4,
       "justification": "Adversarial bypass-audit tests that create mutation-capable fixture files only in temporary directories.",
-      "hitCount": 17,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
-        "processExecution": true,
-        "inProcessAgentSurface": true,
-        "legacyOverrideFlag": true,
-        "callerControlledSentinels": true,
-        "isolationDisableSurface": true,
-        "isolationProbe": true,
-        "chrootIsolation": true,
-        "sandboxLauncher": true,
-        "seccompClaim": true,
-        "liveRootNotExposed": true,
-        "namespaceIsolation": true,
-        "orchestratorCall": true
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 88
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 99
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 108
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 117
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 125
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 133
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 143
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 156
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 167
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 174
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 185
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 193
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 207
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 217
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -1050,22 +3769,138 @@
       "file": "tests/event-projection.test.js",
       "category": 4,
       "justification": "Phase 4 event-projection tests; test-only mutation in temporary directories.",
-      "hitCount": 8,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
-        "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "processExecution": true,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 29
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 44
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 45
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 46
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 47
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 72
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 73
+        },
+        {
+          "module": "kernel/events/validate.js",
+          "exportName": "validateExecutionProjection",
+          "line": 75
+        },
+        {
+          "module": "kernel/events/validate.js",
+          "exportName": "validateExecutionEvent",
+          "line": 77
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 89
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 90
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectionIsDeterministic",
+          "line": 93
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 104
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 111
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 112
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 125
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 129
+        },
+        {
+          "module": "kernel/events/validate.js",
+          "exportName": "validateExecutionProjection",
+          "line": 127
+        },
+        {
+          "module": "kernel/events/validate.js",
+          "exportName": "validateExecutionProjection",
+          "line": 131
+        },
+        {
+          "module": "kernel/events/projection.js",
+          "exportName": "projectExecutionEvents",
+          "line": 138
+        },
+        {
+          "module": "kernel/events/validate.js",
+          "exportName": "validateExecutionEvent",
+          "line": 140
+        },
+        {
+          "module": "kernel/events/validate.js",
+          "exportName": "validateExecutionEvent",
+          "line": 145
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -1073,22 +3908,326 @@
       "file": "tests/execution-ledger.test.js",
       "category": 4,
       "justification": "Test-only mutation in temporary directories.",
-      "hitCount": 2,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 54
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 55
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 56
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 60
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 62
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "hasCommittedTransaction",
+          "line": 70
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 71
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 71
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 75
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 77
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 76
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 78
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 79
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 83
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 85
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 86
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 87
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 84
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 88
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 92
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 93
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 97
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 98
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 101
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 102
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 103
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 107
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 109
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 110
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 114
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 115
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 116
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 117
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 118
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 122
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 123
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 124
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 125
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 126
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 132
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 136
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 140
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 141
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 146
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 151
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 157
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 158
+        },
+        {
+          "module": "kernel/execution/state-machine.js",
+          "exportName": "assertExecutionStateTransition",
+          "line": 169
+        },
+        {
+          "module": "kernel/execution/state-machine.js",
+          "exportName": "assertExecutionStateTransition",
+          "line": 171
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 178
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 179
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 180
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 185
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 182
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 196
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 193
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 201
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 200
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 205
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 206
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -1096,22 +4235,351 @@
       "file": "tests/execution-orchestrator.test.js",
       "category": 4,
       "justification": "Test-only mutation in temporary directories.",
-      "hitCount": 28,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": true
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 74
+        },
+        {
+          "module": "kernel/runtime/agent-registry.js",
+          "exportName": "resolveRegisteredAgent",
+          "line": 75
+        },
+        {
+          "module": "kernel/runtime/runtime-provenance.js",
+          "exportName": "reviewedSandboxHelperSourceHash",
+          "line": 79
+        },
+        {
+          "module": "kernel/approvals/decision-store.js",
+          "exportName": "recordApprovalDecision",
+          "line": 84
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 91
+        },
+        {
+          "module": "kernel/transactions/store.js",
+          "exportName": "recordTransaction",
+          "line": 93
+        },
+        {
+          "module": "tests/support/orchestrator-fault-adapter.js",
+          "exportName": "loadFaultInjectedOrchestrator",
+          "line": 99
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 135
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 138
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 151
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 164
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 178
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 191
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 204
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 214
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 216
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 223
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 225
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 229
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 238
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 249
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 260
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 277
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 285
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 296
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 307
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 321
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 332
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 345
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 380
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 402
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 404
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "acquireExecutionLock",
+          "line": 414
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 415
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 427
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 428
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 429
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 430
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 431
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 432
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 455
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "blobRoot",
+          "line": 449
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 463
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 464
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 474
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 479
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 488
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 503
+        },
+        {
+          "module": "kernel/execution/mutation-journal.js",
+          "exportName": "appendMutationRecord",
+          "line": 504
+        },
+        {
+          "module": "kernel/execution/validators/exact-materialization.js",
+          "exportName": "validate",
+          "line": 505
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 518
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 534
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 572
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 574
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "readExecutionLock",
+          "line": 595
+        },
+        {
+          "module": "kernel/execution/startup-recovery.js",
+          "exportName": "recoverIncompleteExecution",
+          "line": 596
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "readExecutionLock",
+          "line": 598
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "snapshotGovernedTree",
+          "line": 605
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "recordRuntimeIsolationBarrier",
+          "line": 606
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 613
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 645
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 654
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 663
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 665
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 709
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -1119,22 +4587,91 @@
       "file": "tests/execution-recovery.test.js",
       "category": 4,
       "justification": "Test-only mutation in temporary directories.",
-      "hitCount": 6,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 31
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 46
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "createPreStateManifest",
+          "line": 54
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "loadPreStateManifest",
+          "line": 55
+        },
+        {
+          "module": "kernel/execution/recovery-store.js",
+          "exportName": "blobPath",
+          "line": 57
+        },
+        {
+          "module": "kernel/execution/recovery.js",
+          "exportName": "beginRecoveryAttempt",
+          "line": 66
+        },
+        {
+          "module": "kernel/execution/recovery.js",
+          "exportName": "applyJournaledWrites",
+          "line": 67
+        },
+        {
+          "module": "kernel/execution/recovery.js",
+          "exportName": "rollbackExecutionAttempt",
+          "line": 69
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 73
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "readExecutionLock",
+          "line": 74
+        },
+        {
+          "module": "kernel/execution/recovery.js",
+          "exportName": "beginRecoveryAttempt",
+          "line": 79
+        },
+        {
+          "module": "kernel/execution/recovery.js",
+          "exportName": "applyJournaledWrites",
+          "line": 80
+        },
+        {
+          "module": "kernel/execution/recovery.js",
+          "exportName": "rollbackExecutionAttempt",
+          "line": 82
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -1142,22 +4679,369 @@
       "file": "tests/runtime-integration.test.js",
       "category": 4,
       "justification": "Phase 4 runtime integration tests; test-only mutation in temporary directories.",
-      "hitCount": 23,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ],
+      "transitiveCapabilities": [
+        "processExecution"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": true,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/runtime/proposed-writes.js",
+          "exportName": "validateProposedWrites",
+          "line": 96
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 98
+        },
+        {
+          "module": "kernel/runtime/transaction-intent.js",
+          "exportName": "deriveTransactionId",
+          "line": 99
+        },
+        {
+          "module": "kernel/approvals/decision-store.js",
+          "exportName": "recordApprovalDecision",
+          "line": 102
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 152
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 164
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 187
+        },
+        {
+          "module": "kernel/runtime/proposed-writes.js",
+          "exportName": "validateProposedWrites",
+          "line": 197
+        },
+        {
+          "module": "kernel/runtime/proposed-writes.js",
+          "exportName": "validateProposedWrites",
+          "line": 206
+        },
+        {
+          "module": "kernel/runtime/proposed-writes.js",
+          "exportName": "validateProposedWrites",
+          "line": 217
+        },
+        {
+          "module": "kernel/runtime/proposed-writes.js",
+          "exportName": "validateProposedWrites",
+          "line": 227
+        },
+        {
+          "module": "kernel/runtime/proposed-writes.js",
+          "exportName": "validateProposedWrites",
+          "line": 240
+        },
+        {
+          "module": "kernel/runtime/transaction-intent.js",
+          "exportName": "buildTransactionIntent",
+          "line": 241
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 242
+        },
+        {
+          "module": "kernel/runtime/transaction-intent.js",
+          "exportName": "deriveTransactionId",
+          "line": 244
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 252
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 264
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 273
+        },
+        {
+          "module": "kernel/transactions/store.js",
+          "exportName": "getTransaction",
+          "line": 277
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 279
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 300
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 311
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 323
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 342
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 360
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 373
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 386
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 403
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 414
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 427
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 437
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 438
+        },
+        {
+          "module": "kernel/approvals/decision-store.js",
+          "exportName": "recordApprovalDecision",
+          "line": 448
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 452
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 460
+        },
+        {
+          "module": "kernel/transactions/validate.js",
+          "exportName": "computeWriteSetHash",
+          "line": 478
+        },
+        {
+          "module": "kernel/runtime/transaction-intent.js",
+          "exportName": "deriveTransactionId",
+          "line": 482
+        },
+        {
+          "module": "kernel/approvals/decision-store.js",
+          "exportName": "recordApprovalDecision",
+          "line": 496
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 498
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 513
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "createExecutionAttempt",
+          "line": 525
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 526
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 527
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 528
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 529
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 530
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "acquireExecutionLock",
+          "line": 539
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 541
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 550
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 553
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "readExecutionLedger",
+          "line": 555
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "tests/runtime-isolation-recovery.test.js",
+      "category": 4,
+      "justification": "Authorized runtime-isolation recovery and barrier-clearance adversarial tests using temporary institution roots.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": true,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "snapshotGovernedTree",
+          "line": 38
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "recordRuntimeIsolationBarrier",
+          "line": 39
+        },
+        {
+          "module": "kernel/approvals/recovery-decision-store.js",
+          "exportName": "recordRecoveryDecision",
+          "line": 49
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 80
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "acquireExecutionLock",
+          "line": 98
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 102
+        },
+        {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "releaseExecutionLock",
+          "line": 104
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 115
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 128
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 139
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "readRuntimeIsolationBarrier",
+          "line": 161
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 166
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -1165,107 +5049,454 @@
       "file": "tests/runtime-isolation.test.js",
       "category": 4,
       "justification": "Adversarial isolation and restoration tests using temporary institution roots.",
-      "hitCount": 45,
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [
+        "transactionRecording"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": true,
-        "chrootIsolation": true,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": true,
-        "orchestratorCall": false
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
       },
+      "capabilityEdges": [
+        {
+          "module": "kernel/runtime/agent-registry.js",
+          "exportName": "resolveRegisteredAgent",
+          "line": 40
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 43
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 44
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "snapshotGovernedTree",
+          "line": 51
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "inspectAndRestoreGovernedTree",
+          "line": 53
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "snapshotGovernedTree",
+          "line": 56
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "diffGovernedTrees",
+          "line": 57
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "probeIsolationCapability",
+          "line": 65
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 75
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 76
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 82
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 94
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 95
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 98
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 106
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 111
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 108
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 134
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 135
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 137
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 142
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "assertWorkspaceIsolation",
+          "line": 143
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 145
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 151
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 154
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "assertWorkspaceIsolation",
+          "line": 153
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 168
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 176
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 183
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 191
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 198
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 206
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 214
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 219
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 220
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 223
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 235
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 249
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 262
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 267
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 268
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 276
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 301
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 341
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "workspaceRoot",
+          "line": 347
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "recordRuntimeIsolationBarrier",
+          "line": 357
+        },
+        {
+          "module": "kernel/runtime/governed-tree-guard.js",
+          "exportName": "snapshotGovernedTree",
+          "line": 362
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 364
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 365
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 380
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 381
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 385
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 386
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 392
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 393
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 398
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 399
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 405
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 406
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 408
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 414
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 415
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 419
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 425
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 439
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 457
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 459
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 458
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 468
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 470
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 469
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "tests/support/orchestrator-fault-adapter.js",
+      "category": 4,
+      "justification": "Test-only fault-injection adapter that reloads execution modules under controlled dependency replacement; not reachable from production entry points.",
+      "declaredCapabilities": [
+        "durableStateMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation"
+      ],
+      "transitiveCapabilities": [],
+      "detectedCapabilities": {
+        "filesystemMutation": false,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [],
       "sourceBehaviorChecks": "passed",
       "violations": []
     }
   ],
   "securityChecks": [
     {
-      "file": "kernel/runtime/isolation-adapter.js",
-      "category": 2,
-      "detectedCapabilities": {
-        "filesystemMutation": true,
-        "processExecution": true,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": true,
-        "chrootIsolation": true,
-        "sandboxLauncher": true,
-        "seccompClaim": true,
-        "liveRootNotExposed": true,
-        "namespaceIsolation": true,
-        "orchestratorCall": false
-      },
-      "status": "passed",
-      "violations": []
-    },
-    {
       "file": "kernel/runtime/run.js",
-      "category": 3,
-      "detectedCapabilities": {
-        "filesystemMutation": true,
-        "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": false
-      },
       "status": "passed",
-      "violations": []
-    },
-    {
-      "file": "kernel/runtime/sandbox-exec.c",
-      "category": 2,
-      "detectedCapabilities": {
-        "noNewPrivileges": true,
-        "seccompFilter": true,
-        "locksPrivileges": true,
-        "blocksMount": true,
-        "blocksNamespaceEntry": true,
-        "blocksRootEscape": true,
-        "blocksModernMountApi": true,
-        "restrictsNamespaceClone": true,
-        "workspaceCwd": true,
-        "closesInheritedFds": true
-      },
-      "status": "passed",
-      "violations": []
-    },
-    {
-      "file": "kernel/runtime/transactional-runtime.js",
-      "category": 1,
       "detectedCapabilities": {
         "filesystemMutation": false,
         "processExecution": false,
-        "inProcessAgentSurface": false,
-        "legacyOverrideFlag": false,
-        "callerControlledSentinels": false,
-        "isolationDisableSurface": false,
-        "isolationProbe": false,
-        "chrootIsolation": false,
-        "sandboxLauncher": false,
-        "seccompClaim": false,
-        "liveRootNotExposed": false,
-        "namespaceIsolation": false,
-        "orchestratorCall": true
-      },
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": false
+      }
+    },
+    {
+      "file": "kernel/runtime/transactional-runtime.js",
       "status": "passed",
-      "violations": []
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": true,
+        "transactionRecording": true,
+        "eventWriting": false,
+        "durableStateMutation": true
+      }
+    },
+    {
+      "file": "kernel/runtime/isolation-adapter.js",
+      "status": "passed",
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": true,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      }
+    },
+    {
+      "file": "kernel/runtime/sandbox-exec.c",
+      "status": "passed",
+      "detectedCapabilities": {
+        "filesystemMutation": false,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": false
+      }
     }
   ],
   "unexplained": [],

@@ -14,25 +14,54 @@ function write(root, relativePath, source) {
 
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "bypass-audit-fixture-"));
-  const classifications = [
-    { path: "kernel/runtime/run.js", category: 3, justification: "legacy dry-run diagnostics" },
-    { path: "kernel/runtime/transactional-runtime.js", category: 1, justification: "orchestrator-only runtime integration" },
-    { path: "kernel/runtime/isolation-adapter.js", category: 2, justification: "approved isolation adapter" },
-    { path: "kernel/runtime/sandbox-exec.c", category: 2, justification: "approved seccomp launcher" },
-    { path: "kernel/runtime/agent-workspace.js", category: 2, justification: "workspace only" }
-  ];
-  write(root, "kernel/runtime/run.js", `const fs=require('fs');\n// Active legacy execution is permanently disabled.\nfs.writeFileSync('docs/agent-reports/status.md','dry');\n`);
-  write(root, "kernel/runtime/transactional-runtime.js", `function x(){snapshotGovernedTree();runExternalAgentIsolated();executeApprovedTransaction();}\n`);
-  write(root, "kernel/runtime/isolation-adapter.js", `const {spawnSync}=require('child_process');\nconst ISOLATION_KIND='unshare-chroot-seccomp';\nfunction probeIsolationCapability(){}\nfunction run(){if(!probeIsolationCapability()) { const e=new Error('no'); e.code='ISOLATION_UNAVAILABLE'; throw e; } const report={seccomp:true,liveRootExposed:false}; return spawnSync('unshare',['--user','--mount','--pid','--','chroot','sandbox','/sandbox-exec']);}\n`);
-  write(root, "kernel/runtime/sandbox-exec.c", `#include <linux/seccomp.h>\n#define CLONE_NEWUSER 1\n#define CLONE_NEWNS 2\n#define __NR_mount 1\n#define __NR_umount2 2\n#define __NR_unshare 3\n#define __NR_setns 4\n#define __NR_pivot_root 5\n#define __NR_chroot 6\n#define __NR_open_tree 7\n#define __NR_move_mount 8\n#define __NR_fsopen 9\n#define __NR_mount_setattr 10\nvoid close_extra_fds(void){}\nint lock_privileges(void){return 0;}\nint main(){close_extra_fds();lock_privileges();prctl(PR_SET_NO_NEW_PRIVS,1,0,0,0);syscall(SYS_seccomp,SECCOMP_SET_MODE_FILTER,0,0);chdir("/workspace");}\n`);
-  write(root, "kernel/runtime/agent-workspace.js", `const fs=require('fs');fs.mkdirSync('/tmp/work');\n`);
+  write(root, "kernel/runtime/run.js", "// Active legacy execution is permanently disabled.\nmodule.exports={};\n");
+  write(root, "kernel/runtime/transactional-runtime.js", `
+    function run(){resolveRegisteredAgent();snapshotGovernedTree();runExternalAgentIsolated();executeApprovedTransaction();}
+    module.exports={run};
+  `);
+  write(root, "kernel/runtime/isolation-adapter.js", `
+    const cp=require('child_process');
+    const binaryHash='reviewed';
+    function verifyHelperFile(){}
+    function probeIsolationCapability(){return true;}
+    function run(){
+      const report={seccomp:true,liveRootExposed:false};
+      if(!probeIsolationCapability()){const e=new Error('no isolation');e.code='ISOLATION_UNAVAILABLE';throw e;}
+      verifyHelperFile(binaryHash);
+      return cp.spawnSync('unshare',['--user','--mount','--pid','--','chroot','sandbox','/sandbox-exec']);
+    }
+    module.exports={run};
+  `);
+  write(root, "kernel/runtime/sandbox-exec.c", `
+    #include <linux/seccomp.h>
+    #define CLONE_NEWUSER 1
+    #define CLONE_NEWNS 2
+    #define __NR_mount 1
+    #define __NR_umount2 2
+    #define __NR_unshare 3
+    #define __NR_setns 4
+    #define __NR_pivot_root 5
+    #define __NR_chroot 6
+    #define __NR_open_tree 7
+    #define __NR_move_mount 8
+    #define __NR_fsopen 9
+    #define __NR_mount_setattr 10
+    void close_extra_fds(void){}
+    int lock_privileges(void){return 0;}
+    int main(){close_extra_fds();lock_privileges();prctl(PR_SET_NO_NEW_PRIVS,1,0,0,0);syscall(SYS_seccomp,SECCOMP_SET_MODE_FILTER,0,0);chdir("/workspace");}
+  `);
   write(root, "scripts/bypass-audit-config.json", JSON.stringify({
-    version: "test",
-    categories: { "1": "orchestrator", "2": "isolation", "3": "generated", "4": "test", "5": "recovery", "6": "bad" },
-    governedRecordPrefixes: ["institution/", "kernel/registry/"],
-    classifications
+    version: "test-3.0.0",
+    categories: { "1": "orchestrator", "2": "isolation", "3": "generated", "4": "test", "5": "recovery", "6": "unacceptable" },
+    governedRecordPrefixes: ["institution/", "kernel/registry/", "kernel/execution/state/"],
+    classifications: [
+      { path: "kernel/runtime/run.js", category: 3, justification: "permanently disabled legacy display entry", capabilities: [] },
+      { path: "kernel/runtime/transactional-runtime.js", category: 1, justification: "authoritative transactional runtime", capabilities: [] },
+      { path: "kernel/runtime/isolation-adapter.js", category: 2, justification: "reviewed isolation adapter", capabilities: ["processExecution"] },
+      { path: "kernel/runtime/sandbox-exec.c", category: 2, justification: "reviewed seccomp launcher", capabilities: [] }
+    ]
   }, null, 2));
-  return { root, classifications };
+  return { root };
 }
 
 function updateConfig(fx, entry) {
@@ -43,141 +72,148 @@ function updateConfig(fx, entry) {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
-function cleanup(fx) { fs.rmSync(fx.root, { recursive: true, force: true }); }
-function violations(report) { return report.behavioralViolations.map((item) => `${item.file}: ${item.violation}`).join("\n"); }
+function cleanup(fx) {
+  fs.rmSync(fx.root, { recursive: true, force: true });
+}
 
-test("repository-wide bypass audit is behaviorally clean", () => {
-  const report = run({ now: "2026-07-06T00:00:00.000Z" });
-  assert.equal(report.summary.pass, true, violations(report));
+function violations(report) {
+  return report.behavioralViolations.map((item) => `${item.file}: ${item.violation}`).join("\n");
+}
+
+function reportEntry(report, file) {
+  return report.classified.find((entry) => entry.file === file);
+}
+
+test("repository-wide capability audit is clean and fully owned", () => {
+  const report = run({ now: "2026-07-07T00:00:00.000Z" });
+  assert.equal(report.summary.pass, true, `${violations(report)}\n${JSON.stringify(report.unexplained)}`);
+  assert.equal(report.summary.classified, report.summary.mutationCapableFiles);
   assert.equal(report.summary.unexplained, 0);
   assert.equal(report.summary.behavioralViolations, 0);
+  assert.match(report.assuranceStatement, /AST\/import analysis/i);
+  assert.doesNotMatch(report.assuranceStatement, /no bypass exists/i);
 });
 
-test("bypass audit classifies every mutation-capable file with behavior results", () => {
-  const report = run({ now: "2026-07-06T00:00:00.000Z" });
-  assert.equal(report.summary.classified, report.summary.mutationCapableFiles);
-  for (const entry of report.classified) {
-    assert.ok(entry.category >= 1 && entry.category <= 6);
-    assert.ok(entry.justification);
-    assert.equal(entry.sourceBehaviorChecks, "passed", `${entry.file}: ${entry.violations.join(", ")}`);
-  }
-});
-
-test("clean behavioral fixture passes", () => {
+test("clean AST capability fixture passes", () => {
   const fx = fixture();
   const report = run({ rootDir: fx.root, now: "fixed" });
   assert.equal(report.summary.pass, true, violations(report));
   cleanup(fx);
 });
 
-test("uncontrolled runtime spawn fails audit", () => {
+test("computed-property filesystem call is detected", () => {
   const fx = fixture();
-  write(fx.root, "kernel/runtime/evil.js", `require('child_process').spawn('sh',[]);`);
-  updateConfig(fx, { path: "kernel/runtime/evil.js", category: 2, justification: "claimed isolation" });
+  write(fx.root, "scripts/computed.js", `const fs=require('fs');fs['writeFileSync']('x','x');`);
+  updateConfig(fx, { path: "scripts/computed.js", category: 3, justification: "fixture", capabilities: [] });
   const report = run({ rootDir: fx.root, now: "fixed" });
-  assert.match(violations(report), /outside the approved isolation adapter/);
+  assert.match(violations(report), /Discovered capability is not owned.*filesystemMutation/i);
   cleanup(fx);
 });
 
-test("uncontrolled runtime exec fails audit", () => {
+test("aliased filesystem namespace call is detected", () => {
   const fx = fixture();
-  write(fx.root, "kernel/runtime/evil.js", `require('child_process').exec('touch x');`);
-  updateConfig(fx, { path: "kernel/runtime/evil.js", category: 2, justification: "claimed isolation" });
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /outside the approved isolation adapter/);
+  write(fx.root, "scripts/alias.js", `const filesystem=require('fs');const second=filesystem;second.writeFileSync('x','x');`);
+  updateConfig(fx, { path: "scripts/alias.js", category: 3, justification: "fixture", capabilities: [] });
+  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /filesystemMutation/);
   cleanup(fx);
 });
 
-test("legacy uncontrolled override flag fails audit", () => {
+test("destructured renamed filesystem call is detected", () => {
   const fx = fixture();
-  write(fx.root, "kernel/runtime/run.js", `const fs=require('fs');fs.writeFileSync('x','x');if(process.argv.includes('--legacy-uncontrolled-ack')){}; // Active legacy execution is permanently disabled`);
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /override flag/);
+  write(fx.root, "scripts/destructured.js", `const {writeFileSync:put}=require('node:fs');put('x','x');`);
+  updateConfig(fx, { path: "scripts/destructured.js", category: 3, justification: "fixture", capabilities: [] });
+  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /filesystemMutation/);
   cleanup(fx);
 });
 
-test("production in-process agent adapter fails audit", () => {
+test("local wrapper function is classified as mutation-capable", () => {
   const fx = fixture();
-  write(fx.root, "kernel/runtime/transactional-runtime.js", `function x(agent){if(typeof agent.fn==='function')agent.fn();snapshotGovernedTree();runExternalAgentIsolated();executeApprovedTransaction();}`);
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /in-process function agent/);
+  write(fx.root, "scripts/wrapper.js", `const fs=require('fs');function persist(){fs.writeFileSync('x','x');}module.exports={persist};`);
+  updateConfig(fx, { path: "scripts/wrapper.js", category: 3, justification: "fixture", capabilities: [] });
+  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /filesystemMutation/);
   cleanup(fx);
 });
 
-test("caller-controlled isolation disable fails audit", () => {
+test("transitive mutation helper capability reaches its caller", () => {
   const fx = fixture();
-  write(fx.root, "kernel/runtime/transactional-runtime.js", `function x(options){if(options.disableIsolation)return; snapshotGovernedTree();runExternalAgentIsolated();executeApprovedTransaction();}`);
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /isolation-disable/);
-  cleanup(fx);
-});
-
-test("caller-controlled sentinel protection fails audit", () => {
-  const fx = fixture();
-  write(fx.root, "kernel/runtime/transactional-runtime.js", `function x(options){snapshotGovernedSentinels(options.sentinelPaths);runExternalAgentIsolated();executeApprovedTransaction();}`);
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /sentinel/);
-  cleanup(fx);
-});
-
-test("unclassified mutation-capable file fails audit", () => {
-  const fx = fixture();
-  write(fx.root, "scripts/unclassified.js", `require('fs').writeFileSync('x','x');`);
+  write(fx.root, "lib/mutation-helper.js", `const fs=require('fs');exports.persist=()=>fs.writeFileSync('x','x');`);
+  write(fx.root, "scripts/caller.js", `const helper=require('../lib/mutation-helper');helper.persist();`);
+  updateConfig(fx, { path: "lib/mutation-helper.js", category: 5, justification: "fixture helper", capabilities: ["filesystemMutation", "durableStateMutation"] });
+  updateConfig(fx, { path: "scripts/caller.js", category: 3, justification: "fixture caller", capabilities: [] });
   const report = run({ rootDir: fx.root, now: "fixed" });
-  assert.equal(report.summary.unexplained, 1);
+  const caller = reportEntry(report, "scripts/caller.js");
+  assert.ok(caller.transitiveCapabilities.includes("filesystemMutation"));
+  assert.match(violations(report), /scripts\/caller\.js: Discovered capability is not owned.*filesystemMutation/i);
+  cleanup(fx);
+});
+
+test("indirect child-process execution is traced into runtime caller", () => {
+  const fx = fixture();
+  write(fx.root, "lib/process-helper.js", `const cp=require('child_process');exports.launch=()=>cp.spawnSync('true');`);
+  write(fx.root, "kernel/runtime/indirect.js", `const helper=require('../../lib/process-helper');helper.launch();`);
+  updateConfig(fx, { path: "lib/process-helper.js", category: 5, justification: "fixture helper", capabilities: ["processExecution"] });
+  updateConfig(fx, { path: "kernel/runtime/indirect.js", category: 2, justification: "claimed safe runtime", capabilities: ["processExecution"] });
+  const report = run({ rootDir: fx.root, now: "fixed" });
+  const caller = reportEntry(report, "kernel/runtime/indirect.js");
+  assert.ok(caller.transitiveCapabilities.includes("processExecution"));
+  assert.match(violations(report), /indirect process-execution capability not routed/i);
+  cleanup(fx);
+});
+
+test("dynamic computed filesystem capability fails closed as unknown", () => {
+  const fx = fixture();
+  write(fx.root, "scripts/dynamic.js", `const fs=require('fs');const name=process.argv[2];fs[name]('x','x');`);
+  updateConfig(fx, { path: "scripts/dynamic.js", category: 3, justification: "fixture", capabilities: [] });
+  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /Unknown capability.*dynamic computed capability call/i);
+  cleanup(fx);
+});
+
+test("unclassified mutation-capable module fails closed", () => {
+  const fx = fixture();
+  write(fx.root, "scripts/unowned.js", `require('fs').writeFileSync('x','x');`);
+  const report = run({ rootDir: fx.root, now: "fixed" });
   assert.equal(report.summary.pass, false);
+  assert.equal(report.summary.unexplained, 1);
+  assert.equal(report.unexplained[0].file, "scripts/unowned.js");
   cleanup(fx);
 });
 
-test("production file falsely classified test-only fails audit", () => {
+test("production module falsely classified as test-only fails", () => {
   const fx = fixture();
   write(fx.root, "scripts/fake-test.js", `require('fs').writeFileSync('x','x');`);
-  updateConfig(fx, { path: "scripts/fake-test.js", category: 4, justification: "not actually a test" });
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /falsely classified/);
+  updateConfig(fx, { path: "scripts/fake-test.js", category: 4, justification: "false claim", capabilities: ["filesystemMutation", "durableStateMutation"] });
+  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /falsely classified as test-only/i);
   cleanup(fx);
 });
 
-test("category 3 direct governed-prefix mutation fails audit", () => {
+test("generated-output owner cannot directly mutate a governed literal path", () => {
   const fx = fixture();
-  write(fx.root, "scripts/bad-generated.js", `require('fs').writeFileSync('institution/charter.md','x');`);
-  updateConfig(fx, { path: "scripts/bad-generated.js", category: 3, justification: "claimed generated output" });
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /governed-prefix mutation/);
+  write(fx.root, "scripts/bad-generated.js", `const fs=require('fs');fs.writeFileSync('institution/charter.md','x');`);
+  updateConfig(fx, { path: "scripts/bad-generated.js", category: 3, justification: "generated output", capabilities: ["filesystemMutation", "durableStateMutation"] });
+  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /direct governed-prefix mutation/i);
   cleanup(fx);
 });
 
-test("isolation adapter without capability probe, chroot, seccomp, and fail-closed behavior fails audit", () => {
+test("production callback and isolation-disable surfaces fail runtime behavior checks", () => {
   const fx = fixture();
-  write(fx.root, "kernel/runtime/isolation-adapter.js", `const {spawnSync}=require('child_process');function run(){return spawnSync('node',[]);}`);
+  write(fx.root, "kernel/runtime/transactional-runtime.js", `
+    function run(options){
+      if(options.disableIsolation)return;
+      options.approvalProvider();
+      options.onStep();
+      resolveRegisteredAgent();snapshotGovernedTree();runExternalAgentIsolated();executeApprovedTransaction();
+    }
+  `);
   const text = violations(run({ rootDir: fx.root, now: "fixed" }));
-  assert.match(text, /capability probe/);
-  assert.match(text, /chrooted sandbox/);
-  assert.match(text, /sandbox launcher/);
-  assert.match(text, /seccomp/);
-  assert.match(text, /fail-closed/);
+  assert.match(text, /approval callback/i);
+  assert.match(text, /fault callback/i);
+  assert.match(text, /isolation-disable/i);
   cleanup(fx);
 });
 
-test("silent unisolated fallback fails audit", () => {
+test("invalid JavaScript fails the AST inventory instead of being skipped", () => {
   const fx = fixture();
-  write(fx.root, "kernel/runtime/isolation-adapter.js", `const {spawnSync}=require('child_process');function probeIsolationCapability(){} const report={seccomp:true,liveRootExposed:false}; // chroot sandbox /sandbox-exec --user --mount --pid\nfunction run(options){if(options.allowUnisolated)return spawnSync('node',[]);const e=new Error();e.code='ISOLATION_UNAVAILABLE';throw e;}`);
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /unsafe fallback|disable surface/);
-  cleanup(fx);
-});
-
-
-test("missing sandbox helper fails audit", () => {
-  const fx = fixture();
-  fs.rmSync(path.join(fx.root, "kernel/runtime/sandbox-exec.c"));
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /security file was not scanned or is missing/);
-  cleanup(fx);
-});
-
-test("sandbox helper without seccomp enforcement fails audit", () => {
-  const fx = fixture();
-  write(fx.root, "kernel/runtime/sandbox-exec.c", `int main(){chdir("/workspace");}`);
-  const text = violations(run({ rootDir: fx.root, now: "fixed" }));
-  assert.match(text, /seccompFilter|noNewPrivileges|blocksMount/);
-  cleanup(fx);
-});
-
-test("isolation adapter that bind-mounts the live root fails audit", () => {
-  const fx = fixture();
-  write(fx.root, "kernel/runtime/isolation-adapter.js", `const {spawnSync}=require('child_process');function probeIsolationCapability(){} const report={seccomp:true,liveRootExposed:false}; // chroot sandbox /sandbox-exec --user --mount --pid\nfunction run(rootDir){ mount --bind rootDir sandbox/live; const e=new Error();e.code='ISOLATION_UNAVAILABLE';return spawnSync('unshare',[]);}`);
-  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /live institution root/);
+  write(fx.root, "scripts/broken.js", `const = ;`);
+  assert.throws(() => run({ rootDir: fx.root, now: "fixed" }), (error) => error && error.code === "AST_PARSE_FAILURE");
   cleanup(fx);
 });
