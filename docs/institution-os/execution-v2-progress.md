@@ -98,21 +98,42 @@ fact sentinel detection.
 Phase 4 does not weaken Phases 1–3 or the reviewed Phase 3 hardening. The public
 platform work under `platform/**` remains outside this implementation.
 
+## Verification evidence
+
+Local verification of the corrected candidate completed successfully:
+
+- Execution Engine tests: 127/127 passed,
+- archive tests: 36/36 passed,
+- Institutional QA: passed,
+- behavioral bypass audit: 50/50 mutation-capable files classified, 0 unexplained, 0 unacceptable,
+- JavaScript syntax checks: passed,
+- static seccomp launcher compilation with warnings treated as errors: passed.
+
+Remote GitHub Actions verification on the corrected review branch also completed successfully:
+
+- Institutional QA: passed,
+- Execution Engine Tests: passed,
+- Execution Engine Phase 4: passed.
+
+Green tests establish a reviewable implementation candidate. They do not authorize activation.
+
 ## Still incomplete
 
 Execution Engine v2 remains inactive. Phase 4 is an implementation candidate, not
 an activation. The following are still required before the engine could be
 considered for activation:
 
-- independent architectural review of the Phase 4 candidate,
-- application to GitHub and fully green **remote** required CI (not verifiable
-  here; only local results are available),
-- the Institutional QA baseline tracked by issue #11 confirmed in required CI,
-- satisfaction of issue #9's activation gate.
+- independent architectural and security review of the corrected Phase 4 candidate,
+- deployment-environment certification for the required Linux isolation capabilities,
+- explicit migration of active agent entry points to the transactional runtime,
+- confirmation that no governed mutation route bypasses the orchestrator,
+- satisfaction of issue #9's activation gate,
+- explicit governance approval to lift the architecture hold.
 
-Local runtime mutation now routes through the authoritative orchestrator and exit
-code zero is not interpreted as Institution OS transactional success. Remote CI
-status is unverified in this candidate.
+Runtime mutation in the candidate routes through the authoritative orchestrator,
+and process exit code zero is not interpreted as Institution OS transactional
+success. Only the durable execution ledger can establish a committed institutional
+transaction after activation is separately authorized.
 
 The controlling architecture and activation gate are documented in:
 
