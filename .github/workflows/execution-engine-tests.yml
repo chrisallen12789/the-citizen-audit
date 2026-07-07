@@ -6,10 +6,15 @@ on:
       - main
     paths:
       - "kernel/execution/**"
+      - "kernel/runtime/**"
+      - "kernel/events/**"
       - "kernel/lib/append-only-log.js"
       - "kernel/lib/canonical-json.js"
       - "schemas/execution-*.schema.json"
       - "tests/execution-*.test.js"
+      - "tests/runtime-*.test.js"
+      - "tests/event-projection.test.js"
+      - "tests/bypass-audit.test.js"
       - "package.json"
       - ".github/workflows/execution-engine-tests.yml"
   pull_request:
@@ -17,10 +22,15 @@ on:
       - main
     paths:
       - "kernel/execution/**"
+      - "kernel/runtime/**"
+      - "kernel/events/**"
       - "kernel/lib/append-only-log.js"
       - "kernel/lib/canonical-json.js"
       - "schemas/execution-*.schema.json"
       - "tests/execution-*.test.js"
+      - "tests/runtime-*.test.js"
+      - "tests/event-projection.test.js"
+      - "tests/bypass-audit.test.js"
       - "package.json"
       - ".github/workflows/execution-engine-tests.yml"
 
@@ -41,10 +51,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Verify execution module syntax
+      - name: Enable user namespaces for sandbox verification
         shell: bash
         run: |
-          find kernel/execution -type f -name '*.js' -print0 \
+          set -euo pipefail
+          if [[ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]]; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
+          if [[ -e /proc/sys/kernel/unprivileged_userns_clone ]]; then
+            sudo sysctl -w kernel.unprivileged_userns_clone=1
+          fi
+          unshare --user --map-root-user --mount /bin/true
+
+      - name: Verify execution and runtime module syntax
+        shell: bash
+        run: |
+          find kernel/execution kernel/runtime kernel/events -type f -name '*.js' -print0 \
             | sort -z \
             | xargs -0 -n1 node --check
 
