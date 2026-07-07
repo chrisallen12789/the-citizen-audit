@@ -218,9 +218,15 @@ Adversarial coverage:
 - fault/recovery suite: **31/31 PASS**
 - Institutional QA: **PASS for 159 HTML files**
 
-## Remote verification
+## Remote verification observed on July 7, 2026
 
-Remote results must be recorded only after the final correction head completes all required GitHub Actions checks. Until then, remote verification is **pending**.
+The correction implementation head `c154712de4190ca785deda18fc48b32bba8318d5` completed every required GitHub Actions workflow successfully:
+
+- Institutional QA: **PASS**
+- Execution Engine Tests: **PASS**
+- Execution Engine Phase 4: **PASS**
+
+The Phase 4 workflow separately completed syntax validation, hardened sandbox-helper compilation, the AST/transitive capability audit and self-tests, runtime integration and isolation suites, event projection, tamper, fault-injection, Institutional QA, and the full Phase 1–4 execution suite. These results establish test evidence only; they do not lift the HOLD or authorize activation.
 
 ## Remaining hold
 

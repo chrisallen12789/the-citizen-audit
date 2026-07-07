@@ -82,7 +82,7 @@ Local verification observed on July 7, 2026:
 - fault/recovery suite: 31/31 passed,
 - Institutional QA: passed for 159 HTML files.
 
-Remote verification is pending the final pushed correction head. Green local or remote checks do not authorize activation.
+Remote verification observed on July 7, 2026: correction implementation head `c154712de4190ca785deda18fc48b32bba8318d5` passed Institutional QA, Execution Engine Tests, and Execution Engine Phase 4. The Phase 4 workflow completed every dedicated syntax, compiler, capability-audit, runtime, isolation, event, tamper, fault-injection, QA, and full-suite step successfully. Green local or remote checks do not authorize activation.
 
 ## Still incomplete
 
