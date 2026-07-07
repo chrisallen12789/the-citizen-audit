@@ -1,0 +1,284 @@
+diff --git a/.github/workflows/execution-engine-phase4.yml b/.github/workflows/execution-engine-phase4.yml
+index 411449c..858b590 100644
+--- a/.github/workflows/execution-engine-phase4.yml
++++ b/.github/workflows/execution-engine-phase4.yml
+@@ -9,6 +9,9 @@ on:
+       - main
+     paths:
+       - "kernel/runtime/**"
++      - "kernel/approvals/**"
++      - "kernel/authority/approval-authorities.json"
++      - "agents/registry.json"
+       - "kernel/events/**"
+       - "kernel/execution/**"
+       - "scripts/bypass-audit.js"
+@@ -16,15 +19,21 @@ on:
+       - "scripts/project-execution-events.js"
+       - "tests/runtime-integration.test.js"
+       - "tests/runtime-isolation.test.js"
++      - "tests/runtime-isolation-recovery.test.js"
++      - "tests/support/**"
+       - "tests/event-projection.test.js"
+       - "tests/bypass-audit.test.js"
+       - "package.json"
++      - "package-lock.json"
+       - ".github/workflows/execution-engine-phase4.yml"
+   pull_request:
+     branches:
+       - main
+     paths:
+       - "kernel/runtime/**"
++      - "kernel/approvals/**"
++      - "kernel/authority/approval-authorities.json"
++      - "agents/registry.json"
+       - "kernel/events/**"
+       - "kernel/execution/**"
+       - "scripts/bypass-audit.js"
+@@ -32,9 +41,12 @@ on:
+       - "scripts/project-execution-events.js"
+       - "tests/runtime-integration.test.js"
+       - "tests/runtime-isolation.test.js"
++      - "tests/runtime-isolation-recovery.test.js"
++      - "tests/support/**"
+       - "tests/event-projection.test.js"
+       - "tests/bypass-audit.test.js"
+       - "package.json"
++      - "package-lock.json"
+       - ".github/workflows/execution-engine-phase4.yml"
+ 
+ jobs:
+@@ -69,7 +81,7 @@ jobs:
+       - name: Verify runtime and events module syntax
+         shell: bash
+         run: |
+-          find kernel/runtime kernel/events -type f -name '*.js' -print0 \
++          find kernel/runtime kernel/events kernel/approvals kernel/execution -type f -name '*.js' -print0 \
+             | sort -z \
+             | xargs -0 -n1 node --check
+ 
+diff --git a/.github/workflows/execution-engine-tests.yml b/.github/workflows/execution-engine-tests.yml
+index e405362..bd47378 100644
+--- a/.github/workflows/execution-engine-tests.yml
++++ b/.github/workflows/execution-engine-tests.yml
+@@ -7,6 +7,9 @@ on:
+     paths:
+       - "kernel/execution/**"
+       - "kernel/runtime/**"
++      - "kernel/approvals/**"
++      - "kernel/authority/approval-authorities.json"
++      - "agents/registry.json"
+       - "kernel/events/**"
+       - "kernel/lib/append-only-log.js"
+       - "kernel/lib/canonical-json.js"
+@@ -15,7 +18,9 @@ on:
+       - "tests/runtime-*.test.js"
+       - "tests/event-projection.test.js"
+       - "tests/bypass-audit.test.js"
++      - "tests/support/**"
+       - "package.json"
++      - "package-lock.json"
+       - ".github/workflows/execution-engine-tests.yml"
+   pull_request:
+     branches:
+@@ -23,6 +28,9 @@ on:
+     paths:
+       - "kernel/execution/**"
+       - "kernel/runtime/**"
++      - "kernel/approvals/**"
++      - "kernel/authority/approval-authorities.json"
++      - "agents/registry.json"
+       - "kernel/events/**"
+       - "kernel/lib/append-only-log.js"
+       - "kernel/lib/canonical-json.js"
+@@ -31,7 +39,9 @@ on:
+       - "tests/runtime-*.test.js"
+       - "tests/event-projection.test.js"
+       - "tests/bypass-audit.test.js"
++      - "tests/support/**"
+       - "package.json"
++      - "package-lock.json"
+       - ".github/workflows/execution-engine-tests.yml"
+ 
+ jobs:
+@@ -66,7 +76,7 @@ jobs:
+       - name: Verify execution and runtime module syntax
+         shell: bash
+         run: |
+-          find kernel/execution kernel/runtime kernel/events -type f -name '*.js' -print0 \
++          find kernel/execution kernel/runtime kernel/events kernel/approvals -type f -name '*.js' -print0 \
+             | sort -z \
+             | xargs -0 -n1 node --check
+ 
+diff --git a/agents/registry.json b/agents/registry.json
+index 1c25b85..75aa799 100644
+--- a/agents/registry.json
++++ b/agents/registry.json
+@@ -27,7 +27,13 @@
+         "weaken authority rules",
+         "change claims or evidence",
+         "override human approval requirements"
+-      ]
++      ],
++      "runtime": {
++        "executable": "node",
++        "arguments": [
++          "guardians/constitution/check.js"
++        ]
++      }
+     },
+     {
+       "id": "AGENT-REPAIR",
+@@ -57,7 +63,13 @@
+         "delete failing records",
+         "weaken QA gates",
+         "change publication readiness conclusions"
+-      ]
++      ],
++      "runtime": {
++        "executable": "node",
++        "arguments": [
++          "scripts/repair-agent.js"
++        ]
++      }
+     },
+     {
+       "id": "AGENT-SOURCE-STEWARD",
+@@ -81,7 +93,13 @@
+         "mark a source verified without evidence",
+         "replace a source without review",
+         "change source health to pass QA"
+-      ]
++      ],
++      "runtime": {
++        "executable": "node",
++        "arguments": [
++          "scripts/source-steward-agent.js"
++        ]
++      }
+     },
+     {
+       "id": "AGENT-ADS-STEWARD",
+@@ -107,7 +125,13 @@
+         "change permanent IDs after assignment",
+         "delete ADS records",
+         "silently rewrite audit history"
+-      ]
++      ],
++      "runtime": {
++        "executable": "node",
++        "arguments": [
++          "scripts/ads-steward-agent.js"
++        ]
++      }
+     },
+     {
+       "id": "AGENT-PUBLICATION-BUILDER",
+@@ -132,7 +156,13 @@
+       "forbiddenActions": [
+         "edit source data to satisfy generated outputs",
+         "weaken generated page checks"
+-      ]
++      ],
++      "runtime": {
++        "executable": "node",
++        "arguments": [
++          "scripts/publication-builder-agent.js"
++        ]
++      }
+     },
+     {
+       "id": "AGENT-RELEASE-STEWARD",
+@@ -157,7 +187,13 @@
+         "change readiness gates",
+         "modify evidence to satisfy release",
+         "change publication readiness conclusions"
+-      ]
++      ],
++      "runtime": {
++        "executable": "node",
++        "arguments": [
++          "scripts/release-steward-agent.js"
++        ]
++      }
+     },
+     {
+       "id": "AGENT-CONTENT-HYGIENE",
+@@ -182,7 +218,13 @@
+         "simplify legal language without review",
+         "change claims or evidence descriptions",
+         "modify truth-bearing records"
+-      ]
++      ],
++      "runtime": {
++        "executable": "node",
++        "arguments": [
++          "scripts/content-hygiene-agent.js"
++        ]
++      }
+     },
+     {
+       "id": "AGENT-CHALLENGE-INTAKE",
+diff --git a/docs/institution-os/execution-engine-v2-architecture.md b/docs/institution-os/execution-engine-v2-architecture.md
+index 93eedc3..e6ebd23 100644
+--- a/docs/institution-os/execution-engine-v2-architecture.md
++++ b/docs/institution-os/execution-engine-v2-architecture.md
+@@ -68,7 +68,7 @@ Each attempt must bind:
+ 
+ Execution events are projections of authoritative execution-ledger entries. They are not a competing source of truth.
+ 
+-There must be one canonical event writer. Event allocation, schema validation, hash chaining, and append serialization must occur through that writer.
++There is no separate authoritative execution-event writer. Event identity, schema validation, and ordering are derived deterministically from the verified execution ledger. A projected event stream may be materialized for consumers, but it must remain reproducible from the ledger and must never allocate independent IDs or become a second execution truth source.
+ 
+ ### 3.4 Runtime
+ 
+@@ -458,7 +458,7 @@ Execution Engine v2 remains inactive until all of the following are true:
+ - durable recovery and startup reconciliation are implemented,
+ - required validators inspect live post-write state,
+ - affected-object coverage is enforced,
+-- execution and event ledgers are hash chained,
++- the execution ledger is hash chained and execution events are deterministic schema-validated projections of that ledger,
+ - the adversarial suite passes in CI,
+ - injected crash recovery is demonstrated,
+ - issue #9 is closed by architectural review.
+@@ -500,3 +500,26 @@ The runtime also records a complete manifest of governed and security-critical p
+ Preventive chroot, namespace, and seccomp isolation is the primary control. Governed-tree restoration is defense in depth, not an equivalent substitute. If drift is detected and exactly restored, the run still terminates as an isolation violation. If exact restoration cannot be proven, the runtime durably records a hash-bound isolation recovery barrier, returns `recovery_required`, and both later runtime runs and direct orchestrator execution fail closed until explicit recovery clears that barrier.
+ 
+ Supported deployment environments must provide Linux namespace and seccomp facilities, permit the required `unshare`, bind-mount, and chroot setup, and provide a supported static compiler (`gcc` or `cc`) for x86_64 or aarch64. Containers or hosts that disable these capabilities are unsupported for active agents and must receive a fail-closed isolation-unavailable result. Remote CI and production deployment must independently demonstrate the complete capability probe; local success does not activate the engine.
++
++
++## 17. Phase 4.1 review-correction contracts
++
++### 17.1 Approval decisions
++
++Production runtime accepts only an institution-controlled approval decision ID. The loaded immutable record must bind the exact transaction ID, write-set hash, actor, action, approver, approver authority, decision timestamp, and canonical record hash. Approval callbacks and caller-provided approval JSON are prohibited. The orchestrator must re-verify the decision record and current authority before mutation.
++
++### 17.2 Production callback prohibition
++
++No production runtime, orchestrator, recovery, rollback, or post-commit API may execute a caller-supplied function. Fault injection belongs exclusively in test-only adapters that production entry points cannot import or invoke.
++
++### 17.3 Agent executable provenance
++
++The caller selects a registered agent ID, not an executable. The authoritative registry resolves the executable and arguments. Transaction and durable execution provenance bind the registered agent ID, executable real path and content digest, arguments digest, registry-entry hash, runtime version, isolation-adapter version, sandbox-helper source hash, and sandbox-helper binary hash. Registry or executable drift fails closed.
++
++### 17.4 Sandbox-helper trust
++
++The sandbox helper cache must be institution-private, owned by the runtime user, and non-writable by group or others. Helper installation must be exclusive and race resistant. Symlinks, non-regular files, changed ownership, changed mode, and changed bytes are rejected. Full source and binary digests are verified and bound into provenance.
++
++### 17.5 Recovery-barrier clearance
++
++Runtime-isolation barrier clearance is a governed recovery operation, not a file deletion. It requires an immutable authorized decision bound to the original barrier hash, exact restoration-manifest verification, and a durable append-only clearance record before the barrier is removed or superseded. Failure to prove restoration leaves the barrier in force.
+diff --git a/docs/institution-os/execution-v2-phase-4.1-corrections.md b/docs/institution-os/execution-v2-phase-4.1-corrections.md
+new file mode 100644
+index 0000000..5a5fce2
+--- /dev/null
++++ b/docs/institution-os/execution-v2-phase-4.1-corrections.md
+@@ -0,0 +1,227 @@
++# Execution Engine v2 Phase 4.1 — Independent Review Corrections
++
++Status: **HOLD — NOT SAFE TO ACTIVATE**  
++Pull request: **#21 (draft; do not merge)**  
++Controlling issues: **#9 and #15 remain open**  
++Verified correction base: `abfc0550be9e448dc7973bff286622c58a07fadc`  
++Checkpoint: `checkpoint/phase-4.1-pre-corrections-20260707-abfc055`
++
++This document maps the independent architectural/security review findings to the corrective implementation. Passing t
