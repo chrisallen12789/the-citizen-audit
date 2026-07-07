@@ -1,64 +1,81 @@
-name: Phase 4.1 Remote Status Transfer
+name: Package Authoritative Phase 4.1 Source
 
 on:
   push:
     branches:
       - tooling/phase-4.1-source-snapshot
     paths:
-      - ".phase41-transfer/remote-status.patch"
-      - ".github/workflows/phase41-source-snapshot.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - ".phase41-transfer/remote-status.patch"
       - ".github/workflows/phase41-source-snapshot.yml"
 
 permissions:
-  contents: write
-
-concurrency:
-  group: phase41-remote-status-transfer
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  apply:
-    if: github.event_name == 'push' || github.head_ref == 'tooling/phase-4.1-source-snapshot'
+  package:
     runs-on: ubuntu-latest
     steps:
-      - name: Apply observed verification status to the correction branch
+      - name: Check out exact authoritative review head
+        uses: actions/checkout@v4
+        with:
+          ref: 1407a104f891726547e82fcba7004fed930f17d2
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify and package cryptographically tied source
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          EXPECTED_HEAD: c154712de4190ca785deda18fc48b32bba8318d5
-          TARGET_BRANCH: execution-engine-v2-phase-4-corrected-review
         run: |
           set -euo pipefail
-          git clone --quiet --depth=1 --branch tooling/phase-4.1-source-snapshot \
-            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" transfer
-          cd transfer
-          echo "be3981cbde759f4b7bf390b5da7dc1add44e2e025721e93dc5c880dfc8aca2e7  .phase41-transfer/remote-status.patch" | sha256sum --check --strict
-          cp .phase41-transfer/remote-status.patch /tmp/phase41-remote-status.patch
-          git fetch --quiet --no-tags origin "refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
-          current="$(git rev-parse "origin/$TARGET_BRANCH")"
-          if [[ "$current" != "$EXPECTED_HEAD" ]]; then
-            echo "Target branch changed unexpectedly: expected $EXPECTED_HEAD, found $current" >&2
-            exit 1
-          fi
-          git checkout --quiet --detach "$EXPECTED_HEAD"
-          git apply --check /tmp/phase41-remote-status.patch
-          git apply /tmp/phase41-remote-status.patch
-          changed="$(git diff --name-only)"
-          expected=$'docs/institution-os/execution-v2-phase-4.1-corrections.md\ndocs/institution-os/execution-v2-progress.md'
-          if [[ "$changed" != "$expected" ]]; then
-            echo "Unexpected documentation patch paths:" >&2
-            printf '%s\n' "$changed" >&2
-            exit 1
-          fi
-          git config user.name "The Citizen Audit Phase 4.1"
-          git config user.email "phase41@users.noreply.github.com"
-          git add docs/institution-os/execution-v2-phase-4.1-corrections.md docs/institution-os/execution-v2-progress.md
-          git commit --quiet -m "Record observed Phase 4.1 remote verification"
-          git push --quiet origin "HEAD:refs/heads/$TARGET_BRANCH" \
-            --force-with-lease="refs/heads/$TARGET_BRANCH:$EXPECTED_HEAD"
-          echo "Transferred Phase 4.1 status head: $(git rev-parse HEAD)"
+          expected="1407a104f891726547e82fcba7004fed930f17d2"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          test -z "$(git status --porcelain)"
+          test -f kernel/approvals/decision-store.js
+          test -f kernel/runtime/agent-registry.js
+          test -f kernel/runtime/runtime-provenance.js
+          test -f kernel/runtime/sandbox-exec.c
+          test -f kernel/execution/runtime-isolation-recovery.js
+          test -f tests/runtime-isolation-recovery.test.js
+          test ! -e kernel/events/write.js
+
+          mkdir -p authoritative-phase41-source
+          git branch -f authoritative-phase41-review "$expected"
+          git bundle create authoritative-phase41-source/the-citizen-audit-1407a104.bundle refs/heads/authoritative-phase41-review
+          git bundle verify authoritative-phase41-source/the-citizen-audit-1407a104.bundle
+          git archive --format=tar.gz --prefix=the-citizen-audit-1407a104/ -o authoritative-phase41-source/the-citizen-audit-1407a104-source.tar.gz "$expected"
+
+          cat > authoritative-phase41-source/VERIFY.txt <<'EOF'
+          AUTHORITATIVE COMMIT
+          1407a104f891726547e82fcba7004fed930f17d2
+
+          RECOMMENDED VERIFICATION
+          1. git clone the-citizen-audit-1407a104.bundle citizen-audit-review
+          2. cd citizen-audit-review
+          3. git checkout 1407a104f891726547e82fcba7004fed930f17d2
+          4. git rev-parse HEAD
+          5. Confirm the output is exactly:
+             1407a104f891726547e82fcba7004fed930f17d2
+          6. Confirm these files exist:
+             kernel/approvals/decision-store.js
+             kernel/runtime/agent-registry.js
+             kernel/runtime/runtime-provenance.js
+             kernel/runtime/sandbox-exec.c
+             kernel/execution/runtime-isolation-recovery.js
+             tests/runtime-isolation-recovery.test.js
+          7. Confirm kernel/events/write.js does not exist.
+
+          The .bundle file is the authoritative review input because it retains Git object identity.
+          The source tarball is provided only for convenient inspection.
+          EOF
+
+          (
+            cd authoritative-phase41-source
+            sha256sum the-citizen-audit-1407a104.bundle the-citizen-audit-1407a104-source.tar.gz VERIFY.txt > SHA256SUMS
+          )
+
+      - name: Upload authoritative source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: authoritative-phase41-source-1407a104
+          path: authoritative-phase41-source/
+          if-no-files-found: error
+          retention-days: 7
