@@ -1,8 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const root = path.resolve(__dirname, "..", "..");
-const registryFile = path.join(root, "kernel", "registry", "institution.json");
+const repoRoot = path.resolve(__dirname, "..", "..");
+const registryRelativePath = path.join("kernel", "registry", "institution.json");
 
 const validTypes = [
   "system",
@@ -29,20 +29,19 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function existsInRepo(relativePath) {
-  return fs.existsSync(path.join(root, relativePath));
-}
-
-function validateRegistry(registry) {
+// Root-parameterized registry validation. Phase 3 validators run against an
+// explicit institution root (candidate workspace or live root), never an
+// assumed process working directory. Deterministic problem/warning ordering.
+function validateRegistryWithRoot(registry, rootDir) {
   const problems = [];
   const warnings = [];
   const ids = new Set();
   const paths = new Map();
-  const objects = Array.isArray(registry.objects) ? registry.objects : [];
+  const objects = Array.isArray(registry && registry.objects) ? registry.objects : [];
 
-  if (!registry.version) problems.push("Registry missing version.");
-  if (!registry.updated) problems.push("Registry missing updated date.");
-  if (!Array.isArray(registry.objects)) problems.push("Registry objects must be an array.");
+  if (!registry || !registry.version) problems.push("Registry missing version.");
+  if (!registry || !registry.updated) problems.push("Registry missing updated date.");
+  if (!registry || !Array.isArray(registry.objects)) problems.push("Registry objects must be an array.");
 
   for (const item of objects) {
     const label = item && item.id ? item.id : "UNKNOWN";
@@ -57,7 +56,7 @@ function validateRegistry(registry) {
     ids.add(item.id);
 
     if (item.type && !validTypes.includes(item.type)) problems.push(`${item.id}: invalid type ${item.type}.`);
-    if (item.path && !existsInRepo(item.path)) problems.push(`${item.id}: missing path ${item.path}.`);
+    if (item.path && !fs.existsSync(path.join(rootDir, item.path))) problems.push(`${item.id}: missing path ${item.path}.`);
 
     if (item.path) {
       if (!paths.has(item.path)) paths.set(item.path, []);
@@ -69,7 +68,7 @@ function validateRegistry(registry) {
     if (!ids.has(id)) problems.push(`Missing required system: ${id}.`);
   }
 
-  for (const [registeredPath, pathIds] of paths.entries()) {
+  for (const [registeredPath, pathIds] of [...paths.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     if (pathIds.length > 1) warnings.push(`Multiple objects use ${registeredPath}: ${pathIds.join(", ")}.`);
   }
 
@@ -78,6 +77,26 @@ function validateRegistry(registry) {
     problems,
     warnings
   };
+}
+
+// Backwards-compatible: validate a registry object using the repository root.
+function validateRegistry(registry) {
+  return validateRegistryWithRoot(registry, repoRoot);
+}
+
+// Read and validate the institution registry located under an explicit root.
+function validateRegistryAtRoot(rootDir) {
+  const registryFile = path.join(rootDir, registryRelativePath);
+  if (!fs.existsSync(registryFile)) {
+    return { objectCount: 0, problems: [`Institution registry not found: ${registryRelativePath}.`], warnings: [] };
+  }
+  let registry;
+  try {
+    registry = readJson(registryFile);
+  } catch (error) {
+    return { objectCount: 0, problems: [`Institution registry is not valid JSON: ${error.message}.`], warnings: [] };
+  }
+  return validateRegistryWithRoot(registry, rootDir);
 }
 
 function report(result) {
@@ -103,10 +122,10 @@ function report(result) {
   console.log(result.problems.length ? "Institution registry: FAIL" : "Institution registry: PASS");
 }
 
-module.exports = { validateRegistry, validTypes, requiredSystems };
+module.exports = { validateRegistry, validateRegistryAtRoot, validateRegistryWithRoot, validTypes, requiredSystems };
 
 if (require.main === module) {
-  const result = validateRegistry(readJson(registryFile));
+  const result = validateRegistryAtRoot(repoRoot);
   report(result);
   if (result.problems.length) process.exitCode = 1;
 }

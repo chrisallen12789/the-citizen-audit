@@ -15,6 +15,7 @@ const {
   manifestPath
 } = require("./recovery-store");
 const { appendMutationRecord } = require("./mutation-journal");
+const { readRuntimeIsolationBarrier } = require("./runtime-isolation-barrier");
 const {
   getExecutionAttempt,
   listExecutionAttempts,
@@ -25,13 +26,22 @@ function invokeHook(options, point, context = {}) {
   if (typeof options.onStep === "function") options.onStep(point, context);
 }
 
-function assertNoRecoveryBarrier(ledgerPath) {
+function assertNoRecoveryBarrier(ledgerPath, options = {}) {
   const barriers = listExecutionAttempts({ ledgerPath }).filter((attempt) => attempt.state === "recovery_required");
   if (barriers.length) {
     const error = new Error(`Execution is blocked by recovery_required attempt(s): ${barriers.map((item) => item.id).join(", ")}.`);
     error.code = "EXECUTION_RECOVERY_REQUIRED";
     error.attempts = barriers.map((item) => item.id);
     throw error;
+  }
+  if (options.rootDir) {
+    const runtimeBarrier = readRuntimeIsolationBarrier(options.rootDir);
+    if (runtimeBarrier) {
+      const error = new Error(`Execution is blocked by runtime isolation recovery barrier from ${runtimeBarrier.runId}.`);
+      error.code = "EXECUTION_RECOVERY_REQUIRED";
+      error.runtimeIsolationBarrier = runtimeBarrier;
+      throw error;
+    }
   }
 }
 
@@ -82,7 +92,7 @@ function createPlannedParents(rootDir, planned, options = {}) {
 
 function beginRecoveryAttempt(rootDir, attemptId, writes, options = {}) {
   const ledgerPath = options.ledgerPath;
-  assertNoRecoveryBarrier(ledgerPath);
+  assertNoRecoveryBarrier(ledgerPath, { rootDir });
   const attempt = getExecutionAttempt(attemptId, { ledgerPath });
   if (attempt.state !== "prepared") throw new Error(`Recovery preparation requires prepared attempt state: ${attempt.state}.`);
   const lock = acquireExecutionLock(rootDir, attemptId, options.lock || {});

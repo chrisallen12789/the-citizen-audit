@@ -4,7 +4,39 @@
     {
       "id": "execution-plan",
       "module": "execution-plan.js",
-      "description": "Validates that execution retains a declared write set, affected objects, and a deterministic write-set hash."
+      "version": "1.0.0",
+      "supportedPhases": [
+        "candidate",
+        "post_write"
+      ],
+      "description": "Proves the deterministic plan matches the approved transaction and write-set hash."
+    },
+    {
+      "id": "exact-materialization",
+      "module": "exact-materialization.js",
+      "version": "1.0.0",
+      "supportedPhases": [
+        "post_write"
+      ],
+      "description": "Verifies live state exactly matches the declared write set and that no undeclared path was mutated."
+    },
+    {
+      "id": "institution-registry",
+      "module": "institution-registry.js",
+      "version": "1.0.0",
+      "supportedPhases": [
+        "post_write"
+      ],
+      "description": "Validates the institution registry invariant under the governed root."
+    },
+    {
+      "id": "dependency-graph",
+      "module": "dependency-graph.js",
+      "version": "1.0.0",
+      "supportedPhases": [
+        "post_write"
+      ],
+      "description": "Validates dependency reference resolution and rejects dependency cycles."
     }
   ]
 }

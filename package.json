@@ -20,7 +20,7 @@
     "agent:sources": "node scripts/source-steward-agent.js",
     "agents:list": "node -e \"const r=require('./agents/registry.json'); for (const a of r.agents) console.log(`${a.id} | ${a.status} | L${a.authorityLevel} | ${(a.capabilities||[]).join(',')} | ${a.command}`)\"",
     "authority:check": "node kernel/authority/engine.js",
-    "execution:test": "node --test tests/execution-ledger.test.js tests/execution-recovery.test.js",
+    "execution:test": "node --test tests/execution-ledger.test.js tests/execution-recovery.test.js tests/execution-orchestrator.test.js tests/runtime-integration.test.js tests/runtime-isolation.test.js tests/event-projection.test.js tests/bypass-audit.test.js",
     "execution:verify": "node kernel/execution/ledger.js verify",
     "registry:validate": "node kernel/registry/validate.js",
     "kernel:run": "node kernel/runtime/run.js",
@@ -39,7 +39,19 @@
     "qa": "node scripts/qa.js",
     "release:rc": "node scripts/release-candidate.js",
     "archive:hash": "node scripts/archive-batch.js",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "execution:run": "node kernel/execution/run.js",
+    "phase4:test": "node --test tests/runtime-integration.test.js tests/runtime-isolation.test.js tests/event-projection.test.js tests/bypass-audit.test.js",
+    "runtime:integration:test": "node --test tests/runtime-integration.test.js",
+    "runtime:transactional": "node kernel/runtime/run-transactional.js",
+    "events:test": "node --test tests/event-projection.test.js",
+    "events:project": "node scripts/project-execution-events.js",
+    "bypass:audit": "node scripts/bypass-audit.js",
+    "bypass:audit:test": "node --test tests/bypass-audit.test.js",
+    "tamper:test": "node --test --test-name-pattern=\"tamper\" tests/event-projection.test.js tests/execution-orchestrator.test.js",
+    "fault:test": "node --test --test-name-pattern=\"rollback|recovery_required|crash|failure|restor|unavailable|cleanup\" tests/runtime-integration.test.js tests/runtime-isolation.test.js tests/execution-orchestrator.test.js",
+    "execution:verify:full": "npm run execution:test && npm run archive:manifest:test && npm run bypass:audit && npm run qa",
+    "runtime:isolation:test": "node --test tests/runtime-isolation.test.js"
   },
   "devDependencies": {
     "wrangler": "latest"

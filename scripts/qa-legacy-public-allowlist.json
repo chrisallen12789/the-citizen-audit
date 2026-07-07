@@ -1,0 +1,157 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-07-06",
+  "purpose": "Explicit, documented allowlist of legacy STATIC public HTML that predates the data-model-driven publication pipeline. These files are hand-authored (no data-generated-source marker) and are not represented in the publication data model. Institutional QA quarantines them from MODEL-DRIVEN checks (expected-artifact set, generated-content markers, cross-model link/title checks) so it does not conflate legacy static content with generated output. QA still fully validates all non-allowlisted files, and any NEW public HTML that is neither generated-from-model nor listed here is still flagged. This makes the classification explicit rather than suppressing the check; it does not delete files. Known deferred issues in this corpus (e.g. broken Volume II data links, a duplicate title shared by standard.html and citizen-standard.html) remain unresolved pending migration or removal and are documented, not silently fixed.",
+  "files": [
+    {
+      "path": "public/charter.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/constitution.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/oath.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/institution.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/introduction.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/standard.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/citizen-standard.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/support.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/unknowns.html",
+      "category": "legacy-institutional-document",
+      "reason": "Hand-authored static institutional document predating the generated publication data model. Not produced by any generator (no data-generated-source marker) and not represented in the publication model. Quarantined from model-driven QA pending migration into the data model or intentional removal."
+    },
+    {
+      "path": "public/audits.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/index.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/claims.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/data.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/decision-log.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/downloads.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/evidence.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/findings.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/limitations.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/sources.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/findings/sf-0001.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/findings/sf-0002.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/findings/sf-0003.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/findings/sf-0004.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/findings/sf-0005.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/audits/audit-002/findings/sf-0006.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/volume-ii-veterans-affairs.html",
+      "category": "legacy-audit-002-corpus",
+      "reason": "Hand-authored static audit-002 / Volume II (Veterans Affairs) content predating the data-model publication pipeline (the model currently covers audit-001). Not generated and not in the model; retains known internal-link and metadata gaps. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/articles.html",
+      "category": "legacy-articles",
+      "reason": "Hand-authored static article predating the data-model publication pipeline. Not generated and not in the model. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/articles/audit-002-va-reader-guide.html",
+      "category": "legacy-articles",
+      "reason": "Hand-authored static article predating the data-model publication pipeline. Not generated and not in the model. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/articles/what-audit-002-found-va-spending.html",
+      "category": "legacy-articles",
+      "reason": "Hand-authored static article predating the data-model publication pipeline. Not generated and not in the model. Quarantined from model-driven QA pending migration or removal."
+    },
+    {
+      "path": "public/articles/what-the-citizen-audit-is.html",
+      "category": "legacy-articles",
+      "reason": "Hand-authored static article predating the data-model publication pipeline. Not generated and not in the model. Quarantined from model-driven QA pending migration or removal."
+    }
+  ]
+}

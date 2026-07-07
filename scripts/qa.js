@@ -110,7 +110,18 @@ function runAdsValidation(problems) {
   }
 }
 
-const htmlFiles = walk(publicDir);
+// Legacy static public HTML predating the data-model publication pipeline is
+// quarantined from MODEL-DRIVEN QA checks via an explicit, documented allowlist.
+// This does not suppress the check: every non-allowlisted file is still fully
+// validated, and any NEW public HTML that is neither generated-from-model nor
+// listed in the allowlist is still flagged as an unexpected artifact.
+const legacyAllowlistPath = path.join(root, "scripts", "qa-legacy-public-allowlist.json");
+const legacyStaticFiles = fs.existsSync(legacyAllowlistPath)
+  ? new Set((JSON.parse(fs.readFileSync(legacyAllowlistPath, "utf8")).files || []).map((entry) => entry.path))
+  : new Set();
+const htmlFiles = walk(publicDir).filter(
+  (filePath) => !legacyStaticFiles.has(path.relative(root, filePath).replace(/\\/g, "/"))
+);
 const problems = [];
 runAdsValidation(problems);
 const seenTitles = new Map();

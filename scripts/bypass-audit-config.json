@@ -1,0 +1,285 @@
+{
+  "version": "2.0.0",
+  "categories": {
+    "1": "governed mutation routed through the orchestrator",
+    "2": "isolated workspace mutation",
+    "3": "generated public-output mutation outside governed records",
+    "4": "test-only mutation",
+    "5": "recovery or execution infrastructure",
+    "6": "unacceptable bypass requiring removal or refactoring"
+  },
+  "governedRecordPrefixes": [
+    "kernel/registry/",
+    "kernel/transactions/",
+    "kernel/execution/state/",
+    "kernel/permissions/",
+    "kernel/authority/",
+    "schemas/",
+    "audits/",
+    "institution/",
+    "docs/adr/",
+    "docs/institution-os/"
+  ],
+  "classifications": [
+    {
+      "path": "guardians/constitution/check.js",
+      "category": 3,
+      "justification": "Constitution guardian reads governed records and writes only a generated report file (docs/agent-reports/)."
+    },
+    {
+      "path": "kernel/events/write.js",
+      "category": 3,
+      "justification": "Non-authoritative operational event log writer (kernel/events/log.jsonl). Superseded for execution history by kernel/events/projection.js, which derives canonical events from the ledger."
+    },
+    {
+      "path": "kernel/execution/durable-io.js",
+      "category": 5,
+      "justification": "Phase 2 durable IO primitive: atomic same-directory replace, fsync, and durable unlink used exclusively by the execution/recovery layer."
+    },
+    {
+      "path": "kernel/execution/pre-state-manifest.js",
+      "category": 5,
+      "justification": "Phase 2 recovery infrastructure that durably records the canonical pre-state manifest before governed mutation."
+    },
+    {
+      "path": "kernel/execution/preserve-artifact.js",
+      "category": 5,
+      "justification": "Phase 2 recovery infrastructure that durably preserves execution artifacts in the institution-controlled execution state store."
+    },
+    {
+      "path": "kernel/execution/recovery-session.js",
+      "category": 5,
+      "justification": "Phase 2 governed mutation session that applies journaled writes and enforces durable recovery barriers."
+    },
+    {
+      "path": "kernel/execution/rollback-result-store.js",
+      "category": 5,
+      "justification": "Phase 2 recovery infrastructure that durably records rollback verification results."
+    },
+    {
+      "path": "kernel/execution/runtime-isolation-barrier.js",
+      "category": 5,
+      "justification": "Phase 4 recovery infrastructure that durably records an unproven runtime-isolation restoration and blocks later runtime or direct orchestrator execution."
+    },
+    {
+      "path": "kernel/execution/snapshot-blob-store.js",
+      "category": 5,
+      "justification": "Phase 2 content-addressed snapshot storage used only by recovery and rollback."
+    },
+    {
+      "path": "kernel/execution/validation-result-store.js",
+      "category": 5,
+      "justification": "Phase 3 execution infrastructure that durably records validation artifacts bound to committed ledger transitions."
+    },
+    {
+      "path": "kernel/execution/write-file.js",
+      "category": 5,
+      "justification": "Execution infrastructure wrapper for governed writes; callers remain inside the authoritative execution path."
+    },
+    {
+      "path": "kernel/execution/exclusive-boundary.js",
+      "category": 5,
+      "justification": "Phase 2 exclusive execution lock (O_EXCL create/unlink). The sanctioned mutual-exclusion mechanism."
+    },
+    {
+      "path": "kernel/execution/move-file.js",
+      "category": 5,
+      "justification": "Execution infrastructure rename helper used inside the governed mutation path."
+    },
+    {
+      "path": "kernel/execution/rollback.js",
+      "category": 5,
+      "justification": "Phase 2 rollback restores pre-state through durable IO within the governed recovery layer."
+    },
+    {
+      "path": "kernel/execution/startup-recovery.js",
+      "category": 5,
+      "justification": "Phase 2 startup reconciliation of interrupted attempts through the recovery layer."
+    },
+    {
+      "path": "kernel/executive/status.js",
+      "category": 3,
+      "justification": "Writes a generated executive status output; reads governed records but does not mutate them."
+    },
+    {
+      "path": "kernel/lib/append-only-log.js",
+      "category": 5,
+      "justification": "Hash-chained append-only log primitive backing the execution ledger, mutation journal, and transaction log."
+    },
+    {
+      "path": "kernel/runtime/agent-workspace.js",
+      "category": 2,
+      "justification": "Creates and cleans disposable writable agent workspaces outside the live institution root and copies only declared regular-file inputs."
+    },
+    {
+      "path": "kernel/runtime/governed-tree-guard.js",
+      "category": 5,
+      "justification": "Defense-in-depth recovery guard that snapshots, detects, restores, and verifies security-critical governed-tree state after isolated agent execution."
+    },
+    {
+      "path": "kernel/runtime/isolation-adapter.js",
+      "category": 2,
+      "justification": "The sole approved production agent-execution adapter. It probes Linux namespace/chroot/seccomp capability, builds the reviewed sandbox launcher, exposes only a disposable workspace, and does not mount the live institution root."
+    },
+    {
+      "path": "kernel/runtime/sandbox-exec.c",
+      "category": 2,
+      "justification": "Static sandbox launcher used only by the approved isolation adapter. It drops capabilities, sets no-new-privileges, installs a seccomp filter blocking mount/namespace/root-escape syscalls, and executes the agent from /workspace."
+    },
+    {
+      "path": "kernel/runtime/transactional-runtime.js",
+      "category": 1,
+      "justification": "Authoritative runtime integration layer: converts isolated agent output to transaction intent and invokes executeApprovedTransaction; it has no direct governed mutation path."
+    },
+    {
+      "path": "kernel/runtime/run.js",
+      "category": 3,
+      "justification": "Legacy diagnostic/dry-run runtime. Active agent execution is permanently disabled and no child-process spawn path or override flag remains."
+    },
+    {
+      "path": "memory/export.js",
+      "category": 3,
+      "justification": "Writes a generated memory export output; does not mutate governed records."
+    },
+    {
+      "path": "memory/status.js",
+      "category": 3,
+      "justification": "Writes a generated memory status report; does not mutate governed records."
+    },
+    {
+      "path": "proposals/status.js",
+      "category": 3,
+      "justification": "Writes a generated proposals status output; does not mutate governed records."
+    },
+    {
+      "path": "scripts/ads-steward-agent.js",
+      "category": 3,
+      "justification": "Writes generated ADS export/report outputs under public/ and docs/agent-reports/; no governed-record mutation."
+    },
+    {
+      "path": "scripts/archive-assistant-launch.js",
+      "category": 3,
+      "justification": "Operational tooling that launches a local archive assistant process; no governed-record mutation."
+    },
+    {
+      "path": "scripts/archive-batch.js",
+      "category": 3,
+      "justification": "Writes a generated archive manifest output."
+    },
+    {
+      "path": "scripts/archive-manifest-generator.js",
+      "category": 3,
+      "justification": "Generates archive manifest output files; not a governed record."
+    },
+    {
+      "path": "scripts/build-publication-assets.js",
+      "category": 3,
+      "justification": "Publication generator producing public/ assets; generated output outside governed records."
+    },
+    {
+      "path": "scripts/build/finalize.js",
+      "category": 3,
+      "justification": "Publication build finalize step writing generated public/ output."
+    },
+    {
+      "path": "scripts/build/io.js",
+      "category": 3,
+      "justification": "Publication build IO helper writing generated public/ output."
+    },
+    {
+      "path": "scripts/build/qa-status.js",
+      "category": 3,
+      "justification": "Writes generated QA status into public data outputs; not a governed record."
+    },
+    {
+      "path": "scripts/bypass-audit.js",
+      "category": 3,
+      "justification": "This audit tool writes a generated report to docs/bypass-audit-report.json (outside governed records)."
+    },
+    {
+      "path": "scripts/content-hygiene-agent.js",
+      "category": 3,
+      "justification": "Legacy agent writing only a generated report; no governed-record mutation."
+    },
+    {
+      "path": "scripts/export-ads.js",
+      "category": 3,
+      "justification": "Exports ADS records to public/data generated output."
+    },
+    {
+      "path": "scripts/extract-section-content.js",
+      "category": 3,
+      "justification": "Generates a derived section-content data file; generated output."
+    },
+    {
+      "path": "scripts/publication-builder-agent.js",
+      "category": 3,
+      "justification": "Generates public publication assets under public/; generated output outside governed records."
+    },
+    {
+      "path": "scripts/qa.js",
+      "category": 3,
+      "justification": "Institutional QA: reads records, spawns validate-ads, and writes generated QA status into public data outputs."
+    },
+    {
+      "path": "scripts/release-candidate.js",
+      "category": 3,
+      "justification": "Assembles a release candidate under release/ and public/data generated outputs."
+    },
+    {
+      "path": "scripts/release-steward-agent.js",
+      "category": 3,
+      "justification": "Reads governed records for release checks and writes only a generated report; no governed-record mutation."
+    },
+    {
+      "path": "scripts/repair-agent.js",
+      "category": 3,
+      "justification": "Legacy analysis agent that writes only a generated report (docs/agent-reports/). Migrating to the transactional runtime is future work; it does not mutate governed records."
+    },
+    {
+      "path": "scripts/source-steward-agent.js",
+      "category": 3,
+      "justification": "Legacy agent writing only a generated report; no governed-record mutation."
+    },
+    {
+      "path": "tests/archive-manifest-generator.test.js",
+      "category": 4,
+      "justification": "Test-only mutation in temporary directories."
+    },
+    {
+      "path": "tests/bypass-audit.test.js",
+      "category": 4,
+      "justification": "Adversarial bypass-audit tests that create mutation-capable fixture files only in temporary directories."
+    },
+    {
+      "path": "tests/event-projection.test.js",
+      "category": 4,
+      "justification": "Phase 4 event-projection tests; test-only mutation in temporary directories."
+    },
+    {
+      "path": "tests/execution-ledger.test.js",
+      "category": 4,
+      "justification": "Test-only mutation in temporary directories."
+    },
+    {
+      "path": "tests/execution-orchestrator.test.js",
+      "category": 4,
+      "justification": "Test-only mutation in temporary directories."
+    },
+    {
+      "path": "tests/execution-recovery.test.js",
+      "category": 4,
+      "justification": "Test-only mutation in temporary directories."
+    },
+    {
+      "path": "tests/runtime-integration.test.js",
+      "category": 4,
+      "justification": "Phase 4 runtime integration tests; test-only mutation in temporary directories."
+    },
+    {
+      "path": "tests/runtime-isolation.test.js",
+      "category": 4,
+      "justification": "Adversarial isolation and restoration tests using temporary institution roots."
+    }
+  ]
+}

@@ -475,3 +475,28 @@ Execution Engine v2 does not:
 - equate agent completion with institutional success.
 
 The engine exists to make institutional change auditable and recoverable. It does not automate truth.
+## 16. Phase 4 runtime isolation contract
+
+Active agents must execute as external processes inside an operating-system-enforced sandbox. The implementation candidate requires Linux user, mount, PID, network, IPC, and UTS namespaces; a chroot-capable mount environment; seccomp filter support; and a supported static C compiler for the reviewed sandbox launcher.
+
+Before any agent starts, the runtime must prove that it can:
+
+- build and execute the sandbox launcher from the governed source,
+- create the required namespaces,
+- construct a disposable chroot filesystem outside the institution root,
+- expose only read-only system runtime directories plus a writable disposable workspace and temporary directory,
+- keep the live institution root entirely absent from the sandbox,
+- block mount, remount, namespace-entry, root-escape, ptrace, and related syscalls after sandbox setup,
+- preserve a writable workspace for proposed output without any writable link back to the institution.
+
+The trusted namespace setup process may access host paths only before chroot and before the untrusted agent starts. Agent command and arguments are passed as positional arguments and executed only after chroot, capability removal, privilege locking, and seccomp installation. The environment uses a fixed system `PATH` and does not expose a live-root variable.
+
+If the capability probe fails, the runtime must reject the run before the agent process starts. There is no unrestricted fallback, operator bypass flag, caller-supplied sentinel list, or caller option that may mark isolation as available.
+
+The agent workspace must live outside the institution root. Only declared regular-file inputs are copied into it. Workspace symlinks and special files are prohibited. Production runtime accepts only external command adapters; in-process function agents are rejected before invocation.
+
+The runtime also records a complete manifest of governed and security-critical paths before agent execution. The manifest binds file bytes, existence, type, mode, directory structure, and symlink targets. After the agent exits, the runtime compares live state to the manifest before trusting output or process status.
+
+Preventive chroot, namespace, and seccomp isolation is the primary control. Governed-tree restoration is defense in depth, not an equivalent substitute. If drift is detected and exactly restored, the run still terminates as an isolation violation. If exact restoration cannot be proven, the runtime durably records a hash-bound isolation recovery barrier, returns `recovery_required`, and both later runtime runs and direct orchestrator execution fail closed until explicit recovery clears that barrier.
+
+Supported deployment environments must provide Linux namespace and seccomp facilities, permit the required `unshare`, bind-mount, and chroot setup, and provide a supported static compiler (`gcc` or `cc`) for x86_64 or aarch64. Containers or hosts that disable these capabilities are unsupported for active agents and must receive a fail-closed isolation-unavailable result. Remote CI and production deployment must independently demonstrate the complete capability probe; local success does not activate the engine.

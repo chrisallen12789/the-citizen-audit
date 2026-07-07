@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const { spawnSync } = require("child_process");
 const { checkAction } = require("../authority/engine");
 
 const root = path.resolve(__dirname, "..", "..");
@@ -45,14 +44,6 @@ function writeEvent(type, agent, summary, extra = {}) {
   return event;
 }
 
-function commandToParts(command) {
-  const parts = command.trim().split(/\s+/);
-  return {
-    command: parts[0],
-    args: parts.slice(1)
-  };
-}
-
 function assertAgentExecutionAllowed(agent) {
   const reportAuthority = checkAction(agent.id, "write_report");
   if (!reportAuthority.allowed) {
@@ -90,31 +81,18 @@ function runAgent(agent) {
     };
   }
 
-  const selectedCommand = agent.command;
-  const parsed = commandToParts(selectedCommand);
-  const result = spawnSync(parsed.command, parsed.args, {
-    cwd: root,
-    encoding: "utf8",
-    shell: process.platform === "win32"
-  });
-
-  const record = {
+  // Active legacy execution is permanently disabled. The legacy runtime may
+  // display dry-run diagnostics, but it contains no operator flag or process
+  // spawn path that can execute an agent against the live repository.
+  writeEvent("agent.failed", agent, `${agent.id} blocked: legacy active execution is disabled.`, { reason: "use the transactional runtime" });
+  return {
     agent,
-    status: result.status,
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    error: result.error ? result.error.message : null,
+    status: 1,
+    stdout: "",
+    stderr: "Legacy active agent execution is disabled. Use kernel/runtime/run-transactional.js.",
+    error: "legacy active execution disabled",
     dryRun: false
   };
-
-  if (record.status === 0) {
-    writeEvent("agent.completed", agent, `${agent.id} completed successfully.`);
-    if (agent.reportPath) writeEvent("report.created", agent, `${agent.id} report created.`, { reportPath: agent.reportPath });
-  } else {
-    writeEvent("agent.failed", agent, `${agent.id} failed.`, { exitCode: record.status });
-  }
-
-  return record;
 }
 
 function writeDashboard(results) {
