@@ -1,26 +1,24 @@
-name: Phase 4.1 Verified Correction Transfer
+name: Phase 4.1 Remote Status Transfer
 
 on:
   push:
     branches:
       - tooling/phase-4.1-source-snapshot
     paths:
-      - ".phase41-transfer/**"
-      - ".github/scripts/phase41-transfer.sh"
+      - ".phase41-transfer/remote-status.patch"
       - ".github/workflows/phase41-source-snapshot.yml"
   pull_request:
     branches:
       - main
     paths:
-      - ".phase41-transfer/**"
-      - ".github/scripts/phase41-transfer.sh"
+      - ".phase41-transfer/remote-status.patch"
       - ".github/workflows/phase41-source-snapshot.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: phase41-correction-transfer
+  group: phase41-remote-status-transfer
   cancel-in-progress: false
 
 jobs:
@@ -28,31 +26,38 @@ jobs:
     if: github.event_name == 'push' || github.head_ref == 'tooling/phase-4.1-source-snapshot'
     runs-on: ubuntu-latest
     steps:
-      - name: Clone transfer branch and apply verified commits
+      - name: Apply observed verification status to the correction branch
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD: c154712de4190ca785deda18fc48b32bba8318d5
+          TARGET_BRANCH: execution-engine-v2-phase-4-corrected-review
         run: |
+          set -euo pipefail
           git clone --quiet --depth=1 --branch tooling/phase-4.1-source-snapshot \
             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" transfer
           cd transfer
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('.github/scripts/phase41-transfer.sh')
-          text = path.read_text()
-          restore_marker = 'git restore .phase41-transfer/part-13\n'
-          restore_insertion = restore_marker + 'git restore .github/scripts/phase41-transfer.sh\n'
-          commit_marker = 'if git diff --name-only "$EXPECTED_HEAD"..HEAD | grep -E \'^(platform/|schemas/platform-)\'; then'
-          commit_insertion = '''git restore --source=HEAD^ --staged --worktree -- \\
-            .github/workflows/execution-engine-phase4.yml \\
-            .github/workflows/execution-engine-tests.yml
-          git commit --quiet --amend --no-edit
-
-          '''
-          if text.count(restore_marker) != 1 or text.count(commit_marker) != 1:
-              raise SystemExit('transfer-script insertion marker was not unique')
-          text = text.replace(restore_marker, restore_insertion)
-          text = text.replace(commit_marker, commit_insertion + commit_marker)
-          path.write_text(text)
-          PY
-          bash .github/scripts/phase41-transfer.sh
+          echo "be3981cbde759f4b7bf390b5da7dc1add44e2e025721e93dc5c880dfc8aca2e7  .phase41-transfer/remote-status.patch" | sha256sum --check --strict
+          git fetch --quiet --no-tags origin "refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          current="$(git rev-parse "origin/$TARGET_BRANCH")"
+          if [[ "$current" != "$EXPECTED_HEAD" ]]; then
+            echo "Target branch changed unexpectedly: expected $EXPECTED_HEAD, found $current" >&2
+            exit 1
+          fi
+          git checkout --quiet --detach "$EXPECTED_HEAD"
+          git apply --check .phase41-transfer/remote-status.patch
+          git apply .phase41-transfer/remote-status.patch
+          changed="$(git diff --name-only)"
+          expected=$'docs/institution-os/execution-v2-phase-4.1-corrections.md\ndocs/institution-os/execution-v2-progress.md'
+          if [[ "$changed" != "$expected" ]]; then
+            echo "Unexpected documentation patch paths:" >&2
+            printf '%s\n' "$changed" >&2
+            exit 1
+          fi
+          git config user.name "The Citizen Audit Phase 4.1"
+          git config user.email "phase41@users.noreply.github.com"
+          git add docs/institution-os/execution-v2-phase-4.1-corrections.md docs/institution-os/execution-v2-progress.md
+          git commit --quiet -m "Record observed Phase 4.1 remote verification"
+          git push --quiet origin "HEAD:refs/heads/$TARGET_BRANCH" \
+            --force-with-lease="refs/heads/$TARGET_BRANCH:$EXPECTED_HEAD"
+          echo "Transferred Phase 4.1 status head: $(git rev-parse HEAD)"
