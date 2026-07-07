@@ -16,10 +16,6 @@ const {
 const { appendMutationRecord, readMutationJournal } = require("./mutation-journal");
 const { getExecutionAttempt, transitionExecutionAttempt } = require("./ledger");
 
-function invokeHook(options, point, context = {}) {
-  if (typeof options.onStep === "function") options.onStep(point, context);
-}
-
 function verifyManifestRestoration(rootDir, manifest) {
   const failures = [];
   for (const entry of manifest.entries) {
@@ -53,7 +49,6 @@ function restoreFromManifest(rootDir, attemptId, options = {}) {
   }
 
   for (const entry of [...manifest.entries].reverse()) {
-    invokeHook(options, "before_rollback_path", { attemptId, entry });
     try {
       const target = institutionFile(rootDir, entry.path);
       if (entry.existed) {
@@ -72,7 +67,6 @@ function restoreFromManifest(rootDir, attemptId, options = {}) {
     } catch (error) {
       failures.push(`${entry.path}: ${error.message}`);
     }
-    invokeHook(options, "after_rollback_path", { attemptId, entry });
   }
 
   const planned = [...new Set(journal.plannedParentDirectories || [])]

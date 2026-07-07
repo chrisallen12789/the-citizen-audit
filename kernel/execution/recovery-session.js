@@ -22,10 +22,6 @@ const {
   transitionExecutionAttempt
 } = require("./ledger");
 
-function invokeHook(options, point, context = {}) {
-  if (typeof options.onStep === "function") options.onStep(point, context);
-}
-
 function assertNoRecoveryBarrier(ledgerPath, options = {}) {
   const barriers = listExecutionAttempts({ ledgerPath }).filter((attempt) => attempt.state === "recovery_required");
   if (barriers.length) {
@@ -83,10 +79,9 @@ function missingParentDirectories(rootDir, relativePath) {
   return missing.reverse();
 }
 
-function createPlannedParents(rootDir, planned, options = {}) {
+function createPlannedParents(rootDir, planned) {
   for (const relative of planned) {
     ensureDirectory(institutionDirectory(rootDir, relative));
-    invokeHook(options, "after_parent_created", { path: relative });
   }
 }
 
@@ -96,10 +91,8 @@ function beginRecoveryAttempt(rootDir, attemptId, writes, options = {}) {
   const attempt = getExecutionAttempt(attemptId, { ledgerPath });
   if (attempt.state !== "prepared") throw new Error(`Recovery preparation requires prepared attempt state: ${attempt.state}.`);
   const lock = acquireExecutionLock(rootDir, attemptId, options.lock || {});
-  invokeHook(options, "after_lock", { attemptId, lock });
   try {
     const manifest = createPreStateManifest(rootDir, attemptId, writes, { createdAt: options.createdAt });
-    invokeHook(options, "after_manifest", { attemptId, manifest });
     transitionExecutionAttempt(attemptId, "recovery_persisted", {
       preStateManifestHash: manifest.manifestHash
     }, {
@@ -107,7 +100,6 @@ function beginRecoveryAttempt(rootDir, attemptId, writes, options = {}) {
       transitionedAt: options.transitionedAt,
       recordedAt: options.recordedAt
     });
-    invokeHook(options, "after_recovery_persisted", { attemptId, manifest });
     return Object.freeze({ rootDir, attemptId, writes: writes.map((write) => ({ ...write })), manifest, lock, ledgerPath });
   } catch (error) {
     if (!fs.existsSync(manifestPath(rootDir, attemptId))) releaseExecutionLock(rootDir, lock);
@@ -124,7 +116,6 @@ function applyJournaledWrites(session, options = {}) {
     transitionedAt: options.transitionedAt,
     recordedAt: options.recordedAt
   });
-  invokeHook(options, "after_state_applying", { attemptId });
 
   for (let index = 0; index < writes.length; index += 1) {
     const write = writes[index];
@@ -140,9 +131,8 @@ function applyJournaledWrites(session, options = {}) {
       plannedParentDirectories,
       contentHash: bytes ? sha256(bytes) : null
     }, { recordedAt: options.recordedAt });
-    invokeHook(options, "after_operation_started", { attemptId, operationId, write });
 
-    createPlannedParents(rootDir, plannedParentDirectories, options);
+    createPlannedParents(rootDir, plannedParentDirectories);
     const target = institutionFile(rootDir, write.path);
     if (write.operation === "write") {
       const manifestEntry = manifest.entries[index];
@@ -150,7 +140,6 @@ function applyJournaledWrites(session, options = {}) {
     } else if (fs.existsSync(target)) {
       unlinkDurable(target);
     }
-    invokeHook(options, "after_materialized", { attemptId, operationId, write });
     appendMutationRecord(rootDir, attemptId, {
       recordType: "mutation.operation.completed",
       operationId,
@@ -158,7 +147,6 @@ function applyJournaledWrites(session, options = {}) {
       operation: write.operation,
       path: write.path
     }, { recordedAt: options.recordedAt });
-    invokeHook(options, "after_operation_completed", { attemptId, operationId, write });
   }
   return getExecutionAttempt(attemptId, { ledgerPath });
 }

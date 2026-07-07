@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { canonicalStringify } = require("../lib/canonical-json");
 const { sha256 } = require("../lib/append-only-log");
-const { writeCanonicalJsonAtomic, unlinkDurable } = require("./durable-io");
+const { writeCanonicalJsonAtomic } = require("./durable-io");
 const { defaultExecutionStateRoot } = require("./exclusive-boundary");
 
 const BARRIER_VERSION = "1.0.0";
@@ -47,12 +47,15 @@ function assertNoRuntimeIsolationBarrier(rootDir) {
 
 function recordRuntimeIsolationBarrier(rootDir, details = {}) {
   if (typeof details.runId !== "string" || !details.runId) throw new Error("Runtime isolation barrier requires a run id.");
+  if (!details.expectedManifest || typeof details.expectedManifest.manifestHash !== "string") throw new Error("Runtime isolation barrier requires an expected restoration manifest.");
   const body = {
     version: BARRIER_VERSION,
     runId: details.runId,
     detectedAt: details.detectedAt || new Date().toISOString(),
     beforeHash: details.beforeHash || null,
     afterHash: details.afterHash || null,
+    expectedManifestHash: details.expectedManifest.manifestHash,
+    expectedManifest: details.expectedManifest,
     changes: Array.isArray(details.changes) ? details.changes : [],
     problems: Array.isArray(details.problems) ? details.problems : []
   };
@@ -62,14 +65,9 @@ function recordRuntimeIsolationBarrier(rootDir, details = {}) {
   return Object.freeze({ ...record, barrierPath });
 }
 
-function clearRuntimeIsolationBarrier(rootDir) {
-  return unlinkDurable(runtimeIsolationBarrierPath(rootDir));
-}
-
 module.exports = {
   BARRIER_VERSION,
   assertNoRuntimeIsolationBarrier,
-  clearRuntimeIsolationBarrier,
   readRuntimeIsolationBarrier,
   recordRuntimeIsolationBarrier,
   runtimeIsolationBarrierPath

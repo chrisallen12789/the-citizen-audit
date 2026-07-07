@@ -6,12 +6,18 @@ const test = require("node:test");
 
 const { sha256, appendEntry } = require("../kernel/lib/append-only-log");
 const { recordTransaction } = require("../kernel/transactions/store");
+const { computeWriteSetHash } = require("../kernel/transactions/validate");
+const { recordApprovalDecision } = require("../kernel/approvals/decision-store");
 const { executeApprovedTransaction } = require("../kernel/execution/orchestrator");
 const { getExecutionAttempt, createExecutionAttempt, transitionExecutionAttempt } = require("../kernel/execution/ledger");
 const { acquireExecutionLock, readExecutionLock } = require("../kernel/execution/exclusive-boundary");
 const { recoverIncompleteExecution } = require("../kernel/execution/startup-recovery");
 const { loadValidatorRegistry } = require("../kernel/execution/validators");
 const { recordRuntimeIsolationBarrier } = require("../kernel/execution/runtime-isolation-barrier");
+const { snapshotGovernedTree } = require("../kernel/runtime/governed-tree-guard");
+const { loadFaultInjectedOrchestrator } = require("./support/orchestrator-fault-adapter");
+const { resolveRegisteredAgent } = require("../kernel/runtime/agent-registry");
+const { ISOLATION_ADAPTER_VERSION, reviewedSandboxHelperSourceHash } = require("../kernel/runtime/runtime-provenance");
 
 const KERNEL_VALIDATORS_DIR = path.join(__dirname, "..", "kernel", "execution", "validators");
 
@@ -45,23 +51,40 @@ function makeFixture(overrides = {}) {
   fs.mkdirSync(path.join(root, "public", "data"), { recursive: true });
 
   writeJson(path.join(root, "kernel", "registry", "institution.json"), overrides.registry || { version: "1.0.0", updated: "2026-07-06", objects });
-  writeJson(path.join(root, "agents", "registry.json"), overrides.agents || { agents: [{ id: "AGENT-REPAIR", status: "active", authorityLevel: 1, capabilities: ["write_report"], command: "node repair" }] });
+  writeJson(path.join(root, "agents", "registry.json"), overrides.agents || { agents: [{ id: "AGENT-REPAIR", status: "active", authorityLevel: 1, capabilities: ["write_report"], command: "node repair", runtime: { executable: "node", arguments: ["-e", "process.exit(0)"] } }] });
+  writeJson(path.join(root, "kernel", "authority", "approval-authorities.json"), { version: "1.0.0", authorities: [{ type: "human", id: "human-approver", status: "active", authorities: ["approve_execution", "clear_runtime_isolation_barrier"] }] });
   writeJson(path.join(root, "kernel", "permissions", "rules.json"), overrides.rules || { rules: [{ id: "RULE-WRITE-REPORT", action: "write_report", minimumAuthorityLevel: 1, requiresHumanApproval: false }] });
   writeJson(path.join(root, "kernel", "permissions", "authority-levels.json"), { levels: [{ level: 0 }, { level: 1 }] });
-  writeJson(path.join(root, "kernel", "execution", "policy.json"), overrides.policy || {
-    version: "1.0.0", updated: "2026-07-06", warningPolicy: "nonfatal", requireAffectedObjectCoverage: true,
+  const policy = overrides.policy || {
+    version: "1.1.0", updated: "2026-07-07", warningPolicy: "nonfatal", requireAffectedObjectCoverage: true,
     requiredValidators: ["execution-plan", "exact-materialization", "institution-registry", "dependency-graph"],
     prohibitedPaths: [], prohibitedPrefixes: ["kernel/", "agents/", "schemas/", "institution/", "audits/", "memory/"],
-    actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } }
-  });
+    actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } }
+  };
+  if (!overrides.intentionalMissingSemantic && policy.actions && policy.actions.write_report && !policy.actions.write_report.semanticValidators) policy.actions.write_report.semanticValidators = ["write-report-semantics"];
+  writeJson(path.join(root, "kernel", "execution", "policy.json"), policy);
 
   const transaction = overrides.transaction || {
     id: overrides.txId || "TX-001", version: "1.0.0", status: "approved", action: "write_report",
     actor: { type: "agent", id: "AGENT-REPAIR" }, requestedAt: "2026-07-06T10:00:00.000Z",
-    approval: { approvedBy: { type: "human", id: "human-approver" }, approvedAt: "2026-07-06T11:00:00.000Z", decisionId: "DEC-001" },
     affectedObjects: overrides.affectedObjects || ["REPORT-TARGET"],
     proposedWrites: overrides.proposedWrites || [{ operation: "write", path: "public/data/report.json", content: JSON.stringify({ generated: true }), encoding: "utf8" }]
   };
+  if (transaction.status === "approved") {
+    transaction.writeSetHash = transaction.writeSetHash || computeWriteSetHash(transaction.proposedWrites);
+    const registered = resolveRegisteredAgent(root, transaction.actor.id, transaction.action);
+    transaction.metadata = transaction.metadata || { agentRunId: `RUN-${transaction.id}`, reason: null, provenance: {
+      ...registered.provenance,
+      isolationAdapterVersion: ISOLATION_ADAPTER_VERSION,
+      sandboxHelperSourceHash: reviewedSandboxHelperSourceHash(),
+      sandboxHelperBinaryHash: "5".repeat(64)
+    } };
+    const decisionId = (transaction.approval && transaction.approval.decisionId) || `DEC-${transaction.id.slice(3)}`;
+    if (!overrides.skipDecision) {
+      const decision = recordApprovalDecision(root, { decisionId, decision: "approved", transactionId: transaction.id, writeSetHash: transaction.writeSetHash, actor: transaction.actor, action: transaction.action, approver: { type: "human", id: "human-approver" }, approverAuthority: "approve_execution", decidedAt: "2026-07-06T11:00:00.000Z" });
+      transaction.approval = { approvedBy: decision.approver, approvedAt: decision.decidedAt, decisionId, approverAuthority: decision.approverAuthority, decisionRecordHash: decision.recordHash };
+    }
+  }
 
   if (overrides.rawTransactionEntry) {
     // Append a raw (schema-bypassing) log entry to exercise load-time rejection.
@@ -72,6 +95,8 @@ function makeFixture(overrides = {}) {
 
   return { root, ledgerPath, transaction, txId: transaction.id, targetPath: path.join(root, "public", "data", "report.json") };
 }
+
+function executeWithFault(transactionId, options, onStep) { return loadFaultInjectedOrchestrator(onStep)(transactionId, options); }
 
 function cleanup(fixture) {
   fs.rmSync(fixture.root, { recursive: true, force: true });
@@ -89,6 +114,8 @@ function makeValidatorsDir(entries) {
   for (const entry of entries) {
     fs.writeFileSync(path.join(dir, `${entry.id}.js`), entry.source);
     const record = { id: entry.id, module: `${entry.id}.js`, version: entry.version || "1.0.0", supportedPhases: entry.supportedPhases };
+    if (entry.semantic !== undefined) record.semantic = entry.semantic;
+    if (entry.actions) record.actions = entry.actions;
     const index = registry.validators.findIndex((candidate) => candidate.id === entry.id);
     if (index === -1) registry.validators.push(record);
     else registry.validators[index] = record;
@@ -156,10 +183,27 @@ test("write-set hash mismatch is rejected", async () => {
 
 // 5. Stale or revoked authority is rejected.
 test("stale or revoked authority is rejected", async () => {
-  const fx = makeFixture({ txId: "TX-005", agents: { agents: [{ id: "AGENT-REPAIR", status: "suspended", authorityLevel: 1, capabilities: ["write_report"], command: "node repair" }] } });
+  const fx = makeFixture({ txId: "TX-005" });
+  const registryPath = path.join(fx.root, "agents", "registry.json");
+  const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+  registry.agents[0].status = "suspended";
+  writeJson(registryPath, registry);
   const result = await executeApprovedTransaction("TX-005", { rootDir: fx.root, ledgerPath: fx.ledgerPath });
   assert.equal(result.disposition, "rejected");
-  assert.ok(result.problems.join(" ").toLowerCase().includes("authority"));
+  assert.ok(result.problems.join(" ").toLowerCase().includes("authority") || result.problems.join(" ").toLowerCase().includes("registered agent"));
+  assert.equal(fs.existsSync(fx.targetPath), false);
+  cleanup(fx);
+});
+
+test("registered executable identity drift is rejected before mutation", async () => {
+  const fx = makeFixture({ txId: "TX-005B" });
+  const registryPath = path.join(fx.root, "agents", "registry.json");
+  const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+  registry.agents[0].runtime.arguments = ["-e", "process.exit(9)"];
+  writeJson(registryPath, registry);
+  const result = await executeApprovedTransaction("TX-005B", { rootDir: fx.root, ledgerPath: fx.ledgerPath });
+  assert.equal(result.disposition, "rejected");
+  assert.ok(result.problems.some((problem) => /provenance no longer matches|registered agent identity/i.test(problem)));
   assert.equal(fs.existsSync(fx.targetPath), false);
   cleanup(fx);
 });
@@ -181,7 +225,7 @@ test("changed validator registry is loaded and bound at execution time", async (
   assert.equal(getExecutionAttempt(r1.attemptId, { ledgerPath: fx.ledgerPath }).validatorSetHash, r1.validatorSetHash);
   // A different validator set yields a different bound hash.
   const dir = makeValidatorsDir([{ id: "execution-plan", supportedPhases: ["candidate", "post_write"], source: "module.exports={id:'execution-plan',version:'1.0.0',supportedPhases:['candidate','post_write'],validate:()=>({status:'passed',problems:[],warnings:[],checkedObjects:[],checkedPaths:[]})};" }]);
-  const fx2 = makeFixture({ txId: "TX-007B", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["execution-plan"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } } } });
+  const fx2 = makeFixture({ txId: "TX-007B", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["execution-plan"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
   const r2 = await executeApprovedTransaction("TX-007B", { rootDir: fx2.root, ledgerPath: fx2.ledgerPath, validatorsDir: dir });
   assert.notEqual(r1.validatorSetHash, r2.validatorSetHash);
   cleanupValidatorsDir(dir);
@@ -190,7 +234,7 @@ test("changed validator registry is loaded and bound at execution time", async (
 
 // 8. Missing mandatory validator fails closed.
 test("missing mandatory validator fails closed", async () => {
-  const fx = makeFixture({ txId: "TX-008", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["execution-plan", "does-not-exist"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } } } });
+  const fx = makeFixture({ txId: "TX-008", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["execution-plan", "does-not-exist"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
   const result = await executeApprovedTransaction("TX-008", { rootDir: fx.root, ledgerPath: fx.ledgerPath });
   assert.equal(result.disposition, "rejected");
   assert.ok(result.problems.join(" ").includes("does-not-exist"));
@@ -212,7 +256,7 @@ test("uncovered affected object is rejected", async () => {
 // 10. Candidate-state validator failure causes no live mutation.
 test("candidate-state validator failure causes no live mutation", async () => {
   const dir = makeValidatorsDir([{ id: "candidate-guard", supportedPhases: ["candidate"], source: "module.exports={id:'candidate-guard',version:'1.0.0',supportedPhases:['candidate'],validate:()=>({status:'failed',problems:['candidate refused'],warnings:[],checkedObjects:[],checkedPaths:[]})};" }]);
-  const fx = makeFixture({ txId: "TX-010", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["candidate-guard"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } } } });
+  const fx = makeFixture({ txId: "TX-010", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["candidate-guard"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
   const result = await executeApprovedTransaction("TX-010", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir });
   assert.equal(result.disposition, "rejected");
   assert.equal(fs.existsSync(fx.targetPath), false);
@@ -227,7 +271,7 @@ test("post-write hash mismatch triggers rollback", async () => {
   const onStep = (point, ctx) => {
     if (point === "after_materialized") fs.writeFileSync(fx.targetPath, "corrupted-after-write");
   };
-  const result = await executeApprovedTransaction("TX-011", { rootDir: fx.root, ledgerPath: fx.ledgerPath, onStep });
+  const result = await executeWithFault("TX-011", { rootDir: fx.root, ledgerPath: fx.ledgerPath }, onStep);
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false); // created file removed on rollback
   assert.equal(getExecutionAttempt(result.attemptId, { ledgerPath: fx.ledgerPath }).state, "rolled_back");
@@ -237,7 +281,7 @@ test("post-write hash mismatch triggers rollback", async () => {
 // 12. Validator exception triggers rollback.
 test("validator exception triggers rollback", async () => {
   const dir = makeValidatorsDir([{ id: "boom", supportedPhases: ["post_write"], source: "module.exports={id:'boom',version:'1.0.0',supportedPhases:['post_write'],validate:()=>{throw new Error('validator exploded');}};" }]);
-  const fx = makeFixture({ txId: "TX-012", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["boom"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } } } });
+  const fx = makeFixture({ txId: "TX-012", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["boom"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
   const result = await executeApprovedTransaction("TX-012", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
@@ -248,7 +292,7 @@ test("validator exception triggers rollback", async () => {
 // 13. Malformed validator result triggers rollback.
 test("malformed validator result triggers rollback", async () => {
   const dir = makeValidatorsDir([{ id: "malformed", supportedPhases: ["post_write"], source: "module.exports={id:'malformed',version:'1.0.0',supportedPhases:['post_write'],validate:()=>({nonsense:true})};" }]);
-  const fx = makeFixture({ txId: "TX-013", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["malformed"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } } } });
+  const fx = makeFixture({ txId: "TX-013", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["malformed"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
   const result = await executeApprovedTransaction("TX-013", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
@@ -259,7 +303,7 @@ test("malformed validator result triggers rollback", async () => {
 // 14. Validator timeout triggers rollback.
 test("validator timeout triggers rollback", async () => {
   const dir = makeValidatorsDir([{ id: "hang", supportedPhases: ["post_write"], source: "module.exports={id:'hang',version:'1.0.0',supportedPhases:['post_write'],validate:()=>new Promise(()=>{})};" }]);
-  const fx = makeFixture({ txId: "TX-014", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["hang"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } } } });
+  const fx = makeFixture({ txId: "TX-014", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["hang"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
   const result = await executeApprovedTransaction("TX-014", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, timeoutMs: 50 });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
@@ -308,7 +352,7 @@ test("dependency cycle triggers rollback", async () => {
 test("newly created file is removed during rollback", async () => {
   const fx = makeFixture({ txId: "TX-018" });
   const onStep = (point) => { if (point === "after_materialized") fs.writeFileSync(fx.targetPath, "corrupt"); };
-  const result = await executeApprovedTransaction("TX-018", { rootDir: fx.root, ledgerPath: fx.ledgerPath, onStep });
+  const result = await executeWithFault("TX-018", { rootDir: fx.root, ledgerPath: fx.ledgerPath }, onStep);
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
   cleanup(fx);
@@ -319,7 +363,7 @@ test("updated file restores exact original bytes", async () => {
   const fx = makeFixture({ txId: "TX-019" });
   fs.writeFileSync(fx.targetPath, "ORIGINAL-CONTENT");
   const onStep = (point) => { if (point === "after_materialized") fs.writeFileSync(fx.targetPath, "corrupt"); };
-  const result = await executeApprovedTransaction("TX-019", { rootDir: fx.root, ledgerPath: fx.ledgerPath, onStep });
+  const result = await executeWithFault("TX-019", { rootDir: fx.root, ledgerPath: fx.ledgerPath }, onStep);
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.readFileSync(fx.targetPath, "utf8"), "ORIGINAL-CONTENT");
   cleanup(fx);
@@ -332,7 +376,7 @@ test("deleted file is restored exactly", async () => {
   // Force post-write failure via injected validator so rollback restores the deleted file.
   const dir = makeValidatorsDir([{ id: "boom", supportedPhases: ["post_write"], source: "module.exports={id:'boom',version:'1.0.0',supportedPhases:['post_write'],validate:()=>{throw new Error('fail');}};" }]);
   // policy allowing delete + injected validator
-  fs.writeFileSync(path.join(fx.root, "kernel", "execution", "policy.json"), JSON.stringify({ version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["boom"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } } }, null, 2));
+  fs.writeFileSync(path.join(fx.root, "kernel", "execution", "policy.json"), JSON.stringify({ version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["boom"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } }, null, 2));
   const result = await executeApprovedTransaction("TX-020", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.readFileSync(fx.targetPath, "utf8"), "TO-BE-DELETED");
@@ -346,7 +390,7 @@ test("original file mode is restored", async () => {
   fs.writeFileSync(fx.targetPath, "MODE-ORIGINAL");
   fs.chmodSync(fx.targetPath, 0o640);
   const onStep = (point) => { if (point === "after_materialized") fs.writeFileSync(fx.targetPath, "corrupt"); };
-  const result = await executeApprovedTransaction("TX-021", { rootDir: fx.root, ledgerPath: fx.ledgerPath, onStep });
+  const result = await executeWithFault("TX-021", { rootDir: fx.root, ledgerPath: fx.ledgerPath }, onStep);
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.statSync(fx.targetPath).mode & 0o777, 0o640);
   cleanup(fx);
@@ -398,7 +442,7 @@ test("rollback failure records recovery_required", async () => {
   fs.writeFileSync(fx.targetPath, "ORIGINAL-BYTES"); // pre-existing => snapshot blob created
   const { blobRoot } = require("../kernel/execution/recovery-paths");
   const dir = makeValidatorsDir([{ id: "boom", supportedPhases: ["post_write"], source: "module.exports={id:'boom',version:'1.0.0',supportedPhases:['post_write'],validate:()=>{throw new Error('force rollback');}};" }]);
-  fs.writeFileSync(path.join(fx.root, "kernel", "execution", "policy.json"), JSON.stringify({ version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["boom"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true } } }, null, 2));
+  fs.writeFileSync(path.join(fx.root, "kernel", "execution", "policy.json"), JSON.stringify({ version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["boom"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } }, null, 2));
   // Corrupt the snapshot blob right after the manifest is persisted so rollback cannot restore.
   const onStep = (point) => {
     if (point === "after_manifest") {
@@ -406,7 +450,7 @@ test("rollback failure records recovery_required", async () => {
       for (const name of fs.readdirSync(root)) fs.writeFileSync(path.join(root, name), "tampered-blob");
     }
   };
-  const result = await executeApprovedTransaction("TX-025", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, onStep });
+  const result = await executeWithFault("TX-025", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir }, onStep);
   assert.equal(result.disposition, "recovery_required");
   assert.equal(getExecutionAttempt(result.attemptId, { ledgerPath: fx.ledgerPath }).state, "recovery_required");
   cleanupValidatorsDir(dir);
@@ -432,17 +476,7 @@ test("ledger tampering is detected", async () => {
   // Tamper the execution ledger, then attempt another execution.
   const tampered = fs.readFileSync(fx.ledgerPath, "utf8").replace('"committed"', '"validating"');
   fs.writeFileSync(fx.ledgerPath, tampered);
-  const fx2txLog = path.join(fx.root, "kernel", "transactions", "log.jsonl");
-  // record a second transaction so execution proceeds to read the tampered ledger
-  recordTransaction({ id: "TX-027B", version: "1.0.0", status: "approved", action: "write_report", actor: { type: "agent", id: "AGENT-REPAIR" }, requestedAt: "2026-07-06T10:00:00.000Z", approval: { approvedBy: { type: "human", id: "h" }, approvedAt: "2026-07-06T11:00:00.000Z", decisionId: "D2" }, affectedObjects: ["REPORT-TARGET"], proposedWrites: [{ operation: "write", path: "public/data/report.json", content: "second", encoding: "utf8" }] }, { rootDir: fx.root });
-  let detected = false;
-  try {
-    const r = await executeApprovedTransaction("TX-027B", { rootDir: fx.root, ledgerPath: fx.ledgerPath });
-    detected = r.disposition !== "committed";
-  } catch (error) {
-    detected = /verification|chain|ledger/i.test(error.message);
-  }
-  assert.equal(detected, true);
+  assert.throws(() => getExecutionAttempt(first.attemptId, { ledgerPath: fx.ledgerPath }), /verification|chain|ledger|hash/i);
   cleanup(fx);
 });
 
@@ -523,12 +557,8 @@ test("baseline mandatory validators cannot be removed by policy", async () => {
     }
   };
   const fx = makeFixture({ txId: "TX-031", policy: weakPolicy });
-  const result = await executeApprovedTransaction("TX-031", {
-    rootDir: fx.root,
-    ledgerPath: fx.ledgerPath,
-    onStep(point) {
-      if (point === "after_operation_completed") fs.writeFileSync(fx.targetPath, "tampered-after-write");
-    }
+  const result = await executeWithFault("TX-031", { rootDir: fx.root, ledgerPath: fx.ledgerPath }, (point) => {
+    if (point === "after_operation_completed") fs.writeFileSync(fx.targetPath, "tampered-after-write");
   });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
@@ -552,15 +582,11 @@ test("validator set hash changes when validator source changes", () => {
 test("post-commit lock release failure preserves committed disposition for startup reconciliation", async () => {
   const fx = makeFixture({ txId: "TX-033" });
   const lockPath = path.join(fx.root, "kernel", "execution", "state", "lock.json");
-  const result = await executeApprovedTransaction("TX-033", {
-    rootDir: fx.root,
-    ledgerPath: fx.ledgerPath,
-    onStep(point) {
-      if (point === "after_committed") {
-        const owner = JSON.parse(fs.readFileSync(lockPath, "utf8"));
-        owner.token = "tampered-after-commit";
-        fs.writeFileSync(lockPath, `${JSON.stringify(owner)}\n`);
-      }
+  const result = await executeWithFault("TX-033", { rootDir: fx.root, ledgerPath: fx.ledgerPath }, (point) => {
+    if (point === "after_committed") {
+      const owner = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+      owner.token = "tampered-after-commit";
+      fs.writeFileSync(lockPath, `${JSON.stringify(owner)}\n`);
     }
   });
   assert.equal(result.disposition, "committed");
@@ -576,8 +602,10 @@ test("post-commit lock release failure preserves committed disposition for start
 
 test("durable runtime isolation barrier blocks direct orchestrator execution", async () => {
   const fx = makeFixture({ txId: "TX-RUNTIME-BARRIER-001" });
+  const expectedManifest = snapshotGovernedTree(fx.root);
   recordRuntimeIsolationBarrier(fx.root, {
     runId: "RUN-ISOLATION-BARRIER-001",
+    expectedManifest,
     beforeHash: "a".repeat(64),
     afterHash: null,
     problems: ["exact restoration could not be proven"]
@@ -588,3 +616,106 @@ test("durable runtime isolation barrier blocks direct orchestrator execution", a
   assert.equal(fs.existsSync(fx.targetPath), false);
   cleanup(fx);
 });
+
+function semanticPolicy(validatorId) {
+  return {
+    version: "1.1.0",
+    updated: "2026-07-07",
+    requireAffectedObjectCoverage: true,
+    requiredValidators: ["execution-plan", "exact-materialization", "institution-registry", "dependency-graph"],
+    prohibitedPaths: [],
+    prohibitedPrefixes: ["kernel/"],
+    actions: {
+      write_report: {
+        allowedPaths: [],
+        allowedPrefixes: ["public/data/"],
+        allowDelete: true,
+        ...(validatorId === null ? {} : { semanticValidators: [validatorId] })
+      }
+    }
+  };
+}
+
+function semanticValidatorSource(id, body, supportedPhases = ["candidate", "post_write"]) {
+  return `module.exports={id:${JSON.stringify(id)},version:'1.0.0',semantic:true,actions:['write_report'],supportedPhases:${JSON.stringify(supportedPhases)},validate:${body}};`;
+}
+
+test("active governed action without a semantic validator fails closed", async () => {
+  const fx = makeFixture({ txId: "TX-SEM-MISSING", policy: semanticPolicy(null), intentionalMissingSemantic: true });
+  const result = await executeApprovedTransaction(fx.txId, { rootDir: fx.root, ledgerPath: fx.ledgerPath });
+  assert.equal(result.disposition, "rejected");
+  assert.ok(result.problems.some((problem) => /no action-specific semantic validator/i.test(problem)));
+  assert.equal(fs.existsSync(fx.targetPath), false);
+  cleanup(fx);
+});
+
+test("unavailable or incorrectly bound action semantic validator fails closed", async () => {
+  const fx = makeFixture({ txId: "TX-SEM-UNAVAILABLE", policy: semanticPolicy("missing-semantic") });
+  const result = await executeApprovedTransaction(fx.txId, { rootDir: fx.root, ledgerPath: fx.ledgerPath });
+  assert.equal(result.disposition, "rejected");
+  assert.ok(result.problems.some((problem) => /unavailable mandatory validator|semantic validator is unavailable/i.test(problem)));
+  assert.equal(fs.existsSync(fx.targetPath), false);
+  cleanup(fx);
+});
+
+test("action semantic validator implementation bytes change validator-set hash", () => {
+  const first = makeValidatorsDir([{ id: "semantic-bytes", semantic: true, actions: ["write_report"], supportedPhases: ["candidate"], source: semanticValidatorSource("semantic-bytes", "()=>({status:'passed',problems:[],warnings:[]})", ["candidate"]) }]);
+  const firstHash = loadValidatorRegistry({ validatorsDir: first }).validatorSetHash;
+  fs.appendFileSync(path.join(first, "semantic-bytes.js"), "\n// byte-level semantic change\n");
+  const secondHash = loadValidatorRegistry({ validatorsDir: first }).validatorSetHash;
+  assert.notEqual(firstHash, secondHash);
+  cleanupValidatorsDir(first);
+});
+
+for (const scenario of [
+  {
+    name: "throwing",
+    id: "semantic-throws",
+    body: "()=>{throw new Error('semantic explosion')} ",
+    timeoutMs: 5000,
+    match: /semantic explosion|threw/i
+  },
+  {
+    name: "timing-out",
+    id: "semantic-timeout",
+    body: "()=>new Promise(()=>{})",
+    timeoutMs: 25,
+    match: /timed out/i
+  },
+  {
+    name: "malformed",
+    id: "semantic-malformed",
+    body: "()=>({nonsense:true})",
+    timeoutMs: 5000,
+    match: /invalid status|malformed problems/i
+  },
+  {
+    name: "semantically failing",
+    id: "semantic-fails",
+    body: "()=>({status:'failed',problems:['semantic rule failed'],warnings:[]})",
+    timeoutMs: 5000,
+    match: /semantic rule failed/i
+  }
+]) {
+  test(`${scenario.name} action semantic validator fails closed`, async () => {
+    const dir = makeValidatorsDir([{
+      id: scenario.id,
+      semantic: true,
+      actions: ["write_report"],
+      supportedPhases: ["candidate", "post_write"],
+      source: semanticValidatorSource(scenario.id, scenario.body)
+    }]);
+    const fx = makeFixture({ txId: `TX-${scenario.id.toUpperCase()}`, policy: semanticPolicy(scenario.id) });
+    const result = await executeApprovedTransaction(fx.txId, {
+      rootDir: fx.root,
+      ledgerPath: fx.ledgerPath,
+      validatorsDir: dir,
+      timeoutMs: scenario.timeoutMs
+    });
+    assert.notEqual(result.disposition, "committed");
+    assert.ok(result.problems.some((problem) => scenario.match.test(problem)), result.problems.join("\n"));
+    assert.equal(fs.existsSync(fx.targetPath), false);
+    cleanupValidatorsDir(dir);
+    cleanup(fx);
+  });
+}

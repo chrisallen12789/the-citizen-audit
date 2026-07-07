@@ -28,6 +28,8 @@ function loadValidatorRegistry(options = {}) {
     if (!entry || typeof entry.id !== "string" || typeof entry.module !== "string") throw new Error("Validator registry contains an invalid entry.");
     if (typeof entry.version !== "string" || !SEMVER.test(entry.version)) throw new Error(`Validator registry entry omits a semantic version: ${entry.id}.`);
     assertSupportedPhases(entry.supportedPhases, `Validator registry entry ${entry.id}`);
+    if (entry.semantic !== undefined && typeof entry.semantic !== "boolean") throw new Error(`Validator semantic flag is invalid: ${entry.id}.`);
+    if (entry.semantic && (!Array.isArray(entry.actions) || entry.actions.length === 0 || entry.actions.some((action) => typeof action !== "string" || !action))) throw new Error(`Semantic validator must declare actions: ${entry.id}.`);
     if (loaded.has(entry.id)) throw new Error(`Duplicate validator id: ${entry.id}.`);
 
     const modulePath = path.resolve(validatorsDir, entry.module);
@@ -46,12 +48,14 @@ function loadValidatorRegistry(options = {}) {
     if (!validator || validator.id !== entry.id || typeof validator.validate !== "function") throw new Error(`Validator module contract mismatch: ${entry.id}.`);
     if (validator.version !== entry.version) throw new Error(`Validator version mismatch: ${entry.id}.`);
     assertSupportedPhases(validator.supportedPhases, `Validator module ${entry.id}`);
+    if (Boolean(validator.semantic) !== Boolean(entry.semantic)) throw new Error(`Validator semantic flag mismatch: ${entry.id}.`);
+    if (entry.semantic && canonicalStringify([...(validator.actions || [])].sort()) !== canonicalStringify([...entry.actions].sort())) throw new Error(`Validator action binding mismatch: ${entry.id}.`);
     if (canonicalStringify([...validator.supportedPhases].sort()) !== canonicalStringify([...entry.supportedPhases].sort())) {
       throw new Error(`Validator supportedPhases mismatch: ${entry.id}.`);
     }
 
     loaded.set(entry.id, validator);
-    canonicalEntries.push({ id: entry.id, version: entry.version, module: entry.module, moduleHash, supportedPhases: [...entry.supportedPhases].sort() });
+    canonicalEntries.push({ id: entry.id, version: entry.version, module: entry.module, moduleHash, semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(), supportedPhases: [...entry.supportedPhases].sort() });
   }
 
   canonicalEntries.sort((a, b) => a.id.localeCompare(b.id));

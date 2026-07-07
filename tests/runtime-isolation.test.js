@@ -5,7 +5,8 @@ const path = require("node:path");
 const test = require("node:test");
 
 const { createWorkspace, cleanupWorkspace, assertWorkspaceIsolation, workspaceRoot } = require("../kernel/runtime/agent-workspace");
-const { probeIsolationCapability, runExternalAgentIsolated } = require("../kernel/runtime/isolation-adapter");
+const { clearTrustedHelperCacheForTests, ensureSandboxHelper, probeIsolationCapability, runExternalAgentIsolated } = require("../kernel/runtime/isolation-adapter");
+const { resolveRegisteredAgent } = require("../kernel/runtime/agent-registry");
 const { snapshotGovernedTree, inspectAndRestoreGovernedTree, diffGovernedTrees } = require("../kernel/runtime/governed-tree-guard");
 const { runTransactionalAgent } = require("../kernel/runtime/transactional-runtime");
 const { recordRuntimeIsolationBarrier, runtimeIsolationBarrierPath } = require("../kernel/execution/runtime-isolation-barrier");
@@ -14,17 +15,33 @@ function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "phase4-iso-root-"));
   fs.mkdirSync(path.join(root, "institution", "nested"), { recursive: true });
   fs.mkdirSync(path.join(root, "kernel", "runtime"), { recursive: true });
+  fs.mkdirSync(path.join(root, "agents"), { recursive: true });
+  fs.mkdirSync(path.join(root, "public", "data"), { recursive: true });
   fs.writeFileSync(path.join(root, "institution", "charter.md"), "ORIGINAL CHARTER");
   fs.writeFileSync(path.join(root, "institution", "nested", "notes.md"), "ORIGINAL NOTES");
   fs.chmodSync(path.join(root, "institution", "charter.md"), 0o640);
+  fs.writeFileSync(path.join(root, "agents", "registry.json"), JSON.stringify({ agents: [] }, null, 2));
+  fs.mkdirSync(path.join(root, "kernel", "authority"), { recursive: true });
+  fs.mkdirSync(path.join(root, "kernel", "permissions"), { recursive: true });
+  fs.mkdirSync(path.join(root, "kernel", "registry"), { recursive: true });
+  fs.mkdirSync(path.join(root, "kernel", "execution"), { recursive: true });
+  fs.writeFileSync(path.join(root, "kernel", "authority", "approval-authorities.json"), JSON.stringify({ version: "1.0.0", authorities: [] }));
+  fs.writeFileSync(path.join(root, "kernel", "permissions", "rules.json"), JSON.stringify({ rules: [{ id: "RULE-ISO", action: "write_report", minimumAuthorityLevel: 1, requiresHumanApproval: false }] }));
+  fs.writeFileSync(path.join(root, "kernel", "permissions", "authority-levels.json"), JSON.stringify({ levels: [{ level: 0 }, { level: 1 }] }));
+  fs.writeFileSync(path.join(root, "kernel", "registry", "institution.json"), JSON.stringify({ version: "1.0.0", objects: [{ id: "REPORT-TARGET", type: "report", name: "target", path: "public/data/", description: "target", dependsOn: [] }] }));
+  fs.writeFileSync(path.join(root, "kernel", "execution", "policy.json"), JSON.stringify({ version: "1.1.0", requiredValidators: [], prohibitedPaths: [], prohibitedPrefixes: ["kernel/", "institution/", "agents/"], requireAffectedObjectCoverage: true, actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: false, semanticValidators: ["write-report-semantics"] } } }));
   return { root, charter: path.join(root, "institution", "charter.md"), notes: path.join(root, "institution", "nested", "notes.md") };
 }
 
 function cleanup(fx) { fs.rmSync(fx.root, { recursive: true, force: true }); }
 function nodeAgent(source) { return { command: process.execPath, args: ["-e", source] }; }
+function registeredAgent(fx, command, args = [], action = "write_report") {
+  fs.writeFileSync(path.join(fx.root, "agents", "registry.json"), JSON.stringify({ agents: [{ id: "AGENT-ISO", status: "active", authorityLevel: 1, capabilities: [action], command: "test", runtime: { executable: command, arguments: args } }] }, null, 2));
+  return resolveRegisteredAgent(fx.root, "AGENT-ISO", action);
+}
 function runIsolated(fx, runId, source) {
   const workspace = createWorkspace(fx.root, runId);
-  const result = runExternalAgentIsolated(fx.root, workspace, nodeAgent(source));
+  const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, process.execPath, ["-e", source]));
   return { workspace, result };
 }
 
@@ -44,7 +61,9 @@ function restoreCase(name, mutate, verify) {
 }
 
 test("isolation capability probe verifies chroot seccomp sandbox with no live-root exposure", () => {
-  const report = probeIsolationCapability();
+  const fx = fixture();
+  const report = probeIsolationCapability(fx.root, registeredAgent(fx, process.execPath, ["-e", "process.exit(0)"]));
+  cleanup(fx);
   assert.equal(report.kind, "unshare-chroot-seccomp");
   assert.equal(report.available, true, report.reason || "isolation unavailable");
 });
@@ -54,7 +73,7 @@ test("isolation capability probe verifies chroot seccomp sandbox with no live-ro
 test("sandboxed agent has no effective, bounding, or ambient capabilities", () => {
   const fx = fixture();
   const workspace = createWorkspace(fx.root, "RUN-ISO-CAPS-1");
-  const result = runExternalAgentIsolated(fx.root, workspace, { command: "capsh", args: ["--print"] });
+  const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, "capsh", ["--print"]));
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Current:\s*=\s*$/m);
   assert.match(result.stdout, /Bounding set\s*=\s*$/m);
@@ -73,7 +92,7 @@ test("non-system agent executable is mounted alone without exposing sibling host
   fs.writeFileSync(agentPath, `#!/bin/sh\nif [ -e ${JSON.stringify(secretPath)} ]; then exit 91; fi\nprintf isolated > /workspace/outputs/result.txt\n`);
   fs.chmodSync(agentPath, 0o500);
   const workspace = createWorkspace(fx.root, "RUN-ISO-BIN-1");
-  const result = runExternalAgentIsolated(fx.root, workspace, { command: agentPath, args: [] });
+  const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, agentPath, []));
   assert.equal(result.status, 0, result.stderr);
   assert.equal(fs.readFileSync(path.join(workspace.outputDir, "result.txt"), "utf8"), "isolated");
   cleanupWorkspace(workspace); fs.rmSync(hostAgentDir, { recursive: true, force: true }); cleanup(fx);
@@ -86,7 +105,7 @@ test("agent executable inside the live institution is rejected before execution"
   fs.chmodSync(agentPath, 0o500);
   const workspace = createWorkspace(fx.root, "RUN-ISO-LIVE-BIN-1");
   assert.throws(
-    () => runExternalAgentIsolated(fx.root, workspace, { command: agentPath, args: [] }),
+    () => runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, agentPath, [])),
     (error) => error && error.code === "ISOLATION_UNAVAILABLE" && /inside the live institution/.test(error.message)
   );
   cleanupWorkspace(workspace); cleanup(fx);
@@ -113,7 +132,7 @@ test("sandbox exposes no proc filesystem or inherited file descriptors", () => {
   const compiled = require("node:child_process").spawnSync("/usr/bin/gcc", ["-O2", "-static", "-Wall", "-Wextra", "-Werror", "-o", executablePath, sourcePath], { encoding: "utf8" });
   assert.equal(compiled.status, 0, compiled.stderr);
   const workspace = createWorkspace(fx.root, "RUN-ISO-FD-1");
-  const result = runExternalAgentIsolated(fx.root, workspace, { command: executablePath, args: [] });
+  const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, executablePath, []));
   assert.equal(result.status, 0, result.stderr);
   cleanupWorkspace(workspace); fs.rmSync(hostAgentDir, { recursive: true, force: true }); cleanup(fx);
 });
@@ -198,7 +217,7 @@ test("nested governed directory creation is prevented", () => {
 test("shell redirection to governed path is prevented", () => {
   const fx = fixture();
   const workspace = createWorkspace(fx.root, "RUN-ISO-SHELL-1");
-  const result = runExternalAgentIsolated(fx.root, workspace, { command: "sh", args: ["-c", `printf TAMPERED > ${JSON.stringify(fx.charter)}`] });
+  const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, "sh", ["-c", `printf TAMPERED > ${JSON.stringify(fx.charter)}`]));
   assert.notEqual(result.status, 0);
   assert.equal(fs.readFileSync(fx.charter, "utf8"), "ORIGINAL CHARTER");
   cleanupWorkspace(workspace); cleanup(fx);
@@ -246,10 +265,10 @@ test("mount and remount syscalls are blocked inside the sandbox", () => {
 test("agent environment exposes no live-root variable", () => {
   const fx = fixture();
   const workspace = createWorkspace(fx.root, "RUN-ISO-ENV-1");
-  const result = runExternalAgentIsolated(fx.root, workspace, nodeAgent(`
+  const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, process.execPath, ["-e", `
     const fs=require('fs');
     fs.writeFileSync(process.env.CITIZEN_AUDIT_OUTPUT_DIR+'/env.json', JSON.stringify(process.env));
-  `));
+  `]));
   assert.equal(result.status, 0);
   const env = JSON.parse(fs.readFileSync(path.join(workspace.outputDir, "env.json"), "utf8"));
   assert.equal(Object.values(env).includes(fx.root), false);
@@ -286,6 +305,7 @@ test("production runtime rejects in-process agent without invoking it", async ()
 
 test("isolation unavailable fails closed before agent starts", () => {
   const fx = fixture();
+  registeredAgent(fx, process.execPath, ["-e", "process.exit(0)"]);
   const marker = path.join(os.tmpdir(), `phase4-agent-start-${process.pid}-${Date.now()}`);
   const script = `
     const fs=require('fs');
@@ -295,8 +315,7 @@ test("isolation unavailable fails closed before agent starts", () => {
     runTransactionalAgent({
       rootDir:${JSON.stringify(fx.root)},
       runId:'RUN-ISO-NO-CHILD-1',
-      agent:{command:process.execPath,args:['-e',${JSON.stringify(`require('fs').writeFileSync(${JSON.stringify(marker)},'started')`)}]},
-      actor:{type:'agent',id:'A'},action:'x',affectedObjects:[]
+      agentId:'AGENT-ISO',action:'write_report',affectedObjects:['REPORT-TARGET']
     }).then((result)=>process.stdout.write(JSON.stringify(result)));
   `;
   const child = require("node:child_process").spawnSync(process.execPath, ["-e", script], { encoding: "utf8", cwd: path.join(__dirname, "..") });
@@ -318,7 +337,8 @@ test("cleanup failure cannot convert agent failure into success", async () => {
   };
   let result;
   try {
-    result = await runTransactionalAgent({ rootDir: fx.root, runId: "RUN-ISO-CLEAN-1", agent: nodeAgent("process.exit(9)"), actor: { type: "agent", id: "A" }, action: "x", affectedObjects: [] });
+    registeredAgent(fx, process.execPath, ["-e", "process.exit(9)"]);
+    result = await runTransactionalAgent({ rootDir: fx.root, runId: "RUN-ISO-CLEAN-1", agentId: "AGENT-ISO", action: "write_report", affectedObjects: ["REPORT-TARGET"] });
   } finally {
     fs.rmSync = originalRm;
   }
@@ -338,19 +358,115 @@ test("durable runtime isolation barrier blocks later agent execution before star
     runId: "RUN-ISO-BARRIER-SOURCE",
     beforeHash: "b".repeat(64),
     afterHash: null,
-    problems: ["injected unprovable restoration"]
+    problems: ["injected unprovable restoration"],
+    expectedManifest: snapshotGovernedTree(fx.root)
   });
   assert.equal(fs.existsSync(runtimeIsolationBarrierPath(fx.root)), true);
   const result = await runTransactionalAgent({
     rootDir: fx.root,
     runId: "RUN-ISO-BARRIER-NEXT",
-    agent: nodeAgent(`require('fs').writeFileSync(${JSON.stringify(marker)},'started')`),
-    actor: { type: "agent", id: "A" },
-    action: "x",
-    affectedObjects: []
+    agentId: "AGENT-ISO",
+    action: "write_report",
+    affectedObjects: ["REPORT-TARGET"]
   });
   assert.equal(result.institutionalResult, "recovery_required");
   assert.equal(result.agentProcess.ran, false);
   assert.equal(fs.existsSync(marker), false);
+  cleanup(fx);
+});
+
+test("sandbox helper rejects a pre-positioned regular file with unreviewed bytes", () => {
+  const fx = fixture();
+  clearTrustedHelperCacheForTests();
+  const helper = ensureSandboxHelper(fx.root);
+  fs.unlinkSync(helper.path);
+  fs.writeFileSync(helper.path, "ATTACKER BYTES", { mode: 0o500 });
+  fs.chmodSync(helper.path, 0o500);
+  clearTrustedHelperCacheForTests();
+  assert.throws(() => ensureSandboxHelper(fx.root), /binary digest verification failed/i);
+  cleanup(fx);
+});
+
+test("sandbox helper rejects symlink substitution", () => {
+  const fx = fixture();
+  clearTrustedHelperCacheForTests();
+  const helper = ensureSandboxHelper(fx.root);
+  const attacker = path.join(fx.root, "attacker-helper");
+  fs.writeFileSync(attacker, "ATTACKER", { mode: 0o500 });
+  fs.unlinkSync(helper.path);
+  fs.symlinkSync(attacker, helper.path);
+  clearTrustedHelperCacheForTests();
+  assert.throws(() => ensureSandboxHelper(fx.root), /not a regular file/i);
+  cleanup(fx);
+});
+
+test("sandbox helper rejects changed permissions before reuse", () => {
+  const fx = fixture();
+  clearTrustedHelperCacheForTests();
+  const helper = ensureSandboxHelper(fx.root);
+  fs.chmodSync(helper.path, 0o700);
+  assert.throws(() => ensureSandboxHelper(fx.root), /mode must be 0500/i);
+  cleanup(fx);
+});
+
+test("sandbox helper rejects changed bytes before reuse", () => {
+  const fx = fixture();
+  clearTrustedHelperCacheForTests();
+  const helper = ensureSandboxHelper(fx.root);
+  fs.chmodSync(helper.path, 0o700);
+  fs.writeFileSync(helper.path, "CHANGED BYTES");
+  fs.chmodSync(helper.path, 0o500);
+  assert.throws(() => ensureSandboxHelper(fx.root), /binary digest verification failed/i);
+  cleanup(fx);
+});
+
+test("sandbox helper installation race fails closed on attacker replacement", () => {
+  const fx = fixture();
+  clearTrustedHelperCacheForTests();
+  const originalLink = fs.linkSync;
+  let injected = false;
+  fs.linkSync = function injectRace(source, destination) {
+    if (!injected && String(destination).includes("sandbox-exec-")) {
+      injected = true;
+      fs.writeFileSync(destination, "RACE BYTES", { flag: "wx", mode: 0o500 });
+      const error = new Error("injected EEXIST race");
+      error.code = "EEXIST";
+      throw error;
+    }
+    return originalLink.call(fs, source, destination);
+  };
+  try {
+    assert.throws(() => ensureSandboxHelper(fx.root), /binary digest verification failed/i);
+  } finally {
+    fs.linkSync = originalLink;
+  }
+  assert.equal(injected, true);
+  cleanup(fx);
+});
+
+test("registered executable replacement after resolution is rejected", () => {
+  const fx = fixture();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "phase41-agent-replace-"));
+  const executable = path.join(dir, "agent.sh");
+  fs.writeFileSync(executable, "#!/bin/sh\nexit 0\n", { mode: 0o500 });
+  fs.chmodSync(executable, 0o500);
+  const resolved = registeredAgent(fx, executable, []);
+  fs.chmodSync(executable, 0o700);
+  fs.writeFileSync(executable, "#!/bin/sh\nexit 9\n");
+  fs.chmodSync(executable, 0o500);
+  const workspace = createWorkspace(fx.root, "RUN-ISO-IDENTITY-1");
+  assert.throws(() => runExternalAgentIsolated(fx.root, workspace, resolved), /executable identity changed/i);
+  cleanupWorkspace(workspace);
+  fs.rmSync(dir, { recursive: true, force: true });
+  cleanup(fx);
+});
+
+test("registered argument digest mismatch is rejected", () => {
+  const fx = fixture();
+  const resolved = registeredAgent(fx, process.execPath, ["-e", "process.exit(0)"]);
+  const forged = { ...resolved, args: ["-e", "process.exit(9)"] };
+  const workspace = createWorkspace(fx.root, "RUN-ISO-ARGS-1");
+  assert.throws(() => runExternalAgentIsolated(fx.root, workspace, forged), /arguments no longer match/i);
+  cleanupWorkspace(workspace);
   cleanup(fx);
 });

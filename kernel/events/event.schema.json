@@ -1,60 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thecitizenaudit.org/kernel/events/event.schema.json",
-  "title": "Citizen Audit Kernel Event",
+  "title": "Citizen Audit Ledger-Derived Execution Event",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "type", "timestamp", "actor", "summary"],
+  "required": ["id", "type", "ledgerSequence", "ledgerHash", "attemptId", "transactionId", "relatedRecords", "recordedAt", "data", "eventHash"],
   "properties": {
-    "id": {
-      "type": "string",
-      "pattern": "^EVENT-[0-9]{8}$"
-    },
-    "type": {
-      "type": "string",
-      "minLength": 1
-    },
-    "timestamp": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "actor": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["type", "id"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["human", "agent", "system", "external"]
-        },
-        "id": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "summary": {
-      "type": "string",
-      "minLength": 1
-    },
-    "relatedRecords": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
-      "uniqueItems": true
-    },
-    "requiresHumanApproval": {
-      "type": "boolean"
-    },
-    "authorityLevel": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 4
-    },
-    "reportPath": {
-      "type": "string"
-    }
+    "id": { "type": "string", "pattern": "^EXEC-EVENT-[0-9]{8}$" },
+    "type": { "type": "string", "pattern": "^execution\\.attempt\\.[a-z_]+$" },
+    "ledgerSequence": { "type": "integer", "minimum": 1 },
+    "ledgerHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "attemptId": { "type": "string", "pattern": "^ATTEMPT-[A-Z0-9-]+$" },
+    "transactionId": { "type": "string", "pattern": "^TX-[A-Z0-9-]+$" },
+    "relatedRecords": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "recordedAt": { "type": "string", "format": "date-time" },
+    "data": { "type": "object" },
+    "eventHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
   }
 }

@@ -5,12 +5,12 @@ const { executeApprovedTransaction } = require("../execution/orchestrator");
 const { pathMatches } = require("../execution/plan");
 const { captureProposedWrites, cleanupWorkspace, createWorkspace } = require("./agent-workspace");
 const { inspectAndRestoreGovernedTree, snapshotGovernedTree } = require("./governed-tree-guard");
-const { assertExternalAgent, runExternalAgentIsolated } = require("./isolation-adapter");
+const { runExternalAgentIsolated } = require("./isolation-adapter");
+const { resolveRegisteredAgent } = require("./agent-registry");
 const { assertNoRuntimeIsolationBarrier, recordRuntimeIsolationBarrier } = require("../execution/runtime-isolation-barrier");
 const { validateProposedWrites } = require("./proposed-writes");
 const { buildTransactionIntent, recordApprovedTransaction } = require("./transaction-intent");
 
-const DENY_BY_DEFAULT = () => ({ approved: false, reason: "No approval was provided." });
 
 function baseResult(runId) {
   return {
@@ -80,7 +80,8 @@ function handleDrift(result, rootDir, guardBefore, runId) {
         beforeHash: guardBefore.manifestHash,
         afterHash: inspection.restoration && inspection.restoration.afterHash,
         changes: result.isolation.changes,
-        problems: result.problems
+        problems: result.problems,
+        expectedManifest: guardBefore
       });
     } catch (error) {
       result.problems.push(`Could not persist runtime isolation recovery barrier: ${error.message}`);
@@ -93,142 +94,95 @@ function handleDrift(result, rootDir, guardBefore, runId) {
 }
 
 async function runTransactionalAgent(options = {}) {
-  const { rootDir, runId, agent, actor, action, affectedObjects } = options;
-  const approvalProvider = options.approvalProvider || DENY_BY_DEFAULT;
+  const { rootDir, runId, agentId, action, affectedObjects, approvalDecisionId } = options;
   const result = baseResult(runId);
   let workspace;
-
+  const prohibitedOptionNames = ["agent", "actor", "command", "args", "approvalProvider", "onStep", "faultInjector", "policyPath", "validatorsDir", "ledgerPath", "recordedAt"];
+  const allowedOptionNames = new Set(["rootDir", "runId", "agentId", "action", "affectedObjects", "approvalDecisionId", "inputs", "reason", "preserveWorkspace"]);
   try {
-    if (!rootDir || !runId || !actor || !action || !Array.isArray(affectedObjects)) throw new Error("Transactional runtime options are incomplete.");
+    for (const [key, value] of Object.entries(options)) {
+      if (typeof value === "function") { result.institutionalResult = "agent_rejected"; result.problems.push(`Production runtime rejects executable caller option: ${key}.`); return finish(result, workspace, options); }
+    }
+    for (const key of prohibitedOptionNames) if (Object.prototype.hasOwnProperty.call(options, key)) { result.institutionalResult = "agent_rejected"; result.problems.push(`Production runtime rejects caller-controlled option: ${key}.`); return finish(result, workspace, options); }
+    for (const key of Object.keys(options)) if (!allowedOptionNames.has(key)) { result.institutionalResult = "agent_rejected"; result.problems.push(`Production runtime rejects undeclared caller option: ${key}.`); return finish(result, workspace, options); }
+    if (!rootDir || !runId || !agentId || !action || !Array.isArray(affectedObjects) || affectedObjects.length === 0) throw new Error("Transactional runtime options are incomplete.");
+    try { assertNoRuntimeIsolationBarrier(rootDir); }
+    catch (error) { result.institutionalResult = "recovery_required"; result.problems.push(error.message); return finish(result, workspace, options); }
+    let resolvedAgent;
     try {
-      assertNoRuntimeIsolationBarrier(rootDir);
+      resolvedAgent = resolveRegisteredAgent(rootDir, agentId, action);
     } catch (error) {
-      result.institutionalResult = "recovery_required";
+      result.institutionalResult = "agent_rejected";
+      result.problems.push(`Registered agent identity rejected: ${error.message}`);
+      return finish(result, workspace, options);
+    }
+    workspace = createWorkspace(rootDir, runId, { inputs: options.inputs });
+
+    let guardBefore;
+    try { guardBefore = snapshotGovernedTree(rootDir); }
+    catch (error) { result.institutionalResult = "recovery_required"; result.problems.push(`Could not establish governed-tree guard: ${error.message}`); return finish(result, workspace, options); }
+
+    let agentRun;
+    try {
+      agentRun = runExternalAgentIsolated(rootDir, workspace, resolvedAgent);
+      result.isolation.kind = agentRun.isolation.kind;
+      result.isolation.available = agentRun.isolation.available;
+      result.agentProcess = { ran: true, status: agentRun.status, signal: agentRun.signal, error: agentRun.error };
+    } catch (error) {
+      result.isolation.kind = error.capability ? error.capability.kind : null;
+      result.isolation.available = error.capability ? error.capability.available : false;
+      result.institutionalResult = error.code === "ISOLATION_UNAVAILABLE" ? "isolation_unavailable" : "agent_rejected";
       result.problems.push(error.message);
       return finish(result, workspace, options);
     }
-    assertExternalAgent(agent);
-    workspace = createWorkspace(rootDir, runId, { inputs: options.inputs });
-  } catch (error) {
-    result.institutionalResult = error.code === "IN_PROCESS_AGENT_PROHIBITED" ? "agent_rejected" : "error";
-    result.problems.push(error.message);
-    return finish(result, workspace, options);
-  }
 
-  // The full security-critical governed tree is snapshotted automatically.
-  // Callers cannot narrow or disable this protection.
-  let guardBefore;
-  try {
-    guardBefore = snapshotGovernedTree(rootDir);
-  } catch (error) {
-    result.institutionalResult = "recovery_required";
-    result.problems.push(`Could not establish governed-tree guard: ${error.message}`);
-    return finish(result, workspace, options);
-  }
+    try { if (handleDrift(result, rootDir, guardBefore, runId)) return finish(result, workspace, options); }
+    catch (error) { result.institutionalResult = "recovery_required"; result.problems.push(`Governed-tree verification failed: ${error.message}`); return finish(result, workspace, options); }
 
-  let agentRun;
-  try {
-    agentRun = runExternalAgentIsolated(rootDir, workspace, agent);
-    result.isolation.kind = agentRun.isolation.kind;
-    result.isolation.available = agentRun.isolation.available;
-    result.agentProcess = {
-      ran: true,
-      status: agentRun.status,
-      signal: agentRun.signal,
-      error: agentRun.error
-    };
-  } catch (error) {
-    result.isolation.kind = error.capability ? error.capability.kind : null;
-    result.isolation.available = error.capability ? error.capability.available : false;
-    result.institutionalResult = error.code === "ISOLATION_UNAVAILABLE" ? "isolation_unavailable" : "error";
-    result.problems.push(error.message);
-    return finish(result, workspace, options);
-  }
+    if (agentRun.status !== 0) {
+      result.institutionalResult = "agent_failed";
+      result.problems.push(`Agent process failed with status ${agentRun.status}.`);
+      if (agentRun.stderr) result.problems.push(agentRun.stderr.trim().slice(-2000));
+      return finish(result, workspace, options);
+    }
 
-  // Defense in depth: inspect and restore before trusting process status or
-  // parsing agent output. Preventive isolation is primary; restoration is not
-  // treated as success.
-  try {
-    if (handleDrift(result, rootDir, guardBefore, runId)) return finish(result, workspace, options);
-  } catch (error) {
-    result.institutionalResult = "recovery_required";
-    result.problems.push(`Governed-tree verification failed: ${error.message}`);
-    return finish(result, workspace, options);
-  }
-
-  if (agentRun.status !== 0) {
-    result.institutionalResult = "agent_failed";
-    result.problems.push(`Agent process failed with status ${agentRun.status}.`);
-    if (agentRun.stderr) result.problems.push(agentRun.stderr.trim().slice(-2000));
-    return finish(result, workspace, options);
-  }
-
-  try {
     const rawWrites = captureProposedWrites(rootDir, workspace);
     const { writes, problems } = validateProposedWrites(rootDir, rawWrites);
     result.proposal.problems = [...problems];
     if (writes.length === 0 && problems.length === 0) result.proposal.problems.push("Agent produced no valid proposed writes.");
-
-    const policyProblems = writes.length ? precheckProposalPolicy(rootDir, action, writes, options.policyPath) : [];
+    const policyProblems = writes.length ? precheckProposalPolicy(rootDir, action, writes) : [];
     result.proposal.problems.push(...policyProblems);
     if (result.proposal.problems.length || writes.length === 0) {
-      result.proposal.status = "rejected";
-      result.institutionalResult = "proposal_rejected";
-      result.problems.push(...result.proposal.problems);
-      return finish(result, workspace, options);
+      result.proposal.status = "rejected"; result.institutionalResult = "proposal_rejected"; result.problems.push(...result.proposal.problems); return finish(result, workspace, options);
     }
 
+    const actor = { type: "agent", id: agentId };
     const intent = buildTransactionIntent({
-      rootDir,
-      actor,
-      action,
-      agentRunId: runId,
-      proposedWrites: writes,
-      affectedObjects,
+      rootDir, actor, action, agentRunId: runId, proposedWrites: writes, affectedObjects,
       reason: options.reason,
-      provenance: { runId, agentId: actor.id }
+      provenance: { runId, ...agentRun.provenance }
     });
+    result.transactionId = intent.transaction.id;
     result.proposal.status = "created";
     result.proposal.writeCount = writes.length;
     result.proposal.writeSetHash = intent.writeSetHash;
 
-    const authority = checkActionAtRoot(rootDir, actor.id, action);
+    const authority = checkActionAtRoot(rootDir, agentId, action);
+    if (!authority.allowed) { result.approval.status = "denied"; result.institutionalResult = "not_authorized"; result.problems.push(authority.reason); return finish(result, workspace, options); }
     result.approval.status = "requested";
-    const decision = await approvalProvider({
-      transactionId: intent.transaction.id,
-      writeSetHash: intent.writeSetHash,
-      action,
-      actor,
-      authority
-    });
-    if (!decision || decision.approved !== true) {
-      result.approval.status = "denied";
-      result.institutionalResult = "not_approved";
-      result.problems.push(decision && decision.reason ? decision.reason : "Approval denied or missing.");
-      return finish(result, workspace, options);
+    if (typeof approvalDecisionId !== "string" || !approvalDecisionId) {
+      result.approval.status = "denied"; result.institutionalResult = "not_approved"; result.problems.push("Authoritative approval decision id is required."); return finish(result, workspace, options);
+    }
+    try {
+      recordApprovedTransaction(rootDir, intent, approvalDecisionId);
+    } catch (error) {
+      result.approval.status = "denied"; result.institutionalResult = "not_approved"; result.problems.push(error.message); return finish(result, workspace, options);
     }
     result.approval.status = "approved";
-    result.approval.decisionId = decision.decisionId;
+    result.approval.decisionId = approvalDecisionId;
 
-    const transactionId = recordApprovedTransaction(rootDir, intent, decision, { recordedAt: options.recordedAt });
-    result.transactionId = transactionId;
-    const execution = await executeApprovedTransaction(transactionId, {
-      rootDir,
-      onStep: options.onStep,
-      attemptNonce: options.attemptNonce,
-      createdAt: options.createdAt,
-      completedAt: options.completedAt,
-      timeoutMs: options.timeoutMs,
-      ledgerPath: options.ledgerPath,
-      validatorsDir: options.validatorsDir,
-      policyPath: options.policyPath
-    });
-    result.execution = {
-      disposition: execution.disposition,
-      attemptId: execution.attemptId,
-      ledgerHash: execution.ledgerHash,
-      validationResultHash: execution.validationResultHash
-    };
+    const execution = await executeApprovedTransaction(intent.transaction.id, { rootDir });
+    result.execution = { disposition: execution.disposition, attemptId: execution.attemptId, ledgerHash: execution.ledgerHash, validationResultHash: execution.validationResultHash };
     result.institutionalResult = execution.disposition;
     if (execution.disposition !== "committed") result.problems.push(...(execution.problems || []));
     return finish(result, workspace, options);
@@ -238,5 +192,4 @@ async function runTransactionalAgent(options = {}) {
     return finish(result, workspace, options);
   }
 }
-
-module.exports = { DENY_BY_DEFAULT, precheckProposalPolicy, runTransactionalAgent };
+module.exports = { precheckProposalPolicy, runTransactionalAgent };

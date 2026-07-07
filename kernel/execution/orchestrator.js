@@ -7,6 +7,7 @@ const { sha256 } = require("../lib/append-only-log");
 const { getTransaction } = require("../transactions/store");
 const { assertValidTransaction, computeWriteSetHash } = require("../transactions/validate");
 const { checkActionAtRoot, loadAuthorityStateAtRoot } = require("../authority/engine");
+const { verifyApprovalDecisionForIntent } = require("../approvals/decision-store");
 const {
   createExecutionAttempt,
   defaultExecutionLedgerPath,
@@ -27,6 +28,8 @@ const {
 } = require("./recovery-session");
 const { rollbackExecutionAttempt } = require("./rollback");
 const { releaseExecutionLock } = require("./exclusive-boundary");
+const { resolveRegisteredAgent } = require("../runtime/agent-registry");
+const { ISOLATION_ADAPTER_VERSION, reviewedSandboxHelperSourceHash } = require("../runtime/runtime-provenance");
 
 const repositoryRoot = path.resolve(__dirname, "..", "..");
 const BASELINE_REQUIRED_VALIDATORS = Object.freeze([
@@ -70,7 +73,9 @@ async function executeApprovedTransaction(transactionId, options = {}) {
   const policyPath = options.policyPath || path.join(rootDir, "kernel", "execution", "policy.json");
   const validatorsDir = options.validatorsDir || path.join(__dirname, "validators");
   const timeoutMs = options.timeoutMs;
-  const onStep = options.onStep;
+  if (Object.prototype.hasOwnProperty.call(options, "onStep") || Object.values(options).some((value) => typeof value === "function")) {
+    throw new ExecutionRejected(["Production orchestrator rejects caller-supplied executable callbacks."]);
+  }
 
   const bindings = {
     attemptId: null,
@@ -101,6 +106,37 @@ async function executeApprovedTransaction(transactionId, options = {}) {
     assertValidTransaction(transaction);
     if (transaction.status !== "approved") throw new ExecutionRejected([`Transaction is not approved (status: ${transaction.status}).`]);
     if (!transaction.approval || typeof transaction.approval !== "object") throw new ExecutionRejected(["Approved transaction is missing approval metadata."]);
+    let approvalDecision;
+    try {
+      approvalDecision = verifyApprovalDecisionForIntent(rootDir, transaction.approval.decisionId, transaction);
+    } catch (error) {
+      throw new ExecutionRejected([`Approval decision verification failed: ${error.message}`]);
+    }
+    if (transaction.approval.decisionRecordHash !== approvalDecision.recordHash) throw new ExecutionRejected(["Approved transaction decision-record hash mismatch."]);
+    if (transaction.approval.approvedBy.type !== approvalDecision.approver.type || transaction.approval.approvedBy.id !== approvalDecision.approver.id) throw new ExecutionRejected(["Approved transaction approver identity mismatch."]);
+    if (transaction.approval.approverAuthority !== approvalDecision.approverAuthority || transaction.approval.approvedAt !== approvalDecision.decidedAt) throw new ExecutionRejected(["Approved transaction approval metadata mismatch."]);
+
+    const runtimeProvenance = transaction.metadata && transaction.metadata.provenance;
+    if (transaction.actor.type === "agent") {
+      const requiredProvenanceHashes = ["executableDigest", "argumentsDigest", "registryEntryHash", "sandboxHelperSourceHash", "sandboxHelperBinaryHash"];
+      if (!runtimeProvenance || runtimeProvenance.registeredAgentId !== transaction.actor.id) throw new ExecutionRejected(["Agent transaction is not bound to its registered agent identity."]);
+      if (typeof runtimeProvenance.executableRealPath !== "string" || !path.isAbsolute(runtimeProvenance.executableRealPath)) throw new ExecutionRejected(["Agent transaction executable real path is invalid."]);
+      for (const field of requiredProvenanceHashes) if (!/^[0-9a-f]{64}$/.test(runtimeProvenance[field] || "")) throw new ExecutionRejected([`Agent transaction provenance is missing ${field}.`]);
+      for (const field of ["runtimeVersion", "isolationAdapterVersion"]) if (typeof runtimeProvenance[field] !== "string" || !runtimeProvenance[field]) throw new ExecutionRejected([`Agent transaction provenance is missing ${field}.`]);
+      let authoritativeAgent;
+      try {
+        authoritativeAgent = resolveRegisteredAgent(rootDir, transaction.actor.id, transaction.action);
+      } catch (error) {
+        throw new ExecutionRejected([`Registered agent identity could not be resolved: ${error.message}`]);
+      }
+      for (const field of ["registeredAgentId", "executableRealPath", "executableDigest", "argumentsDigest", "registryEntryHash", "runtimeVersion"]) {
+        if (runtimeProvenance[field] !== authoritativeAgent.provenance[field]) {
+          throw new ExecutionRejected([`Agent transaction provenance no longer matches the authoritative registry: ${field}.`]);
+        }
+      }
+      if (runtimeProvenance.isolationAdapterVersion !== ISOLATION_ADAPTER_VERSION) throw new ExecutionRejected(["Agent transaction isolation-adapter version mismatch."]);
+      if (runtimeProvenance.sandboxHelperSourceHash !== reviewedSandboxHelperSourceHash()) throw new ExecutionRejected(["Agent transaction sandbox-helper source hash mismatch."]);
+    }
 
     // 4. Recompute content hashes and the approved write-set hash. 5. Reject altered content.
     const writeSetHash = computeWriteSetHash(transaction.proposedWrites);
@@ -171,15 +207,28 @@ async function executeApprovedTransaction(transactionId, options = {}) {
 
     // Missing mandatory validators fail closed (policy + action-specific).
     const actionPolicy = policy.actions[transaction.action] || {};
+    const semanticIds = actionPolicy.semanticValidators;
+    if (!Array.isArray(semanticIds) || semanticIds.length === 0) {
+      if (actionPolicy.nonSemantic !== true || typeof actionPolicy.nonSemanticJustification !== "string" || !actionPolicy.nonSemanticJustification.trim()) {
+        throw new ExecutionRejected([`Action ${transaction.action} has no action-specific semantic validator.`]);
+      }
+    }
     const requiredIds = [
       ...BASELINE_REQUIRED_VALIDATORS,
       ...(policy.requiredValidators || []),
-      ...(actionPolicy.requiredValidators || [])
+      ...(actionPolicy.requiredValidators || []),
+      ...(semanticIds || [])
     ];
     const requiredPolicy = { ...policy, requiredValidators: [...new Set(requiredIds)] };
     let required;
     try {
       required = selectRequiredValidators(requiredPolicy, loaded);
+      for (const semanticId of semanticIds || []) {
+        const validator = loaded.get(semanticId);
+        if (!validator || validator.semantic !== true || !Array.isArray(validator.actions) || !validator.actions.includes(transaction.action)) {
+          throw new Error(`Action semantic validator is unavailable or not bound to ${transaction.action}: ${semanticId}.`);
+        }
+      }
     } catch (error) {
       throw new ExecutionRejected([error.message]);
     }
@@ -233,13 +282,14 @@ async function executeApprovedTransaction(transactionId, options = {}) {
       authorityStateHash,
       policyHash,
       validatorSetHash,
-      planHash
+      planHash,
+      metadata: { runtimeProvenance: runtimeProvenance || null, approvalDecisionHash: approvalDecision.recordHash }
     }, { ledgerPath, createdAt: options.createdAt });
 
     // 14/15. Acquire the Phase 2 exclusive boundary and persist durable pre-state.
     let session;
     try {
-      session = beginRecoveryAttempt(rootDir, attemptId, plan.writes, { ledgerPath, onStep, createdAt: options.createdAt });
+      session = beginRecoveryAttempt(rootDir, attemptId, plan.writes, { ledgerPath, createdAt: options.createdAt });
     } catch (error) {
       if (error.code === "EXECUTION_LOCKED") throw new ExecutionRejected([`Execution is already locked by ${error.owner ? error.owner.attemptId : "another attempt"}.`]);
       throw error;
@@ -249,7 +299,7 @@ async function executeApprovedTransaction(transactionId, options = {}) {
     let committed = false;
     try {
       // 16-18. (Candidate already run.) Apply the declared write set (journaled).
-      applyJournaledWrites(session, { ledgerPath, onStep });
+      applyJournaledWrites(session, { ledgerPath });
 
       // Move to validating and run exact-materialization + post-write validators.
       transitionExecutionAttempt(attemptId, "validating", {}, { ledgerPath });
@@ -275,8 +325,7 @@ async function executeApprovedTransaction(transactionId, options = {}) {
       const rollbackResult = rollbackExecutionAttempt(rootDir, attemptId, {
         ledgerPath,
         lock: session.lock,
-        problems: mutationError.problems || [mutationError.message],
-        onStep
+        problems: mutationError.problems || [mutationError.message]
       });
       bindings.rollbackResults = rollbackResult;
     }
@@ -287,7 +336,6 @@ async function executeApprovedTransaction(transactionId, options = {}) {
     // committed disposition with an operational warning.
     if (committed) {
       try {
-        if (typeof onStep === "function") onStep("after_committed", { attemptId, lock: session.lock });
         releaseExecutionLock(rootDir, session.lock);
       } catch (releaseError) {
         bindings.operationalWarnings.push(`Committed execution lock requires startup reconciliation: ${releaseError.message}`);
