@@ -1,0 +1,43 @@
+name: Phase 4 Branch Bootstrap
+
+on:
+  push:
+    branches:
+      - execution-engine-v2-phase-4-corrected-review
+    paths:
+      - ".github/workflows/phase4-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out review branch
+        uses: actions/checkout@v4
+        with:
+          ref: execution-engine-v2-phase-4-corrected-review
+          fetch-depth: 0
+
+      - name: Reconstruct and verify corrected overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .phase4-bootstrap/chunk-* > /tmp/github-overlay.b64
+          echo "d0bb7b0cb1a28b7f565aa4ac10ce3cf82d6ed4b7dbbab332b56e2fda20166eaa  /tmp/github-overlay.b64" | sha256sum -c -
+          base64 -d /tmp/github-overlay.b64 > /tmp/github-overlay.tar.gz
+          echo "81fbb8c12f6772b753d4d7cbb22d9c4d580051b759c08ca506add07eec80c1ef  /tmp/github-overlay.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/github-overlay.tar.gz -C .
+          rm -rf .phase4-bootstrap
+          rm -f .github/workflows/phase4-bootstrap.yml
+
+      - name: Commit corrected Phase 4 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Execution Engine v2 Phase 4: corrected runtime isolation candidate"
+          git push origin HEAD:execution-engine-v2-phase-4-corrected-review
