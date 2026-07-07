@@ -68,7 +68,7 @@ Each attempt must bind:
 
 Execution events are projections of authoritative execution-ledger entries. They are not a competing source of truth.
 
-There must be one canonical event writer. Event allocation, schema validation, hash chaining, and append serialization must occur through that writer.
+There is no separate authoritative execution-event writer. Event identity, schema validation, and ordering are derived deterministically from the verified execution ledger. A projected event stream may be materialized for consumers, but it must remain reproducible from the ledger and must never allocate independent IDs or become a second execution truth source.
 
 ### 3.4 Runtime
 
@@ -458,7 +458,7 @@ Execution Engine v2 remains inactive until all of the following are true:
 - durable recovery and startup reconciliation are implemented,
 - required validators inspect live post-write state,
 - affected-object coverage is enforced,
-- execution and event ledgers are hash chained,
+- the execution ledger is hash chained and execution events are deterministic schema-validated projections of that ledger,
 - the adversarial suite passes in CI,
 - injected crash recovery is demonstrated,
 - issue #9 is closed by architectural review.
@@ -500,3 +500,26 @@ The runtime also records a complete manifest of governed and security-critical p
 Preventive chroot, namespace, and seccomp isolation is the primary control. Governed-tree restoration is defense in depth, not an equivalent substitute. If drift is detected and exactly restored, the run still terminates as an isolation violation. If exact restoration cannot be proven, the runtime durably records a hash-bound isolation recovery barrier, returns `recovery_required`, and both later runtime runs and direct orchestrator execution fail closed until explicit recovery clears that barrier.
 
 Supported deployment environments must provide Linux namespace and seccomp facilities, permit the required `unshare`, bind-mount, and chroot setup, and provide a supported static compiler (`gcc` or `cc`) for x86_64 or aarch64. Containers or hosts that disable these capabilities are unsupported for active agents and must receive a fail-closed isolation-unavailable result. Remote CI and production deployment must independently demonstrate the complete capability probe; local success does not activate the engine.
+
+
+## 17. Phase 4.1 review-correction contracts
+
+### 17.1 Approval decisions
+
+Production runtime accepts only an institution-controlled approval decision ID. The loaded immutable record must bind the exact transaction ID, write-set hash, actor, action, approver, approver authority, decision timestamp, and canonical record hash. Approval callbacks and caller-provided approval JSON are prohibited. The orchestrator must re-verify the decision record and current authority before mutation.
+
+### 17.2 Production callback prohibition
+
+No production runtime, orchestrator, recovery, rollback, or post-commit API may execute a caller-supplied function. Fault injection belongs exclusively in test-only adapters that production entry points cannot import or invoke.
+
+### 17.3 Agent executable provenance
+
+The caller selects a registered agent ID, not an executable. The authoritative registry resolves the executable and arguments. Transaction and durable execution provenance bind the registered agent ID, executable real path and content digest, arguments digest, registry-entry hash, runtime version, isolation-adapter version, sandbox-helper source hash, and sandbox-helper binary hash. Registry or executable drift fails closed.
+
+### 17.4 Sandbox-helper trust
+
+The sandbox helper cache must be institution-private, owned by the runtime user, and non-writable by group or others. Helper installation must be exclusive and race resistant. Symlinks, non-regular files, changed ownership, changed mode, and changed bytes are rejected. Full source and binary digests are verified and bound into provenance.
+
+### 17.5 Recovery-barrier clearance
+
+Runtime-isolation barrier clearance is a governed recovery operation, not a file deletion. It requires an immutable authorized decision bound to the original barrier hash, exact restoration-manifest verification, and a durable append-only clearance record before the barrier is removed or superseded. Failure to prove restoration leaves the barrier in force.

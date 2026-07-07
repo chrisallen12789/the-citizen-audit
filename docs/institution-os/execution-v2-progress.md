@@ -51,75 +51,42 @@ All governed mutation in Phase 3 flows through the Phase 2 exclusive lock,
 pre-state snapshots, mutation journal, rollback, and execution ledger. Phase 3
 adds no direct governed-path writes.
 
-### Phase 4 — transactional runtime integration (corrected implementation candidate)
+### Phase 4.1 — independent review correction candidate
 
-Phase 4 is an **implementation candidate**, not an activation. The corrected
-runtime uses prevention-first isolation rather than caller-selected, after-the-
-fact sentinel detection.
+Phase 4's existing green suite did not lift the HOLD. Independent review reproduced eight blocking failures outside that suite. Phase 4.1 corrects those findings while preserving all Phase 1–3 invariants and the three reviewed Phase 3 hardening corrections.
 
-- production accepts external-process agents only; in-process function adapters
-  are rejected before invocation,
-- every run receives a disposable writable workspace outside the live repository,
-- a capability probe verifies Linux user, mount, PID, network, IPC, and UTS
-  namespaces, chroot setup, static sandbox-launcher compilation, and seccomp
-  enforcement before the agent starts,
-- the live institution root is not mounted or exposed inside the agent sandbox;
-  only read-only system directories and a disposable writable workspace are
-  present,
-- the sandbox launcher locks root privilege semantics, clears capabilities,
-  sets no-new-privileges, and blocks mount, namespace-entry, root-escape,
-  ptrace, and related syscalls before executing the agent,
-- absolute paths, traversal attempts, shell redirection, nested namespace
-  attempts, remount attempts, and spawned subprocesses cannot reach or modify
-  the live institution,
-- unsupported operating systems, architectures, containers, kernels, or hosts
-  without a supported static C compiler fail closed before agent execution;
-  there is no unrestricted fallback or operator override,
-- an always-on governed-tree manifest records bytes, existence, file type, mode,
-  directories, and symlink targets for governed and security-critical paths,
-- any unauthorized drift is exactly restored and verified as defense in depth;
-  restored drift still yields `isolation_violation`, while unprovable restoration
-  yields `recovery_required` and persists a hash-bound runtime-isolation barrier
-  that blocks both later runtime runs and direct orchestrator execution,
-- proposed output is captured from the isolated workspace, converted into an
-  immutable transaction, explicitly approved, and applied only through
-  `executeApprovedTransaction`,
-- the legacy runtime contains no active-agent spawn path and no bypass flag,
-- execution events remain deterministic projections of the verified execution
-  ledger,
-- the repository-wide bypass audit now checks source behavior as well as declared
-  classifications and fails on uncontrolled process execution, function-agent
-  adapters, sentinel-based protection, isolation-disable surfaces, false
-  classifications, missing chroot/seccomp controls, live-root exposure, and
-  unsafe fallback behavior,
-- Institutional QA still rejects new unmodeled public HTML while explicitly
-  classifying the existing legacy static documents.
+The corrected candidate now includes:
 
-Phase 4 does not weaken Phases 1–3 or the reviewed Phase 3 hardening. The public
-platform work under `platform/**` remains outside this implementation.
+- immutable institution-controlled approval decisions bound to exact transaction intent,
+- no caller-supplied functions in production runtime, orchestrator, recovery, rollback, or post-commit paths,
+- a test-only fault adapter outside production entry points,
+- an Acorn-based AST/import/transitive capability inventory that fails on unknown or unowned mutation capability,
+- a private digest-verified sandbox-helper cache with race-resistant installation,
+- one ledger-derived, schema-validated execution-event projection and no competing event writer,
+- authoritative agent-registry resolution with executable and runtime provenance bound into transaction and execution records,
+- action-specific semantic validators for every active governed action,
+- authorized, manifest-verified, append-only recovery-barrier clearance.
+
+The detailed one-to-one correction map is recorded in `docs/institution-os/execution-v2-phase-4.1-corrections.md`.
 
 ## Verification evidence
 
-Local verification of the corrected candidate completed successfully:
+Local verification observed on July 7, 2026:
 
-- Execution Engine tests: 127/127 passed,
-- archive tests: 36/36 passed,
-- Institutional QA: passed,
-- behavioral bypass audit: 50/50 mutation-capable files classified, 0 unexplained, 0 unacceptable,
-- JavaScript syntax checks: passed,
-- static seccomp launcher compilation with warnings treated as errors: passed.
+- JavaScript syntax validation: passed,
+- static sandbox C compilation with warnings treated as errors: passed,
+- complete Execution Engine suite: 156/156 passed,
+- archive suite: 36/36 passed,
+- AST/transitive capability audit: 83/83 capable modules owned, 0 unexplained, 0 violations,
+- tamper suite: 5/5 passed,
+- fault/recovery suite: 31/31 passed,
+- Institutional QA: passed for 159 HTML files.
 
-Remote GitHub Actions verification on the corrected review branch also completed successfully:
-
-- Institutional QA: passed,
-- Execution Engine Tests: passed,
-- Execution Engine Phase 4: passed.
-
-Green tests establish a reviewable implementation candidate. They do not authorize activation.
+Remote verification is pending the final pushed correction head. Green local or remote checks do not authorize activation.
 
 ## Still incomplete
 
-Execution Engine v2 remains inactive. Phase 4 is an implementation candidate, not
+Execution Engine v2 remains inactive. Phase 4.1 is a correction candidate, not
 an activation. The following are still required before the engine could be
 considered for activation:
 
