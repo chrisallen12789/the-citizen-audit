@@ -26,16 +26,17 @@ jobs:
     if: github.event_name == 'push' || github.head_ref == 'tooling/phase-4.1-source-snapshot'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out transfer branch
-        uses: actions/checkout@v4
-        with:
-          ref: tooling/phase-4.1-source-snapshot
-          fetch-depth: 0
-
-      - name: Reconstruct and verify correction archive
+      - name: Verify archive and transfer correction commits
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD: abfc0550be9e448dc7973bff286622c58a07fadc
+          TARGET_BRANCH: execution-engine-v2-phase-4-corrected-review
         run: |
           set -euo pipefail
+          git clone --quiet --depth=1 --branch tooling/phase-4.1-source-snapshot \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" transfer
+          cd transfer
           sha256sum --check --strict <<'CHUNKS'
           b1b29586b392dfcad533f2765988174d0d7466ccf6f32f0266c39cbef858b664  .phase41-transfer/part-00
           3199a5f64e684b71d967783911506bfec6ab45c6e5dcc6736849ae14fe5f40c5  .phase41-transfer/part-01
@@ -61,24 +62,16 @@ jobs:
           echo "4aadf8eddf8f9a4714e6bdda8173de664bc73c761bb0f5cce74c4b63a11ae26e  /tmp/phase41-patches/0001-Phase-4.1-bind-approvals-runtime-identity-and-recove.patch" | sha256sum --check --strict
           echo "5592162d31841b4b91a0150e90f863daa22557e2cff1a8f5a99f883d675dd710  /tmp/phase41-patches/0002-Phase-4.1-enforce-AST-transitive-capability-ownershi.patch" | sha256sum --check --strict
           echo "6dd48781e3b9af595ee9ef6697bc699fae3d7ca433e7db74a993a22f34e24bb7  /tmp/phase41-patches/0003-Document-Phase-4.1-corrections-and-verification-gate.patch" | sha256sum --check --strict
-
-      - name: Verify unchanged PR head and apply commits
-        shell: bash
-        env:
-          EXPECTED_HEAD: abfc0550be9e448dc7973bff286622c58a07fadc
-          TARGET_BRANCH: execution-engine-v2-phase-4-corrected-review
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin "$TARGET_BRANCH"
+          git fetch --quiet --no-tags origin "$TARGET_BRANCH"
           current="$(git rev-parse "origin/$TARGET_BRANCH")"
           if [[ "$current" != "$EXPECTED_HEAD" ]]; then
             echo "Target branch changed unexpectedly: expected $EXPECTED_HEAD, found $current" >&2
             exit 1
           fi
-          git checkout --detach "$EXPECTED_HEAD"
+          git checkout --quiet --detach "$EXPECTED_HEAD"
           git config user.name "The Citizen Audit Phase 4.1"
           git config user.email "phase41@users.noreply.github.com"
-          git am \
+          git am --quiet \
             /tmp/phase41-patches/0001-Phase-4.1-bind-approvals-runtime-identity-and-recove.patch \
             /tmp/phase41-patches/0002-Phase-4.1-enforce-AST-transitive-capability-ownershi.patch \
             /tmp/phase41-patches/0003-Document-Phase-4.1-corrections-and-verification-gate.patch
@@ -87,6 +80,6 @@ jobs:
             exit 1
           fi
           git merge-base --is-ancestor "$EXPECTED_HEAD" HEAD
-          git push origin "HEAD:refs/heads/$TARGET_BRANCH" \
+          git push --quiet origin "HEAD:refs/heads/$TARGET_BRANCH" \
             --force-with-lease="refs/heads/$TARGET_BRANCH:$EXPECTED_HEAD"
           echo "Transferred Phase 4.1 head: $(git rev-parse HEAD)"
