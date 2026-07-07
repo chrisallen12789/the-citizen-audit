@@ -1,40 +1,66 @@
-name: Phase 4.1 Source Snapshot
+name: Phase 4.1 Verified Correction Transfer
 
 on:
   push:
     branches:
       - tooling/phase-4.1-source-snapshot
-  pull_request:
-    branches:
-      - main
+    paths:
+      - ".phase41-transfer/**"
+      - ".github/workflows/phase41-source-snapshot.yml"
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: phase41-correction-transfer
+  cancel-in-progress: false
 
 jobs:
-  snapshot:
+  apply:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out exact branch head
+      - name: Check out transfer branch
         uses: actions/checkout@v4
-      - name: Archive repository source
-        run: git archive --format=zip --output=phase41-source.zip HEAD
-      - name: Upload source snapshot
-        uses: actions/upload-artifact@v4
         with:
-          name: phase41-source
-          path: phase41-source.zip
-          if-no-files-found: error
-          retention-days: 1
-      - name: Generate pinned Acorn dependency update
+          fetch-depth: 0
+
+      - name: Reconstruct and verify correction archive
+        shell: bash
         run: |
-          npm install --package-lock-only --save-dev --save-exact acorn@8.15.0
-          npm pack acorn@8.15.0
-          zip -q phase41-acorn.zip package.json package-lock.json acorn-8.15.0.tgz
-      - name: Upload pinned parser package
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase41-acorn
-          path: phase41-acorn.zip
-          if-no-files-found: error
-          retention-days: 1
+          set -euo pipefail
+          cat .phase41-transfer/part-* | base64 --decode > /tmp/phase41-patches.tar.gz
+          echo "4546b4ecaa64dd7b0734972b959af7217911e0c609e0c4e6e2e62874b9bde977  /tmp/phase41-patches.tar.gz" | sha256sum --check --strict
+          rm -rf /tmp/phase41-patches
+          tar -xzf /tmp/phase41-patches.tar.gz -C /tmp
+          echo "4aadf8eddf8f9a4714e6bdda8173de664bc73c761bb0f5cce74c4b63a11ae26e  /tmp/phase41-patches/0001-Phase-4.1-bind-approvals-runtime-identity-and-recove.patch" | sha256sum --check --strict
+          echo "5592162d31841b4b91a0150e90f863daa22557e2cff1a8f5a99f883d675dd710  /tmp/phase41-patches/0002-Phase-4.1-enforce-AST-transitive-capability-ownershi.patch" | sha256sum --check --strict
+          echo "6dd48781e3b9af595ee9ef6697bc699fae3d7ca433e7db74a993a22f34e24bb7  /tmp/phase41-patches/0003-Document-Phase-4.1-corrections-and-verification-gate.patch" | sha256sum --check --strict
+
+      - name: Verify unchanged PR head and apply commits
+        shell: bash
+        env:
+          EXPECTED_HEAD: abfc0550be9e448dc7973bff286622c58a07fadc
+          TARGET_BRANCH: execution-engine-v2-phase-4-corrected-review
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$TARGET_BRANCH"
+          current="$(git rev-parse "origin/$TARGET_BRANCH")"
+          if [[ "$current" != "$EXPECTED_HEAD" ]]; then
+            echo "Target branch changed unexpectedly: expected $EXPECTED_HEAD, found $current" >&2
+            exit 1
+          fi
+          git checkout --detach "$EXPECTED_HEAD"
+          git config user.name "The Citizen Audit Phase 4.1"
+          git config user.email "phase41@users.noreply.github.com"
+          git am \
+            /tmp/phase41-patches/0001-Phase-4.1-bind-approvals-runtime-identity-and-recove.patch \
+            /tmp/phase41-patches/0002-Phase-4.1-enforce-AST-transitive-capability-ownershi.patch \
+            /tmp/phase41-patches/0003-Document-Phase-4.1-corrections-and-verification-gate.patch
+          if git diff --name-only "$EXPECTED_HEAD"..HEAD | grep -E '^(platform/|schemas/platform-)'; then
+            echo "Prohibited public-platform path detected." >&2
+            exit 1
+          fi
+          git merge-base --is-ancestor "$EXPECTED_HEAD" HEAD
+          git push origin "HEAD:refs/heads/$TARGET_BRANCH" \
+            --force-with-lease="refs/heads/$TARGET_BRANCH:$EXPECTED_HEAD"
+          echo "Transferred Phase 4.1 head: $(git rev-parse HEAD)"
