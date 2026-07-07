@@ -9,6 +9,9 @@ on:
       - main
     paths:
       - "kernel/runtime/**"
+      - "kernel/approvals/**"
+      - "kernel/authority/approval-authorities.json"
+      - "agents/registry.json"
       - "kernel/events/**"
       - "kernel/execution/**"
       - "scripts/bypass-audit.js"
@@ -16,15 +19,21 @@ on:
       - "scripts/project-execution-events.js"
       - "tests/runtime-integration.test.js"
       - "tests/runtime-isolation.test.js"
+      - "tests/runtime-isolation-recovery.test.js"
+      - "tests/support/**"
       - "tests/event-projection.test.js"
       - "tests/bypass-audit.test.js"
       - "package.json"
+      - "package-lock.json"
       - ".github/workflows/execution-engine-phase4.yml"
   pull_request:
     branches:
       - main
     paths:
       - "kernel/runtime/**"
+      - "kernel/approvals/**"
+      - "kernel/authority/approval-authorities.json"
+      - "agents/registry.json"
       - "kernel/events/**"
       - "kernel/execution/**"
       - "scripts/bypass-audit.js"
@@ -32,9 +41,12 @@ on:
       - "scripts/project-execution-events.js"
       - "tests/runtime-integration.test.js"
       - "tests/runtime-isolation.test.js"
+      - "tests/runtime-isolation-recovery.test.js"
+      - "tests/support/**"
       - "tests/event-projection.test.js"
       - "tests/bypass-audit.test.js"
       - "package.json"
+      - "package-lock.json"
       - ".github/workflows/execution-engine-phase4.yml"
 
 jobs:
@@ -69,7 +81,7 @@ jobs:
       - name: Verify runtime and events module syntax
         shell: bash
         run: |
-          find kernel/runtime kernel/events -type f -name '*.js' -print0 \
+          find kernel/runtime kernel/events kernel/approvals kernel/execution -type f -name '*.js' -print0 \
             | sort -z \
             | xargs -0 -n1 node --check
 
