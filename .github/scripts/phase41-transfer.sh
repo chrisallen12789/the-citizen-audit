@@ -4,6 +4,21 @@ set -euo pipefail
 EXPECTED_HEAD="abfc0550be9e448dc7973bff286622c58a07fadc"
 TARGET_BRANCH="execution-engine-v2-phase-4-corrected-review"
 
+# The contents-API transfer inserted one verified byte in part-13. Refuse any
+# other input, remove only that exact byte sequence, and then verify the intended
+# chunk hash before reconstructing the archive.
+echo "888ded233b8a43328c998fd12b036638c7156f8203ff85ff39f0cabb0987ce35  .phase41-transfer/part-13" | sha256sum --check --strict
+python3 - <<'PY'
+from pathlib import Path
+path = Path('.phase41-transfer/part-13')
+data = path.read_text(encoding='ascii')
+bad = 'RJOqCazadaqUw'
+good = 'RJOqCzadaqUw'
+if data.count(bad) != 1 or good in data:
+    raise SystemExit('part-13 does not contain the one authorized transfer corruption')
+path.write_text(data.replace(bad, good), encoding='ascii')
+PY
+
 sha256sum --check --strict <<'CHUNKS'
 b1b29586b392dfcad533f2765988174d0d7466ccf6f32f0266c39cbef858b664  .phase41-transfer/part-00
 3199a5f64e684b71d967783911506bfec6ab45c6e5dcc6736849ae14fe5f40c5  .phase41-transfer/part-01
