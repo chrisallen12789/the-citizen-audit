@@ -1,0 +1,25 @@
+name: Phase 4.1 Source Snapshot
+
+on:
+  push:
+    branches:
+      - tooling/phase-4.1-source-snapshot
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact branch head
+        uses: actions/checkout@v4
+      - name: Archive repository source
+        run: git archive --format=zip --output=phase41-source.zip HEAD
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase41-source
+          path: phase41-source.zip
+          if-no-files-found: error
+          retention-days: 1
