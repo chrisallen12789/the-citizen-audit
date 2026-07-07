@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-07T21:04:54.214Z",
+  "generatedAt": "2026-07-07T22:57:18.036Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -1506,29 +1506,49 @@
           "line": 12
         },
         {
+          "module": "kernel/execution/exclusive-boundary.js",
+          "exportName": "defaultExecutionStateRoot",
+          "line": 16
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "readVerifiedLog",
+          "line": 26
+        },
+        {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 31
+          "line": 56
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 31
+          "line": 56
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 62
+          "line": 99
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 62
+          "line": 99
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "readVerifiedLog",
+          "line": 104
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "appendEntry",
+          "line": 108
         },
         {
           "module": "kernel/execution/durable-io.js",
           "exportName": "writeCanonicalJsonAtomic",
-          "line": 64
+          "line": 116
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -3724,42 +3744,52 @@
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 143
+          "line": 141
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 156
+          "line": 149
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 167
+          "line": 159
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 174
+          "line": 172
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 185
+          "line": 183
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 193
+          "line": 190
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 207
+          "line": 201
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 217
+          "line": 209
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 223
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 233
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -5034,12 +5064,32 @@
         {
           "module": "kernel/execution/runtime-isolation-barrier.js",
           "exportName": "readRuntimeIsolationBarrier",
-          "line": 161
+          "line": 165
         },
         {
           "module": "kernel/execution/runtime-isolation-barrier.js",
           "exportName": "runtimeIsolationBarrierPath",
-          "line": 166
+          "line": 170
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 181
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "runtimeIsolationBarrierPath",
+          "line": 182
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "assertNoRuntimeIsolationBarrier",
+          "line": 179
+        },
+        {
+          "module": "kernel/execution/runtime-isolation-barrier.js",
+          "exportName": "assertNoRuntimeIsolationBarrier",
+          "line": 183
         }
       ],
       "sourceBehaviorChecks": "passed",

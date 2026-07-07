@@ -97,7 +97,9 @@ function analyzeJs(rootDir,file,source) {
       if(req) bindPattern(node.id,req);
       else if(node.id.type==="Identifier"&&node.init.type==="Identifier") aliases.set(node.id.name,node.init.name);
       else if(node.id.type==="Identifier"&&node.init.type==="MemberExpression") {
-        const prop=staticProperty(node.init); if(prop&&node.init.object.type==="Identifier") importedFns.set(node.id.name,{module:namespaces.get(node.init.object.name)||node.init.object.name,name:prop});
+        const prop=staticProperty(node.init);
+        if(prop&&node.init.object.type==="Identifier") importedFns.set(node.id.name,{module:namespaces.get(node.init.object.name)||node.init.object.name,name:prop});
+        else if(prop){ const inlineReq=requireTarget(node.init.object); if(inlineReq) importedFns.set(node.id.name,{module:inlineReq,name:prop}); }
       }
     }
     if(["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(node.type)) {

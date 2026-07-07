@@ -118,6 +118,22 @@ test("aliased filesystem namespace call is detected", () => {
   cleanup(fx);
 });
 
+test("inline require().member mutator alias is detected", () => {
+  const fx = fixture();
+  write(fx.root, "scripts/inline-alias.js", `const put=require('fs').writeFileSync;function go(){put('x','y');}module.exports={go};`);
+  updateConfig(fx, { path: "scripts/inline-alias.js", category: 3, justification: "fixture", capabilities: [] });
+  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /filesystemMutation/);
+  cleanup(fx);
+});
+
+test("inline require().member executor alias is detected", () => {
+  const fx = fixture();
+  write(fx.root, "scripts/inline-exec.js", `const spawn=require('child_process').spawnSync;function go(){spawn('sh',['-c','echo']);}module.exports={go};`);
+  updateConfig(fx, { path: "scripts/inline-exec.js", category: 3, justification: "fixture", capabilities: [] });
+  assert.match(violations(run({ rootDir: fx.root, now: "fixed" })), /processExecution/);
+  cleanup(fx);
+});
+
 test("destructured renamed filesystem call is detected", () => {
   const fx = fixture();
   write(fx.root, "scripts/destructured.js", `const {writeFileSync:put}=require('node:fs');put('x','x');`);

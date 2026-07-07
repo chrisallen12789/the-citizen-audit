@@ -154,16 +154,34 @@ test("authorized verified clearance writes append-only evidence before unlink", 
     durableIo.unlinkDurable = originalUnlink;
   }
   const ledger = recovery.readClearanceLedger(fx.root);
-  assert.equal(ledger.entries.length, 1);
-  assert.equal(ledger.entries[0].originalBarrierHash, barrier.barrierHash);
-  assert.equal(ledger.entries[0].clearanceDecisionId, decision.decisionId);
-  assert.equal(ledger.entries[0].verification.verified, true);
+  const clearedEntries = ledger.entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.cleared");
+  const raisedEntries = ledger.entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.raised");
+  assert.equal(raisedEntries.length, 1, "barrier raise is durably recorded for reconciliation");
+  assert.equal(raisedEntries[0].barrierHash, barrier.barrierHash);
+  assert.equal(clearedEntries.length, 1);
+  assert.equal(clearedEntries[0].originalBarrierHash, barrier.barrierHash);
+  assert.equal(clearedEntries[0].clearanceDecisionId, decision.decisionId);
+  assert.equal(clearedEntries[0].verification.verified, true);
   assert.ok(readRuntimeIsolationBarrier(fx.root), "barrier remains when durable unlink fails");
 
   const finalRecovery = loadRecoveryModuleFresh();
   const result = finalRecovery.clearRuntimeIsolationBarrierAuthorized(fx.root, decision.decisionId, { clearedAt: "2026-07-07T13:01:00.000Z" });
   assert.equal(result.cleared, true);
   assert.equal(fs.existsSync(runtimeIsolationBarrierPath(fx.root)), false);
-  assert.equal(finalRecovery.readClearanceLedger(fx.root).entries.length, 1, "retry does not duplicate clearance evidence");
+  assert.equal(finalRecovery.readClearanceLedger(fx.root).entries.filter((entry) => entry.recordType === "runtime.isolation.barrier.cleared").length, 1, "retry does not duplicate clearance evidence");
+  cleanup(fx);
+});
+
+test("direct-delete of the barrier file without authorized clearance keeps execution blocked", () => {
+  const fx = fixture();
+  const barrier = createBarrier(fx);
+  const { assertNoRuntimeIsolationBarrier, runtimeIsolationBarrierPath: barrierPathFn } = require("../kernel/execution/runtime-isolation-barrier");
+  assert.throws(() => assertNoRuntimeIsolationBarrier(fx.root), /EXECUTION_RECOVERY_REQUIRED|blocked/i);
+  // administrative shortcut: remove the barrier file directly, no clearance record
+  fs.rmSync(barrierPathFn(fx.root), { force: true });
+  assert.equal(fs.existsSync(barrierPathFn(fx.root)), false);
+  assert.throws(() => assertNoRuntimeIsolationBarrier(fx.root), /removed without an authorized clearance|EXECUTION_RECOVERY_REQUIRED/i,
+    "reconciliation must detect an unauthorized direct-delete and stay failed closed");
+  void barrier;
   cleanup(fx);
 });

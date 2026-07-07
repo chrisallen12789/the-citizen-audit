@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { canonicalStringify } = require("../lib/canonical-json");
-const { sha256 } = require("../lib/append-only-log");
+const { appendEntry, readVerifiedLog, sha256 } = require("../lib/append-only-log");
 const { writeCanonicalJsonAtomic } = require("./durable-io");
 const { defaultExecutionStateRoot } = require("./exclusive-boundary");
 
@@ -10,6 +10,31 @@ const BARRIER_VERSION = "1.0.0";
 function runtimeIsolationBarrierPath(rootDir) {
   if (!rootDir) throw new Error("Runtime isolation barrier requires the institution root directory.");
   return path.join(defaultExecutionStateRoot(rootDir), "runtime-isolation-barrier.json");
+}
+
+function barrierClearanceLedgerPath(rootDir) {
+  return path.join(defaultExecutionStateRoot(rootDir), "runtime-isolation-clearance-ledger.jsonl");
+}
+
+// Reconcile the append-only clearance ledger: every barrier that was durably
+// RAISED must have a matching authorized CLEARED record. A barrier hash that was
+// raised but never cleared is "open" — if the barrier file has been removed
+// without an authorized clearance (a direct-delete / administrative shortcut),
+// this open state is what detects it and keeps execution failed closed.
+function openBarrierHashes(rootDir) {
+  let entries;
+  try { entries = readVerifiedLog(barrierClearanceLedgerPath(rootDir), "runtime isolation clearance ledger").entries; }
+  catch (error) {
+    if (error && error.code === "ENOENT") return [];
+    throw error;
+  }
+  const raised = new Set();
+  const cleared = new Set();
+  for (const entry of entries) {
+    if (entry.recordType === "runtime.isolation.barrier.raised" && entry.barrierHash) raised.add(entry.barrierHash);
+    else if (entry.recordType === "runtime.isolation.barrier.cleared" && entry.originalBarrierHash) cleared.add(entry.originalBarrierHash);
+  }
+  return [...raised].filter((hash) => !cleared.has(hash));
 }
 
 function readRuntimeIsolationBarrier(rootDir) {
@@ -38,11 +63,23 @@ function readRuntimeIsolationBarrier(rootDir) {
 
 function assertNoRuntimeIsolationBarrier(rootDir) {
   const record = readRuntimeIsolationBarrier(rootDir);
-  if (!record) return true;
-  const error = new Error(`Execution is blocked by runtime isolation recovery barrier from ${record.runId}.`);
-  error.code = "EXECUTION_RECOVERY_REQUIRED";
-  error.runtimeIsolationBarrier = record;
-  throw error;
+  if (record) {
+    const error = new Error(`Execution is blocked by runtime isolation recovery barrier from ${record.runId}.`);
+    error.code = "EXECUTION_RECOVERY_REQUIRED";
+    error.runtimeIsolationBarrier = record;
+    throw error;
+  }
+  // The barrier file is absent. Reconcile against the append-only clearance
+  // ledger: if a barrier was raised but never cleared through the authorized
+  // protocol, the file was removed by an unauthorized direct delete. Fail closed.
+  const open = openBarrierHashes(rootDir);
+  if (open.length) {
+    const error = new Error(`Runtime isolation barrier ${open[0]} was removed without an authorized clearance record; execution remains blocked.`);
+    error.code = "EXECUTION_RECOVERY_REQUIRED";
+    error.openBarrierHashes = open;
+    throw error;
+  }
+  return true;
 }
 
 function recordRuntimeIsolationBarrier(rootDir, details = {}) {
@@ -60,6 +97,21 @@ function recordRuntimeIsolationBarrier(rootDir, details = {}) {
     problems: Array.isArray(details.problems) ? details.problems : []
   };
   const record = { ...body, barrierHash: sha256(canonicalStringify(body)) };
+  // Append a durable, append-only "raised" record BEFORE writing the barrier
+  // file, so that a later unauthorized direct-delete of the file is detectable by
+  // reconciliation (raised-without-cleared). Idempotent for the same barrier hash.
+  let priorRaised = [];
+  try { priorRaised = readVerifiedLog(barrierClearanceLedgerPath(rootDir), "runtime isolation clearance ledger").entries; }
+  catch (error) { if (!error || error.code !== "ENOENT") throw error; }
+  const alreadyRaised = priorRaised.some((entry) => entry.recordType === "runtime.isolation.barrier.raised" && entry.barrierHash === record.barrierHash);
+  if (!alreadyRaised) {
+    appendEntry(barrierClearanceLedgerPath(rootDir), {
+      recordType: "runtime.isolation.barrier.raised",
+      barrierHash: record.barrierHash,
+      runId: record.runId,
+      expectedManifestHash: record.expectedManifestHash
+    }, { label: "runtime isolation clearance ledger", recordedAt: body.detectedAt });
+  }
   const barrierPath = runtimeIsolationBarrierPath(rootDir);
   writeCanonicalJsonAtomic(barrierPath, record, { mode: 0o600 });
   return Object.freeze({ ...record, barrierPath });
