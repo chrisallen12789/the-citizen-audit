@@ -32,15 +32,14 @@ jobs:
           base64 -d /tmp/github-overlay.b64 > /tmp/github-overlay.tar.gz
           echo "81fbb8c12f6772b753d4d7cbb22d9c4d580051b759c08ca506add07eec80c1ef  /tmp/github-overlay.tar.gz" | sha256sum -c -
           tar -xzf /tmp/github-overlay.tar.gz -C .
-          rm -rf .phase4-bootstrap
-          rm -f .github/workflows/phase4-bootstrap.yml
+          rm -f .github/workflows/execution-engine-phase4.yml
 
-      - name: Commit corrected Phase 4 candidate
+      - name: Commit corrected Phase 4 source candidate
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add -A -- ':!.phase4-bootstrap' ':!.github/workflows/phase4-bootstrap.yml'
           git commit -m "Execution Engine v2 Phase 4: corrected runtime isolation candidate"
           git push origin HEAD:execution-engine-v2-phase-4-corrected-review
