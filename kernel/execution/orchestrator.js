@@ -196,9 +196,11 @@ async function executeApprovedTransaction(transactionId, options = {}) {
     // 10. Load and hash the current validator registry.
     let loaded;
     let validatorSetHash;
+    let descriptors;
     try {
       const registry = loadValidatorRegistry({ validatorsDir });
       loaded = registry.loaded;
+      descriptors = registry.descriptors;
       validatorSetHash = registry.validatorSetHash;
     } catch (error) {
       throw new ExecutionRejected([`Validator registry is invalid: ${error.message}`]);
@@ -222,10 +224,10 @@ async function executeApprovedTransaction(transactionId, options = {}) {
     const requiredPolicy = { ...policy, requiredValidators: [...new Set(requiredIds)] };
     let required;
     try {
-      required = selectRequiredValidators(requiredPolicy, loaded);
+      required = selectRequiredValidators(requiredPolicy, descriptors);
       for (const semanticId of semanticIds || []) {
-        const validator = loaded.get(semanticId);
-        if (!validator || validator.semantic !== true || !Array.isArray(validator.actions) || !validator.actions.includes(transaction.action)) {
+        const descriptor = descriptors.get(semanticId);
+        if (!descriptor || descriptor.semantic !== true || !Array.isArray(descriptor.actions) || !descriptor.actions.includes(transaction.action)) {
           throw new Error(`Action semantic validator is unavailable or not bound to ${transaction.action}: ${semanticId}.`);
         }
       }

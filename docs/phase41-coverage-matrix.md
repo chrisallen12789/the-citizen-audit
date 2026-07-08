@@ -64,15 +64,15 @@ Attacks driven via `runValidationPhase` (result handling) and `loadValidatorRegi
 | 16 | throws exception | PASS | caught → failed (regression) |
 | 17 | process crash | PASS(model) | in-process throw → failed; true OS-process crash n/a (in-process trusted code) |
 | 18 | timing out (async) | PASS | `Promise.race` timeout → failed (regression) |
-| 19 | hanging indefinitely (sync) | **PARTIAL / RESIDUAL** | a synchronous busy/infinite loop is NOT preempted by the in-process timeout (reproduced: 1500ms work under 300ms timeout returned `passed`). Mitigation: validators are integrity-bound, hash-verified, governed, symlink-rejected code — a hanging validator cannot be introduced without defeating verified controls. Recommended hardening: run validators in a worker thread/child process with a hard `terminate()`, reconstructing context inside the worker (candidate-state carries closures, so it cannot be structure-cloned directly). **Not claimed fixed; HOLD retained.** |
+| 19 | hanging indefinitely (sync) | **CORRECTED** | validators now execute in a terminable `worker_threads` boundary with a hard `worker.terminate()` deadline; a synchronous infinite loop is forcibly killed and fails closed (regression: infinite-loop terminated, long-running-cannot-return-after-deadline) |
 | 20 | exits without result | PASS | undefined/void → malformed → failed |
-| 21 | oversized output | SUITE/PENDING | not independently sized-tested this session |
+| 21 | oversized output | **CORRECTED** | worker enforces bounded result bytes + array lengths; circular/oversized fail closed (regressions) |
 | 22-30 | validator mutates/spawns/network/reads approval or ledgers | PASS(model) | in-process trusted integrity-bound code; cannot be introduced without defeating registry hash/symlink/governance; not runtime-sandboxed by design |
 | 31-34 | result replay across tx/action/write-set/identity | PASS(by-construction) | results are computed by the orchestrator itself, never caller-supplied; bound into `validationResultHash` in the ledger |
 | 35 | one of several validators fails | PASS | phase status = every result passed |
 | 36 | concurrent executions | SUITE | serialized through the execution lock; concurrency covered by recovery/fault suites |
-| 37-38 | race with governed-file replacement / rollback | SUITE/PENDING | governed-tree guard + Phase-2 barriers; not independently raced this session |
-| 39 | claims all affected objects checked while omitting one | PARTIAL | plan build enforces write-set coverage of affected objects (`plan.js`), exact-materialization verifies live state; validator-result `checkedObjects` is recorded but not separately enforced ⊇ affectedObjects — documented |
+| 37-38 | race with governed-file replacement / rollback | PARTIAL/SUITE | post-write validators read live state in-worker; module-replacement race at execution now fails closed via re-hash; governed-file/rollback races covered by fault/recovery suites, not independently raced this session |
+| 39 | claims all affected objects checked while omitting one | **CORRECTED** | semantic-validator coverage now enforced: `checkedObjects ⊇ plan.affectedObjects` and `checkedPaths ⊇ governed write paths`, else fail closed (regressions: omit-object/empty/duplicate/omit-path) |
 | 40 | validates stale pre-write instead of live post-write | PASS | post-write phase runs against live post-write state + manifest |
 
 ## Sandbox-helper security — PENDING / ENV

@@ -69,3 +69,45 @@ non-object / null / array / invalid-status / missing-status / success-with-probl
 validator 19/19 · execution 201/201 · runtime-isolation 48/48 · runtime-integration
 28/28 · fault 31/31 · bypass self-test 29/29 · capability audit passed · JS syntax
 clean · QA 159 files.
+
+---
+
+## Update — preemptive execution boundary (finding 2 now CORRECTED)
+
+Architecture selected: **`worker_threads` per-validator boundary** with a hard
+`worker.terminate()` deadline (`kernel/execution/validation-cycle.js` +
+`kernel/execution/validator-worker.js`). Rationale: current validators do not use
+the context's function closures (candidate-state), so the context is fully
+serializable; the worker reconstructs it from `rootDir/phase/transaction/plan/
+writeSetHash/attemptId/manifest`, reads live post-write state from `rootDir`, and
+proves **exact-verified-bytes execution** by re-reading, re-hashing, and compiling
+the exact bytes (closing the verify→execute TOCTOU). Child-process was not needed;
+worker threads give hard termination with lower overhead.
+
+Guarantees now enforced and regression-tested:
+- synchronous infinite loop forcibly terminated; long-running validator cannot
+  return success after the deadline; asynchronous hang terminated;
+- fail closed on worker crash / startup failure / exit-without-result / malformed
+  worker message; late results ignored (settled guard); workers terminated (no
+  orphans);
+- exact hashed bytes executed — module replacement after hashing and symlink
+  substitution at execution both fail closed;
+- **semantic coverage enforced** — `checkedObjects ⊇ affectedObjects` and
+  `checkedPaths ⊇ governed write paths`, else fail closed; structural validators
+  are not forced to claim coverage;
+- **output/resource bounds** — bounded result bytes, array lengths, stdio;
+  circular/oversized results fail closed.
+
+Determinism, validator/action/version/hash bindings, and validator ordering are
+preserved; `moduleHash` (bound into `validatorSetHash`) is exactly the bytes
+executed. The capability audit was extended to model `worker_threads.Worker` as a
+process-execution capability so worker-based execution cannot become an unmodeled
+bypass; the two execution components are classified and owned.
+
+Residual: fully general validator dataflow sandboxing (network/mutation *inside* a
+validator) remains governed by integrity-binding, not runtime confinement — a
+malicious validator cannot be introduced without defeating the registry hash +
+symlink rejection + governance. Cross-phase validator-set drift and rollback races
+(WU4) are partially covered here (module-replacement race fails closed; live
+post-write reads) and otherwise by the fault/recovery suites; not exhaustively
+independently raced this session.

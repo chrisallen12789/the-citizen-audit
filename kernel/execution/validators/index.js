@@ -23,6 +23,7 @@ function loadValidatorRegistry(options = {}) {
   if (!Array.isArray(registry.validators)) throw new Error("Validator registry validators must be an array.");
 
   const loaded = new Map();
+  const descriptors = new Map();
   const canonicalEntries = [];
   for (const entry of registry.validators) {
     if (!entry || typeof entry.id !== "string" || typeof entry.module !== "string") throw new Error("Validator registry contains an invalid entry.");
@@ -60,27 +61,34 @@ function loadValidatorRegistry(options = {}) {
     }
 
     loaded.set(entry.id, validator);
+    descriptors.set(entry.id, Object.freeze({
+      id: entry.id, version: entry.version, modulePath, moduleHash,
+      semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(),
+      supportedPhases: [...entry.supportedPhases].sort()
+    }));
     canonicalEntries.push({ id: entry.id, version: entry.version, module: entry.module, moduleHash, semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(), supportedPhases: [...entry.supportedPhases].sort() });
   }
 
   canonicalEntries.sort((a, b) => a.id.localeCompare(b.id));
   const validatorSetHash = sha256(canonicalStringify({ version: registry.version || null, validators: canonicalEntries }));
-  return { loaded, validatorSetHash, entries: canonicalEntries };
+  return { loaded, descriptors, validatorSetHash, entries: canonicalEntries };
 }
 
-// Resolve the policy-required validators, failing closed if any is unavailable.
-function selectRequiredValidators(policy, loaded) {
+// Resolve the policy-required validator DESCRIPTORS, failing closed if any is
+// unavailable. Descriptors carry the modulePath + moduleHash so the execution
+// boundary can prove the exact hashed bytes are executed.
+function selectRequiredValidators(policy, descriptors) {
   if (!Array.isArray(policy.requiredValidators) || policy.requiredValidators.length === 0) throw new Error("Execution policy must declare requiredValidators.");
   return policy.requiredValidators.map((id) => {
-    const validator = loaded.get(id);
-    if (!validator) throw new Error(`Execution policy references an unavailable mandatory validator: ${id}.`);
-    return validator;
+    const descriptor = descriptors.get(id);
+    if (!descriptor) throw new Error(`Execution policy references an unavailable mandatory validator: ${id}.`);
+    return descriptor;
   });
 }
 
-// Validators (from the required set) that support a given phase.
+// Descriptors (from the required set) that support a given phase.
 function validatorsForPhase(required, phase) {
-  return required.filter((validator) => validator.supportedPhases.includes(phase));
+  return required.filter((descriptor) => descriptor.supportedPhases.includes(phase));
 }
 
 module.exports = { loadValidatorRegistry, selectRequiredValidators, validatorsForPhase };

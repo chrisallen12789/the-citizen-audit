@@ -144,7 +144,9 @@
       "justification": "Sole authoritative governed mutation orchestrator; all durable mutation is delegated to reviewed Phase 2 primitives.",
       "capabilities": [
         "durableStateMutation",
+        "eventWriting",
         "filesystemMutation",
+        "processExecution",
         "transactionRecording"
       ]
     },
@@ -237,7 +239,9 @@
       "justification": "CLI wrapper for the authoritative orchestrator.",
       "capabilities": [
         "durableStateMutation",
+        "eventWriting",
         "filesystemMutation",
+        "processExecution",
         "transactionRecording"
       ]
     },
@@ -290,10 +294,13 @@
     {
       "path": "kernel/execution/validation-cycle.js",
       "category": 5,
-      "justification": "Validation dispatcher; validator loading is controlled by the hashed registry.",
+      "justification": "Approved validator execution boundary: constructs a terminable worker_threads.Worker per validator with a hard timeout and reconstructs a serializable context. No governed mutation; the sole worker-execution site for validators.",
       "capabilities": [
         "durableStateMutation",
-        "filesystemMutation"
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
       ]
     },
     {
@@ -756,7 +763,9 @@
       "justification": "Test-only mutation in temporary directories.",
       "capabilities": [
         "durableStateMutation",
+        "eventWriting",
         "filesystemMutation",
+        "processExecution",
         "transactionRecording"
       ]
     },
@@ -837,6 +846,17 @@
       "justification": "Test-only: adversarial validator result-handling and registry-integrity regressions on temporary validator directories.",
       "capabilities": [
         "durableStateMutation",
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/execution/validator-worker.js",
+      "category": 5,
+      "justification": "Validator worker body: re-reads and hash-verifies the exact validator bytes and executes them in an isolated, terminable thread; reads live state read-only; posts a bounded normalized result. No governed mutation.",
+      "capabilities": [
         "filesystemMutation"
       ]
     }

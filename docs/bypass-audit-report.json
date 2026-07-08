@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-08T03:48:10.973Z",
+  "generatedAt": "2026-07-08T11:30:04.683Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -31,7 +31,7 @@
     "unexplained": 0,
     "unacceptable": 0,
     "behavioralViolations": 0,
-    "staleClassifications": 0,
+    "staleClassifications": 1,
     "pass": true
   },
   "classified": [
@@ -651,7 +651,9 @@
       "justification": "Sole authoritative governed mutation orchestrator; all durable mutation is delegated to reviewed Phase 2 primitives.",
       "declaredCapabilities": [
         "durableStateMutation",
+        "eventWriting",
         "filesystemMutation",
+        "processExecution",
         "transactionRecording"
       ],
       "directCapabilities": [
@@ -659,11 +661,12 @@
         "transactionRecording"
       ],
       "transitiveCapabilities": [
-        "filesystemMutation"
+        "filesystemMutation",
+        "processExecution"
       ],
       "detectedCapabilities": {
         "filesystemMutation": true,
-        "processExecution": false,
+        "processExecution": true,
         "transactionRecording": true,
         "eventWriting": false,
         "durableStateMutation": true
@@ -742,107 +745,107 @@
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 200
+          "line": 201
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "selectRequiredValidators",
-          "line": 225
+          "line": 227
         },
         {
           "module": "kernel/execution/plan.js",
           "exportName": "loadInstitutionRegistry",
-          "line": 240
+          "line": 242
         },
         {
           "module": "kernel/execution/plan.js",
           "exportName": "buildExecutionPlan",
-          "line": 241
+          "line": 243
         },
         {
           "module": "kernel/execution/path-safety.js",
           "exportName": "institutionFile",
-          "line": 258
+          "line": 260
         },
         {
           "module": "kernel/execution/candidate-state.js",
           "exportName": "createCandidateState",
-          "line": 265
+          "line": 267
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 267
+          "line": 269
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "validatorsForPhase",
-          "line": 267
+          "line": 269
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 273
+          "line": 275
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 273
+          "line": 275
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "createExecutionAttempt",
-          "line": 277
+          "line": 279
         },
         {
           "module": "kernel/execution/recovery-session.js",
           "exportName": "beginRecoveryAttempt",
-          "line": 292
+          "line": 294
         },
         {
           "module": "kernel/execution/recovery-session.js",
           "exportName": "applyJournaledWrites",
-          "line": 302
+          "line": 304
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 305
+          "line": 307
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 307
+          "line": 309
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "validatorsForPhase",
-          "line": 307
+          "line": 309
         },
         {
           "module": "kernel/execution/validation-result-store.js",
           "exportName": "writeValidationResult",
-          "line": 315
+          "line": 317
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 317
+          "line": 319
         },
         {
           "module": "kernel/execution/rollback.js",
           "exportName": "rollbackExecutionAttempt",
-          "line": 325
+          "line": 327
         },
         {
           "module": "kernel/execution/exclusive-boundary.js",
           "exportName": "releaseExecutionLock",
-          "line": 339
+          "line": 341
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "getExecutionAttempt",
-          "line": 346
+          "line": 348
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -1452,18 +1455,21 @@
       "justification": "CLI wrapper for the authoritative orchestrator.",
       "declaredCapabilities": [
         "durableStateMutation",
+        "eventWriting",
         "filesystemMutation",
+        "processExecution",
         "transactionRecording"
       ],
       "directCapabilities": [],
       "transitiveCapabilities": [
         "durableStateMutation",
         "filesystemMutation",
+        "processExecution",
         "transactionRecording"
       ],
       "detectedCapabilities": {
         "filesystemMutation": true,
-        "processExecution": false,
+        "processExecution": true,
         "transactionRecording": true,
         "eventWriting": false,
         "durableStateMutation": true
@@ -1867,19 +1873,24 @@
     {
       "file": "kernel/execution/validation-cycle.js",
       "category": 5,
-      "justification": "Validation dispatcher; validator loading is controlled by the hashed registry.",
+      "justification": "Approved validator execution boundary: constructs a terminable worker_threads.Worker per validator with a hard timeout and reconstructs a serializable context. No governed mutation; the sole worker-execution site for validators.",
       "declaredCapabilities": [
         "durableStateMutation",
-        "filesystemMutation"
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
       ],
-      "directCapabilities": [],
+      "directCapabilities": [
+        "processExecution"
+      ],
       "transitiveCapabilities": [
         "durableStateMutation",
         "filesystemMutation"
       ],
       "detectedCapabilities": {
         "filesystemMutation": true,
-        "processExecution": false,
+        "processExecution": true,
         "transactionRecording": false,
         "eventWriting": false,
         "durableStateMutation": true
@@ -1888,27 +1899,27 @@
         {
           "module": "kernel/execution/validation-results.js",
           "exportName": "normalizeValidationResult",
-          "line": 9
+          "line": 86
         },
         {
           "module": "kernel/execution/validation-results.js",
           "exportName": "normalizeValidationResult",
-          "line": 19
+          "line": 89
         },
         {
           "module": "kernel/execution/validation-results.js",
           "exportName": "normalizeValidationResult",
-          "line": 21
+          "line": 95
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 40
+          "line": 111
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 40
+          "line": 111
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -2129,17 +2140,7 @@
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 46
-        },
-        {
-          "module": "kernel/lib/canonical-json.js",
-          "exportName": "canonicalStringify",
-          "line": 57
-        },
-        {
-          "module": "kernel/lib/canonical-json.js",
-          "exportName": "canonicalStringify",
-          "line": 57
+          "line": 47
         },
         {
           "module": "kernel/lib/canonical-json.js",
@@ -2150,16 +2151,26 @@
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
           "line": 58
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 59
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 59
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 67
+          "line": 73
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 67
+          "line": 73
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -4431,7 +4442,9 @@
       "justification": "Test-only mutation in temporary directories.",
       "declaredCapabilities": [
         "durableStateMutation",
+        "eventWriting",
         "filesystemMutation",
+        "processExecution",
         "transactionRecording"
       ],
       "directCapabilities": [
@@ -4439,10 +4452,12 @@
         "filesystemMutation",
         "transactionRecording"
       ],
-      "transitiveCapabilities": [],
+      "transitiveCapabilities": [
+        "processExecution"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
-        "processExecution": false,
+        "processExecution": true,
         "transactionRecording": true,
         "eventWriting": false,
         "durableStateMutation": true
@@ -5697,16 +5712,21 @@
       "justification": "Test-only: adversarial validator result-handling and registry-integrity regressions on temporary validator directories.",
       "declaredCapabilities": [
         "durableStateMutation",
-        "filesystemMutation"
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
       ],
       "directCapabilities": [
         "durableStateMutation",
         "filesystemMutation"
       ],
-      "transitiveCapabilities": [],
+      "transitiveCapabilities": [
+        "processExecution"
+      ],
       "detectedCapabilities": {
         "filesystemMutation": true,
-        "processExecution": false,
+        "processExecution": true,
         "transactionRecording": false,
         "eventWriting": false,
         "durableStateMutation": true
@@ -5715,62 +5735,27 @@
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 42
-        },
-        {
-          "module": "kernel/execution/validation-cycle.js",
-          "exportName": "runValidationPhase",
-          "line": 48
-        },
-        {
-          "module": "kernel/execution/validation-cycle.js",
-          "exportName": "runValidationPhase",
-          "line": 54
+          "line": 39
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 69
+          "line": 163
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 80
+          "line": 176
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 91
+          "line": 183
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 99
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 107
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 115
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 123
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 130
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 133
+          "line": 185
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -5826,5 +5811,7 @@
   "unexplained": [],
   "unacceptable": [],
   "behavioralViolations": [],
-  "staleClassifications": []
+  "staleClassifications": [
+    "kernel/execution/validator-worker.js"
+  ]
 }
