@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-08T03:30:27.713Z",
+  "generatedAt": "2026-07-08T03:48:10.973Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -25,8 +25,8 @@
   "sandboxHelper": "kernel/runtime/sandbox-exec.c",
   "assuranceStatement": "AST/import analysis inventories discovered direct and transitive mutation capabilities; unknown or unowned capability fails closed. This is an enforceable inventory, not a claim that textual search proves absence of every bypass.",
   "summary": {
-    "mutationCapableFiles": 85,
-    "classified": 85,
+    "mutationCapableFiles": 86,
+    "classified": 86,
     "securityChecks": 4,
     "unexplained": 0,
     "unacceptable": 0,
@@ -2129,37 +2129,37 @@
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 41
+          "line": 46
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 52
+          "line": 57
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 52
+          "line": 57
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 53
+          "line": 58
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 53
+          "line": 58
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 62
+          "line": 67
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 62
+          "line": 67
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -5688,6 +5688,91 @@
         "durableStateMutation": true
       },
       "capabilityEdges": [],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "tests/validator-security.test.js",
+      "category": 4,
+      "justification": "Test-only: adversarial validator result-handling and registry-integrity regressions on temporary validator directories.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "transitiveCapabilities": [],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": false,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 42
+        },
+        {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 48
+        },
+        {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 54
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 69
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 80
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 91
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 99
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 107
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 115
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 123
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 130
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 133
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     }

@@ -830,6 +830,15 @@
         "filesystemMutation",
         "processExecution"
       ]
+    },
+    {
+      "path": "tests/validator-security.test.js",
+      "category": 4,
+      "justification": "Test-only: adversarial validator result-handling and registry-integrity regressions on temporary validator directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
     }
   ],
   "inventory": "AST/import analysis with transitive capability ownership; unknown or unowned capabilities fail closed."

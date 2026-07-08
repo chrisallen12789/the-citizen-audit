@@ -38,6 +38,11 @@ function loadValidatorRegistry(options = {}) {
     let validator;
     let moduleHash;
     try {
+      // Reject symlinked or non-regular module files: the path-escape check above
+      // only constrains the entry path, but a symlink inside the directory can
+      // still redirect require()/readFile to code outside the reviewed set.
+      const moduleStat = fs.lstatSync(modulePath);
+      if (!moduleStat.isFile()) throw new Error("validator module is not a regular file");
       moduleHash = sha256(fs.readFileSync(modulePath));
       const resolvedModule = require.resolve(modulePath);
       delete require.cache[resolvedModule];

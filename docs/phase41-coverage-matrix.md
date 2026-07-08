@@ -45,9 +45,35 @@ Probe matrix: 30/30 forms flagged (zero fail-open). Real repo audit: 83/83 owned
 
 Residual: fully general interprocedural taint (arbitrarily deep indirection) remains outside a static inventory by construction; the audit's assurance statement scopes this, and runtime defense-in-depth (registered-agent identity, OS read-only live root, governed-tree guard) does not depend on the audit.
 
-## Validator security — PENDING (this session)
+## Validator security — INDEPENDENTLY EXECUTED (this session)
 
-missing semantic validator · generic-labeled-semantic · wrong-action binding · implementation replacement · registry drift · timeout · exception · crash · malformed/incomplete result · success-with-invalid-output · validator attempting mutation/subprocess/network — **PENDING** independent execution (structure inspected in prior cycle; the repo `execution:test` suite exercises validator loading/fail-closed = SUITE).
+Attacks driven via `runValidationPhase` (result handling) and `loadValidatorRegistry` (integrity); regressions in `tests/validator-security.test.js` (19/19). Legend as above.
+
+| # | Case | Status | Evidence |
+|---|---|---|---|
+| 1 | missing semantic validator | PASS | orchestrator throws `no action-specific semantic validator` unless governed `nonSemantic`+justification |
+| 2 | registry entry missing | PASS | `selectRequiredValidators` fails closed on unavailable id |
+| 3 | registry malformed | FIXED-TEST | malformed JSON rejected (regression added) |
+| 4 | wrong-action binding | PASS | `action binding mismatch` (regression) |
+| 5 | generic labeled semantic | PARTIAL | loader enforces semantic-flag+action binding; "real semantic logic" is a governance/review property, not mechanically detectable — documented |
+| 6-9 | impl/registry replaced/changed after load/hash | PASS | fresh re-read + re-hash each execution; moduleHash folded into `validatorSetHash` (regression: tamper changes hash) |
+| 10 | symlink substitution | **CORRECTED** | loader now `lstat`-rejects symlinked/non-regular modules (regression added) |
+| 11-13 | malformed/incomplete/non-object result | PASS | `normalizeValidationResult` fails closed (regressions) |
+| 14 | success while output invalid | PASS(model) | final status derived from `problems`; validator is integrity-bound trusted code |
+| 15 | failure after writes | PASS | post-write failure → `ExecutionRejected` → Phase-2 rollback |
+| 16 | throws exception | PASS | caught → failed (regression) |
+| 17 | process crash | PASS(model) | in-process throw → failed; true OS-process crash n/a (in-process trusted code) |
+| 18 | timing out (async) | PASS | `Promise.race` timeout → failed (regression) |
+| 19 | hanging indefinitely (sync) | **PARTIAL / RESIDUAL** | a synchronous busy/infinite loop is NOT preempted by the in-process timeout (reproduced: 1500ms work under 300ms timeout returned `passed`). Mitigation: validators are integrity-bound, hash-verified, governed, symlink-rejected code — a hanging validator cannot be introduced without defeating verified controls. Recommended hardening: run validators in a worker thread/child process with a hard `terminate()`, reconstructing context inside the worker (candidate-state carries closures, so it cannot be structure-cloned directly). **Not claimed fixed; HOLD retained.** |
+| 20 | exits without result | PASS | undefined/void → malformed → failed |
+| 21 | oversized output | SUITE/PENDING | not independently sized-tested this session |
+| 22-30 | validator mutates/spawns/network/reads approval or ledgers | PASS(model) | in-process trusted integrity-bound code; cannot be introduced without defeating registry hash/symlink/governance; not runtime-sandboxed by design |
+| 31-34 | result replay across tx/action/write-set/identity | PASS(by-construction) | results are computed by the orchestrator itself, never caller-supplied; bound into `validationResultHash` in the ledger |
+| 35 | one of several validators fails | PASS | phase status = every result passed |
+| 36 | concurrent executions | SUITE | serialized through the execution lock; concurrency covered by recovery/fault suites |
+| 37-38 | race with governed-file replacement / rollback | SUITE/PENDING | governed-tree guard + Phase-2 barriers; not independently raced this session |
+| 39 | claims all affected objects checked while omitting one | PARTIAL | plan build enforces write-set coverage of affected objects (`plan.js`), exact-materialization verifies live state; validator-result `checkedObjects` is recorded but not separately enforced ⊇ affectedObjects — documented |
+| 40 | validates stale pre-write instead of live post-write | PASS | post-write phase runs against live post-write state + manifest |
 
 ## Sandbox-helper security — PENDING / ENV
 

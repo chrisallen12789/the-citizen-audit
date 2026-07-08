@@ -20,7 +20,7 @@
     "agent:sources": "node scripts/source-steward-agent.js",
     "agents:list": "node -e \"const r=require('./agents/registry.json'); for (const a of r.agents) console.log(`${a.id} | ${a.status} | L${a.authorityLevel} | ${(a.capabilities||[]).join(',')} | ${a.command}`)\"",
     "authority:check": "node kernel/authority/engine.js",
-    "execution:test": "node --test --test-concurrency=1 tests/execution-ledger.test.js tests/execution-recovery.test.js tests/execution-orchestrator.test.js tests/runtime-integration.test.js tests/runtime-isolation.test.js tests/runtime-isolation-recovery.test.js tests/event-projection.test.js tests/bypass-audit.test.js tests/deployment-certify.test.js",
+    "execution:test": "node --test --test-concurrency=1 tests/execution-ledger.test.js tests/execution-recovery.test.js tests/execution-orchestrator.test.js tests/runtime-integration.test.js tests/runtime-isolation.test.js tests/runtime-isolation-recovery.test.js tests/event-projection.test.js tests/bypass-audit.test.js tests/deployment-certify.test.js tests/validator-security.test.js",
     "execution:verify": "node kernel/execution/ledger.js verify",
     "registry:validate": "node kernel/registry/validate.js",
     "kernel:run": "node kernel/runtime/run.js",
@@ -53,7 +53,8 @@
     "execution:verify:full": "npm run execution:test && npm run archive:manifest:test && npm run bypass:audit && npm run qa",
     "runtime:isolation:test": "node --test --test-concurrency=1 tests/runtime-isolation.test.js tests/runtime-isolation-recovery.test.js",
     "runtime:deployment:certify": "node scripts/deployment-certify.js",
-    "certify:test": "node --test tests/deployment-certify.test.js"
+    "certify:test": "node --test tests/deployment-certify.test.js",
+    "validator:test": "node --test tests/validator-security.test.js"
   },
   "devDependencies": {
     "acorn": "8.15.0",
