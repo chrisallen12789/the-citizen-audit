@@ -11,7 +11,7 @@ const SANDBOX_HELPER = "kernel/runtime/sandbox-exec.c";
 const REQUIRED_SECURITY_FILES = ["kernel/runtime/run.js", "kernel/runtime/transactional-runtime.js", APPROVED_AGENT_EXECUTION_ADAPTER, SANDBOX_HELPER];
 const FS_MODULES = new Set(["fs", "node:fs", "fs/promises", "node:fs/promises"]);
 const PROCESS_MODULES = new Set(["child_process", "node:child_process"]);
-const FS_MUTATORS = new Set(["writeFileSync","writeFile","appendFileSync","appendFile","unlinkSync","unlink","rmSync","rm","rmdirSync","rmdir","renameSync","rename","mkdirSync","mkdir","symlinkSync","symlink","copyFileSync","copyFile","cpSync","cp","createWriteStream","fchmodSync","fchmod","chmodSync","chmod","truncateSync","truncate","linkSync","link","openSync"]);
+const FS_MUTATORS = new Set(["writeFileSync","writeFile","appendFileSync","appendFile","unlinkSync","unlink","rmSync","rm","rmdirSync","rmdir","renameSync","rename","mkdirSync","mkdir","symlinkSync","symlink","copyFileSync","copyFile","cpSync","cp","createWriteStream","fchmodSync","fchmod","chmodSync","chmod","lchmodSync","lchmod","chownSync","chown","fchownSync","fchown","lchownSync","lchown","truncateSync","truncate","ftruncateSync","ftruncate","linkSync","link","openSync","writeSync","writevSync","mkdtempSync","mkdtemp","utimesSync","utimes","futimesSync","lutimesSync"]);
 const PROCESS_EXECUTORS = new Set(["spawn","spawnSync","exec","execSync","execFile","execFileSync","fork"]);
 const DURABLE_PRIMITIVES = new Set(["appendEntry","recordTransaction","createExecutionAttempt","transitionExecutionAttempt","writeCanonicalJsonAtomic","writeBytesDurable","atomicReplaceFile","unlinkDurable","writeValidationResult","writePreStateManifest","writeRollbackResult"]);
 const TRANSACTION_PRIMITIVES = new Set(["recordTransaction","createExecutionAttempt","transitionExecutionAttempt"]);
@@ -101,6 +101,27 @@ function analyzeJs(rootDir,file,source) {
         if(prop&&node.init.object.type==="Identifier") importedFns.set(node.id.name,{module:namespaces.get(node.init.object.name)||node.init.object.name,name:prop});
         else if(prop){ const inlineReq=requireTarget(node.init.object); if(inlineReq) importedFns.set(node.id.name,{module:inlineReq,name:prop}); }
       }
+      // A module stored in an object property (`const a = { b: require("fs") }`)
+      // is reachable via a nested member chain (`a.b.writeFileSync`). Register the
+      // dotted key so that chain resolves to the module.
+      else if(node.id.type==="Identifier"&&node.init.type==="ObjectExpression") {
+        for(const prop of node.init.properties||[]) {
+          if(prop.type!=="Property"||prop.computed) continue;
+          const key=prop.key.type==="Identifier"?prop.key.name:(prop.key.type==="Literal"?prop.key.value:null);
+          if(!key) continue;
+          const preq=requireTarget(prop.value);
+          if(preq) namespaces.set(`${node.id.name}.${key}`,preq);
+          else if(prop.value.type==="Identifier"){const m=namespaces.get(resolveAlias(prop.value.name)); if(m) namespaces.set(`${node.id.name}.${key}`,m);}
+        }
+      }
+    }
+    // Reassignment (`w = require("fs").writeFileSync` or `w = fs.writeFileSync`)
+    // binds a mutator alias just as a declaration does; track it so a later
+    // call through the reassigned identifier is still discovered.
+    if(node.type==="AssignmentExpression"&&node.operator==="="&&node.left.type==="Identifier"&&node.right&&node.right.type==="MemberExpression") {
+      const prop=staticProperty(node.right);
+      if(prop&&node.right.object.type==="Identifier") importedFns.set(node.left.name,{module:namespaces.get(node.right.object.name)||node.right.object.name,name:prop});
+      else if(prop){ const inlineReq=requireTarget(node.right.object); if(inlineReq) importedFns.set(node.left.name,{module:inlineReq,name:prop}); }
     }
     if(["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(node.type)) {
       const name=functionName(node,parent); localFunctions.set(name,node); functionNodes.push({name,node});
@@ -109,6 +130,14 @@ function analyzeJs(rootDir,file,source) {
   }
   firstPass(ast);
   function resolveAlias(name){const seen=new Set();while(aliases.has(name)&&!seen.has(name)){seen.add(name);name=aliases.get(name);}return name;}
+  // Compute a dotted static key ("a.b.c") for a nested member/identifier chain,
+  // resolving the base identifier through aliases. Returns null if any part is
+  // dynamic/computed.
+  function dottedKey(node){
+    if(node.type==="Identifier")return resolveAlias(node.name);
+    if(node.type==="MemberExpression"){const base=dottedKey(node.object);const prop=staticProperty(node);if(base&&prop)return base+"."+prop;}
+    return null;
+  }
   function resolveCall(callee) {
     if(callee.type==="Identifier") {
       const name=resolveAlias(callee.name);
@@ -126,6 +155,7 @@ function analyzeJs(rootDir,file,source) {
         const object=resolveAlias(callee.object.name); return {module:namespaces.get(object)||object,name:prop};
       }
       const req=requireTarget(callee.object); if(req)return {module:req,name:prop};
+      const dk=dottedKey(callee.object); if(dk&&namespaces.has(dk))return {module:namespaces.get(dk),name:prop};
     }
     return null;
   }
@@ -157,7 +187,52 @@ function analyzeJs(rootDir,file,source) {
           const dep=resolveLocalModule(rootDir,file,namespaces.get(resolved.module)); if(dep)target.edges.push({module:dep,exportName:resolved.name,line});
         }
       }
+      // Indirect invocation of an aliased capability via .call / .apply.
+      if(node.callee.type==="MemberExpression"){
+        const invokeProp=staticProperty(node.callee);
+        if((invokeProp==="call"||invokeProp==="apply")&&node.callee.object.type==="Identifier"){
+          const bound=importedFns.get(resolveAlias(node.callee.object.name));
+          if(bound){
+            const line=node.loc.start.line;
+            if((FS_MODULES.has(bound.module)||bound.module===null)&&FS_MUTATORS.has(bound.name)){addCapability(stateFor(next),"filesystemMutation",line,`indirect.${bound.name}`);addCapability(stateFor(next),"durableStateMutation",line,`indirect.${bound.name}`);}
+            else if((PROCESS_MODULES.has(bound.module)||bound.module===null)&&PROCESS_EXECUTORS.has(bound.name))addCapability(stateFor(next),"processExecution",line,`indirect.${bound.name}`);
+          }
+        }
+      }
+      // Reflect.apply(fn, ...) where fn is an aliased capability.
+      if(node.callee.type==="MemberExpression"&&node.callee.object.type==="Identifier"&&node.callee.object.name==="Reflect"&&staticProperty(node.callee)==="apply"&&node.arguments[0]&&node.arguments[0].type==="Identifier"){
+        const bound=importedFns.get(resolveAlias(node.arguments[0].name));
+        if(bound){
+          const line=node.loc.start.line;
+          if((FS_MODULES.has(bound.module)||bound.module===null)&&FS_MUTATORS.has(bound.name)){addCapability(stateFor(next),"filesystemMutation",line,`reflect.${bound.name}`);addCapability(stateFor(next),"durableStateMutation",line,`reflect.${bound.name}`);}
+          else if((PROCESS_MODULES.has(bound.module)||bound.module===null)&&PROCESS_EXECUTORS.has(bound.name))addCapability(stateFor(next),"processExecution",line,`reflect.${bound.name}`);
+        }
+      }
+      // Dynamic code-loading / eval constructs are unresolvable capabilities: fail closed.
       if(node.callee.type==="Identifier"&&node.callee.name==="require"&&!requireTarget(node))unknown.push({line:node.loc.start.line,reason:"dynamic require"});
+      if(node.callee.type==="Identifier"&&node.callee.name==="eval")unknown.push({line:node.loc.start.line,reason:"eval code generation"});
+      if(node.callee.type==="Identifier"&&node.callee.name==="Function")unknown.push({line:node.loc.start.line,reason:"Function-constructor code generation"});
+      if(node.callee.type==="Identifier"&&node.callee.name==="createRequire")unknown.push({line:node.loc.start.line,reason:"dynamic module loader (createRequire)"});
+    }
+    if(node.type==="NewExpression"&&node.callee.type==="Identifier"&&node.callee.name==="Function")unknown.push({line:node.loc.start.line,reason:"Function-constructor code generation"});
+    if(node.type==="ImportExpression")unknown.push({line:node.loc.start.line,reason:"dynamic import"});
+    // A capability member REFERENCED as a value (stored in an object/array, passed
+    // as an argument, or returned) is a capability surface even if it is not the
+    // immediate call target. Attribute it wherever `<fs|process-module>.<mutator>`
+    // appears. (Call sites are also covered above; duplicate attribution is
+    // harmless because capabilities are a set.)
+    if(node.type==="MemberExpression"){
+      const mprop=staticProperty(node);
+      if(mprop){
+        let mod=null;
+        if(node.object.type==="Identifier") mod=namespaces.get(resolveAlias(node.object.name));
+        else { const r=requireTarget(node.object); if(r) mod=r; else { const dk=dottedKey(node.object); if(dk) mod=namespaces.get(dk); } }
+        if(mod){
+          const line=node.loc.start.line;
+          if(FS_MODULES.has(mod)&&FS_MUTATORS.has(mprop)){addCapability(stateFor(next),"filesystemMutation",line,`value-ref.${mprop}`);addCapability(stateFor(next),"durableStateMutation",line,`value-ref.${mprop}`);}
+          else if(PROCESS_MODULES.has(mod)&&PROCESS_EXECUTORS.has(mprop))addCapability(stateFor(next),"processExecution",line,`value-ref.${mprop}`);
+        }
+      }
     }
     for(const child of children(node))secondPass(child,node,next);
   }

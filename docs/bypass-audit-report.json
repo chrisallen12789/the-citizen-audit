@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-07T23:10:22.143Z",
+  "generatedAt": "2026-07-08T03:15:21.379Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -3744,32 +3744,22 @@
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 141
+          "line": 158
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 149
+          "line": 170
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 159
+          "line": 178
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 172
-        },
-        {
-          "module": "scripts/bypass-audit.js",
-          "exportName": "run",
-          "line": 183
-        },
-        {
-          "module": "scripts/bypass-audit.js",
-          "exportName": "run",
-          "line": 190
+          "line": 188
         },
         {
           "module": "scripts/bypass-audit.js",
@@ -3779,17 +3769,32 @@
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 209
+          "line": 212
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 223
+          "line": 219
         },
         {
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
-          "line": 233
+          "line": 230
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 238
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 252
+        },
+        {
+          "module": "scripts/bypass-audit.js",
+          "exportName": "run",
+          "line": 262
         }
       ],
       "sourceBehaviorChecks": "passed",

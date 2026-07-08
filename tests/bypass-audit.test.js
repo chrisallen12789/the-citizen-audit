@@ -134,6 +134,35 @@ test("inline require().member executor alias is detected", () => {
   cleanup(fx);
 });
 
+// Value-flow and dynamic-loading capability forms (Phase 4.1 expanded coverage).
+const VALUE_FLOW_FORMS = {
+  reassigned_alias: [`let w=null;w=require('fs').writeFileSync;w('x','y');`, /filesystemMutation/],
+  call_invoke: [`const w=require('fs').writeFileSync;w.call(null,'x','y');`, /filesystemMutation/],
+  apply_invoke: [`const w=require('fs').writeFileSync;w.apply(null,['x','y']);`, /filesystemMutation/],
+  reflect_apply: [`const w=require('fs').writeFileSync;Reflect.apply(w,null,['x','y']);`, /filesystemMutation/],
+  object_storage: [`const o={};o.put=require('fs').writeFileSync;o.put('x','y');`, /filesystemMutation/],
+  array_storage: [`const a=[require('fs').writeFileSync];a[0]('x','y');`, /filesystemMutation/],
+  param_passthrough: [`function run(fn){fn('x','y');}run(require('fs').writeFileSync);`, /filesystemMutation/],
+  factory_return: [`function mk(){return require('fs').writeFileSync;}const w=mk();w('x','y');`, /filesystemMutation/],
+  nested_member: [`const a={b:require('fs')};a.b.writeFileSync('x','y');`, /filesystemMutation/],
+  chown: [`require('fs').chownSync('x',0,0);`, /filesystemMutation/],
+  dynamic_import: [`async function g(){const m=await import('fs');m.writeFileSync('x','y');}`, /unknown|dynamic import/i],
+  function_ctor: [`const f=Function('return require')();f('fs');`, /unknown|Function-constructor/i],
+  create_require: [`const {createRequire}=require('module');const r=createRequire(__filename);r('fs');`, /unknown|createRequire/i]
+};
+for (const [name, [source, pattern]] of Object.entries(VALUE_FLOW_FORMS)) {
+  test(`capability audit flags value-flow form: ${name}`, () => {
+    const fx = fixture();
+    write(fx.root, `scripts/vf-${name}.js`, source);
+    updateConfig(fx, { path: `scripts/vf-${name}.js`, category: 3, justification: "fixture", capabilities: [] });
+    const report = run({ rootDir: fx.root, now: "fixed" });
+    const entry = report.unexplained.find((u) => u.file === `scripts/vf-${name}.js`) || report.behavioralViolations.find((v) => v.file === `scripts/vf-${name}.js`);
+    assert.ok(entry, `${name} must be flagged (fail closed), not silently missed`);
+    assert.match(violations(report), pattern);
+    cleanup(fx);
+  });
+}
+
 test("destructured renamed filesystem call is detected", () => {
   const fx = fixture();
   write(fx.root, "scripts/destructured.js", `const {writeFileSync:put}=require('node:fs');put('x','x');`);
