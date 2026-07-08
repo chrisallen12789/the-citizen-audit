@@ -77,6 +77,10 @@ ledger tamper/truncation · projection tamper · stale output · duplicate ident
 
 Capability audit owns 83/83 capable files with 0 violations = PASS. Independent manual sweep beyond the (now-stronger) audit = PENDING.
 
-## Deployment certification — PENDING (ENV)
+## Deployment certification — HARNESS IMPLEMENTED; REPRESENTATIVE HOST REQUIRED
 
-`runtime:deployment:certify` harness — **PENDING implementation** this session. Representative-environment certification — **ENV** (this sandbox is not established as representative; certification will not be claimed here).
+`runtime:deployment:certify` implemented (`scripts/deployment-certify.js`, tests `tests/deployment-certify.test.js` 9/9). It fingerprints the host; probes user/mount/pid/net/ipc/uts namespaces, chroot/mount-in-userns, and seccomp availability; compiles the exact `sandbox-exec.c` with `-O2 -static -Wall -Wextra -Werror -s` and records compiler/linker identity, source+binary hashes; verifies helper regular-file/0500/cache-0700, rejects symlinks, and detects truncation/replacement/wrong-mode/hostile pre-positioned files via the real adapter `verifyHelperFile`; demonstrates network-block, PID isolation, governed-root read-only, atomic rename, fsync, noexec support. Emits machine-readable JSON + human-readable Markdown under `docs/certification/`.
+
+Observed on THIS sandbox: **26 mandatory verified, 0 failed, 4 representative-required** → ruling `REPRESENTATIVE_ENVIRONMENT_REQUIRED`, exit 1 (fail-closed). Representative-required: seccomp filter enforcement (kill/EPERM), inherited-fd closing, env sanitization (all need the full helper chain on a representative host), and `protected_hardlinks` (0 here). **This sandbox is NOT asserted representative; no certification is claimed.** Fail-closed proven: unavailable/representative-required never becomes a pass, and even with `DEPLOYMENT_CERT_REPRESENTATIVE=1` the harness stays nonzero while any mandatory check is not `verified`.
+
+Operator procedure on a representative host: run `npm run runtime:deployment:certify`; confirm every mandatory check is `verified`; only then set `DEPLOYMENT_CERT_REPRESENTATIVE=1` to obtain `CERTIFIED` (exit 0). Certification remains an operator action on qualified infrastructure — not claimable here.

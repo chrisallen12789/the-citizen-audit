@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-08T03:15:21.379Z",
+  "generatedAt": "2026-07-08T03:30:27.713Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -25,8 +25,8 @@
   "sandboxHelper": "kernel/runtime/sandbox-exec.c",
   "assuranceStatement": "AST/import analysis inventories discovered direct and transitive mutation capabilities; unknown or unowned capability fails closed. This is an enforceable inventory, not a claim that textual search proves absence of every bypass.",
   "summary": {
-    "mutationCapableFiles": 83,
-    "classified": 83,
+    "mutationCapableFiles": 85,
+    "classified": 85,
     "securityChecks": 4,
     "unexplained": 0,
     "unacceptable": 0,
@@ -3326,6 +3326,83 @@
       "violations": []
     },
     {
+      "file": "scripts/deployment-certify.js",
+      "category": 3,
+      "justification": "Deployment-certification harness (diagnostic). Spawns capability probes (unshare/gcc/file/ldd) and compiles the reviewed sandbox helper; writes certification reports under docs/certification/ and temporary directories only. No governed-record mutation; not reachable from any production runtime entry point.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": true,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 135
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 150
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "verifyHelperFile",
+          "line": 156
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "verifyHelperFile",
+          "line": 157
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "verifyHelperFile",
+          "line": 163
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 163
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "verifyHelperFile",
+          "line": 169
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "verifyHelperFile",
+          "line": 175
+        },
+        {
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 175
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "verifyHelperFile",
+          "line": 181
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
       "file": "scripts/export-ads.js",
       "category": 3,
       "justification": "Exports ADS records to public/data generated output.",
@@ -3795,6 +3872,88 @@
           "module": "scripts/bypass-audit.js",
           "exportName": "run",
           "line": 262
+        }
+      ],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
+      "file": "tests/deployment-certify.test.js",
+      "category": 4,
+      "justification": "Test-only: exercises the certification harness ruling logic and schema on synthetic and live check lists.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [],
+      "transitiveCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": true,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 8
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 14
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 20
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 26
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 32
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 38
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 43
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 49
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "evaluate",
+          "line": 49
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "certify",
+          "line": 53
+        },
+        {
+          "module": "scripts/deployment-certify.js",
+          "exportName": "toMarkdown",
+          "line": 64
         }
       ],
       "sourceBehaviorChecks": "passed",

@@ -810,6 +810,26 @@
         "durableStateMutation"
       ],
       "reviewedDynamicRequire": true
+    },
+    {
+      "path": "scripts/deployment-certify.js",
+      "category": 3,
+      "justification": "Deployment-certification harness (diagnostic). Spawns capability probes (unshare/gcc/file/ldd) and compiles the reviewed sandbox helper; writes certification reports under docs/certification/ and temporary directories only. No governed-record mutation; not reachable from any production runtime entry point.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "tests/deployment-certify.test.js",
+      "category": 4,
+      "justification": "Test-only: exercises the certification harness ruling logic and schema on synthetic and live check lists.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
     }
   ],
   "inventory": "AST/import analysis with transitive capability ownership; unknown or unowned capabilities fail closed."
