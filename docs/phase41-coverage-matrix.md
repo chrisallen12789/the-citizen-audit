@@ -45,7 +45,31 @@ Probe matrix: 30/30 forms flagged (zero fail-open). Real repo audit: 83/83 owned
 
 Residual: fully general interprocedural taint (arbitrarily deep indirection) remains outside a static inventory by construction; the audit's assurance statement scopes this, and runtime defense-in-depth (registered-agent identity, OS read-only live root, governed-tree guard) does not depend on the audit.
 
-## Validator security — INDEPENDENTLY EXECUTED (this session)
+## Validator security — INDEPENDENTLY EXECUTED (this session) 
+
+### Transitive closure integrity (WU2) — CORRECTED
+Validators now execute ONLY their verified code closure. `kernel/execution/validator-closure.js`
+statically resolves the entry module plus every transitive local CommonJS dependency
+(common-ancestor closureRoot, location-independent relPaths), rejecting dynamic require,
+symlinks, non-regular files, path escape, undeclared dependencies, and non-allowlisted
+builtins; the full `closureHash` is folded into `validatorSetHash`. `kernel/execution/validator-worker.js`
+re-reads and re-hashes every closure module at execution and compiles those exact bytes via an
+in-memory module system (static builtin allowlist, `vm.compileFunction`, no path-require fallback),
+so executed transitive code provably matches the bound hash. Regressions: entry/dependency
+replacement, dynamic-require, undeclared-dependency, builtin denial (child_process/net), cross-phase
+drift at post_write. Capability audit extended to model `vm` execution
+(compileFunction/runInThisContext/runInNewContext/runInContext/Script) and the two execution
+components are owned with EXACT capabilities (validator-worker: processExecution; validator-closure:
+durableStateMutation+filesystemMutation). Test-fixture note: the post-write hang→rollback fixture's
+budget was raised from 50ms to 1500ms to accommodate worker+closure startup; the hang still times out
+at post_write and triggers rollback (intent preserved).
+
+Still BLOCKING (recorded, not claimed): WU1 OS-process confinement (feasibility CONFIRMED — the reviewed
+adapter runs node inside the full namespace/chroot/seccomp chain here — but validators still run in a
+worker_thread, not the OS-isolated process with a dedicated result channel); WU3 observed coverage
+(checkedObjects/checkedPaths remain self-reported); WU4 remaining races (some covered; not exhaustively
+independently raced).
+
 
 Attacks driven via `runValidationPhase` (result handling) and `loadValidatorRegistry` (integrity); regressions in `tests/validator-security.test.js` (19/19). Legend as above.
 

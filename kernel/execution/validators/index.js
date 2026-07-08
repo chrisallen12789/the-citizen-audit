@@ -3,6 +3,7 @@ const path = require("path");
 const { canonicalStringify } = require("../../lib/canonical-json");
 const { sha256 } = require("../../lib/append-only-log");
 const { VALIDATION_PHASES } = require("../validation-results");
+const { buildValidatorClosure } = require("../validator-closure");
 
 const SEMVER = /^\d+\.\d+\.\d+$/;
 
@@ -61,12 +62,14 @@ function loadValidatorRegistry(options = {}) {
     }
 
     loaded.set(entry.id, validator);
+    const closure = buildValidatorClosure(modulePath);
     descriptors.set(entry.id, Object.freeze({
       id: entry.id, version: entry.version, modulePath, moduleHash,
       semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(),
-      supportedPhases: [...entry.supportedPhases].sort()
+      supportedPhases: [...entry.supportedPhases].sort(),
+      closure: Object.freeze({ closureRoot: closure.closureRoot, entryRelPath: closure.entryRelPath, modules: closure.manifest, builtins: closure.builtins, closureHash: closure.closureHash })
     }));
-    canonicalEntries.push({ id: entry.id, version: entry.version, module: entry.module, moduleHash, semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(), supportedPhases: [...entry.supportedPhases].sort() });
+    canonicalEntries.push({ id: entry.id, version: entry.version, module: entry.module, moduleHash, closureHash: closure.closureHash, semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(), supportedPhases: [...entry.supportedPhases].sort() });
   }
 
   canonicalEntries.sort((a, b) => a.id.localeCompare(b.id));

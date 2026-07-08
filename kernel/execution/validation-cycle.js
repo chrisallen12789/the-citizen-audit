@@ -43,8 +43,7 @@ function runValidatorBoundary(descriptor, phase, context, timeoutMs) {
     try {
       worker = new Worker(WORKER_PATH, {
         workerData: {
-          modulePath: descriptor.modulePath, expectedHash: descriptor.moduleHash,
-          expectedVersion: descriptor.version, validatorId: descriptor.id,
+          closure: descriptor.closure, expectedVersion: descriptor.version, validatorId: descriptor.id,
           phase, context: serializableContext(context), limits: LIMITS
         },
         stdout: true, stderr: true

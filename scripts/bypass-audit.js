@@ -12,6 +12,7 @@ const REQUIRED_SECURITY_FILES = ["kernel/runtime/run.js", "kernel/runtime/transa
 const FS_MODULES = new Set(["fs", "node:fs", "fs/promises", "node:fs/promises"]);
 const PROCESS_MODULES = new Set(["child_process", "node:child_process"]);
 const WORKER_MODULES = new Set(["worker_threads", "node:worker_threads"]);
+const VM_EXECUTORS = new Set(["compileFunction", "runInThisContext", "runInNewContext", "runInContext", "Script"]);
 const FS_MUTATORS = new Set(["writeFileSync","writeFile","appendFileSync","appendFile","unlinkSync","unlink","rmSync","rm","rmdirSync","rmdir","renameSync","rename","mkdirSync","mkdir","symlinkSync","symlink","copyFileSync","copyFile","cpSync","cp","createWriteStream","fchmodSync","fchmod","chmodSync","chmod","lchmodSync","lchmod","chownSync","chown","fchownSync","fchown","lchownSync","lchown","truncateSync","truncate","ftruncateSync","ftruncate","linkSync","link","openSync","writeSync","writevSync","mkdtempSync","mkdtemp","utimesSync","utimes","futimesSync","lutimesSync"]);
 const PROCESS_EXECUTORS = new Set(["spawn","spawnSync","exec","execSync","execFile","execFileSync","fork"]);
 const DURABLE_PRIMITIVES = new Set(["appendEntry","recordTransaction","createExecutionAttempt","transitionExecutionAttempt","writeCanonicalJsonAtomic","writeBytesDurable","atomicReplaceFile","unlinkDurable","writeValidationResult","writePreStateManifest","writeRollbackResult"]);
@@ -177,6 +178,7 @@ function analyzeJs(rootDir,file,source) {
           if(literalPath)target.literalMutationPaths.push({line,path:literalPath,primitive:resolved.name});
         }
         else if((PROCESS_MODULES.has(resolved.module) || resolved.module === null) && PROCESS_EXECUTORS.has(resolved.name))addCapability(target,"processExecution",line,`${resolved.module || "wrapper"}.${resolved.name}`);
+        else if(resolved.module==="vm" && VM_EXECUTORS.has(resolved.name))addCapability(target,"processExecution",line,`vm.${resolved.name}`);
         else if(DURABLE_PRIMITIVES.has(resolved.name)) {
           addCapability(target,"durableStateMutation",line,resolved.name);
           if(TRANSACTION_PRIMITIVES.has(resolved.name))addCapability(target,"transactionRecording",line,resolved.name);
@@ -224,6 +226,7 @@ function analyzeJs(rootDir,file,source) {
       else if(node.callee.type==="MemberExpression"&&node.callee.object.type==="Identifier"){ wmod=namespaces.get(resolveAlias(node.callee.object.name)); wname=staticProperty(node.callee); }
       else if(node.callee.type==="MemberExpression"){ const req=requireTarget(node.callee.object); if(req){wmod=req;wname=staticProperty(node.callee);} }
       if(WORKER_MODULES.has(wmod)&&wname==="Worker") addCapability(stateFor(next),"processExecution",node.loc.start.line,"worker_threads.Worker");
+      if(wmod==="vm"&&wname==="Script") addCapability(stateFor(next),"processExecution",node.loc.start.line,"vm.Script");
     }
     if(node.type==="ImportExpression")unknown.push({line:node.loc.start.line,reason:"dynamic import"});
     // A capability member REFERENCED as a value (stored in an object/array, passed

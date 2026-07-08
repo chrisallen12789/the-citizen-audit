@@ -304,7 +304,7 @@ test("malformed validator result triggers rollback", async () => {
 test("validator timeout triggers rollback", async () => {
   const dir = makeValidatorsDir([{ id: "hang", supportedPhases: ["post_write"], source: "module.exports={id:'hang',version:'1.0.0',supportedPhases:['post_write'],validate:()=>new Promise(()=>{})};" }]);
   const fx = makeFixture({ txId: "TX-014", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["hang"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
-  const result = await executeApprovedTransaction("TX-014", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, timeoutMs: 50 });
+  const result = await executeApprovedTransaction("TX-014", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, timeoutMs: 1500 });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
   cleanupValidatorsDir(dir);

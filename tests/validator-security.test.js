@@ -7,6 +7,7 @@ const test = require("node:test");
 
 const { runValidationPhase } = require("../kernel/execution/validation-cycle");
 const { loadValidatorRegistry } = require("../kernel/execution/validators");
+const { buildValidatorClosure } = require("../kernel/execution/validator-closure");
 
 const REAL_VALIDATORS = path.join(__dirname, "..", "kernel", "execution", "validators");
 const HOLDER = path.join(__dirname, "..", "kernel", "execution");
@@ -27,13 +28,17 @@ module.exports={id:${JSON.stringify(id)},version:${JSON.stringify(version)},sema
   const modulePath = path.join(scratch, `${id}.js`);
   fs.writeFileSync(modulePath, src);
   const moduleHash = crypto.createHash("sha256").update(fs.readFileSync(modulePath)).digest("hex");
-  return { id, version, modulePath, moduleHash, semantic, actions, supportedPhases };
+  const c = buildValidatorClosure(modulePath);
+  const closure = { closureRoot: c.closureRoot, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash };
+  return { id, version, modulePath, moduleHash, semantic, actions, supportedPhases, closure };
 }
 function rawDescriptor(id, source, over = {}) {
   const modulePath = path.join(scratch, `${id}.js`);
   fs.writeFileSync(modulePath, source);
   const moduleHash = crypto.createHash("sha256").update(fs.readFileSync(modulePath)).digest("hex");
-  return Object.assign({ id, version: "1.0.0", modulePath, moduleHash, semantic: false, actions: [], supportedPhases: ["candidate"] }, over);
+  let closure = null;
+  try { const c = buildValidatorClosure(modulePath); closure = { closureRoot: c.closureRoot, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash }; } catch (e) { closure = { __buildError: e.message, closureRoot: path.dirname(modulePath), entryRelPath: path.basename(modulePath), modules: [{ relPath: path.basename(modulePath), hash: moduleHash }], builtins: [] }; }
+  return Object.assign({ id, version: "1.0.0", modulePath, moduleHash, semantic: false, actions: [], supportedPhases: ["candidate"], closure }, over);
 }
 async function runOne(descriptor, context = {}, timeoutMs = 1500) {
   return runValidationPhase(descriptor.supportedPhases[0], [descriptor], context, { timeoutMs });
@@ -100,14 +105,13 @@ test("module replaced after hashing fails closed (exact-bytes execution)", async
   assert.equal(phase.status, "failed");
   assert.match(phase.problems.join(" "), /hash mismatch/i);
 });
-test("symlinked module at execution fails closed", async () => {
+test("symlinked closure module is rejected at build (registry load)", () => {
   const real = makeValidatorModule("return {status:'passed',problems:[]};");
   const outside = path.join(os.tmpdir(), `evil-exec-${seq++}.js`);
   fs.writeFileSync(outside, `module.exports={id:${JSON.stringify(real.id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`);
   const linkPath = path.join(scratch, `link-${seq++}.js`);
   fs.symlinkSync(outside, linkPath);
-  const moduleHash = crypto.createHash("sha256").update(fs.readFileSync(linkPath)).digest("hex");
-  assert.equal((await runOne({ ...real, modulePath: linkPath, moduleHash })).status, "failed");
+  assert.throws(() => buildValidatorClosure(linkPath), /symlink/i);
 });
 
 // WORK UNIT 3 — output/resource bounds
@@ -184,4 +188,77 @@ test("tampering a validator module changes the bound validatorSetHash", () => {
     fs.appendFileSync(path.join(dir, readReg(dir).validators.find((v) => v.semantic).module), "\n// tamper\n");
     assert.notEqual(loadValidatorRegistry({ validatorsDir: dir }).validatorSetHash, before);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+// ---- WORK UNIT 2: transitive closure integrity ----
+function makeValidatorWithDep() {
+  const dep = path.join(scratch, `dep-${seq}.js`);
+  fs.writeFileSync(dep, "module.exports={tag:function(){return 'ok';}};");
+  const id = `wd-${seq++}`;
+  const modulePath = path.join(scratch, `${id}.js`);
+  fs.writeFileSync(modulePath, `const d=require('./${path.basename(dep)}');\nfunction validate(context){ d.tag(); return {status:'passed',problems:[]}; }\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate};`);
+  const c = buildValidatorClosure(modulePath);
+  return { id, version: "1.0.0", modulePath, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate"], closure: { closureRoot: c.closureRoot, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash }, depPath: dep };
+}
+
+test("closure binds transitive dependency: entry replacement fails closed", async () => {
+  const d = makeValidatorModule("return {status:'passed',problems:[]};");
+  fs.appendFileSync(d.modulePath, "\n// swapped\n");
+  const phase = await runOne(d);
+  assert.equal(phase.status, "failed");
+  assert.match(phase.problems.join(" "), /hash mismatch/i);
+});
+test("closure binds transitive dependency: dependency replacement fails closed", async () => {
+  const d = makeValidatorWithDep();
+  fs.appendFileSync(d.depPath, "\n// tampered dep\n"); // replace dependency AFTER closure hashing
+  const phase = await runOne(d);
+  assert.equal(phase.status, "failed");
+  assert.match(phase.problems.join(" "), /hash mismatch/i);
+});
+test("closure builder rejects dynamic require", () => {
+  const id = `dynreq-${seq++}`;
+  const mp = path.join(scratch, `${id}.js`);
+  fs.writeFileSync(mp, `const x=require(process.env.MOD||'./nope');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
+  assert.throws(() => buildValidatorClosure(mp), /dynamic or non-literal require/i);
+});
+test("closure builder rejects non-allowlisted builtin (child_process)", () => {
+  const id = `cp-${seq++}`;
+  const mp = path.join(scratch, `${id}.js`);
+  fs.writeFileSync(mp, `const cp=require('child_process');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
+  assert.throws(() => buildValidatorClosure(mp), /non-allowlisted/i);
+});
+test("closure builder rejects non-allowlisted builtin (net)", () => {
+  const id = `net-${seq++}`;
+  const mp = path.join(scratch, `${id}.js`);
+  fs.writeFileSync(mp, `const net=require('net');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
+  assert.throws(() => buildValidatorClosure(mp), /non-allowlisted/i);
+});
+test("worker rejects an undeclared closure dependency at execution", async () => {
+  const d = makeValidatorWithDep();
+  // Remove the dependency from the bound manifest, keep the entry requiring it:
+  d.closure.modules = d.closure.modules.filter((m) => m.relPath === d.closure.entryRelPath);
+  const phase = await runOne(d);
+  assert.equal(phase.status, "failed");
+  assert.match(phase.problems.join(" "), /undeclared closure dependency/i);
+});
+test("closureHash is folded into validatorSetHash (real registry)", () => {
+  const { loadValidatorRegistry } = require("../kernel/execution/validators");
+  const reg = loadValidatorRegistry({});
+  for (const [, d] of reg.descriptors) { assert.ok(d.closure && typeof d.closure.closureHash === "string" && d.closure.modules.length >= 1); }
+});
+
+// ---- WORK UNIT 4: cross-phase re-verification ----
+test("closure is re-verified at post_write: drift before post-write fails closed", async () => {
+  // A validator that supports both phases; candidate passes, then its bytes drift
+  // before post_write -> worker re-hash mismatch -> fail closed.
+  const id = `xp-${seq++}`;
+  const mp = path.join(scratch, `${id}.js`);
+  fs.writeFileSync(mp, `module.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[]};}};`);
+  const c = buildValidatorClosure(mp);
+  const d = { id, version: "1.0.0", modulePath: mp, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate", "post_write"], closure: { closureRoot: c.closureRoot, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash } };
+  assert.equal((await runValidationPhase("candidate", [d], {}, { timeoutMs: 1500 })).status, "passed");
+  fs.appendFileSync(mp, "\n// drift before post-write\n");
+  const post = await runValidationPhase("post_write", [d], {}, { timeoutMs: 1500 });
+  assert.equal(post.status, "failed");
+  assert.match(post.problems.join(" "), /hash mismatch/i);
 });

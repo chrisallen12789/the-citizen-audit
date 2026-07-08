@@ -111,3 +111,34 @@ symlink rejection + governance. Cross-phase validator-set drift and rollback rac
 (WU4) are partially covered here (module-replacement race fails closed; live
 post-write reads) and otherwise by the fault/recovery suites; not exhaustively
 independently raced this session.
+
+---
+
+## Update — transitive closure integrity (WU2) CORRECTED; confinement/coverage still BLOCKING
+
+**Transitive integrity architecture.** New `validator-closure.js` builds a deterministic
+dependency-closure manifest (entry + all transitive local CommonJS deps; common-ancestor root;
+per-module sha256), rejecting dynamic require / symlink / non-regular / path-escape / undeclared /
+non-allowlisted builtins. `closureHash` (over the whole closure) is folded into `validatorSetHash`.
+`validator-worker.js` now executes ONLY verified closure bytes: it re-reads and re-hashes every module
+at execution, compiles those exact bytes through an in-memory CommonJS system (`vm.compileFunction`,
+static builtin allowlist, no path-require fallback). This closes the prior gap where only the top-level
+module was hashed while local deps loaded via unverified path require.
+
+**Audit model (WU5, partial).** The capability audit now models `worker_threads.Worker` and all `vm`
+execution forms (compileFunction/runInThisContext/runInNewContext/runInContext/Script) as
+processExecution; an unclassified vm/worker execution path fails closed (verified by probe). The two
+execution components are owned with exact capabilities (no broad exceptions): validator-worker.js →
+[processExecution]; validator-closure.js → [durableStateMutation, filesystemMutation].
+
+**Still BLOCKING (honestly recorded, not claimed as done):**
+- **WU1 OS-process confinement** — feasibility CONFIRMED (the reviewed isolation adapter runs node inside
+  the full unshare+chroot+seccomp chain in this environment), but validators still run in a worker_thread
+  that shares filesystem/network/env authority. Not yet moved into the OS-isolated process with a
+  dedicated, size-bounded, tx/phase/action/writeSetHash/attemptId-bound result channel.
+- **WU3 observed coverage** — checkedObjects/checkedPaths are enforced ⊇ affected/writes but remain
+  validator-self-reported, not observed via an instrumented read-only API.
+- **WU4 remaining races** — cross-phase closure drift now fails closed; concurrent/rollback/replay races
+  are partially covered by fault/recovery suites, not exhaustively independently raced.
+
+HOLD retained: BLOCKING VALIDATOR CONFINEMENT AND OBSERVED-COVERAGE DEFECTS REMAIN.
