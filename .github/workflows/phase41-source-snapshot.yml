@@ -1,87 +1,83 @@
-name: Apply Independent Phase 4.1 Review Corrections
+name: Package Current Authoritative Phase 4.1 Source
 
 on:
   push:
     branches:
       - tooling/phase-4.1-source-snapshot
     paths:
-      - ".phase41-review-transfer/**"
       - ".github/workflows/phase41-source-snapshot.yml"
   pull_request:
     branches:
       - main
     paths:
-      - ".phase41-review-transfer/**"
       - ".github/workflows/phase41-source-snapshot.yml"
 
 permissions:
-  contents: write
-
-concurrency:
-  group: phase41-independent-review-transfer
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  apply:
+  package:
     if: github.event_name == 'push' || github.head_ref == 'tooling/phase-4.1-source-snapshot'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out transfer branch
+      - name: Check out exact authoritative review head
         uses: actions/checkout@v4
         with:
-          ref: tooling/phase-4.1-source-snapshot
+          ref: 4907d6e990b48df719fd6473ee79d90bebc3b7ef
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Verify and apply independent review corrections
+      - name: Verify exact source identity
         shell: bash
-        env:
-          EXPECTED_HEAD: 1407a104f891726547e82fcba7004fed930f17d2
-          TARGET_BRANCH: execution-engine-v2-phase-4-corrected-review
         run: |
           set -euo pipefail
+          expected="4907d6e990b48df719fd6473ee79d90bebc3b7ef"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          test -z "$(git status --porcelain)"
+          test -f kernel/approvals/decision-store.js
+          test -f kernel/runtime/agent-registry.js
+          test -f kernel/runtime/runtime-provenance.js
+          test -f kernel/runtime/sandbox-exec.c
+          test -f kernel/execution/runtime-isolation-recovery.js
+          test -f tests/runtime-isolation-recovery.test.js
+          grep -q 'inlineReq=requireTarget' scripts/bypass-audit.js
+          grep -q 'runtime.isolation.barrier.raised' kernel/execution/runtime-isolation-barrier.js
+          grep -q 'same barrier hash re-raised after authorized clearance remains protected' tests/runtime-isolation-recovery.test.js
 
-          sha256sum --check --strict <<'CHUNKS'
-          aaf1724ef118de129cd1c8e110901596ab7bfab7eb6bd3719140f3483b7835fb  .phase41-review-transfer/part-00
-          54ca2b2e0fed750a4d399cfccb2d1cd01a96c958be92d3529edca254ba7cfeb2  .phase41-review-transfer/part-01
-          c128355d0cdd860db084e82ed19b2bc1b49935cb31877acca80e267e25ea179c  .phase41-review-transfer/part-02
-          7efa557cbb9819e533d3eec84f07eb60208f8c1a93bee96348b2021b5d24e459  .phase41-review-transfer/part-03
-          36a743cb557efb2b469f82431ec9efbe13ac843576a3226bc11f21fff2b6bde6  .phase41-review-transfer/part-04
-          CHUNKS
+      - name: Build cryptographically tied bundle and source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="4907d6e990b48df719fd6473ee79d90bebc3b7ef"
+          mkdir -p authoritative-phase41-source
+          git branch -f authoritative-phase41-review "$expected"
+          git bundle create authoritative-phase41-source/the-citizen-audit-4907d6e.bundle refs/heads/authoritative-phase41-review
+          git bundle verify authoritative-phase41-source/the-citizen-audit-4907d6e.bundle
+          git archive --format=tar.gz --prefix=the-citizen-audit-4907d6e/ -o authoritative-phase41-source/the-citizen-audit-4907d6e-source.tar.gz "$expected"
+          cat > authoritative-phase41-source/VERIFY.txt <<'EOF'
+          AUTHORITATIVE COMMIT
+          4907d6e990b48df719fd6473ee79d90bebc3b7ef
 
-          cat .phase41-review-transfer/part-00 \
-              .phase41-review-transfer/part-01 \
-              .phase41-review-transfer/part-02 \
-              .phase41-review-transfer/part-03 \
-              .phase41-review-transfer/part-04 > /tmp/phase41-review-corrections.mbox
+          VERIFY
+          1. git bundle verify the-citizen-audit-4907d6e.bundle
+          2. git clone the-citizen-audit-4907d6e.bundle citizen-audit-review
+          3. cd citizen-audit-review
+          4. git checkout authoritative-phase41-review
+          5. git rev-parse HEAD
+          6. Confirm the result is exactly:
+             4907d6e990b48df719fd6473ee79d90bebc3b7ef
+          7. Confirm git status --short is empty.
+          EOF
+          (
+            cd authoritative-phase41-source
+            sha256sum the-citizen-audit-4907d6e.bundle the-citizen-audit-4907d6e-source.tar.gz VERIFY.txt > SHA256SUMS
+          )
 
-          echo "fc1d3292658cfc4ca61ea3a9ccc35ad5880bb365a4736080ab86b2116eddc976  /tmp/phase41-review-corrections.mbox" | sha256sum --check --strict
-
-          git fetch --quiet --no-tags origin "refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
-          current="$(git rev-parse "origin/$TARGET_BRANCH")"
-          if [[ "$current" != "$EXPECTED_HEAD" ]]; then
-            echo "Target branch changed unexpectedly: expected $EXPECTED_HEAD, found $current" >&2
-            exit 1
-          fi
-
-          git checkout --quiet --detach "$EXPECTED_HEAD"
-          git config user.name "The Citizen Audit Phase 4.1 Review"
-          git config user.email "phase41-review@users.noreply.github.com"
-          git am --quiet /tmp/phase41-review-corrections.mbox
-
-          changed="$(git diff --name-only "$EXPECTED_HEAD"..HEAD)"
-          expected=$'docs/bypass-audit-report.json\nkernel/execution/runtime-isolation-barrier.js\nscripts/bypass-audit.js\ntests/bypass-audit.test.js\ntests/runtime-isolation-recovery.test.js'
-          if [[ "$changed" != "$expected" ]]; then
-            echo "Unexpected correction paths:" >&2
-            printf '%s\n' "$changed" >&2
-            exit 1
-          fi
-
-          if printf '%s\n' "$changed" | grep -E '^(platform/|schemas/platform-)'; then
-            echo "Prohibited public-platform path detected." >&2
-            exit 1
-          fi
-
-          git merge-base --is-ancestor "$EXPECTED_HEAD" HEAD
-          git push --quiet origin "HEAD:refs/heads/$TARGET_BRANCH" \
-            --force-with-lease="refs/heads/$TARGET_BRANCH:$EXPECTED_HEAD"
-          echo "Transferred independent Phase 4.1 review head: $(git rev-parse HEAD)"
+      - name: Upload authoritative source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: authoritative-phase41-source-4907d6e
+          path: authoritative-phase41-source/
+          if-no-files-found: error
+          retention-days: 7
