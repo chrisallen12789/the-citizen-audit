@@ -142,3 +142,32 @@ execution components are owned with exact capabilities (no broad exceptions): va
   are partially covered by fault/recovery suites, not exhaustively independently raced.
 
 HOLD retained: BLOCKING VALIDATOR CONFINEMENT AND OBSERVED-COVERAGE DEFECTS REMAIN.
+
+---
+
+## Update — validator source-boundary (authoritative root) CORRECTED
+
+**Defect:** the closure builder derived `closureRoot` from the common ancestor of collected files, so a
+validator using `../`, absolute, or external-directory dependencies silently widened the root instead of
+being rejected.
+
+**Correction.** The registry supplies ONE authoritative project root (`resolveAuthoritativeRoot`): default
+is the reviewed repo root; an explicit override is validated and rejected if overly broad (`/`, `/usr`,
+`/etc`, `/tmp`, `/home`, …, or fewer than two path segments), so a caller cannot widen acceptance.
+`validatorsDir` must resolve inside the root. Every entry and transitive local dependency must resolve
+inside the root after `realpath`. Each file is opened with `O_RDONLY | O_NOFOLLOW` and inspected (`fstat`),
+read, and hashed through the SAME descriptor — no separate path check followed by an unprotected reopen.
+Recorded and verified per file: root-relative path, sha256, size, mode, uid, gid, dev, ino, nlink, and
+regular-file/symlink status. Rejected: absolute specifiers, `../`/parent escape, symlinks, non-regular
+files, external-directory deps, overly-broad root, hard links (nlink>1, direct and transitive), and
+group/world-writable files. The worker re-verifies the full bound manifest (hash/size/mode/uid/gid/dev/ino/
+nlink) on the same `O_NOFOLLOW` fd before compiling the exact bytes, so replacement, inode swap, mode or
+ownership change, hard-linking, or writability between build and execution all fail closed. The
+authoritative-root policy plus the portable manifest (relPath/hash/size/mode) is folded into `closureHash`
+and thus `validatorSetHash`. Tests exercise an explicitly authorized temporary root.
+
+Focused totals: validator-security 58/58; execution-orchestrator 42/42; capability audit PASS (exact
+ownership — validator-worker [durableStateMutation, filesystemMutation, processExecution]; validator-closure
+[durableStateMutation, filesystemMutation]; no broad additions).
+
+Still BLOCKING (unchanged): WU1 OS-process confinement, WU3 observed coverage, WU4 remaining races.

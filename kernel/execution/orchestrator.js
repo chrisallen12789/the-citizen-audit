@@ -198,7 +198,7 @@ async function executeApprovedTransaction(transactionId, options = {}) {
     let validatorSetHash;
     let descriptors;
     try {
-      const registry = loadValidatorRegistry({ validatorsDir });
+      const registry = loadValidatorRegistry({ validatorsDir, projectRoot: options.projectRoot });
       loaded = registry.loaded;
       descriptors = registry.descriptors;
       validatorSetHash = registry.validatorSetHash;

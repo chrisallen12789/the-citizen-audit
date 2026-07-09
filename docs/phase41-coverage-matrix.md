@@ -47,6 +47,22 @@ Residual: fully general interprocedural taint (arbitrarily deep indirection) rem
 
 ## Validator security — INDEPENDENTLY EXECUTED (this session) 
 
+### Validator source-boundary (authoritative root) — CORRECTED
+The closure builder no longer derives its root from the collected files (which let `../`/absolute
+deps silently widen it). The registry now supplies ONE authoritative project root (default: reviewed
+repo root; explicit override validated as not overly broad — `/` and bare system dirs rejected; an
+authorized temporary test root is accepted). Every entry and transitive local dependency must resolve
+inside that root after realpath. Each source file is opened `O_NOFOLLOW` and inspected/read/hashed
+through the SAME descriptor (no path-check-then-reopen); the worker re-verifies the bound manifest
+(hash, size, mode, uid, gid, dev, ino, nlink) on that same-fd path before executing the exact bytes.
+Rejected: absolute specifiers, `../`/parent escape, symlinks (build + exec), non-regular files, external
+directories, overly-broad root, direct/transitive hard links (nlink>1), and group/world-writable files.
+The authoritative-root policy + portable manifest (relPath/hash/size/mode) is folded into
+`validatorSetHash`. Regressions (validator-security 58): `../` escape, absolute path, symlink escape,
+external-dir dep, root `/` / system-dir broadening, direct + transitive hard links, group/world-writable,
+exec-time mode/ownership/inode-replacement, replacement-between-inspect-and-read, `index.js` escape,
+and an explicitly authorized temporary test root.
+
 ### Transitive closure integrity (WU2) — CORRECTED
 Validators now execute ONLY their verified code closure. `kernel/execution/validator-closure.js`
 statically resolves the entry module plus every transitive local CommonJS dependency

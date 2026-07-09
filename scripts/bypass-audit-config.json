@@ -855,15 +855,17 @@
     {
       "path": "kernel/execution/validator-worker.js",
       "category": 5,
-      "justification": "Validator execution worker: executes ONLY verified closure bytes via an in-memory module system using vm.compileFunction (static builtin allowlist, no path-require fallback); reads live state read-only; posts a bounded normalized result. No governed mutation.",
+      "justification": "Validator execution worker: executes ONLY verified closure bytes via an in-memory module system (vm.compileFunction, static builtin allowlist, no path-require fallback). Reads each closure module through a single O_NOFOLLOW read-only descriptor (fstat+read+hash on the same fd) and verifies the bound manifest (hash/size/mode/uid/gid/dev/ino/nlink) before executing; the read-only fs.open* primitives are modeled by the audit as filesystem/durable capabilities though no governed state is mutated.",
       "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
         "processExecution"
       ]
     },
     {
       "path": "kernel/execution/validator-closure.js",
       "category": 5,
-      "justification": "Deterministic validator code-closure builder: statically resolves and hashes the validator dependency closure and binds closureHash into validatorSetHash. Reads source only; rejects dynamic require/symlink/nonregular/undeclared/non-allowlisted builtins.",
+      "justification": "Deterministic validator code-closure builder against an authoritative project root: statically resolves and hashes the dependency closure via O_NOFOLLOW same-fd inspect+read, rejecting dynamic require/symlink/nonregular/hardlink/world-writable/absolute/parent-escape/overly-broad-root, and binds the root policy + closure into validatorSetHash. Read-only fs.open* is modeled as filesystem/durable capability; no governed mutation.",
       "capabilities": [
         "durableStateMutation",
         "filesystemMutation"

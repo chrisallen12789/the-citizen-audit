@@ -38,34 +38,55 @@ function boundArray(value, label, problems) {
 
 function loadClosureEntry(closure) {
   const ROOT = closure.closureRoot;
-  const manifest = new Map(); // relPath -> expectedHash
-  for (const m of closure.modules) manifest.set(m.relPath, m.hash);
+  const expected = new Map(); // relPath -> {hash,size,mode,uid,gid,dev,ino,nlink}
+  for (const m of closure.modules) expected.set(m.relPath, m);
   const compiledCache = new Map(); // relPath -> module.exports
 
+  // Open no-follow, then use the SAME fd to fstat, read, and hash — no separate
+  // path check followed by an unprotected reopen. Verify the full recorded
+  // manifest (hash/size/mode/nlink/dev/ino) so replacement, inode swap, mode or
+  // ownership change, hard-linking, or group/world-writability between build and
+  // execution all fail closed.
   function readVerified(relPath) {
+    const want = expected.get(relPath);
+    if (!want) throw new Error(`undeclared closure module: ${relPath}`);
     const abs = path.join(ROOT, relPath);
-    const rel2 = path.relative(ROOT, abs).split(path.sep).join("/");
-    if (rel2.startsWith("..")) throw new Error(`closure path escape: ${relPath}`);
-    const lst = fs.lstatSync(abs);
-    if (lst.isSymbolicLink()) throw new Error(`closure module is a symlink: ${relPath}`);
-    if (!lst.isFile()) throw new Error(`closure module is not a regular file: ${relPath}`);
-    const bytes = fs.readFileSync(abs);
-    const hash = crypto.createHash("sha256").update(bytes).digest("hex");
-    if (hash !== manifest.get(relPath)) throw new Error(`closure module hash mismatch at execution: ${relPath}`);
-    return bytes.toString("utf8");
+    if (path.relative(ROOT, abs).split(path.sep).join("/").startsWith("..")) throw new Error(`closure path escape: ${relPath}`);
+    let fd;
+    try { fd = fs.openSync(abs, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW); }
+    catch (e) { if (e.code === "ELOOP") throw new Error(`closure module is a symlink: ${relPath}`); throw e; }
+    try {
+      const st = fs.fstatSync(fd);
+      if (!st.isFile()) throw new Error(`closure module is not a regular file: ${relPath}`);
+      if (st.nlink > 1) throw new Error(`closure module is hard-linked at execution: ${relPath}`);
+      if (st.mode & 0o022) throw new Error(`closure module is group/world-writable at execution: ${relPath}`);
+      if (st.size !== want.size) throw new Error(`closure module size mismatch at execution: ${relPath}`);
+      if ((st.mode & 0o777) !== want.mode) throw new Error(`closure module mode change at execution: ${relPath}`);
+      if (String(st.dev) !== String(want.dev) || String(st.ino) !== String(want.ino)) throw new Error(`closure module inode replacement at execution: ${relPath}`);
+      if (st.uid !== want.uid || st.gid !== want.gid) throw new Error(`closure module ownership change at execution: ${relPath}`);
+      const real = fs.realpathSync(abs);
+      if (real !== abs || path.relative(ROOT, real).startsWith("..")) throw new Error(`closure module resolves outside root at execution: ${relPath}`);
+      const bytes = Buffer.alloc(st.size);
+      let off = 0;
+      while (off < st.size) { const n = fs.readSync(fd, bytes, off, st.size - off, off); if (n <= 0) break; off += n; }
+      const data = bytes.subarray(0, off);
+      const hash = crypto.createHash("sha256").update(data).digest("hex");
+      if (hash !== want.hash) throw new Error(`closure module hash mismatch at execution: ${relPath}`);
+      return data.toString("utf8");
+    } finally { fs.closeSync(fd); }
   }
 
   function resolveLocal(fromRel, spec) {
     const dir = path.posix.dirname(fromRel);
     const base = path.posix.normalize(path.posix.join(dir, spec));
     for (const cand of [base, `${base}.js`, `${base}/index.js`]) {
-      if (manifest.has(cand)) return cand;
+      if (expected.has(cand)) return cand;
     }
     throw new Error(`undeclared closure dependency: ${spec} from ${fromRel}`);
   }
 
   function requireFrom(fromRel, spec) {
-    if (spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/")) {
+    if (spec === "." || spec === ".." || spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/")) {
       const target = resolveLocal(fromRel, spec);
       return loadModule(target);
     }

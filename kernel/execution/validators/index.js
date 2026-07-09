@@ -3,7 +3,7 @@ const path = require("path");
 const { canonicalStringify } = require("../../lib/canonical-json");
 const { sha256 } = require("../../lib/append-only-log");
 const { VALIDATION_PHASES } = require("../validation-results");
-const { buildValidatorClosure } = require("../validator-closure");
+const { buildValidatorClosure, resolveAuthoritativeRoot, REPO_ROOT } = require("../validator-closure");
 
 const SEMVER = /^\d+\.\d+\.\d+$/;
 
@@ -19,6 +19,15 @@ function assertSupportedPhases(value, label) {
 // canonical hash of the registry is bound into the execution attempt.
 function loadValidatorRegistry(options = {}) {
   const validatorsDir = path.resolve(options.validatorsDir || __dirname);
+  // ONE authoritative project root. Validators and all local dependencies must
+  // resolve inside it. Defaults to the reviewed repo root; an explicit override
+  // (e.g. an authorized temporary test root) is validated (not overly broad) by
+  // resolveAuthoritativeRoot. A caller cannot widen acceptance with `/` etc.
+  const projectRoot = resolveAuthoritativeRoot(options.projectRoot || REPO_ROOT);
+  const realValidatorsDir = fs.realpathSync(validatorsDir);
+  if (realValidatorsDir !== projectRoot && path.relative(projectRoot, realValidatorsDir).startsWith("..")) {
+    throw new Error(`Validators directory is outside the authoritative project root: ${validatorsDir}.`);
+  }
   const registryPath = path.join(validatorsDir, "registry.json");
   const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
   if (!Array.isArray(registry.validators)) throw new Error("Validator registry validators must be an array.");
@@ -62,18 +71,18 @@ function loadValidatorRegistry(options = {}) {
     }
 
     loaded.set(entry.id, validator);
-    const closure = buildValidatorClosure(modulePath);
+    const closure = buildValidatorClosure(modulePath, projectRoot);
     descriptors.set(entry.id, Object.freeze({
       id: entry.id, version: entry.version, modulePath, moduleHash,
       semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(),
       supportedPhases: [...entry.supportedPhases].sort(),
-      closure: Object.freeze({ closureRoot: closure.closureRoot, entryRelPath: closure.entryRelPath, modules: closure.manifest, builtins: closure.builtins, closureHash: closure.closureHash })
+      closure: Object.freeze({ closureRoot: closure.closureRoot, rootPolicy: closure.rootPolicy, entryRelPath: closure.entryRelPath, modules: closure.manifest, builtins: closure.builtins, closureHash: closure.closureHash })
     }));
-    canonicalEntries.push({ id: entry.id, version: entry.version, module: entry.module, moduleHash, closureHash: closure.closureHash, semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(), supportedPhases: [...entry.supportedPhases].sort() });
+    canonicalEntries.push({ id: entry.id, version: entry.version, module: entry.module, moduleHash, closureHash: closure.closureHash, rootPolicyVersion: closure.rootPolicy.version, semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(), supportedPhases: [...entry.supportedPhases].sort() });
   }
 
   canonicalEntries.sort((a, b) => a.id.localeCompare(b.id));
-  const validatorSetHash = sha256(canonicalStringify({ version: registry.version || null, validators: canonicalEntries }));
+  const validatorSetHash = sha256(canonicalStringify({ version: registry.version || null, rootPolicyVersion: (canonicalEntries[0] && canonicalEntries[0].rootPolicyVersion) || null, validators: canonicalEntries }));
   return { loaded, descriptors, validatorSetHash, entries: canonicalEntries };
 }
 

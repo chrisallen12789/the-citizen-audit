@@ -105,6 +105,7 @@ function cleanup(fixture) {
 // Build an isolated validator tree with the production baseline validators plus
 // any injected test validators. The full kernel subtree is copied so baseline
 // validator relative imports resolve exactly as they do in production.
+function testProjectRoot(dir) { return path.resolve(dir, "..", "..", ".."); }
 function makeValidatorsDir(entries) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "phase3-validators-"));
   fs.cpSync(path.join(__dirname, "..", "kernel"), path.join(root, "kernel"), { recursive: true });
@@ -226,7 +227,7 @@ test("changed validator registry is loaded and bound at execution time", async (
   // A different validator set yields a different bound hash.
   const dir = makeValidatorsDir([{ id: "execution-plan", supportedPhases: ["candidate", "post_write"], source: "module.exports={id:'execution-plan',version:'1.0.0',supportedPhases:['candidate','post_write'],validate:()=>({status:'passed',problems:[],warnings:[],checkedObjects:[],checkedPaths:[]})};" }]);
   const fx2 = makeFixture({ txId: "TX-007B", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["execution-plan"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
-  const r2 = await executeApprovedTransaction("TX-007B", { rootDir: fx2.root, ledgerPath: fx2.ledgerPath, validatorsDir: dir });
+  const r2 = await executeApprovedTransaction("TX-007B", { rootDir: fx2.root, ledgerPath: fx2.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir) });
   assert.notEqual(r1.validatorSetHash, r2.validatorSetHash);
   cleanupValidatorsDir(dir);
   cleanup(fx); cleanup(fx2);
@@ -257,7 +258,7 @@ test("uncovered affected object is rejected", async () => {
 test("candidate-state validator failure causes no live mutation", async () => {
   const dir = makeValidatorsDir([{ id: "candidate-guard", supportedPhases: ["candidate"], source: "module.exports={id:'candidate-guard',version:'1.0.0',supportedPhases:['candidate'],validate:()=>({status:'failed',problems:['candidate refused'],warnings:[],checkedObjects:[],checkedPaths:[]})};" }]);
   const fx = makeFixture({ txId: "TX-010", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["candidate-guard"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
-  const result = await executeApprovedTransaction("TX-010", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir });
+  const result = await executeApprovedTransaction("TX-010", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir) });
   assert.equal(result.disposition, "rejected");
   assert.equal(fs.existsSync(fx.targetPath), false);
   assert.equal(result.attemptId, null); // no ledger attempt created pre-mutation
@@ -282,7 +283,7 @@ test("post-write hash mismatch triggers rollback", async () => {
 test("validator exception triggers rollback", async () => {
   const dir = makeValidatorsDir([{ id: "boom", supportedPhases: ["post_write"], source: "module.exports={id:'boom',version:'1.0.0',supportedPhases:['post_write'],validate:()=>{throw new Error('validator exploded');}};" }]);
   const fx = makeFixture({ txId: "TX-012", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["boom"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
-  const result = await executeApprovedTransaction("TX-012", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir });
+  const result = await executeApprovedTransaction("TX-012", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir) });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
   cleanupValidatorsDir(dir);
@@ -293,7 +294,7 @@ test("validator exception triggers rollback", async () => {
 test("malformed validator result triggers rollback", async () => {
   const dir = makeValidatorsDir([{ id: "malformed", supportedPhases: ["post_write"], source: "module.exports={id:'malformed',version:'1.0.0',supportedPhases:['post_write'],validate:()=>({nonsense:true})};" }]);
   const fx = makeFixture({ txId: "TX-013", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["malformed"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
-  const result = await executeApprovedTransaction("TX-013", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir });
+  const result = await executeApprovedTransaction("TX-013", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir) });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
   cleanupValidatorsDir(dir);
@@ -304,7 +305,7 @@ test("malformed validator result triggers rollback", async () => {
 test("validator timeout triggers rollback", async () => {
   const dir = makeValidatorsDir([{ id: "hang", supportedPhases: ["post_write"], source: "module.exports={id:'hang',version:'1.0.0',supportedPhases:['post_write'],validate:()=>new Promise(()=>{})};" }]);
   const fx = makeFixture({ txId: "TX-014", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["hang"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
-  const result = await executeApprovedTransaction("TX-014", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, timeoutMs: 1500 });
+  const result = await executeApprovedTransaction("TX-014", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir), timeoutMs: 1500 });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.existsSync(fx.targetPath), false);
   cleanupValidatorsDir(dir);
@@ -377,7 +378,7 @@ test("deleted file is restored exactly", async () => {
   const dir = makeValidatorsDir([{ id: "boom", supportedPhases: ["post_write"], source: "module.exports={id:'boom',version:'1.0.0',supportedPhases:['post_write'],validate:()=>{throw new Error('fail');}};" }]);
   // policy allowing delete + injected validator
   fs.writeFileSync(path.join(fx.root, "kernel", "execution", "policy.json"), JSON.stringify({ version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["boom"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } }, null, 2));
-  const result = await executeApprovedTransaction("TX-020", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir });
+  const result = await executeApprovedTransaction("TX-020", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir) });
   assert.equal(result.disposition, "rolled_back");
   assert.equal(fs.readFileSync(fx.targetPath, "utf8"), "TO-BE-DELETED");
   cleanupValidatorsDir(dir);
@@ -450,7 +451,7 @@ test("rollback failure records recovery_required", async () => {
       for (const name of fs.readdirSync(root)) fs.writeFileSync(path.join(root, name), "tampered-blob");
     }
   };
-  const result = await executeWithFault("TX-025", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir }, onStep);
+  const result = await executeWithFault("TX-025", { rootDir: fx.root, ledgerPath: fx.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir) }, onStep);
   assert.equal(result.disposition, "recovery_required");
   assert.equal(getExecutionAttempt(result.attemptId, { ledgerPath: fx.ledgerPath }).state, "recovery_required");
   cleanupValidatorsDir(dir);
@@ -569,9 +570,9 @@ test("baseline mandatory validators cannot be removed by policy", async () => {
 // 32. Validator-set binding includes validator implementation bytes.
 test("validator set hash changes when validator source changes", () => {
   const dir = makeValidatorsDir([]);
-  const first = loadValidatorRegistry({ validatorsDir: dir });
+  const first = loadValidatorRegistry({ validatorsDir: dir, projectRoot: testProjectRoot(dir) });
   fs.appendFileSync(path.join(dir, "execution-plan.js"), "\n// implementation changed without version bump\n");
-  const second = loadValidatorRegistry({ validatorsDir: dir });
+  const second = loadValidatorRegistry({ validatorsDir: dir, projectRoot: testProjectRoot(dir) });
   assert.notEqual(first.validatorSetHash, second.validatorSetHash);
   const entry = second.entries.find((item) => item.id === "execution-plan");
   assert.match(entry.moduleHash, /^[a-f0-9]{64}$/);
@@ -660,9 +661,9 @@ test("unavailable or incorrectly bound action semantic validator fails closed", 
 
 test("action semantic validator implementation bytes change validator-set hash", () => {
   const first = makeValidatorsDir([{ id: "semantic-bytes", semantic: true, actions: ["write_report"], supportedPhases: ["candidate"], source: semanticValidatorSource("semantic-bytes", "()=>({status:'passed',problems:[],warnings:[]})", ["candidate"]) }]);
-  const firstHash = loadValidatorRegistry({ validatorsDir: first }).validatorSetHash;
+  const firstHash = loadValidatorRegistry({ validatorsDir: first, projectRoot: testProjectRoot(first) }).validatorSetHash;
   fs.appendFileSync(path.join(first, "semantic-bytes.js"), "\n// byte-level semantic change\n");
-  const secondHash = loadValidatorRegistry({ validatorsDir: first }).validatorSetHash;
+  const secondHash = loadValidatorRegistry({ validatorsDir: first, projectRoot: testProjectRoot(first) }).validatorSetHash;
   assert.notEqual(firstHash, secondHash);
   cleanupValidatorsDir(first);
 });
@@ -709,7 +710,7 @@ for (const scenario of [
     const result = await executeApprovedTransaction(fx.txId, {
       rootDir: fx.root,
       ledgerPath: fx.ledgerPath,
-      validatorsDir: dir,
+      validatorsDir: dir, projectRoot: testProjectRoot(dir),
       timeoutMs: scenario.timeoutMs
     });
     assert.notEqual(result.disposition, "committed");
