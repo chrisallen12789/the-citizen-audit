@@ -9,6 +9,7 @@ const test = require("node:test");
 const { runValidationPhase } = require("../kernel/execution/validation-cycle");
 const { extractStaticValidatorContract, loadValidatorRegistry } = require("../kernel/execution/validators");
 const { buildValidatorClosure } = require("../kernel/execution/validator-closure");
+const { loadValidatorRegistryForTest } = require("./support/validator-test-harness");
 
 const REAL_VALIDATORS = path.join(__dirname, "..", "kernel", "execution", "validators");
 const HOLDER = path.join(__dirname, "..", "kernel", "execution");
@@ -195,7 +196,7 @@ function assertLegacyExecutesButRegistryDoesNot(dir, markerPath) {
   legacyLoadValidatorRegistry(dir);
   assert.equal(fs.existsSync(markerPath), true, "legacy registry path should have executed the attack payload");
   fs.rmSync(markerPath, { force: true });
-  try { loadValidatorRegistry({ validatorsDir: dir }); } catch (error) {}
+  try { loadValidatorRegistryForTest({ validatorsDir: dir, projectRoot: path.resolve(dir, "..", "..", "..") }); } catch (error) {}
   assert.equal(fs.existsSync(markerPath), false, "hardened registry must not execute the attack payload");
 }
 
@@ -304,7 +305,7 @@ test("loader rejects symlinked validator module", () => {
     const modPath = path.join(dir, v.module); const outside = path.join(os.tmpdir(), `evilv-${Date.now()}.js`);
     writeStrictFile(outside, `module.exports={id:${JSON.stringify(v.id)},version:${JSON.stringify(v.version)},semantic:false,supportedPhases:${JSON.stringify(v.supportedPhases)},validate:()=>({status:"passed",problems:[]})};`);
     fs.rmSync(modPath); try { fs.symlinkSync(outside, modPath); } catch (error) { if (error.code === "EPERM") return; throw error; }
-    assert.throws(() => loadValidatorRegistry({ validatorsDir: dir }), /unavailable|regular file/i);
+    assert.throws(() => loadValidatorRegistryForTest({ validatorsDir: dir, projectRoot: path.resolve(dir, "..", "..", "..") }), /unavailable|regular file/i);
     fs.rmSync(outside, { force: true });
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
@@ -317,16 +318,16 @@ for (const [name, mutate, rx] of [
 ]) {
   test(`loader fails closed: ${name}`, () => {
     const dir = tempValidatorDir();
-    try { const r = readReg(dir); mutate(r); writeReg(dir, r); assert.throws(() => loadValidatorRegistry({ validatorsDir: dir }), rx); }
+    try { const r = readReg(dir); mutate(r); writeReg(dir, r); assert.throws(() => loadValidatorRegistryForTest({ validatorsDir: dir, projectRoot: path.resolve(dir, "..", "..", "..") }), rx); }
     finally { fs.rmSync(dir, { recursive: true, force: true }); }
   });
 }
 test("tampering a validator module changes the bound validatorSetHash", () => {
   const dir = tempValidatorDir();
   try {
-    const before = loadValidatorRegistry({ validatorsDir: dir }).validatorSetHash;
+    const before = loadValidatorRegistryForTest({ validatorsDir: dir, projectRoot: path.resolve(dir, "..", "..", "..") }).validatorSetHash;
     fs.appendFileSync(path.join(dir, readReg(dir).validators.find((v) => v.semantic).module), "\n// tamper\n");
-    assert.notEqual(loadValidatorRegistry({ validatorsDir: dir }).validatorSetHash, before);
+    assert.notEqual(loadValidatorRegistryForTest({ validatorsDir: dir, projectRoot: path.resolve(dir, "..", "..", "..") }).validatorSetHash, before);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -383,7 +384,7 @@ test("worker rejects an undeclared closure dependency at execution", async () =>
 });
 test("closureHash is folded into validatorSetHash (real registry)", () => {
   const { loadValidatorRegistry } = require("../kernel/execution/validators");
-  const reg = loadValidatorRegistry({});
+  const reg = loadValidatorRegistry();
   for (const [, d] of reg.descriptors) { assert.ok(d.closure && typeof d.closure.closureHash === "string" && d.closure.modules.length >= 1); }
   assert.match(reg.validatorRuntime.hash, /^[a-f0-9]{64}$/);
   assert.match(reg.closureLoaderRuntime.hash, /^[a-f0-9]{64}$/);
@@ -392,7 +393,7 @@ test("closureHash is folded into validatorSetHash (real registry)", () => {
   assert.ok(entry && entry.contract && Array.isArray(entry.contract.supportedPhases));
 });
 test("registry descriptors are deep-frozen after loading", () => {
-  const reg = loadValidatorRegistry({});
+  const reg = loadValidatorRegistry();
   const descriptor = reg.descriptors.get("execution-plan");
   assert.ok(Object.isFrozen(descriptor));
   assert.ok(Object.isFrozen(descriptor.contract));
@@ -402,6 +403,30 @@ test("registry descriptors are deep-frozen after loading", () => {
   assert.ok(Object.isFrozen(descriptor.closure.rootPolicy));
   assert.ok(Object.isFrozen(descriptor.closure.modules));
   assert.ok(Object.isFrozen(descriptor.closure.modules[0]));
+});
+
+test("registry collections are actually immutable", () => {
+  const reg = loadValidatorRegistry();
+  const originalDescriptor = reg.descriptors.get("execution-plan");
+  const originalContract = reg.contracts.get("execution-plan");
+  assert.equal(typeof reg.descriptors.set, "undefined");
+  assert.equal(typeof reg.descriptors.delete, "undefined");
+  assert.equal(typeof reg.descriptors.clear, "undefined");
+  assert.equal(typeof reg.contracts.set, "undefined");
+  assert.equal(typeof reg.contracts.delete, "undefined");
+  assert.equal(typeof reg.contracts.clear, "undefined");
+  reg.descriptors.extra = "x";
+  reg.descriptors.get = () => null;
+  delete reg.descriptors.size;
+  assert.equal(reg.descriptors.get("execution-plan"), originalDescriptor);
+  assert.equal(reg.contracts.get("execution-plan"), originalContract);
+  assert.equal(Object.prototype.hasOwnProperty.call(reg.descriptors, "extra"), false);
+  assert.equal(reg.descriptors.size > 0, true);
+});
+
+test("production exports do not expose a test-only root override", () => {
+  const validators = require("../kernel/execution/validators");
+  assert.equal(Object.prototype.hasOwnProperty.call(validators, "loadValidatorRegistryForTest"), false);
 });
 
 // ---- WORK UNIT 4: cross-phase re-verification ----
@@ -499,7 +524,10 @@ function builtDescriptor(src) {
   return { id, version: "1.0.0", modulePath: mp, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate"], closure: { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: JSON.parse(JSON.stringify(c.manifest)), builtins: c.builtins, closureHash: c.closureHash }, contract: { id, version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate"] } };
 }
 test("exec: mode change vs bound manifest fails closed", async () => {
-  const d = builtDescriptor(); d.closure.modules[0].mode = 0o600; // differs from actual on disk
+  const d = builtDescriptor();
+  const originalMode = d.closure.modules[0].mode;
+  d.closure.modules[0].mode = originalMode === 0o600 ? 0o400 : 0o600;
+  assert.notEqual(d.closure.modules[0].mode, originalMode);
   const phase = await runOne(d);
   assert.equal(phase.status, "failed");
   assert.match(phase.problems.join(" "), /mode change/i);

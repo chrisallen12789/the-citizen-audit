@@ -35,10 +35,14 @@ function loadFaultInjectedOrchestrator(onStep, executionOptions = {}) {
 
   const recoveryPath = require.resolve("../../kernel/execution/recovery-session");
   const rollbackPath = require.resolve("../../kernel/execution/rollback");
+  const orchestratorCorePath = require.resolve("../../kernel/execution/orchestrator-core");
   const orchestratorPath = require.resolve("../../kernel/execution/orchestrator");
+  const orchestratorHarnessPath = require.resolve("./orchestrator-test-harness");
   delete require.cache[recoveryPath];
   delete require.cache[rollbackPath];
+  delete require.cache[orchestratorCorePath];
   delete require.cache[orchestratorPath];
+  delete require.cache[orchestratorHarnessPath];
   const instrumentedRecovery = require(recoveryPath);
 
   durableIo.atomicReplaceFile = originals.atomicReplaceFile;
@@ -51,8 +55,12 @@ function loadFaultInjectedOrchestrator(onStep, executionOptions = {}) {
   };
   require.cache[recoveryPath].exports = instrumentedRecovery;
   const orchestrator = require(orchestratorPath);
-  const loaded = (executionOptions && Object.prototype.hasOwnProperty.call(executionOptions, "projectRoot"))
-    ? orchestrator.executeApprovedTransactionForTest
+  const { executeApprovedTransactionForTest } = require("./orchestrator-test-harness");
+  const loaded = (executionOptions && (
+    Object.prototype.hasOwnProperty.call(executionOptions, "projectRoot")
+    || Object.prototype.hasOwnProperty.call(executionOptions, "validatorsDir")
+  ))
+    ? executeApprovedTransactionForTest
     : orchestrator.executeApprovedTransaction;
   boundary.releaseExecutionLock = originals.releaseExecutionLock;
   return loaded;

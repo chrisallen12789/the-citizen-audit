@@ -151,6 +151,18 @@
       ]
     },
     {
+      "path": "kernel/execution/orchestrator-core.js",
+      "category": 1,
+      "justification": "Internal authoritative execution core behind the production orchestrator wrapper and test harness; all durable mutation remains delegated to reviewed Phase 2 primitives.",
+      "capabilities": [
+        "durableStateMutation",
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
       "path": "kernel/execution/parent-directories.js",
       "category": 5,
       "justification": "Path parent validation and execution directory helper within the governed boundary.",
@@ -351,12 +363,20 @@
     {
       "path": "kernel/execution/validators/index.js",
       "category": 5,
-      "justification": "Validator registry loader; its dynamic require is confined to a hashed regular module inside the reviewed validators directory.",
+      "justification": "Production validator registry entrypoint locked to the reviewed validator directory and source-boundary loader.",
       "capabilities": [
         "durableStateMutation",
         "filesystemMutation"
-      ],
-      "reviewedDynamicRequire": true
+      ]
+    },
+    {
+      "path": "kernel/execution/validators/registry-core.js",
+      "category": 5,
+      "justification": "Internal source-boundary validator registry core that statically inspects verified module bytes, builds reviewed closures, and exposes immutable descriptor lookups.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
     },
     {
       "path": "kernel/execution/validators/sort-registry-semantics.js",
@@ -819,6 +839,26 @@
         "durableStateMutation"
       ],
       "reviewedDynamicRequire": true
+    },
+    {
+      "path": "tests/support/orchestrator-test-harness.js",
+      "category": 4,
+      "justification": "Test-only execution harness exposing alternate validator-root support for fixtures; not exported through production orchestrator entry points.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "tests/support/validator-test-harness.js",
+      "category": 4,
+      "justification": "Test-only validator-registry harness exposing alternate validator roots for fixtures; not exported through production validator entry points.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
     },
     {
       "path": "scripts/deployment-certify.js",

@@ -8,14 +8,16 @@ const { sha256, appendEntry } = require("../kernel/lib/append-only-log");
 const { recordTransaction } = require("../kernel/transactions/store");
 const { computeWriteSetHash } = require("../kernel/transactions/validate");
 const { recordApprovalDecision } = require("../kernel/approvals/decision-store");
-const { executeApprovedTransaction, executeApprovedTransactionForTest } = require("../kernel/execution/orchestrator");
+const { executeApprovedTransaction } = require("../kernel/execution/orchestrator");
 const { getExecutionAttempt, createExecutionAttempt, transitionExecutionAttempt } = require("../kernel/execution/ledger");
 const { acquireExecutionLock, readExecutionLock } = require("../kernel/execution/exclusive-boundary");
 const { recoverIncompleteExecution } = require("../kernel/execution/startup-recovery");
-const { loadValidatorRegistry, loadValidatorRegistryForTest } = require("../kernel/execution/validators");
+const { loadValidatorRegistry } = require("../kernel/execution/validators");
 const { recordRuntimeIsolationBarrier } = require("../kernel/execution/runtime-isolation-barrier");
 const { snapshotGovernedTree } = require("../kernel/runtime/governed-tree-guard");
 const { loadFaultInjectedOrchestrator } = require("./support/orchestrator-fault-adapter");
+const { executeApprovedTransactionForTest } = require("./support/orchestrator-test-harness");
+const { loadValidatorRegistryForTest } = require("./support/validator-test-harness");
 const { resolveRegisteredAgent } = require("../kernel/runtime/agent-registry");
 const { ISOLATION_ADAPTER_VERSION, reviewedSandboxHelperSourceHash } = require("../kernel/runtime/runtime-provenance");
 
@@ -253,9 +255,67 @@ test("production orchestrator rejects a caller-selected temporary root", async (
   cleanup(fx);
 });
 
+test("production orchestrator rejects a caller-selected validator directory inside the repository", async () => {
+  const fx = makeFixture({ txId: "TX-007E" });
+  const result = await executeApprovedTransaction("TX-007E", {
+    rootDir: fx.root,
+    ledgerPath: fx.ledgerPath,
+    validatorsDir: path.join(__dirname, "support")
+  });
+  assert.equal(result.disposition, "rejected");
+  assert.ok(result.problems.some((problem) => /caller-selected validatorsDir/i.test(problem)));
+  cleanup(fx);
+});
+
+test("production orchestrator rejects a caller-selected temporary validator directory", async () => {
+  const fx = makeFixture({ txId: "TX-007F" });
+  const dir = makeValidatorsDir([]);
+  const result = await executeApprovedTransaction("TX-007F", {
+    rootDir: fx.root,
+    ledgerPath: fx.ledgerPath,
+    validatorsDir: dir
+  });
+  assert.equal(result.disposition, "rejected");
+  assert.ok(result.problems.some((problem) => /caller-selected validatorsDir/i.test(problem)));
+  cleanupValidatorsDir(dir);
+  cleanup(fx);
+});
+
+test("production orchestrator rejects a copied registry with the same validator ids", async () => {
+  const fx = makeFixture({ txId: "TX-007G" });
+  const dir = makeValidatorsDir([]);
+  const result = await executeApprovedTransaction("TX-007G", {
+    rootDir: fx.root,
+    ledgerPath: fx.ledgerPath,
+    validatorsDir: dir
+  });
+  assert.equal(result.disposition, "rejected");
+  assert.ok(result.problems.some((problem) => /caller-selected validatorsDir/i.test(problem)));
+  cleanupValidatorsDir(dir);
+  cleanup(fx);
+});
+
+test("production orchestrator rejects an always-pass replacement validator registry", async () => {
+  const fx = makeFixture({ txId: "TX-007H" });
+  const dir = makeValidatorsDir([{
+    id: "execution-plan",
+    supportedPhases: ["candidate", "post_write"],
+    source: "module.exports={id:'execution-plan',version:'1.0.0',supportedPhases:['candidate','post_write'],validate:()=>({status:'passed',problems:[],warnings:[],checkedObjects:[],checkedPaths:[]})};"
+  }]);
+  const result = await executeApprovedTransaction("TX-007H", {
+    rootDir: fx.root,
+    ledgerPath: fx.ledgerPath,
+    validatorsDir: dir
+  });
+  assert.equal(result.disposition, "rejected");
+  assert.ok(result.problems.some((problem) => /caller-selected validatorsDir/i.test(problem)));
+  cleanupValidatorsDir(dir);
+  cleanup(fx);
+});
+
 test("production registry loader rejects a caller-selected temporary validator root", () => {
   const dir = makeValidatorsDir([]);
-  assert.throws(() => loadValidatorRegistry({ validatorsDir: dir }), /outside the authoritative project root/i);
+  assert.throws(() => loadValidatorRegistry({ validatorsDir: dir }), /caller-selected validatorsDir/i);
   cleanupValidatorsDir(dir);
 });
 
@@ -270,8 +330,15 @@ test("test-only root authorization cannot leak into production loading", () => {
   const dir = makeValidatorsDir([]);
   const registry = loadValidatorRegistryForTest({ validatorsDir: dir, projectRoot: testProjectRoot(dir) });
   assert.ok(registry.validatorSetHash);
-  assert.throws(() => loadValidatorRegistry({ validatorsDir: dir }), /outside the authoritative project root/i);
+  assert.throws(() => loadValidatorRegistry({ validatorsDir: dir }), /caller-selected validatorsDir/i);
   cleanupValidatorsDir(dir);
+});
+
+test("production modules do not export test-only harness functions", () => {
+  const orchestrator = require("../kernel/execution/orchestrator");
+  const validators = require("../kernel/execution/validators");
+  assert.equal(orchestrator.executeApprovedTransactionForTest, undefined);
+  assert.equal(validators.loadValidatorRegistryForTest, undefined);
 });
 
 // 8. Missing mandatory validator fails closed.
