@@ -11,6 +11,15 @@ const DEFAULT_TIMEOUT_MS = 5000;
 const WORKER_PATH = path.join(__dirname, "validator-worker-test-core.js");
 const LIMITS = { maxResultBytes: 262144, maxArrayLen: 10000, maxStdBytes: 65536 };
 const TRANSPORT_RESULT_FIELDS = Object.freeze(["status", "problems", "warnings", "checkedObjects", "checkedPaths"]);
+const FAILURE_CODES = new Set([
+  "VALIDATOR_THROW",
+  "VALIDATOR_REJECTION",
+  "VALIDATOR_RESULT_INVALID",
+  "VALIDATOR_TIMEOUT",
+  "REGISTRY_MISMATCH",
+  "CLOSURE_VERIFICATION_FAILURE",
+  "WORKER_INTERNAL_FAILURE"
+]);
 
 function serializableContext(context) {
   return {
@@ -27,29 +36,52 @@ function isStringArray(value) {
   return Array.isArray(value) && value.every((entry) => typeof entry === "string");
 }
 
+function formatFailure(code, diagnostic) {
+  if (!diagnostic) return code;
+  return `${code}: ${diagnostic}`;
+}
+
 function parseTransportedValidatorResult(message) {
-  if (!message || typeof message !== "object") {
-    return { ok: false, error: "validator produced a malformed worker message" };
+  if (typeof message !== "string") {
+    return { ok: false, error: "WORKER_INTERNAL_FAILURE: malformed worker envelope" };
   }
-  if (message.ok !== true) {
-    return {
-      ok: false,
-      error: typeof message.error === "string" && message.error ? message.error : "validator produced a malformed worker message"
-    };
-  }
-  if (typeof message.serializedResult !== "string") {
-    return { ok: false, error: "validator produced a malformed serialized result" };
-  }
-  const serializedBytes = Buffer.byteLength(message.serializedResult, "utf8");
+  const serializedBytes = Buffer.byteLength(message, "utf8");
   if (serializedBytes > LIMITS.maxResultBytes) {
-    return { ok: false, error: `validator result exceeds ${LIMITS.maxResultBytes} bytes` };
+    return { ok: false, error: "WORKER_INTERNAL_FAILURE: worker envelope exceeds reviewed transport bound" };
   }
-  let parsed;
+  let envelope;
   try {
-    parsed = JSON.parse(message.serializedResult);
+    envelope = JSON.parse(message);
   } catch (error) {
-    return { ok: false, error: "validator transported invalid JSON" };
+    return { ok: false, error: "WORKER_INTERNAL_FAILURE: worker transported invalid JSON" };
   }
+  if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) {
+    return { ok: false, error: "WORKER_INTERNAL_FAILURE: worker transported malformed envelope" };
+  }
+  if (envelope.ok !== true) {
+    const keys = Object.keys(envelope);
+    const hasOnlyFailureKeys = keys.every((key) => key === "ok" || key === "code" || key === "diagnostic");
+    const diagnosticOk = envelope.diagnostic === undefined || typeof envelope.diagnostic === "string";
+    if (
+      envelope.ok === false
+      && hasOnlyFailureKeys
+      && typeof envelope.code === "string"
+      && FAILURE_CODES.has(envelope.code)
+      && diagnosticOk
+    ) {
+      return { ok: false, error: formatFailure(envelope.code, envelope.diagnostic) };
+    }
+    return { ok: false, error: "WORKER_INTERNAL_FAILURE: worker transported malformed failure envelope" };
+  }
+  const envelopeKeys = Object.keys(envelope);
+  if (
+    envelopeKeys.length !== 2
+    || !Object.prototype.hasOwnProperty.call(envelope, "ok")
+    || !Object.prototype.hasOwnProperty.call(envelope, "result")
+  ) {
+    return { ok: false, error: "WORKER_INTERNAL_FAILURE: worker transported malformed success envelope" };
+  }
+  const parsed = envelope.result;
   const keys = parsed && typeof parsed === "object" && !Array.isArray(parsed) ? Object.keys(parsed) : [];
   const knownKeysOnly = keys.length === TRANSPORT_RESULT_FIELDS.length
     && TRANSPORT_RESULT_FIELDS.every((key) => Object.prototype.hasOwnProperty.call(parsed, key));
@@ -64,7 +96,7 @@ function parseTransportedValidatorResult(message) {
     || !isStringArray(parsed.checkedObjects)
     || !isStringArray(parsed.checkedPaths)
   ) {
-    return { ok: false, error: "validator transported malformed normalized content" };
+    return { ok: false, error: "VALIDATOR_RESULT_INVALID: validator transported malformed normalized content" };
   }
   return { ok: true, raw: parsed };
 }
@@ -83,7 +115,7 @@ function runValidatorBoundary(descriptor, phase, context, timeoutMs) {
       }
       resolve(outcome);
     };
-    const timer = setTimeout(() => finish({ ok: false, error: `validator timed out after ${timeoutMs}ms` }), timeoutMs);
+    const timer = setTimeout(() => finish({ ok: false, error: "VALIDATOR_TIMEOUT: validator timed out" }), timeoutMs);
 
     try {
       worker = new Worker(WORKER_PATH, {
@@ -99,19 +131,19 @@ function runValidatorBoundary(descriptor, phase, context, timeoutMs) {
         stderr: true
       });
     } catch (error) {
-      finish({ ok: false, error: `validator worker startup failed: ${error.message}` });
+      finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker startup failed" });
       return;
     }
 
     const capture = (stream) => stream.on("data", (chunk) => {
       stdBytes += chunk.length;
-      if (stdBytes > LIMITS.maxStdBytes) finish({ ok: false, error: `validator exceeded ${LIMITS.maxStdBytes} bytes of stdio` });
+      if (stdBytes > LIMITS.maxStdBytes) finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator exceeded reviewed stdio bound" });
     });
     capture(worker.stdout);
     capture(worker.stderr);
     worker.on("message", (msg) => finish(parseTransportedValidatorResult(msg)));
-    worker.on("error", (error) => finish({ ok: false, error: `validator worker crashed: ${error.message}` }));
-    worker.on("exit", (code) => finish({ ok: false, error: `validator worker exited without a result (code ${code})` }));
+    worker.on("error", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker crashed" }));
+    worker.on("exit", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker exited without a result" }));
   });
 }
 

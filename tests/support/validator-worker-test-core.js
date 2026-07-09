@@ -9,8 +9,18 @@ const { parentPort, workerData } = require("worker_threads");
 const LIMITS = workerData.limits || {};
 const MAX_RESULT_BYTES = LIMITS.maxResultBytes || 262144;
 const MAX_ARRAY_LEN = LIMITS.maxArrayLen || 10000;
+const MAX_DIAGNOSTIC_BYTES = 512;
 const ENFORCE_POSIX_WRITE_BITS = process.platform !== "win32";
 const TRANSPORT_PRIMITIVE_TYPES = new Set(["string", "number", "boolean", "bigint", "undefined"]);
+const FAILURE_CODES = new Set([
+  "VALIDATOR_THROW",
+  "VALIDATOR_REJECTION",
+  "VALIDATOR_RESULT_INVALID",
+  "VALIDATOR_TIMEOUT",
+  "REGISTRY_MISMATCH",
+  "CLOSURE_VERIFICATION_FAILURE",
+  "WORKER_INTERNAL_FAILURE"
+]);
 
 const ALLOWED_BUILTINS = {
   path: require("path"),
@@ -22,7 +32,70 @@ const ALLOWED_BUILTINS = {
   fs: require("fs")
 };
 
-function fail(reason) { try { parentPort.postMessage({ ok: false, error: reason }); } catch (error) {} }
+class WorkerFailure extends Error {
+  constructor(code, diagnostic) {
+    super(code);
+    this.failureCode = code;
+    this.diagnostic = diagnostic;
+  }
+}
+
+function workerFailure(code, diagnostic) {
+  return new WorkerFailure(code, diagnostic);
+}
+
+function safeFailureCode(code) {
+  return FAILURE_CODES.has(code) ? code : "WORKER_INTERNAL_FAILURE";
+}
+
+function truncateUtf8(text, maxBytes) {
+  if (typeof text !== "string") return undefined;
+  if (Buffer.byteLength(text, "utf8") <= maxBytes) return text;
+  let truncated = Buffer.from(text, "utf8").subarray(0, maxBytes).toString("utf8");
+  while (Buffer.byteLength(truncated, "utf8") > maxBytes) truncated = truncated.slice(0, -1);
+  return truncated;
+}
+
+function failureEnvelope(code, diagnostic) {
+  const envelope = { ok: false, code: safeFailureCode(code) };
+  const boundedDiagnostic = truncateUtf8(diagnostic, MAX_DIAGNOSTIC_BYTES);
+  if (boundedDiagnostic) envelope.diagnostic = boundedDiagnostic;
+  return envelope;
+}
+
+function compactFallbackEnvelope(code) {
+  return failureEnvelope(code, "worker response exceeded reviewed transport bound");
+}
+
+function checkedEnvelopeString(envelope) {
+  let serialized;
+  try {
+    serialized = JSON.stringify(envelope);
+  } catch (error) {
+    serialized = JSON.stringify(compactFallbackEnvelope("WORKER_INTERNAL_FAILURE"));
+  }
+  if (Buffer.byteLength(serialized, "utf8") <= MAX_RESULT_BYTES) return serialized;
+  const fallbackCode = envelope && envelope.ok === true ? "VALIDATOR_RESULT_INVALID" : "WORKER_INTERNAL_FAILURE";
+  return JSON.stringify(compactFallbackEnvelope(fallbackCode));
+}
+
+function postEnvelope(envelope) {
+  try { parentPort.postMessage(checkedEnvelopeString(envelope)); } catch (error) {}
+}
+
+function fail(code, diagnostic) {
+  postEnvelope(failureEnvelope(code, diagnostic));
+}
+
+function failFromCaught(error, fallbackCode, diagnostic) {
+  if (error instanceof WorkerFailure) return fail(error.failureCode, error.diagnostic);
+  return fail(fallbackCode, diagnostic);
+}
+
+function succeed(result) {
+  postEnvelope({ ok: true, result });
+}
+
 function canonicalArray(value) { return Array.isArray(value) ? [...value].map(String).sort() : []; }
 function boundArray(value, label, problems) {
   if (value === undefined) return [];
@@ -106,23 +179,26 @@ function loadClosureEntry(closure) {
 
   function readVerified(relPath) {
     const want = expected.get(relPath);
-    if (!want) throw new Error(`undeclared closure module: ${relPath}`);
+    if (!want) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "undeclared closure module");
     const abs = path.join(root, relPath);
-    if (path.relative(root, abs).split(path.sep).join("/").startsWith("..")) throw new Error(`closure path escape: ${relPath}`);
+    if (path.relative(root, abs).split(path.sep).join("/").startsWith("..")) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure path escape");
     let fd;
     try { fd = fs.openSync(abs, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW); }
-    catch (error) { if (error.code === "ELOOP") throw new Error(`closure module is a symlink: ${relPath}`); throw error; }
+    catch (error) {
+      if (error && error.code === "ELOOP") throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module is a symlink");
+      throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module open failed");
+    }
     try {
       const stat = fs.fstatSync(fd);
-      if (!stat.isFile()) throw new Error(`closure module is not a regular file: ${relPath}`);
-      if (stat.nlink > 1) throw new Error(`closure module is hard-linked at execution: ${relPath}`);
-      if (ENFORCE_POSIX_WRITE_BITS && (stat.mode & 0o022)) throw new Error(`closure module is group/world-writable at execution: ${relPath}`);
-      if (stat.size !== want.size) throw new Error(`closure module size mismatch at execution: ${relPath}`);
-      if ((stat.mode & 0o777) !== want.mode) throw new Error(`closure module mode change at execution: ${relPath}`);
-      if (String(stat.dev) !== String(want.dev) || String(stat.ino) !== String(want.ino)) throw new Error(`closure module inode replacement at execution: ${relPath}`);
-      if (stat.uid !== want.uid || stat.gid !== want.gid) throw new Error(`closure module ownership change at execution: ${relPath}`);
+      if (!stat.isFile()) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module is not a regular file");
+      if (stat.nlink > 1) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module is hard-linked at execution");
+      if (ENFORCE_POSIX_WRITE_BITS && (stat.mode & 0o022)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module is group/world-writable at execution");
+      if (stat.size !== want.size) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module size mismatch at execution");
+      if ((stat.mode & 0o777) !== want.mode) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module mode change at execution");
+      if (String(stat.dev) !== String(want.dev) || String(stat.ino) !== String(want.ino)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module inode replacement at execution");
+      if (stat.uid !== want.uid || stat.gid !== want.gid) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module ownership change at execution");
       const real = fs.realpathSync(abs);
-      if (real !== abs || path.relative(root, real).startsWith("..")) throw new Error(`closure module resolves outside root at execution: ${relPath}`);
+      if (real !== abs || path.relative(root, real).startsWith("..")) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module resolves outside root at execution");
       const bytes = Buffer.alloc(stat.size);
       let offset = 0;
       while (offset < stat.size) {
@@ -132,7 +208,7 @@ function loadClosureEntry(closure) {
       }
       const data = bytes.subarray(0, offset);
       const hash = crypto.createHash("sha256").update(data).digest("hex");
-      if (hash !== want.hash) throw new Error(`closure module hash mismatch at execution: ${relPath}`);
+      if (hash !== want.hash) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module hash mismatch at execution");
       return data.toString("utf8");
     } finally {
       fs.closeSync(fd);
@@ -145,7 +221,7 @@ function loadClosureEntry(closure) {
     for (const candidate of [base, `${base}.js`, `${base}/index.js`]) {
       if (expected.has(candidate)) return candidate;
     }
-    throw new Error(`undeclared closure dependency: ${spec} from ${fromRel}`);
+    throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "undeclared closure dependency");
   }
 
   function requireFrom(fromRel, spec) {
@@ -153,7 +229,7 @@ function loadClosureEntry(closure) {
       return loadModule(resolveLocal(fromRel, spec));
     }
     const builtin = spec.startsWith("node:") ? spec.slice(5) : spec;
-    if (!Object.prototype.hasOwnProperty.call(ALLOWED_BUILTINS, builtin)) throw new Error(`non-allowlisted builtin required in closure: ${spec}`);
+    if (!Object.prototype.hasOwnProperty.call(ALLOWED_BUILTINS, builtin)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "non-allowlisted builtin required in closure");
     return ALLOWED_BUILTINS[builtin];
   }
 
@@ -163,8 +239,18 @@ function loadClosureEntry(closure) {
     const module = { exports: {} };
     compiledCache.set(relPath, module.exports);
     const absFile = path.join(root, relPath);
-    const wrapper = vm.compileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile });
-    wrapper(module.exports, (spec) => requireFrom(relPath, spec), module, absFile, path.dirname(absFile));
+    let wrapper;
+    try {
+      wrapper = vm.compileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile });
+    } catch (error) {
+      throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "validator module compilation failed");
+    }
+    try {
+      wrapper(module.exports, (spec) => requireFrom(relPath, spec), module, absFile, path.dirname(absFile));
+    } catch (error) {
+      if (error instanceof WorkerFailure) throw error;
+      throw workerFailure("VALIDATOR_THROW");
+    }
     compiledCache.set(relPath, module.exports);
     return module.exports;
   }
@@ -175,10 +261,19 @@ function loadClosureEntry(closure) {
 try {
   const { closure, expectedContract, validatorId, phase, context } = workerData;
   if (!closure || !Array.isArray(closure.modules) || !closure.entryRelPath) {
-    fail(`missing validator closure: ${validatorId}`);
+    fail("CLOSURE_VERIFICATION_FAILURE", "missing validator closure");
   } else {
-    const validator = loadClosureEntry(closure);
+    let validator;
+    let validatorLoaded = false;
+    try {
+      validator = loadClosureEntry(closure);
+      validatorLoaded = true;
+    } catch (error) {
+      failFromCaught(error, "CLOSURE_VERIFICATION_FAILURE");
+    }
     if (
+      validatorLoaded
+      && (
       !validator
       || validator.id !== validatorId
       || !expectedContract
@@ -187,25 +282,38 @@ try {
       || JSON.stringify(canonicalArray(validator.actions)) !== JSON.stringify(canonicalArray(expectedContract.actions))
       || JSON.stringify(canonicalArray(validator.supportedPhases)) !== JSON.stringify(canonicalArray(expectedContract.supportedPhases))
       || typeof validator.validate !== "function"
+      )
     ) {
-      fail(`validator contract mismatch in worker: ${validatorId}`);
-    } else if (!Array.isArray(validator.supportedPhases) || !validator.supportedPhases.includes(phase)) {
-      fail(`validator does not support phase ${phase}: ${validatorId}`);
-    } else {
+      fail("VALIDATOR_RESULT_INVALID", "validator contract mismatch in worker");
+    } else if (validatorLoaded && (!Array.isArray(validator.supportedPhases) || !validator.supportedPhases.includes(phase))) {
+      fail("VALIDATOR_RESULT_INVALID", "validator does not support requested phase");
+    } else if (validatorLoaded) {
       Promise.resolve()
-        .then(() => validator.validate({ ...context, phase }))
-        .then((raw) => {
-          if (!raw || typeof raw !== "object" || Array.isArray(raw)) return fail(`validator returned a non-object result: ${validatorId}`);
-          const normalized = normalizeTransportedResult(raw);
-          let serialized;
-          try { serialized = JSON.stringify(normalized); } catch (error) { return fail(`validator result is not serializable (circular/deep): ${validatorId}`); }
-          const serializedBytes = Buffer.byteLength(serialized, "utf8");
-          if (serializedBytes > MAX_RESULT_BYTES) return fail(`validator result exceeds ${MAX_RESULT_BYTES} bytes: ${validatorId}`);
-          parentPort.postMessage({ ok: true, serializedResult: serialized });
+        .then(() => {
+          let validationResult;
+          try {
+            validationResult = validator.validate({ ...context, phase });
+          } catch (error) {
+            fail("VALIDATOR_THROW");
+            return undefined;
+          }
+          return Promise.resolve(validationResult)
+            .then((raw) => ({ raw }))
+            .catch(() => {
+              fail("VALIDATOR_REJECTION");
+              return undefined;
+            });
         })
-        .catch((error) => fail(`validator threw: ${(error && error.message) || String(error)}`));
+        .then((outcome) => {
+          if (!outcome) return undefined;
+          const raw = outcome.raw;
+          if (!raw || typeof raw !== "object" || Array.isArray(raw)) return fail("VALIDATOR_RESULT_INVALID", "validator returned a non-object result");
+          const normalized = normalizeTransportedResult(raw);
+          succeed(normalized);
+        })
+        .catch((error) => failFromCaught(error, "WORKER_INTERNAL_FAILURE"));
     }
   }
 } catch (error) {
-  fail(`validator worker failure: ${(error && error.message) || String(error)}`);
+  failFromCaught(error, "WORKER_INTERNAL_FAILURE");
 }

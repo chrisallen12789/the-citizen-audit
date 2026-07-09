@@ -82,12 +82,31 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
   });
 }
 
+function parseTransportedWorkerEnvelope(message) {
+  assert.equal(typeof message, "string");
+  assert.ok(Buffer.byteLength(message, "utf8") <= REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+  const envelope = JSON.parse(message);
+  assert.equal(Object.prototype.hasOwnProperty.call(envelope, "raw"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(envelope, "serializedResult"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(envelope, "error"), false);
+  return envelope;
+}
+
 function parseTransportedWorkerSuccessMessage(message) {
-  assert.equal(message.ok, true);
-  assert.equal(typeof message.serializedResult, "string");
-  assert.equal(Object.prototype.hasOwnProperty.call(message, "raw"), false);
-  assert.ok(Buffer.byteLength(message.serializedResult, "utf8") <= REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
-  return JSON.parse(message.serializedResult);
+  const envelope = parseTransportedWorkerEnvelope(message);
+  assert.equal(envelope.ok, true);
+  assert.deepEqual(Object.keys(envelope).sort(), ["ok", "result"]);
+  return envelope.result;
+}
+
+function parseTransportedWorkerFailureMessage(message) {
+  const envelope = parseTransportedWorkerEnvelope(message);
+  assert.equal(envelope.ok, false);
+  assert.equal(typeof envelope.code, "string");
+  if (Object.prototype.hasOwnProperty.call(envelope, "diagnostic")) {
+    assert.equal(typeof envelope.diagnostic, "string");
+  }
+  return envelope;
 }
 
 function authoritativeWorkerContext(writeSetHash = "a".repeat(64)) {
@@ -119,7 +138,7 @@ function normalizedWorkerResult(problemText) {
 }
 
 function serializedWorkerResult(problemText) {
-  return JSON.stringify(normalizedWorkerResult(problemText));
+  return JSON.stringify({ ok: true, result: normalizedWorkerResult(problemText) });
 }
 
 function serializedWorkerResultBytes(problemText) {
@@ -140,6 +159,10 @@ function maxRepeatCountWithinReviewedBytes(token, slackBytes = 0) {
 
 function validatorSourceForResultExpression(expression) {
   return `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return ${expression};}};\n`;
+}
+
+function validatorSourceForValidateBody(body) {
+  return `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){${body}}};\n`;
 }
 
 async function withTemporaryProductionValidatorSource(filePath, source, callback) {
@@ -595,8 +618,8 @@ test("direct worker launch with Infinity limits cannot disable fixed reviewed re
         limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Number.MAX_SAFE_INTEGER }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, false);
-      assert.match(outcome.message.error, /262144 bytes/);
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_RESULT_INVALID");
     }
   );
 });
@@ -605,7 +628,7 @@ test("ASCII result below the reviewed UTF-8 byte ceiling passes through the prod
   const count = maxRepeatCountWithinReviewedBytes("x", 64);
   const problemText = "x".repeat(count);
   const expected = normalizedWorkerResult(problemText);
-  assert.ok(Buffer.byteLength(JSON.stringify(expected), "utf8") < REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+  assert.ok(Buffer.byteLength(JSON.stringify({ ok: true, result: expected }), "utf8") < REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
 
   await withTemporaryProductionValidatorSource(
     PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
@@ -642,8 +665,8 @@ test("ASCII result above the reviewed UTF-8 byte ceiling fails closed in the pro
         limits: { maxResultBytes: Infinity }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, false);
-      assert.match(outcome.message.error, /262144 bytes/);
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_RESULT_INVALID");
     }
   );
 });
@@ -668,8 +691,8 @@ test("multibyte Unicode result with JavaScript length below the ceiling but UTF-
         limits: { maxResultBytes: Number.MAX_SAFE_INTEGER }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, false);
-      assert.match(outcome.message.error, /262144 bytes/);
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_RESULT_INVALID");
     }
   );
 });
@@ -692,8 +715,8 @@ test("astral-character emoji result above the UTF-8 byte ceiling fails closed", 
         limits: { maxResultBytes: Infinity }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, false);
-      assert.match(outcome.message.error, /262144 bytes/);
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_RESULT_INVALID");
     }
   );
 });
@@ -702,7 +725,7 @@ test("multibyte Unicode result immediately below the reviewed UTF-8 byte ceiling
   const count = maxRepeatCountWithinReviewedBytes("é");
   const problemText = "é".repeat(count);
   const expected = normalizedWorkerResult(problemText);
-  assert.ok(Buffer.byteLength(JSON.stringify(expected), "utf8") <= REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+  assert.ok(Buffer.byteLength(JSON.stringify({ ok: true, result: expected }), "utf8") <= REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
   assert.ok(Buffer.byteLength(serializedWorkerResult("é".repeat(count + 1)), "utf8") > REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
 
   await withTemporaryProductionValidatorSource(
@@ -784,9 +807,9 @@ test("non-enumerable toJSON cannot cause a larger object to cross worker transpo
         assert.equal(fs.existsSync(toJsonMarker), false);
         const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
         assert.match(parsed.problems.join(" "), /transport-safe primitive/i);
-        assert.equal(outcome.message.serializedResult.includes('"tiny"'), false);
-        assert.equal(outcome.message.serializedResult.includes('"payload"'), false);
-        assert.ok(Buffer.byteLength(outcome.message.serializedResult, "utf8") < REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+        assert.equal(outcome.message.includes('"tiny"'), false);
+        assert.equal(outcome.message.includes('"payload"'), false);
+        assert.ok(Buffer.byteLength(outcome.message, "utf8") < REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
       }
     );
   } finally {
@@ -814,7 +837,7 @@ test("accessor properties cannot produce a smaller checked value than the transp
         assert.equal(fs.existsSync(getterMarker), false);
         const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
         assert.match(parsed.problems.join(" "), /accessor property/i);
-        assert.equal(outcome.message.serializedResult.includes("x".repeat(1024)), false);
+        assert.equal(outcome.message.includes("x".repeat(1024)), false);
       }
     );
   } finally {
@@ -842,7 +865,7 @@ test("prototype getters and custom class instances cannot bypass the result ceil
         assert.equal(fs.existsSync(getterMarker), false);
         const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
         assert.match(parsed.problems.join(" "), /problems is not an array/i);
-        assert.equal(outcome.message.serializedResult.includes("x".repeat(1024)), false);
+        assert.equal(outcome.message.includes("x".repeat(1024)), false);
       }
     );
   } finally {
@@ -875,6 +898,164 @@ test("production validation cycle parent receives only the exact parsed contents
   } finally {
     fs.rmSync(markerDir, { recursive: true, force: true });
   }
+});
+
+test("validator throwing a large ASCII Error cannot create an oversized worker message", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`throw new Error("x".repeat(400000));`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ak".repeat(32)),
+        limits: { maxResultBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_THROW");
+      assert.equal(outcome.message.includes("x".repeat(1024)), false);
+    }
+  );
+});
+
+test("validator throwing a large emoji Error cannot create an oversized worker message", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`throw new Error("\\u{1F600}".repeat(200000));`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("al".repeat(32)),
+        limits: { maxResultBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_THROW");
+    }
+  );
+});
+
+test("validator rejected Promise with a large Error remains within the worker message bound", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`return Promise.reject(new Error("x".repeat(400000)));`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("am".repeat(32)),
+        limits: { maxResultBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_REJECTION");
+      assert.equal(outcome.message.includes("x".repeat(1024)), false);
+    }
+  );
+});
+
+test("validator thrown strings, objects, proxies, and message getters cannot bypass the failure bound", async () => {
+  const markerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-failure-values-"));
+  const toStringMarker = path.join(markerDir, "to-string.txt");
+  const getterMarker = path.join(markerDir, "message-getter.txt");
+  const proxyMarker = path.join(markerDir, "proxy-getter.txt");
+  const cases = [
+    ["string", `throw "x".repeat(400000);`],
+    ["object", `throw {message:"x".repeat(400000),toString:function(){require("node:fs").writeFileSync(${JSON.stringify(toStringMarker)},"toString"); return "x".repeat(400000);}};`],
+    ["message getter", `const thrown={}; Object.defineProperty(thrown,"message",{get:function(){require("node:fs").writeFileSync(${JSON.stringify(getterMarker)},"getter"); return "x".repeat(400000);}}); throw thrown;`],
+    ["proxy", `const thrown=new Proxy({}, {get:function(target, prop){if(prop==="message"){require("node:fs").writeFileSync(${JSON.stringify(proxyMarker)},"proxy"); return "x".repeat(400000);} return undefined;}}); throw thrown;`]
+  ];
+  try {
+    for (const [name, body] of cases) {
+      await withTemporaryProductionValidatorSource(
+        PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+        validatorSourceForValidateBody(body),
+        async () => {
+          const reg = loadValidatorRegistry();
+          const outcome = await launchProductionWorker({
+            validatorId: "execution-plan",
+            expectedValidatorSetHash: reg.validatorSetHash,
+            phase: "candidate",
+            context: authoritativeWorkerContext(`an-${name}`),
+            limits: { maxResultBytes: Infinity }
+          });
+          assert.equal(outcome.kind, "message");
+          const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+          assert.equal(envelope.code, "VALIDATOR_THROW");
+          assert.equal(outcome.message.includes("x".repeat(1024)), false);
+        }
+      );
+    }
+    assert.equal(fs.existsSync(toStringMarker), false);
+    assert.equal(fs.existsSync(getterMarker), false);
+    assert.equal(fs.existsSync(proxyMarker), false);
+  } finally {
+    fs.rmSync(markerDir, { recursive: true, force: true });
+  }
+});
+
+test("top-level validator exception cannot create an oversized worker response", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nthrow new Error("x".repeat(400000));\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ao".repeat(32)),
+        limits: { maxResultBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_THROW");
+      assert.equal(outcome.message.includes("x".repeat(1024)), false);
+    }
+  );
+});
+
+test("oversized failure diagnostics are replaced by a compact deterministic envelope", async () => {
+  const reg = loadValidatorRegistry();
+  const hugeValidatorId = "x".repeat(400000);
+  const outcome = await launchProductionWorker({
+    validatorId: hugeValidatorId,
+    expectedValidatorSetHash: reg.validatorSetHash,
+    phase: "candidate",
+    context: authoritativeWorkerContext("ap".repeat(32)),
+    limits: { maxResultBytes: Infinity }
+  });
+  assert.equal(outcome.kind, "message");
+  const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+  assert.equal(envelope.code, "REGISTRY_MISMATCH");
+  assert.equal(outcome.message.includes("x".repeat(1024)), false);
+});
+
+test("normal validator exceptions fail closed through the production validation cycle", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`throw new Error("x".repeat(400000));`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const phase = await require("../kernel/execution/validation-cycle").runValidationPhase(
+        "candidate",
+        ["execution-plan"],
+        authoritativeWorkerContext("aq".repeat(32)),
+        { timeoutMs: 1500, expectedValidatorSetHash: reg.validatorSetHash }
+      );
+      assert.equal(phase.status, "failed");
+      assert.match(phase.problems.join(" "), /VALIDATOR_THROW/);
+      assert.equal(phase.problems.join(" ").includes("x".repeat(1024)), false);
+    }
+  );
 });
 
 test("direct worker launch with maxResultBytes set to 1 cannot replace reviewed internal limits", async () => {
@@ -940,8 +1121,8 @@ test("production worker direct attack cannot execute an external validator from 
       expectedContract: { id: "external-pass", version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate"] }
     });
     assert.equal(outcome.kind, "message");
-    assert.equal(outcome.message.ok, false);
-    assert.match(outcome.message.error, /unavailable|validator worker failure|unsafe|mismatch/i);
+    const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+    assert.equal(envelope.code, "REGISTRY_MISMATCH");
     assert.equal(fs.existsSync(topLevelMarker), false);
     assert.equal(fs.existsSync(validateMarker), false);
   } finally {
@@ -971,8 +1152,8 @@ test("production worker verifies validatorSetHash before validator execution", a
       expectedContract: { id: "execution-plan", version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate"] }
     });
     assert.equal(outcome.kind, "message");
-    assert.equal(outcome.message.ok, false);
-    assert.match(outcome.message.error, /validatorSetHash mismatch/i);
+    const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+    assert.equal(envelope.code, "REGISTRY_MISMATCH");
     assert.equal(fs.existsSync(topLevelMarker), false);
     assert.equal(fs.existsSync(validateMarker), false);
   } finally {
@@ -1004,7 +1185,6 @@ test("production worker ignores caller-supplied closure material and executes on
       expectedContract: { id: "execution-plan", version: "9.9.9", semantic: true, actions: ["bogus"], supportedPhases: ["candidate"] }
     });
     assert.equal(outcome.kind, "message");
-    assert.equal(outcome.message.ok, true);
     const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
     assert.equal(parsed.status, "passed");
     assert.equal(fs.existsSync(topLevelMarker), false);
