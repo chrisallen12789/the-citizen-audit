@@ -1,13 +1,14 @@
-# Phase 4.1 - Coverage Matrix for Validator Failure-Transport Checkpoint
+# Phase 4.1 - Coverage Matrix for Validator Channel-Lockdown Checkpoint
 
-Authoritative base: `450bd28f5971e3fcf2a4f998b137a403c3c1f35f`
+Authoritative base: `e73517535bb6fefb98b7b8355d2671a66fab49ec`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 result-byte enforcement, success transport binding, and failure transport binding are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 result-byte enforcement, success/failure transport binding, and worker channel impersonation are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
 - **FIXED** - defect reproduced, corrected, and regression added
 - **SUITE** - covered by the repository suite run in this workspace
+- **NOT LOCAL** - not directly reproducible on this host
 
 ## Capability-Audit Completeness
 
@@ -25,15 +26,20 @@ No broad capability declarations were added.
 
 | Case | Status | Evidence |
 |---|---|---|
-| Failure worker message can transport an arbitrary validator exception string | FIXED | worker now sends only a bounded serialized failure envelope with fixed reviewed codes |
+| Validator can obtain `parentPort` with `process.getBuiltinModule("worker_threads")` | FIXED | worker disables host process builtin acquisition before validator bytes execute and direct worker regression observes no direct messages |
+| Validator can send a 400,000-byte default-channel message | FIXED | direct worker regression proves no oversized raw message reaches the parent |
+| Parent accepts the first valid-looking worker message as success | FIXED | parent now accepts only the harness-owned result port envelope |
+| Forged success envelope can preempt runtime contract verification | FIXED | regression proves mismatched runtime contract fails with `VALIDATOR_RESULT_INVALID` and cannot report `passed` |
+| Throwing validator can preemptively report `passed` | FIXED | forged-envelope regression verifies `validate()` throw cannot be hidden by an early message |
+| `globalThis.process` or `global.process` can recover the channel | FIXED | regression proves global process aliases are unavailable |
+| `Function("return process")()` or constructor-chain variants can recover the channel | FIXED | regression covers direct `Function`, object-constructor, `require.constructor`, and `module.constructor` paths |
+| `process.getBuiltinModule()` bypasses the recorded builtin allowlist | FIXED | regression proves `child_process`, `net`, `worker_threads`, and `module` are not reachable |
+| Validator mutation of host primordials weakens envelope construction | FIXED | regression mutates `JSON`, `Buffer`, `Promise`, `Object`, `Map`, `Set`, and `Array` methods and still fails closed on oversized output |
+| Failure worker message can transport an arbitrary validator exception string | FIXED | worker sends only a bounded serialized failure envelope with fixed reviewed codes |
 | Validator throwing a 400,000-character ASCII `Error` can exceed `maxResultBytes` | FIXED | direct worker regression proves the complete envelope stays within the reviewed byte bound |
 | Validator throwing a large emoji or multibyte `Error` can exceed `maxResultBytes` | FIXED | direct worker regression proves emoji failure messages remain compact and bounded |
 | Rejected `Promise` containing a large `Error` can exceed `maxResultBytes` | FIXED | direct worker regression proves rejection reasons use `VALIDATOR_REJECTION` without raw message transport |
-| Thrown string, object, proxy, or `message` getter can bypass failure bounds | FIXED | direct worker regression proves no getter, proxy, or `toString` is invoked and no marker files are created |
-| Top-level validator exception can create an oversized failure response | FIXED | direct worker regression proves top-level throws use compact `VALIDATOR_THROW` envelopes |
-| Oversized diagnostic can cross the worker boundary | FIXED | regression with a huge caller-controlled validator id proves the failure envelope remains compact and deterministic |
 | Parent accepts unchecked failure messages | FIXED | production validation cycle rechecks the complete serialized envelope before parsing success or failure |
-| Worker crash/startup handling can incorporate unbounded `error.message` | FIXED | parent crash, startup, timeout, stdio, and exit handling now use fixed bounded diagnostics |
 | Complete transport limit definition is ambiguous | FIXED | review report and tests define `maxResultBytes` as the complete serialized worker response envelope |
 | Direct import of `kernel/execution/validator-closure.js` exposes configurable closure construction | FIXED | production module exports only fixed policy metadata; regression directly probes missing builder/root-selector exports |
 | Direct import of `kernel/execution/validation-cycle.js` accepts caller-supplied descriptors or closure material | FIXED | production cycle accepts only validator ids plus expected authoritative `validatorSetHash`; fabricated descriptor regression fails closed |
@@ -62,26 +68,23 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 108/108 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 114/114 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56 |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
-| repository JavaScript syntax sweep | PASS, 147 files checked |
-| `npm run runtime:integration:test` | PASS, 28/28 |
+| repository JavaScript syntax sweep | PASS, 147 tracked `.js` files checked |
+| `npm run runtime:integration:test` | PASS, 28/28, normal exit on this host |
 | `npm run runtime:isolation:test` | PASS, 48/48 |
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 304/304 |
+| `npm run execution:test` | PASS, 310/310, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |
-
-Termination note:
-- `npm run runtime:integration:test` terminated normally after 28/28 on this host
-- `npm run execution:test` terminated normally after 304/304 on this host
-- no installed Linux verification host was available inside this desktop session, so host-specific Linux-only reproduction could not be rerun locally
+| Linux-host normal termination reproduction | NOT LOCAL, WSL has no installed distro and Docker is unavailable in this desktop session |
 
 ## Residual Items Intentionally Not Started Here
 - OS-level validator confinement
-- later confinement and runtime hardening outside this failure-transport checkpoint
+- independent Linux-host termination reproduction, because no Linux runtime is installed locally
+- later confinement and runtime hardening outside this channel-lockdown checkpoint

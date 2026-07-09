@@ -16,10 +16,36 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const vm = require("vm");
-const { parentPort, workerData } = require("worker_threads");
+const { MessageChannel, parentPort, workerData } = require("worker_threads");
 const { loadValidatorRegistry } = require("./validators");
 const { REVIEWED_VALIDATOR_LIMITS } = require("./validator-limits");
 
+
+const HOST_PROCESS = process;
+const HOST_GLOBAL = globalThis;
+const SafeArrayIncludes = Function.call.bind(Array.prototype.includes);
+const SafeArrayIsArray = Array.isArray;
+const SafeArraySort = Function.call.bind(Array.prototype.sort);
+const SafeBufferByteLength = Buffer.byteLength.bind(Buffer);
+const SafeBufferFrom = Buffer.from.bind(Buffer);
+const SafeJSONStringify = JSON.stringify;
+const SafeObjectCreate = Object.create;
+const SafeObjectDefineProperty = Object.defineProperty;
+const SafeObjectFreeze = Object.freeze;
+const SafeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+const SafeObjectGetOwnPropertyNames = Object.getOwnPropertyNames;
+const SafeObjectHasOwn = Function.call.bind(Object.prototype.hasOwnProperty);
+const SafeMapGet = Function.call.bind(Map.prototype.get);
+const SafeMapHas = Function.call.bind(Map.prototype.has);
+const SafeMapSet = Function.call.bind(Map.prototype.set);
+const SafePromiseResolve = Promise.resolve.bind(Promise);
+const SafeReflectOwnKeys = Reflect.ownKeys;
+const SafeSetHas = Function.call.bind(Set.prototype.has);
+const SafeString = String;
+
+const HARNESS_CHANNEL_TYPE = "validator-harness-channel-v1";
+const { port1: HARNESS_RESULT_PORT, port2: PARENT_RESULT_PORT } = new MessageChannel();
+parentPort.postMessage({ type: HARNESS_CHANNEL_TYPE, port: PARENT_RESULT_PORT }, [PARENT_RESULT_PORT]);
 
 const MAX_RESULT_BYTES = REVIEWED_VALIDATOR_LIMITS.maxResultBytes;
 const MAX_ARRAY_LEN = REVIEWED_VALIDATOR_LIMITS.maxArrayLen;
@@ -36,11 +62,76 @@ const FAILURE_CODES = new Set([
   "WORKER_INTERNAL_FAILURE"
 ]);
 
-const ALLOWED_BUILTINS = {
-  path: require("path"), crypto: require("crypto"), util: require("util"),
-  assert: require("assert"), buffer: require("buffer"), os: require("os"), fs: require("fs")
-};
+function defineReadOnly(target, key, value) {
+  SafeObjectDefineProperty(target, key, { value, enumerable: true, writable: false, configurable: false });
+}
+
+function makeReadOnlyFacade(source, receiver = source, seen = new Map()) {
+  if (source === null || (typeof source !== "object" && typeof source !== "function")) return source;
+  if (seen.has(source)) return seen.get(source);
+  const facade = typeof source === "function" ? source.bind(receiver) : SafeObjectCreate(null);
+  seen.set(source, facade);
+  for (const key of SafeReflectOwnKeys(source)) {
+    if (key === "prototype" || key === "constructor") continue;
+    const descriptor = SafeObjectGetOwnPropertyDescriptor(source, key);
+    if (!descriptor || !SafeObjectHasOwn(descriptor, "value")) continue;
+    defineReadOnly(facade, key, makeReadOnlyFacade(descriptor.value, source, seen));
+  }
+  defineReadOnly(facade, "constructor", undefined);
+  return SafeObjectFreeze(facade);
+}
+
+const SAFE_BUFFER_FACADE = SafeObjectFreeze({
+  from: Buffer.from.bind(Buffer),
+  byteLength: Buffer.byteLength.bind(Buffer),
+  isBuffer: Buffer.isBuffer.bind(Buffer),
+  concat: Buffer.concat.bind(Buffer),
+  alloc: Buffer.alloc.bind(Buffer),
+  allocUnsafe: Buffer.allocUnsafe.bind(Buffer)
+});
+const SAFE_BUFFER_MODULE = SafeObjectFreeze({ Buffer: SAFE_BUFFER_FACADE });
+const SAFE_JSON_FACADE = SafeObjectFreeze({
+  parse: JSON.parse.bind(JSON),
+  stringify: JSON.stringify.bind(JSON)
+});
+const ALLOWED_BUILTINS = SafeObjectFreeze({
+  path: makeReadOnlyFacade(require("path")),
+  crypto: makeReadOnlyFacade(require("crypto")),
+  util: makeReadOnlyFacade(require("util")),
+  assert: makeReadOnlyFacade(require("assert")),
+  buffer: SAFE_BUFFER_MODULE,
+  os: makeReadOnlyFacade(require("os")),
+  fs: makeReadOnlyFacade(require("fs"))
+});
 const TRANSPORT_PRIMITIVE_TYPES = new Set(["string", "number", "boolean", "bigint", "undefined"]);
+
+function setGlobalValue(name, value) {
+  try {
+    SafeObjectDefineProperty(HOST_GLOBAL, name, { value, writable: false, configurable: false });
+  } catch (error) {}
+}
+
+function setProcessValue(name, value) {
+  try {
+    SafeObjectDefineProperty(HOST_PROCESS, name, { value, writable: false, configurable: false });
+  } catch (error) {}
+}
+
+function lockValidatorHostAccess() {
+  setProcessValue("getBuiltinModule", undefined);
+  setProcessValue("binding", undefined);
+  setProcessValue("_linkedBinding", undefined);
+  setProcessValue("dlopen", undefined);
+  setGlobalValue("process", undefined);
+  setGlobalValue("global", undefined);
+  setGlobalValue("Function", undefined);
+  setGlobalValue("eval", undefined);
+  setGlobalValue("require", undefined);
+  setGlobalValue("module", undefined);
+  setGlobalValue("exports", undefined);
+  setGlobalValue("Buffer", SAFE_BUFFER_FACADE);
+  setGlobalValue("JSON", SAFE_JSON_FACADE);
+}
 
 class WorkerFailure extends Error {
   constructor(code, diagnostic) {
@@ -55,14 +146,14 @@ function workerFailure(code, diagnostic) {
 }
 
 function safeFailureCode(code) {
-  return FAILURE_CODES.has(code) ? code : "WORKER_INTERNAL_FAILURE";
+  return SafeSetHas(FAILURE_CODES, code) ? code : "WORKER_INTERNAL_FAILURE";
 }
 
 function truncateUtf8(text, maxBytes) {
   if (typeof text !== "string") return undefined;
-  if (Buffer.byteLength(text, "utf8") <= maxBytes) return text;
-  let truncated = Buffer.from(text, "utf8").subarray(0, maxBytes).toString("utf8");
-  while (Buffer.byteLength(truncated, "utf8") > maxBytes) truncated = truncated.slice(0, -1);
+  if (SafeBufferByteLength(text, "utf8") <= maxBytes) return text;
+  let truncated = SafeBufferFrom(text, "utf8").subarray(0, maxBytes).toString("utf8");
+  while (SafeBufferByteLength(truncated, "utf8") > maxBytes) truncated = truncated.slice(0, -1);
   return truncated;
 }
 
@@ -80,17 +171,20 @@ function compactFallbackEnvelope(code) {
 function checkedEnvelopeString(envelope) {
   let serialized;
   try {
-    serialized = JSON.stringify(envelope);
+    serialized = SafeJSONStringify(envelope);
   } catch (error) {
-    serialized = JSON.stringify(compactFallbackEnvelope("WORKER_INTERNAL_FAILURE"));
+    serialized = SafeJSONStringify(compactFallbackEnvelope("WORKER_INTERNAL_FAILURE"));
   }
-  if (Buffer.byteLength(serialized, "utf8") <= MAX_RESULT_BYTES) return serialized;
+  if (SafeBufferByteLength(serialized, "utf8") <= MAX_RESULT_BYTES) return serialized;
   const fallbackCode = envelope && envelope.ok === true ? "VALIDATOR_RESULT_INVALID" : "WORKER_INTERNAL_FAILURE";
-  return JSON.stringify(compactFallbackEnvelope(fallbackCode));
+  return SafeJSONStringify(compactFallbackEnvelope(fallbackCode));
 }
 
 function postEnvelope(envelope) {
-  try { parentPort.postMessage(checkedEnvelopeString(envelope)); } catch (error) { /* parent gone */ }
+  try {
+    HARNESS_RESULT_PORT.postMessage(checkedEnvelopeString(envelope));
+    HARNESS_RESULT_PORT.close();
+  } catch (error) { /* parent gone */ }
 }
 
 function fail(code, diagnostic) {
@@ -106,19 +200,25 @@ function succeed(result) {
   postEnvelope({ ok: true, result });
 }
 
-function canonicalArray(value) { return Array.isArray(value) ? [...value].map(String).sort() : []; }
+function canonicalArray(value) {
+  if (!SafeArrayIsArray(value)) return [];
+  const copy = [];
+  for (let index = 0; index < value.length; index += 1) copy[index] = SafeString(value[index]);
+  SafeArraySort(copy);
+  return copy;
+}
 function boundArray(value, label, problems) {
   if (value === undefined) return [];
-  if (!Array.isArray(value)) { problems.push(`${label} is not an array`); return []; }
-  if (value.length > MAX_ARRAY_LEN) { problems.push(`${label} exceeds ${MAX_ARRAY_LEN} entries`); return value.slice(0, MAX_ARRAY_LEN); }
+  if (!SafeArrayIsArray(value)) { problems[problems.length] = `${label} is not an array`; return []; }
+  if (value.length > MAX_ARRAY_LEN) { problems[problems.length] = `${label} exceeds ${MAX_ARRAY_LEN} entries`; return value.slice(0, MAX_ARRAY_LEN); }
   return value;
 }
 
 function readOwnDataProperty(object, label, problems) {
-  const descriptor = Object.getOwnPropertyDescriptor(object, label);
+  const descriptor = SafeObjectGetOwnPropertyDescriptor(object, label);
   if (!descriptor) return undefined;
-  if (Object.prototype.hasOwnProperty.call(descriptor, "get") || Object.prototype.hasOwnProperty.call(descriptor, "set")) {
-    problems.push(`${label} uses an accessor property`);
+  if (SafeObjectHasOwn(descriptor, "get") || SafeObjectHasOwn(descriptor, "set")) {
+    problems[problems.length] = `${label} uses an accessor property`;
     return undefined;
   }
   return descriptor.value;
@@ -126,39 +226,39 @@ function readOwnDataProperty(object, label, problems) {
 
 function safeTransportString(value) {
   if (value === null) return "null";
-  if (TRANSPORT_PRIMITIVE_TYPES.has(typeof value)) return String(value);
+  if (SafeSetHas(TRANSPORT_PRIMITIVE_TYPES, typeof value)) return SafeString(value);
   return null;
 }
 
 function boundTransportStringArray(raw, label, problems, options = {}) {
   const value = readOwnDataProperty(raw, label, problems);
   if (value === undefined) {
-    if (options.required) problems.push(`${label} is not an array`);
+    if (options.required) problems[problems.length] = `${label} is not an array`;
     return [];
   }
-  if (!Array.isArray(value)) {
-    problems.push(`${label} is not an array`);
+  if (!SafeArrayIsArray(value)) {
+    problems[problems.length] = `${label} is not an array`;
     return [];
   }
   const normalized = [];
   const limit = value.length > MAX_ARRAY_LEN ? MAX_ARRAY_LEN : value.length;
-  if (value.length > MAX_ARRAY_LEN) problems.push(`${label} exceeds ${MAX_ARRAY_LEN} entries`);
+  if (value.length > MAX_ARRAY_LEN) problems[problems.length] = `${label} exceeds ${MAX_ARRAY_LEN} entries`;
   for (let index = 0; index < limit; index += 1) {
-    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    const descriptor = SafeObjectGetOwnPropertyDescriptor(value, SafeString(index));
     if (!descriptor) {
-      normalized.push("undefined");
+      normalized[normalized.length] = "undefined";
       continue;
     }
-    if (Object.prototype.hasOwnProperty.call(descriptor, "get") || Object.prototype.hasOwnProperty.call(descriptor, "set")) {
-      problems.push(`${label}[${index}] uses an accessor property`);
+    if (SafeObjectHasOwn(descriptor, "get") || SafeObjectHasOwn(descriptor, "set")) {
+      problems[problems.length] = `${label}[${index}] uses an accessor property`;
       continue;
     }
     const rendered = safeTransportString(descriptor.value);
     if (rendered === null) {
-      problems.push(`${label}[${index}] is not a transport-safe primitive`);
+      problems[problems.length] = `${label}[${index}] is not a transport-safe primitive`;
       continue;
     }
-    normalized.push(rendered);
+    normalized[normalized.length] = rendered;
   }
   return normalized;
 }
@@ -184,7 +284,7 @@ function normalizeTransportedResult(raw) {
 function loadClosureEntry(closure) {
   const ROOT = closure.closureRoot;
   const expected = new Map(); // relPath -> {hash,size,mode,uid,gid,dev,ino,nlink}
-  for (const m of closure.modules) expected.set(m.relPath, m);
+  for (const m of closure.modules) SafeMapSet(expected, m.relPath, m);
   const compiledCache = new Map(); // relPath -> module.exports
 
   // Open no-follow, then use the SAME fd to fstat, read, and hash — no separate
@@ -193,7 +293,7 @@ function loadClosureEntry(closure) {
   // ownership change, hard-linking, or group/world-writability between build and
   // execution all fail closed.
   function readVerified(relPath) {
-    const want = expected.get(relPath);
+    const want = SafeMapGet(expected, relPath);
     if (!want) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "undeclared closure module");
     const abs = path.join(ROOT, relPath);
     if (path.relative(ROOT, abs).split(path.sep).join("/").startsWith("..")) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure path escape");
@@ -210,7 +310,7 @@ function loadClosureEntry(closure) {
       if (ENFORCE_POSIX_WRITE_BITS && (st.mode & 0o022)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module is group/world-writable at execution");
       if (st.size !== want.size) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module size mismatch at execution");
       if ((st.mode & 0o777) !== want.mode) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module mode change at execution");
-      if (String(st.dev) !== String(want.dev) || String(st.ino) !== String(want.ino)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module inode replacement at execution");
+      if (SafeString(st.dev) !== SafeString(want.dev) || SafeString(st.ino) !== SafeString(want.ino)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module inode replacement at execution");
       if (st.uid !== want.uid || st.gid !== want.gid) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module ownership change at execution");
       const real = fs.realpathSync(abs);
       if (real !== abs || path.relative(ROOT, real).startsWith("..")) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module resolves outside root at execution");
@@ -228,7 +328,7 @@ function loadClosureEntry(closure) {
     const dir = path.posix.dirname(fromRel);
     const base = path.posix.normalize(path.posix.join(dir, spec));
     for (const cand of [base, `${base}.js`, `${base}/index.js`]) {
-      if (expected.has(cand)) return cand;
+      if (SafeMapHas(expected, cand)) return cand;
     }
     throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "undeclared closure dependency");
   }
@@ -239,15 +339,16 @@ function loadClosureEntry(closure) {
       return loadModule(target);
     }
     const builtin = spec.startsWith("node:") ? spec.slice(5) : spec;
-    if (!Object.prototype.hasOwnProperty.call(ALLOWED_BUILTINS, builtin)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "non-allowlisted builtin required in closure");
+    if (!SafeObjectHasOwn(ALLOWED_BUILTINS, builtin)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "non-allowlisted builtin required in closure");
     return ALLOWED_BUILTINS[builtin];
   }
 
   function loadModule(relPath) {
-    if (compiledCache.has(relPath)) return compiledCache.get(relPath);
+    if (SafeMapHas(compiledCache, relPath)) return SafeMapGet(compiledCache, relPath);
     const source = readVerified(relPath);
-    const module = { exports: {} };
-    compiledCache.set(relPath, module.exports); // seed for cycles
+    const module = SafeObjectCreate(null);
+    module["exports"] = SafeObjectCreate(null);
+    SafeMapSet(compiledCache, relPath, module.exports); // seed for cycles
     const absFile = path.join(ROOT, relPath);
     let wrapper;
     try {
@@ -261,7 +362,7 @@ function loadClosureEntry(closure) {
       if (error instanceof WorkerFailure) throw error;
       throw workerFailure("VALIDATOR_THROW");
     }
-    compiledCache.set(relPath, module.exports);
+    SafeMapSet(compiledCache, relPath, module.exports);
     return module.exports;
   }
 
@@ -299,6 +400,7 @@ try {
     let validator;
     let validatorLoaded = false;
     try {
+      lockValidatorHostAccess();
       validator = loadClosureEntry(closure);
       validatorLoaded = true;
     } catch (error) {
@@ -313,16 +415,16 @@ try {
       || !expectedContract
       || validator.version !== expectedContract.version
       || Boolean(validator.semantic) !== Boolean(expectedContract.semantic)
-      || JSON.stringify(canonicalArray(validator.actions)) !== JSON.stringify(canonicalArray(expectedContract.actions))
-      || JSON.stringify(canonicalArray(validator.supportedPhases)) !== JSON.stringify(canonicalArray(expectedContract.supportedPhases))
+      || SafeJSONStringify(canonicalArray(validator.actions)) !== SafeJSONStringify(canonicalArray(expectedContract.actions))
+      || SafeJSONStringify(canonicalArray(validator.supportedPhases)) !== SafeJSONStringify(canonicalArray(expectedContract.supportedPhases))
       || typeof validator.validate !== "function"
       )
     ) {
       fail("VALIDATOR_RESULT_INVALID", "validator contract mismatch in worker");
-    } else if (validatorLoaded && (!Array.isArray(validator.supportedPhases) || !validator.supportedPhases.includes(phase))) {
+    } else if (validatorLoaded && (!SafeArrayIsArray(validator.supportedPhases) || !SafeArrayIncludes(validator.supportedPhases, phase))) {
       fail("VALIDATOR_RESULT_INVALID", "validator does not support requested phase");
     } else if (validatorLoaded) {
-      Promise.resolve()
+      SafePromiseResolve()
         .then(() => {
           let validationResult;
           try {
@@ -331,7 +433,7 @@ try {
             fail("VALIDATOR_THROW");
             return undefined;
           }
-          return Promise.resolve(validationResult)
+          return SafePromiseResolve(validationResult)
             .then((raw) => ({ raw }))
             .catch(() => {
               fail("VALIDATOR_REJECTION");
@@ -341,7 +443,7 @@ try {
         .then((outcome) => {
           if (!outcome) return undefined;
           const raw = outcome.raw;
-          if (!raw || typeof raw !== "object" || Array.isArray(raw)) return fail("VALIDATOR_RESULT_INVALID", "validator returned a non-object result");
+          if (!raw || typeof raw !== "object" || SafeArrayIsArray(raw)) return fail("VALIDATOR_RESULT_INVALID", "validator returned a non-object result");
           const normalized = normalizeTransportedResult(raw);
           succeed(normalized);
         })

@@ -10,6 +10,7 @@ const { sha256 } = require("../lib/append-only-log");
 const { loadValidatorRegistry, selectRequiredValidators, validatorsForPhase } = require("./validators");
 
 const WORKER_PATH = path.join(__dirname, "validator-worker.js");
+const HARNESS_CHANNEL_TYPE = "validator-harness-channel-v1";
 const TRANSPORT_RESULT_FIELDS = Object.freeze(["status", "problems", "warnings", "checkedObjects", "checkedPaths"]);
 const FAILURE_CODES = new Set([
   "VALIDATOR_THROW",
@@ -126,10 +127,14 @@ function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, conte
     let settled = false;
     let stdBytes = 0;
     let worker;
+    let resultPort = null;
     const finish = (outcome) => {
       if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
+      if (resultPort) {
+        try { resultPort.close(); } catch (error) {}
+      }
       if (worker) {
         try { worker.terminate(); } catch (error) {}
       }
@@ -159,7 +164,23 @@ function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, conte
     });
     capture(worker.stdout);
     capture(worker.stderr);
-    worker.on("message", (msg) => finish(parseTransportedValidatorResult(msg)));
+    worker.on("message", (msg) => {
+      if (
+        !resultPort
+        && msg
+        && typeof msg === "object"
+        && msg.type === HARNESS_CHANNEL_TYPE
+        && msg.port
+        && typeof msg.port.on === "function"
+      ) {
+        resultPort = msg.port;
+        resultPort.on("message", (resultMessage) => finish(parseTransportedValidatorResult(resultMessage)));
+        resultPort.on("close", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator harness channel closed without a result" }));
+        resultPort.start();
+        return;
+      }
+      finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator sent an unauthorized parentPort message" });
+    });
     worker.on("error", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker crashed" }));
     worker.on("exit", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker exited without a result" }));
   });

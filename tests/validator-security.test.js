@@ -60,10 +60,15 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
   return new Promise((resolve) => {
     let settled = false;
     let worker;
+    let resultPort = null;
+    const directMessages = [];
     const finish = (result) => {
       if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
+      if (resultPort) {
+        try { resultPort.close(); } catch (error) {}
+      }
       if (worker) {
         try { worker.terminate(); } catch (error) {}
       }
@@ -76,7 +81,23 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
       finish({ kind: "startup-error", error });
       return;
     }
-    worker.on("message", (message) => finish({ kind: "message", message }));
+    worker.on("message", (message) => {
+      if (
+        !resultPort
+        && message
+        && typeof message === "object"
+        && message.type === "validator-harness-channel-v1"
+        && message.port
+        && typeof message.port.on === "function"
+      ) {
+        resultPort = message.port;
+        resultPort.on("message", (resultMessage) => finish({ kind: "message", message: resultMessage, directMessages: [...directMessages] }));
+        resultPort.on("close", () => finish({ kind: "channel-closed", directMessages: [...directMessages] }));
+        resultPort.start();
+        return;
+      }
+      directMessages[directMessages.length] = message;
+    });
     worker.on("error", (error) => finish({ kind: "error", error }));
     worker.on("exit", (code) => finish({ kind: "exit", code }));
   });
@@ -107,6 +128,10 @@ function parseTransportedWorkerFailureMessage(message) {
     assert.equal(typeof envelope.diagnostic, "string");
   }
   return envelope;
+}
+
+function assertNoDirectWorkerMessages(outcome) {
+  assert.deepEqual(outcome.directMessages || [], []);
 }
 
 function authoritativeWorkerContext(writeSetHash = "a".repeat(64)) {
@@ -510,6 +535,12 @@ test("closure builder rejects non-allowlisted builtin (net)", () => {
   writeStrictFile(mp, `const net=require('net');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
   assert.throws(() => buildValidatorClosure(mp, scratch), /non-allowlisted/i);
 });
+test("closure builder rejects non-allowlisted builtin (worker_threads)", () => {
+  const id = `worker-threads-${seq++}`;
+  const mp = path.join(scratch, `${id}.js`);
+  writeStrictFile(mp, `const wt=require('worker_threads');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
+  assert.throws(() => buildValidatorClosure(mp, scratch), /non-allowlisted/i);
+});
 test("worker rejects an undeclared closure dependency at execution", async () => {
   const d = makeValidatorWithDep();
   // Remove the dependency from the bound manifest, keep the entry requiring it:
@@ -898,6 +929,157 @@ test("production validation cycle parent receives only the exact parsed contents
   } finally {
     fs.rmSync(markerDir, { recursive: true, force: true });
   }
+});
+
+test("validator cannot send an oversized direct parentPort message", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      try {
+        const port = process.getBuiltinModule("worker_threads").parentPort;
+        port.postMessage("Z".repeat(400000));
+      } catch (error) {}
+      return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ar".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.ok(Buffer.byteLength(outcome.message, "utf8") <= REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+    }
+  );
+});
+
+test("validator cannot forge a success envelope before runtime contract verification", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\ntry{const port=process.getBuiltinModule("worker_threads").parentPort; port.postMessage(JSON.stringify({ok:true,result:{status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}}));}catch(error){}\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){throw new Error("should not report passed");}};\nmodule.exports.version="9.9.9";\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const direct = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("as".repeat(32))
+      });
+      assert.equal(direct.kind, "message");
+      assertNoDirectWorkerMessages(direct);
+      assert.equal(parseTransportedWorkerFailureMessage(direct.message).code, "VALIDATOR_RESULT_INVALID");
+
+      const phase = await require("../kernel/execution/validation-cycle").runValidationPhase(
+        "candidate",
+        ["execution-plan"],
+        authoritativeWorkerContext("at".repeat(32)),
+        { timeoutMs: 1500, expectedValidatorSetHash: reg.validatorSetHash }
+      );
+      assert.equal(phase.status, "failed");
+      assert.match(phase.problems.join(" "), /VALIDATOR_RESULT_INVALID/);
+    }
+  );
+});
+
+test("global process aliases and constructor chains cannot recover the worker channel", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const attempts = [
+        function(){ return globalThis.process; },
+        function(){ return global && global.process; },
+        function(){ return Function("return process")(); },
+        function(){ return ({}).constructor.constructor("return process")(); },
+        function(){ return require.constructor.constructor("return process")(); },
+        function(){ return module.constructor && module.constructor.constructor("return process")(); }
+      ];
+      for (const attempt of attempts) {
+        try {
+          const proc = attempt();
+          const port = proc && proc.getBuiltinModule && proc.getBuiltinModule("worker_threads").parentPort;
+          if (port) port.postMessage("forged");
+        } catch (error) {}
+      }
+      return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("au".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(parseTransportedWorkerSuccessMessage(outcome.message).status, "passed");
+    }
+  );
+});
+
+test("process.getBuiltinModule cannot bypass the runtime builtin allowlist", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const blocked = ["child_process", "net", "worker_threads", "module"];
+      const problems = [];
+      for (const name of blocked) {
+        try {
+          const viaProcess = process.getBuiltinModule(name);
+          if (viaProcess) problems.push("process builtin " + name + " was reachable");
+        } catch (error) {}
+      }
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("av".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
+    }
+  );
+});
+
+test("validator mutation of host primordials cannot weaken envelope construction", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      try { JSON.stringify = function(){ return "{\\"ok\\":true,\\"result\\":{\\"status\\":\\"passed\\",\\"problems\\":[],\\"warnings\\":[],\\"checkedObjects\\":[],\\"checkedPaths\\":[]}}"; }; } catch (error) {}
+      try { Buffer.byteLength = function(){ return 1; }; } catch (error) {}
+      try { Promise.resolve = function(value){ return { then:function(resolve){ return resolve(value); } }; }; } catch (error) {}
+      try { Object.getOwnPropertyDescriptor = function(){ return { value: [] }; }; } catch (error) {}
+      try { Map.prototype.has = function(){ return true; }; Map.prototype.get = function(){ return {}; }; } catch (error) {}
+      try { Set.prototype.has = function(){ return true; }; } catch (error) {}
+      try { Array.prototype.includes = function(){ return true; }; } catch (error) {}
+      return {status:"passed",problems:["x".repeat(300000)],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("aw".repeat(32)),
+        limits: { maxResultBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(parseTransportedWorkerFailureMessage(outcome.message).code, "VALIDATOR_RESULT_INVALID");
+    }
+  );
 });
 
 test("validator throwing a large ASCII Error cannot create an oversized worker message", async () => {
