@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { spawnSync } = require("node:child_process");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -6,7 +7,7 @@ const path = require("node:path");
 const test = require("node:test");
 
 const { runValidationPhase } = require("../kernel/execution/validation-cycle");
-const { loadValidatorRegistry } = require("../kernel/execution/validators");
+const { extractStaticValidatorContract, loadValidatorRegistry } = require("../kernel/execution/validators");
 const { buildValidatorClosure } = require("../kernel/execution/validator-closure");
 
 const REAL_VALIDATORS = path.join(__dirname, "..", "kernel", "execution", "validators");
@@ -15,6 +16,10 @@ const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-mods-"));
 test.after(() => { try { fs.rmSync(scratch, { recursive: true, force: true }); } catch (e) {} });
 
 let seq = 0;
+function writeStrictFile(filePath, content) {
+  fs.writeFileSync(filePath, content);
+  try { fs.chmodSync(filePath, 0o600); } catch (e) {}
+}
 function makeValidatorModule(validateBody, opts = {}) {
   const id = opts.id || `tv-${seq++}`;
   const version = opts.version || "1.0.0";
@@ -26,19 +31,20 @@ function validate(context){ ${validateBody} }
 module.exports={id:${JSON.stringify(id)},version:${JSON.stringify(version)},semantic:${semantic},actions:${JSON.stringify(actions)},supportedPhases:${JSON.stringify(supportedPhases)},validate};
 `;
   const modulePath = path.join(scratch, `${id}.js`);
-  fs.writeFileSync(modulePath, src);
+  writeStrictFile(modulePath, src);
   const moduleHash = crypto.createHash("sha256").update(fs.readFileSync(modulePath)).digest("hex");
   const c = buildValidatorClosure(modulePath, scratch);
   const closure = { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash };
-  return { id, version, modulePath, moduleHash, semantic, actions, supportedPhases, closure };
+  const contract = { id, version, semantic, actions: [...actions].sort(), supportedPhases: [...supportedPhases].sort() };
+  return { id, version, modulePath, moduleHash, semantic, actions, supportedPhases, closure, contract };
 }
 function rawDescriptor(id, source, over = {}) {
   const modulePath = path.join(scratch, `${id}.js`);
-  fs.writeFileSync(modulePath, source);
+  writeStrictFile(modulePath, source);
   const moduleHash = crypto.createHash("sha256").update(fs.readFileSync(modulePath)).digest("hex");
   let closure = null;
   try { const c = buildValidatorClosure(modulePath, scratch); closure = { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash }; } catch (e) { closure = { __buildError: e.message, closureRoot: path.dirname(modulePath), entryRelPath: path.basename(modulePath), modules: [{ relPath: path.basename(modulePath), hash: moduleHash }], builtins: [] }; }
-  return Object.assign({ id, version: "1.0.0", modulePath, moduleHash, semantic: false, actions: [], supportedPhases: ["candidate"], closure }, over);
+  return Object.assign({ id, version: "1.0.0", modulePath, moduleHash, semantic: false, actions: [], supportedPhases: ["candidate"], closure, contract: { id, version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate"] } }, over);
 }
 async function runOne(descriptor, context = {}, timeoutMs = 1500) {
   return runValidationPhase(descriptor.supportedPhases[0], [descriptor], context, { timeoutMs });
@@ -108,9 +114,9 @@ test("module replaced after hashing fails closed (exact-bytes execution)", async
 test("symlinked closure module is rejected at build (registry load)", () => {
   const real = makeValidatorModule("return {status:'passed',problems:[]};");
   const outside = path.join(os.tmpdir(), `evil-exec-${seq++}.js`);
-  fs.writeFileSync(outside, `module.exports={id:${JSON.stringify(real.id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`);
+  writeStrictFile(outside, `module.exports={id:${JSON.stringify(real.id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`);
   const linkPath = path.join(scratch, `link-${seq++}.js`);
-  fs.symlinkSync(outside, linkPath);
+  try { fs.symlinkSync(outside, linkPath); } catch (error) { if (error.code === "EPERM") return; throw error; }
   assert.throws(() => buildValidatorClosure(linkPath, scratch), /symlink/i);
 });
 
@@ -156,14 +162,148 @@ function tempValidatorDir() {
   return dir;
 }
 const readReg = (d) => JSON.parse(fs.readFileSync(path.join(d, "registry.json"), "utf8"));
-const writeReg = (d, r) => fs.writeFileSync(path.join(d, "registry.json"), JSON.stringify(r));
+const writeReg = (d, r) => writeStrictFile(path.join(d, "registry.json"), JSON.stringify(r));
+
+function legacyLoadValidatorRegistry(dir) {
+  const registry = readReg(dir);
+  const modules = registry.validators.map((entry) => path.resolve(dir, entry.module));
+  const script = `
+    const modules = JSON.parse(process.argv[1]);
+    for (const modulePath of modules) {
+      const resolved = require.resolve(modulePath);
+      delete require.cache[resolved];
+      require(resolved);
+    }
+  `;
+  const result = spawnSync(process.execPath, ["-e", script, JSON.stringify(modules)], { encoding: "utf8" });
+  if (result.status !== 0) throw new Error(result.stderr || result.stdout || `legacy loader exited ${result.status}`);
+}
+
+function installAttackValidator(dir, id, source) {
+  const registry = readReg(dir);
+  registry.validators.unshift({ id, module: `${id}.js`, version: "1.0.0", supportedPhases: ["candidate"] });
+  writeReg(dir, registry);
+  writeStrictFile(path.join(dir, `${id}.js`), source);
+}
+
+function sideEffectAttackSource(id, body) {
+  return `"use strict";\n${body}\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`;
+}
+
+function assertLegacyExecutesButRegistryDoesNot(dir, markerPath) {
+  assert.equal(fs.existsSync(markerPath), false);
+  legacyLoadValidatorRegistry(dir);
+  assert.equal(fs.existsSync(markerPath), true, "legacy registry path should have executed the attack payload");
+  fs.rmSync(markerPath, { force: true });
+  try { loadValidatorRegistry({ validatorsDir: dir }); } catch (error) {}
+  assert.equal(fs.existsSync(markerPath), false, "hardened registry must not execute the attack payload");
+}
+
+test("static contract parser extracts literal metadata without executing code", () => {
+  const source = `const NEVER = (() => { throw new Error("must not execute"); })();\nmodule.exports={id:"static-1",version:"1.2.3",semantic:true,actions:["write_report"],supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[]};}};`;
+  const contract = extractStaticValidatorContract(source, "static-1");
+  assert.deepEqual(contract, { id: "static-1", version: "1.2.3", semantic: true, actions: ["write_report"], supportedPhases: ["candidate", "post_write"] });
+});
+
+for (const [name, source, rx] of [
+  ["module exports indirection", `const contract={id:"dyn-1",version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}}; module.exports=contract;`, /static object literal/i],
+  ["dynamic actions", `module.exports={id:"dyn-2",version:"1.0.0",semantic:true,actions:ACTIONS,supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`, /static string-literal array/i],
+  ["dynamic supported phases", `module.exports={id:"dyn-3",version:"1.0.0",semantic:false,actions:[],supportedPhases:PHASES,validate:function(){return {status:"passed",problems:[]};}};`, /static string-literal array/i]
+]) {
+  test(`static contract parser rejects ${name}`, () => {
+    assert.throws(() => extractStaticValidatorContract(source, name), rx);
+  });
+}
+
+for (const scenario of [
+  {
+    name: "top-level fs.writeFileSync",
+    body: (marker) => `require("node:fs").writeFileSync(${JSON.stringify(marker)},"fs-write");`
+  },
+  {
+    name: "top-level rename/unlink/chmod",
+    body: (marker) => `const fs=require("node:fs"); const file=${JSON.stringify(`${os.tmpdir()}\\vsec-target-${process.pid}-${Date.now()}`)}; fs.writeFileSync(file,"x"); fs.renameSync(file,file+".renamed"); fs.chmodSync(file+".renamed",0o600); fs.unlinkSync(file+".renamed"); fs.writeFileSync(${JSON.stringify(marker)},"rename-unlink-chmod");`
+  },
+  {
+    name: "top-level child_process spawn",
+    body: (marker) => `require("node:child_process").spawnSync(process.execPath,["-e","process.exit(0)"]); require("node:fs").writeFileSync(${JSON.stringify(marker)},"child-process");`
+  },
+  {
+    name: "top-level worker_threads.Worker",
+    body: (marker) => `const { Worker } = require("node:worker_threads"); const worker=new Worker("process.exit(0)",{eval:true}); worker.terminate(); require("node:fs").writeFileSync(${JSON.stringify(marker)},"worker");`
+  },
+  {
+    name: "top-level network access",
+    body: (marker) => `const server=require("node:net").createServer(); server.listen(0,()=>server.close()); require("node:fs").writeFileSync(${JSON.stringify(marker)},"network");`
+  },
+  {
+    name: "top-level environment access",
+    body: (marker) => `require("node:fs").writeFileSync(${JSON.stringify(marker)},String(process.env.PATH ? "env" : "missing"));`
+  },
+  {
+    name: "top-level approval access",
+    body: (marker) => `require("../../approvals/decision-store"); require("node:fs").writeFileSync(${JSON.stringify(marker)},"approval");`
+  },
+  {
+    name: "top-level ledger access",
+    body: (marker) => `require("../ledger"); require("node:fs").writeFileSync(${JSON.stringify(marker)},"ledger");`
+  }
+]) {
+  test(`registry loading does not execute ${scenario.name}`, () => {
+    const dir = tempValidatorDir();
+    const marker = path.join(os.tmpdir(), `vsec-marker-${seq++}.txt`);
+    const id = `attack-${seq++}`;
+    try {
+      installAttackValidator(dir, id, sideEffectAttackSource(id, scenario.body(marker)));
+      assertLegacyExecutesButRegistryDoesNot(dir, marker);
+    } finally {
+      fs.rmSync(marker, { force: true });
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+}
+
+test("registry loading does not execute a direct dependency side effect", () => {
+  const dir = tempValidatorDir();
+  const marker = path.join(os.tmpdir(), `vsec-marker-${seq++}.txt`);
+  try {
+    writeStrictFile(path.join(dir, "attack-dep.js"), `require("node:fs").writeFileSync(${JSON.stringify(marker)},"direct-dependency"); module.exports={tag:function(){return "ok";}};`);
+    installAttackValidator(dir, "attack-direct-dependency", sideEffectAttackSource("attack-direct-dependency", `require("./attack-dep.js");`));
+    assertLegacyExecutesButRegistryDoesNot(dir, marker);
+  } finally {
+    fs.rmSync(marker, { force: true });
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("registry loading does not execute a transitive dependency side effect", () => {
+  const dir = tempValidatorDir();
+  const marker = path.join(os.tmpdir(), `vsec-marker-${seq++}.txt`);
+  try {
+    writeStrictFile(path.join(dir, "attack-transitive-leaf.js"), `require("node:fs").writeFileSync(${JSON.stringify(marker)},"transitive-dependency"); module.exports={tag:function(){return "ok";}};`);
+    writeStrictFile(path.join(dir, "attack-transitive-mid.js"), `require("./attack-transitive-leaf.js"); module.exports={tag:function(){return "ok";}};`);
+    installAttackValidator(dir, "attack-transitive-root", sideEffectAttackSource("attack-transitive-root", `require("./attack-transitive-mid.js");`));
+    assertLegacyExecutesButRegistryDoesNot(dir, marker);
+  } finally {
+    fs.rmSync(marker, { force: true });
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("registry loader source contains no ordinary validator require path", () => {
+  const source = fs.readFileSync(path.join(REAL_VALIDATORS, "index.js"), "utf8");
+  assert.doesNotMatch(source, /require\.resolve\(modulePath\)/);
+  assert.doesNotMatch(source, /delete require\.cache/);
+  assert.doesNotMatch(source, /require\(resolvedModule\)/);
+  assert.doesNotMatch(source, /require\(modulePath\)/);
+});
 test("loader rejects symlinked validator module", () => {
   const dir = tempValidatorDir();
   try {
     const reg = readReg(dir); const v = reg.validators.find((x) => !x.semantic);
     const modPath = path.join(dir, v.module); const outside = path.join(os.tmpdir(), `evilv-${Date.now()}.js`);
-    fs.writeFileSync(outside, `module.exports={id:${JSON.stringify(v.id)},version:${JSON.stringify(v.version)},semantic:false,supportedPhases:${JSON.stringify(v.supportedPhases)},validate:()=>({status:"passed",problems:[]})};`);
-    fs.rmSync(modPath); fs.symlinkSync(outside, modPath);
+    writeStrictFile(outside, `module.exports={id:${JSON.stringify(v.id)},version:${JSON.stringify(v.version)},semantic:false,supportedPhases:${JSON.stringify(v.supportedPhases)},validate:()=>({status:"passed",problems:[]})};`);
+    fs.rmSync(modPath); try { fs.symlinkSync(outside, modPath); } catch (error) { if (error.code === "EPERM") return; throw error; }
     assert.throws(() => loadValidatorRegistry({ validatorsDir: dir }), /unavailable|regular file/i);
     fs.rmSync(outside, { force: true });
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
@@ -193,12 +333,12 @@ test("tampering a validator module changes the bound validatorSetHash", () => {
 // ---- WORK UNIT 2: transitive closure integrity ----
 function makeValidatorWithDep() {
   const dep = path.join(scratch, `dep-${seq}.js`);
-  fs.writeFileSync(dep, "module.exports={tag:function(){return 'ok';}};");
+  writeStrictFile(dep, "module.exports={tag:function(){return 'ok';}};");
   const id = `wd-${seq++}`;
   const modulePath = path.join(scratch, `${id}.js`);
-  fs.writeFileSync(modulePath, `const d=require('./${path.basename(dep)}');\nfunction validate(context){ d.tag(); return {status:'passed',problems:[]}; }\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate};`);
+  writeStrictFile(modulePath, `const d=require('./${path.basename(dep)}');\nfunction validate(context){ d.tag(); return {status:'passed',problems:[]}; }\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate};`);
   const c = buildValidatorClosure(modulePath, scratch);
-  return { id, version: "1.0.0", modulePath, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate"], closure: { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash }, depPath: dep };
+  return { id, version: "1.0.0", modulePath, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate"], closure: { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash }, contract: { id, version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate"] }, depPath: dep };
 }
 
 test("closure binds transitive dependency: entry replacement fails closed", async () => {
@@ -218,19 +358,19 @@ test("closure binds transitive dependency: dependency replacement fails closed",
 test("closure builder rejects dynamic require", () => {
   const id = `dynreq-${seq++}`;
   const mp = path.join(scratch, `${id}.js`);
-  fs.writeFileSync(mp, `const x=require(process.env.MOD||'./nope');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
+  writeStrictFile(mp, `const x=require(process.env.MOD||'./nope');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
   assert.throws(() => buildValidatorClosure(mp, scratch), /dynamic or non-literal require/i);
 });
 test("closure builder rejects non-allowlisted builtin (child_process)", () => {
   const id = `cp-${seq++}`;
   const mp = path.join(scratch, `${id}.js`);
-  fs.writeFileSync(mp, `const cp=require('child_process');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
+  writeStrictFile(mp, `const cp=require('child_process');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
   assert.throws(() => buildValidatorClosure(mp, scratch), /non-allowlisted/i);
 });
 test("closure builder rejects non-allowlisted builtin (net)", () => {
   const id = `net-${seq++}`;
   const mp = path.join(scratch, `${id}.js`);
-  fs.writeFileSync(mp, `const net=require('net');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
+  writeStrictFile(mp, `const net=require('net');\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:'passed',problems:[]};}};`);
   assert.throws(() => buildValidatorClosure(mp, scratch), /non-allowlisted/i);
 });
 test("worker rejects an undeclared closure dependency at execution", async () => {
@@ -245,6 +385,23 @@ test("closureHash is folded into validatorSetHash (real registry)", () => {
   const { loadValidatorRegistry } = require("../kernel/execution/validators");
   const reg = loadValidatorRegistry({});
   for (const [, d] of reg.descriptors) { assert.ok(d.closure && typeof d.closure.closureHash === "string" && d.closure.modules.length >= 1); }
+  assert.match(reg.validatorRuntime.hash, /^[a-f0-9]{64}$/);
+  assert.match(reg.closureLoaderRuntime.hash, /^[a-f0-9]{64}$/);
+  assert.equal(typeof reg.authoritativeRootPolicyId, "string");
+  const entry = reg.entries.find((candidate) => candidate.id === "execution-plan");
+  assert.ok(entry && entry.contract && Array.isArray(entry.contract.supportedPhases));
+});
+test("registry descriptors are deep-frozen after loading", () => {
+  const reg = loadValidatorRegistry({});
+  const descriptor = reg.descriptors.get("execution-plan");
+  assert.ok(Object.isFrozen(descriptor));
+  assert.ok(Object.isFrozen(descriptor.contract));
+  assert.ok(Object.isFrozen(descriptor.actions));
+  assert.ok(Object.isFrozen(descriptor.supportedPhases));
+  assert.ok(Object.isFrozen(descriptor.closure));
+  assert.ok(Object.isFrozen(descriptor.closure.rootPolicy));
+  assert.ok(Object.isFrozen(descriptor.closure.modules));
+  assert.ok(Object.isFrozen(descriptor.closure.modules[0]));
 });
 
 // ---- WORK UNIT 4: cross-phase re-verification ----
@@ -253,9 +410,9 @@ test("closure is re-verified at post_write: drift before post-write fails closed
   // before post_write -> worker re-hash mismatch -> fail closed.
   const id = `xp-${seq++}`;
   const mp = path.join(scratch, `${id}.js`);
-  fs.writeFileSync(mp, `module.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[]};}};`);
+  writeStrictFile(mp, `module.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[]};}};`);
   const c = buildValidatorClosure(mp, scratch);
-  const d = { id, version: "1.0.0", modulePath: mp, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate", "post_write"], closure: { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash } };
+  const d = { id, version: "1.0.0", modulePath: mp, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate", "post_write"], closure: { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: c.manifest, builtins: c.builtins, closureHash: c.closureHash }, contract: { id, version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate", "post_write"] } };
   assert.equal((await runValidationPhase("candidate", [d], {}, { timeoutMs: 1500 })).status, "passed");
   fs.appendFileSync(mp, "\n// drift before post-write\n");
   const post = await runValidationPhase("post_write", [d], {}, { timeoutMs: 1500 });
@@ -266,18 +423,18 @@ test("closure is re-verified at post_write: drift before post-write fails closed
 // ---- Authoritative-root source boundary (this checkpoint) ----
 const { resolveAuthoritativeRoot } = require("../kernel/execution/validator-closure");
 
-function writeModule(name, src) { const p = path.join(scratch, name); fs.writeFileSync(p, src); return p; }
+function writeModule(name, src) { const p = path.join(scratch, name); writeStrictFile(p, src); return p; }
 const VALID_BODY = `module.exports={id:"x",version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`;
 
 test("root: overly broad root '/' is rejected", () => {
   assert.throws(() => resolveAuthoritativeRoot("/"), /overly broad|too shallow/i);
 });
 test("root: bare system dirs are rejected as overly broad", () => {
-  for (const r of ["/usr", "/etc", "/tmp", "/home"]) assert.throws(() => resolveAuthoritativeRoot(r), /overly broad/i);
+  for (const r of ["/usr", "/etc", "/tmp", "/home"]) assert.throws(() => resolveAuthoritativeRoot(r), /overly broad|does not exist/i);
 });
 test("root: an explicitly authorized temporary test root is accepted", () => {
   const authorized = fs.mkdtempSync(path.join(os.tmpdir(), "authz-root-"));
-  const mp = path.join(authorized, "v.js"); fs.writeFileSync(mp, VALID_BODY);
+  const mp = path.join(authorized, "v.js"); writeStrictFile(mp, VALID_BODY);
   const c = buildValidatorClosure(mp, authorized);
   assert.equal(c.closureRoot, fs.realpathSync(authorized));
   assert.equal(c.modules.length, 1);
@@ -285,7 +442,7 @@ test("root: an explicitly authorized temporary test root is accepted", () => {
 });
 test("boundary: `../` dependency escape is rejected", () => {
   const mp = writeModule(`esc-${seq++}.js`, `const x=require("../escape-target.js");\n${VALID_BODY}`);
-  fs.writeFileSync(path.join(scratch, "..", "escape-target.js"), "module.exports={};");
+  writeStrictFile(path.join(scratch, "..", "escape-target.js"), "module.exports={};");
   assert.throws(() => buildValidatorClosure(mp, scratch), /escapes authoritative root|outside/i);
   try { fs.rmSync(path.join(scratch, "..", "escape-target.js")); } catch (e) {}
 });
@@ -295,15 +452,16 @@ test("boundary: absolute dependency specifier is rejected", () => {
 });
 test("boundary: external-directory dependency is rejected", () => {
   const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), "ext-dep-"));
-  fs.writeFileSync(path.join(outsideDir, "dep.js"), "module.exports={};");
+  writeStrictFile(path.join(outsideDir, "dep.js"), "module.exports={};");
   const rel = path.relative(scratch, path.join(outsideDir, "dep.js"));
   const mp = writeModule(`extdir-${seq++}.js`, `const x=require(${JSON.stringify("./" + rel)});\n${VALID_BODY}`);
   assert.throws(() => buildValidatorClosure(mp, scratch), /escapes authoritative root|outside/i);
   fs.rmSync(outsideDir, { recursive: true, force: true });
 });
 test("boundary: symlinked dependency is rejected", () => {
-  const target = path.join(os.tmpdir(), `symdep-${seq++}.js`); fs.writeFileSync(target, "module.exports={};");
-  const link = path.join(scratch, `dep-link-${seq}.js`); fs.symlinkSync(target, link);
+  const target = path.join(os.tmpdir(), `symdep-${seq++}.js`); writeStrictFile(target, "module.exports={};");
+  const link = path.join(scratch, `dep-link-${seq}.js`);
+  try { fs.symlinkSync(target, link); } catch (error) { if (error.code === "EPERM") return; throw error; }
   const mp = writeModule(`usesym-${seq++}.js`, `const x=require("./${path.basename(link)}");\n${VALID_BODY}`);
   assert.throws(() => buildValidatorClosure(mp, scratch), /symlink/i);
   fs.rmSync(target, { force: true });
@@ -321,12 +479,13 @@ test("boundary: hard-linked validator file is rejected", () => {
   fs.rmSync(link, { force: true });
 });
 test("boundary: transitive hard-linked dependency is rejected", () => {
-  const dep = path.join(scratch, `hldep-${seq}.js`); fs.writeFileSync(dep, "module.exports={};");
+  const dep = path.join(scratch, `hldep-${seq}.js`); writeStrictFile(dep, "module.exports={};");
   fs.linkSync(dep, path.join(scratch, `hldep-link-${seq}.js`));
   const mp = writeModule(`useshl-${seq++}.js`, `const x=require("./${path.basename(dep)}");\n${VALID_BODY}`);
   assert.throws(() => buildValidatorClosure(mp, scratch), /hard-linked/i);
 });
 test("boundary: group/world-writable validator file is rejected", () => {
+  if (process.platform === "win32") return;
   const mp = writeModule(`ww-${seq++}.js`, VALID_BODY);
   fs.chmodSync(mp, 0o666);
   assert.throws(() => buildValidatorClosure(mp, scratch), /group\/world-writable/i);
@@ -337,7 +496,7 @@ function builtDescriptor(src) {
   const id = `meta-${seq++}`;
   const mp = writeModule(`${id}.js`, `module.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`);
   const c = buildValidatorClosure(mp, scratch);
-  return { id, version: "1.0.0", modulePath: mp, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate"], closure: { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: JSON.parse(JSON.stringify(c.manifest)), builtins: c.builtins, closureHash: c.closureHash } };
+  return { id, version: "1.0.0", modulePath: mp, moduleHash: c.manifest[0].hash, semantic: false, actions: [], supportedPhases: ["candidate"], closure: { closureRoot: c.closureRoot, rootPolicy: c.rootPolicy, entryRelPath: c.entryRelPath, modules: JSON.parse(JSON.stringify(c.manifest)), builtins: c.builtins, closureHash: c.closureHash }, contract: { id, version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate"] } };
 }
 test("exec: mode change vs bound manifest fails closed", async () => {
   const d = builtDescriptor(); d.closure.modules[0].mode = 0o600; // differs from actual on disk

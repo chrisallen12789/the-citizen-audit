@@ -4,6 +4,11 @@ const { canonicalStringify } = require("../lib/canonical-json");
 const { sha256 } = require("../lib/append-only-log");
 
 const RUNTIME_VERSION = "2.1.0";
+const ENFORCE_EXECUTABLE_MODE = process.platform !== "win32";
+
+function isExecutableFile(stat) {
+  return stat.isFile() && (!ENFORCE_EXECUTABLE_MODE || (stat.mode & 0o111));
+}
 
 function readRegistry(rootDir) {
   const filePath = path.join(rootDir, "agents", "registry.json");
@@ -19,7 +24,7 @@ function resolveExecutable(command) {
     try {
       const realPath = fs.realpathSync(candidate);
       const stat = fs.lstatSync(realPath);
-      if (!stat.isSymbolicLink() && stat.isFile() && (stat.mode & 0o111)) return { realPath, digest: sha256(fs.readFileSync(realPath)) };
+      if (!stat.isSymbolicLink() && isExecutableFile(stat)) return { realPath, digest: sha256(fs.readFileSync(realPath)) };
     } catch {}
   }
   throw new Error(`Registered agent executable is unavailable: ${command}.`);
@@ -58,7 +63,7 @@ function verifyResolvedAgent(agent) {
   if (!agent || typeof agent.command !== "string" || !agent.expectedExecutableDigest) throw new Error("Resolved registered agent is required.");
   const realPath = fs.realpathSync(agent.command);
   const stat = fs.lstatSync(realPath);
-  if (stat.isSymbolicLink() || !stat.isFile() || !(stat.mode & 0o111)) throw new Error("Registered agent executable is no longer a regular executable file.");
+  if (stat.isSymbolicLink() || !isExecutableFile(stat)) throw new Error("Registered agent executable is no longer a regular executable file.");
   const digest = sha256(fs.readFileSync(realPath));
   if (realPath !== agent.provenance.executableRealPath || digest !== agent.expectedExecutableDigest) throw new Error("Registered agent executable identity changed after resolution.");
   if (sha256(canonicalStringify(agent.args || [])) !== agent.provenance.argumentsDigest) throw new Error("Registered agent arguments no longer match the registry identity.");

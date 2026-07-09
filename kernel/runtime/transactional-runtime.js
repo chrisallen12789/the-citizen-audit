@@ -97,7 +97,7 @@ async function runTransactionalAgent(options = {}) {
   const { rootDir, runId, agentId, action, affectedObjects, approvalDecisionId } = options;
   const result = baseResult(runId);
   let workspace;
-  const prohibitedOptionNames = ["agent", "actor", "command", "args", "approvalProvider", "onStep", "faultInjector", "policyPath", "validatorsDir", "ledgerPath", "recordedAt"];
+  const prohibitedOptionNames = ["agent", "actor", "command", "args", "approvalProvider", "onStep", "faultInjector", "policyPath", "projectRoot", "validatorsDir", "ledgerPath", "recordedAt"];
   const allowedOptionNames = new Set(["rootDir", "runId", "agentId", "action", "affectedObjects", "approvalDecisionId", "inputs", "reason", "preserveWorkspace"]);
   try {
     for (const [key, value] of Object.entries(options)) {

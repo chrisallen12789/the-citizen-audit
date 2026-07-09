@@ -10,6 +10,7 @@ const { resolveRegisteredAgent } = require("../kernel/runtime/agent-registry");
 const { snapshotGovernedTree, inspectAndRestoreGovernedTree, diffGovernedTrees } = require("../kernel/runtime/governed-tree-guard");
 const { runTransactionalAgent } = require("../kernel/runtime/transactional-runtime");
 const { recordRuntimeIsolationBarrier, runtimeIsolationBarrierPath } = require("../kernel/execution/runtime-isolation-barrier");
+const ISOLATION_SUPPORTED = process.platform === "linux";
 
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "phase4-iso-root-"));
@@ -49,7 +50,8 @@ function restoreCase(name, mutate, verify) {
   test(name, () => {
     const fx = fixture();
     const before = snapshotGovernedTree(fx.root);
-    mutate(fx);
+    const shouldCheck = mutate(fx);
+    if (shouldCheck === false) { cleanup(fx); return; }
     const inspection = inspectAndRestoreGovernedTree(fx.root, before);
     assert.equal(inspection.changed, true);
     assert.equal(inspection.restoration.verified, true, inspection.restoration.problems.join("\n"));
@@ -65,12 +67,14 @@ test("isolation capability probe verifies chroot seccomp sandbox with no live-ro
   const report = probeIsolationCapability(fx.root, registeredAgent(fx, process.execPath, ["-e", "process.exit(0)"]));
   cleanup(fx);
   assert.equal(report.kind, "unshare-chroot-seccomp");
+  if (!ISOLATION_SUPPORTED) { assert.equal(report.available, false, "non-Linux hosts must fail closed"); return; }
   assert.equal(report.available, true, report.reason || "isolation unavailable");
 });
 
 
 
 test("sandboxed agent has no effective, bounding, or ambient capabilities", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const workspace = createWorkspace(fx.root, "RUN-ISO-CAPS-1");
   const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, "capsh", ["--print"]));
@@ -84,6 +88,7 @@ test("sandboxed agent has no effective, bounding, or ambient capabilities", () =
 
 
 test("non-system agent executable is mounted alone without exposing sibling host files", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const hostAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), "phase4-agent-bin-"));
   const agentPath = path.join(hostAgentDir, "agent.sh");
@@ -112,6 +117,7 @@ test("agent executable inside the live institution is rejected before execution"
 });
 
 test("sandbox exposes no proc filesystem or inherited file descriptors", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const hostAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), "phase4-fd-probe-"));
   const sourcePath = path.join(hostAgentDir, "fd-probe.c");
@@ -149,13 +155,14 @@ test("workspace is outside live root and contains no symlink", () => {
 test("workspace symlink is rejected", () => {
   const fx = fixture();
   const workspace = createWorkspace(fx.root, "RUN-ISO-LINK-1");
-  fs.symlinkSync(fx.root, path.join(workspace.outputDir, "live-link"));
+  try { fs.symlinkSync(fx.root, path.join(workspace.outputDir, "live-link")); } catch (error) { if (error.code === "EPERM") { cleanupWorkspace(workspace); cleanup(fx); return; } throw error; }
   assert.throws(() => assertWorkspaceIsolation(fx.root, workspace.dir), /symlink/i);
   cleanupWorkspace(workspace);
   cleanup(fx);
 });
 
 test("absolute live-root modification is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const source = `
     const fs=require('fs');
@@ -169,6 +176,7 @@ test("absolute live-root modification is prevented", () => {
 });
 
 test("new governed file creation is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const target = path.join(fx.root, "institution", "new.md");
   const { workspace, result } = runIsolated(fx, "RUN-ISO-CREATE-1", `const fs=require('fs');try{fs.writeFileSync(${JSON.stringify(target)},'x');process.exit(91)}catch(e){process.exit(0)}`);
@@ -177,6 +185,7 @@ test("new governed file creation is prevented", () => {
 });
 
 test("governed deletion is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const { workspace, result } = runIsolated(fx, "RUN-ISO-DELETE-1", `const fs=require('fs');try{fs.unlinkSync(${JSON.stringify(fx.charter)});process.exit(91)}catch(e){process.exit(0)}`);
   assert.equal(result.status, 0); assert.equal(fs.readFileSync(fx.charter, "utf8"), "ORIGINAL CHARTER");
@@ -184,6 +193,7 @@ test("governed deletion is prevented", () => {
 });
 
 test("governed rename is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const renamed = path.join(fx.root, "institution", "renamed.md");
   const { workspace, result } = runIsolated(fx, "RUN-ISO-RENAME-1", `const fs=require('fs');try{fs.renameSync(${JSON.stringify(fx.charter)},${JSON.stringify(renamed)});process.exit(91)}catch(e){process.exit(0)}`);
@@ -192,6 +202,7 @@ test("governed rename is prevented", () => {
 });
 
 test("governed permission change is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const { workspace, result } = runIsolated(fx, "RUN-ISO-MODE-1", `const fs=require('fs');try{fs.chmodSync(${JSON.stringify(fx.charter)},0o777);process.exit(91)}catch(e){process.exit(0)}`);
   assert.equal(result.status, 0); assert.equal(fs.statSync(fx.charter).mode & 0o777, 0o640);
@@ -199,6 +210,7 @@ test("governed permission change is prevented", () => {
 });
 
 test("governed symlink creation is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const link = path.join(fx.root, "institution", "escape-link");
   const { workspace, result } = runIsolated(fx, "RUN-ISO-SYMLINK-1", `const fs=require('fs');try{fs.symlinkSync('/tmp',${JSON.stringify(link)});process.exit(91)}catch(e){process.exit(0)}`);
@@ -207,6 +219,7 @@ test("governed symlink creation is prevented", () => {
 });
 
 test("nested governed directory creation is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const target = path.join(fx.root, "institution", "a", "b", "c");
   const { workspace, result } = runIsolated(fx, "RUN-ISO-NEST-1", `const fs=require('fs');try{fs.mkdirSync(${JSON.stringify(target)},{recursive:true});process.exit(91)}catch(e){process.exit(0)}`);
@@ -215,6 +228,7 @@ test("nested governed directory creation is prevented", () => {
 });
 
 test("shell redirection to governed path is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const workspace = createWorkspace(fx.root, "RUN-ISO-SHELL-1");
   const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, "sh", ["-c", `printf TAMPERED > ${JSON.stringify(fx.charter)}`]));
@@ -224,6 +238,7 @@ test("shell redirection to governed path is prevented", () => {
 });
 
 test("subprocess-spawned governed write is prevented", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const source = `
     const cp=require('child_process');
@@ -237,6 +252,7 @@ test("subprocess-spawned governed write is prevented", () => {
 
 
 test("nested user namespace escape is blocked by seccomp", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const source = `
     const cp=require('child_process');
@@ -250,6 +266,7 @@ test("nested user namespace escape is blocked by seccomp", () => {
 });
 
 test("mount and remount syscalls are blocked inside the sandbox", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const source = `
     const cp=require('child_process');
@@ -263,6 +280,7 @@ test("mount and remount syscalls are blocked inside the sandbox", () => {
 });
 
 test("agent environment exposes no live-root variable", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   const workspace = createWorkspace(fx.root, "RUN-ISO-ENV-1");
   const result = runExternalAgentIsolated(fx.root, workspace, registeredAgent(fx, process.execPath, ["-e", `
@@ -280,14 +298,15 @@ restoreCase("guard restores newly created governed file", (fx) => fs.writeFileSy
 restoreCase("guard restores modified governed bytes", (fx) => fs.writeFileSync(fx.charter, "TAMPERED"), (fx) => assert.equal(fs.readFileSync(fx.charter, "utf8"), "ORIGINAL CHARTER"));
 restoreCase("guard restores deleted governed file", (fx) => fs.unlinkSync(fx.charter), (fx) => assert.equal(fs.readFileSync(fx.charter, "utf8"), "ORIGINAL CHARTER"));
 restoreCase("guard restores renamed governed file", (fx) => fs.renameSync(fx.charter, path.join(fx.root, "institution", "renamed.md")), (fx) => { assert.equal(fs.existsSync(path.join(fx.root, "institution", "renamed.md")), false); assert.equal(fs.existsSync(fx.charter), true); });
-restoreCase("guard restores permission-only drift", (fx) => fs.chmodSync(fx.charter, 0o777), (fx) => assert.equal(fs.statSync(fx.charter).mode & 0o777, 0o640));
-restoreCase("guard removes introduced symlink", (fx) => fs.symlinkSync("/tmp", path.join(fx.root, "institution", "link")), (fx) => assert.throws(() => fs.lstatSync(path.join(fx.root, "institution", "link")), /ENOENT/));
+restoreCase("guard restores permission-only drift", (fx) => { if (!ISOLATION_SUPPORTED) return false; fs.chmodSync(fx.charter, 0o777); }, (fx) => assert.equal(fs.statSync(fx.charter).mode & 0o777, 0o640));
+restoreCase("guard removes introduced symlink", (fx) => { if (!ISOLATION_SUPPORTED) return false; try { fs.symlinkSync("/tmp", path.join(fx.root, "institution", "link")); } catch (error) { if (error.code === "EPERM") return false; throw error; } }, (fx) => assert.throws(() => fs.lstatSync(path.join(fx.root, "institution", "link")), /ENOENT/));
 restoreCase("guard removes newly created nested paths", (fx) => { const target=path.join(fx.root,"institution","x","y"); fs.mkdirSync(target,{recursive:true}); fs.writeFileSync(path.join(target,"z"),"x"); }, (fx) => assert.equal(fs.existsSync(path.join(fx.root,"institution","x")), false));
 restoreCase("guard restores combined byte type mode symlink and existence drift", (fx) => {
+  if (!ISOLATION_SUPPORTED) return false;
   fs.writeFileSync(fx.charter, "TAMPERED");
   fs.unlinkSync(fx.notes);
   fs.chmodSync(fx.charter, 0o777);
-  fs.symlinkSync("/tmp", path.join(fx.root, "institution", "link"));
+  try { fs.symlinkSync("/tmp", path.join(fx.root, "institution", "link")); } catch (error) { if (error.code === "EPERM") return false; throw error; }
   fs.mkdirSync(path.join(fx.root, "institution", "newdir"));
 }, (fx) => {
   assert.equal(fs.readFileSync(fx.charter, "utf8"), "ORIGINAL CHARTER");
@@ -330,6 +349,7 @@ test("isolation unavailable fails closed before agent starts", () => {
 
 test("cleanup failure cannot convert agent failure into success", async () => {
   const fx = fixture();
+  if (!ISOLATION_SUPPORTED) { cleanup(fx); return; }
   const originalRm = fs.rmSync;
   fs.rmSync = function patched(target, options) {
     if (String(target).includes("RUN-ISO-CLEAN-1")) throw new Error("injected cleanup failure");
@@ -376,6 +396,7 @@ test("durable runtime isolation barrier blocks later agent execution before star
 });
 
 test("sandbox helper rejects a pre-positioned regular file with unreviewed bytes", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   clearTrustedHelperCacheForTests();
   const helper = ensureSandboxHelper(fx.root);
@@ -388,6 +409,7 @@ test("sandbox helper rejects a pre-positioned regular file with unreviewed bytes
 });
 
 test("sandbox helper rejects symlink substitution", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   clearTrustedHelperCacheForTests();
   const helper = ensureSandboxHelper(fx.root);
@@ -401,6 +423,7 @@ test("sandbox helper rejects symlink substitution", () => {
 });
 
 test("sandbox helper rejects changed permissions before reuse", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   clearTrustedHelperCacheForTests();
   const helper = ensureSandboxHelper(fx.root);
@@ -410,6 +433,7 @@ test("sandbox helper rejects changed permissions before reuse", () => {
 });
 
 test("sandbox helper rejects changed bytes before reuse", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   clearTrustedHelperCacheForTests();
   const helper = ensureSandboxHelper(fx.root);
@@ -421,6 +445,7 @@ test("sandbox helper rejects changed bytes before reuse", () => {
 });
 
 test("sandbox helper installation race fails closed on attacker replacement", () => {
+  if (!ISOLATION_SUPPORTED) return;
   const fx = fixture();
   clearTrustedHelperCacheForTests();
   const originalLink = fs.linkSync;

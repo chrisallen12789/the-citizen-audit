@@ -28,6 +28,7 @@ const ROOT_POLICY_VERSION = "1.0.0";
 const BUILTIN_ALLOWLIST = new Set(["path", "crypto", "util", "assert", "buffer", "os"]);
 const STRUCTURAL_FS = "fs";
 const REPO_ROOT = fs.realpathSync(path.resolve(__dirname, "..", ".."));
+const ENFORCE_POSIX_WRITE_BITS = process.platform !== "win32";
 
 // Roots that are too broad to be an authoritative validator source boundary.
 const OVERLY_BROAD_ROOTS = new Set(["/", "/usr", "/bin", "/sbin", "/lib", "/etc", "/home", "/root", "/tmp", "/var", "/opt", "/mnt", "/proc", "/sys", "/dev"]);
@@ -84,7 +85,7 @@ function inspectAndRead(absLexical, realRoot) {
     const st = fs.fstatSync(fd);
     if (!st.isFile()) throw fail("CLOSURE_NONREGULAR", `Validator closure module is not a regular file: ${absLexical}`);
     if (st.nlink > 1) throw fail("CLOSURE_HARDLINK", `Validator closure module is hard-linked (nlink=${st.nlink}): ${absLexical}`);
-    if (st.mode & 0o022) throw fail("CLOSURE_WRITABLE", `Validator closure module is group/world-writable (mode=${(st.mode & 0o777).toString(8)}): ${absLexical}`);
+    if (ENFORCE_POSIX_WRITE_BITS && (st.mode & 0o022)) throw fail("CLOSURE_WRITABLE", `Validator closure module is group/world-writable (mode=${(st.mode & 0o777).toString(8)}): ${absLexical}`);
     // Catch intermediate-symlink directory escape: realpath must stay inside root
     // and resolve to the same lexical path (no component was a symlink).
     const real = fs.realpathSync(absLexical);
@@ -154,7 +155,7 @@ function buildValidatorClosure(entryModulePath, projectRoot = REPO_ROOT) {
   const boundManifest = modules.map((m) => ({ relPath: m.relPath, hash: m.hash, size: m.meta.size, mode: m.meta.mode }));
   const rootPolicy = {
     version: ROOT_POLICY_VERSION,
-    enforced: ["authoritative-root", "root-relative", "no-absolute-spec", "no-parent-escape", "no-symlink", "regular-file", "nlink==1", "not-group-world-writable", "no-overly-broad-root"]
+    enforced: ["authoritative-root", "root-relative", "no-absolute-spec", "no-parent-escape", "no-symlink", "regular-file", "nlink==1", ...(ENFORCE_POSIX_WRITE_BITS ? ["not-group-world-writable"] : []), "no-overly-broad-root"]
   };
   const closureHash = sha256(canonicalStringify({ rootPolicy, builtins: [...builtins].sort(), modules: boundManifest }));
   return {

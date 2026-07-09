@@ -1,6 +1,6 @@
 // Test-only fault adapter. It instruments module imports before the production
 // orchestrator is loaded. No production function accepts or executes a callback.
-function loadFaultInjectedOrchestrator(onStep) {
+function loadFaultInjectedOrchestrator(onStep, executionOptions = {}) {
   if (typeof onStep !== "function") throw new Error("Test fault adapter requires a callback.");
 
   const durableIo = require("../../kernel/execution/durable-io");
@@ -50,7 +50,10 @@ function loadFaultInjectedOrchestrator(onStep) {
     return originals.releaseExecutionLock(...args);
   };
   require.cache[recoveryPath].exports = instrumentedRecovery;
-  const loaded = require(orchestratorPath).executeApprovedTransaction;
+  const orchestrator = require(orchestratorPath);
+  const loaded = (executionOptions && Object.prototype.hasOwnProperty.call(executionOptions, "projectRoot"))
+    ? orchestrator.executeApprovedTransactionForTest
+    : orchestrator.executeApprovedTransaction;
   boundary.releaseExecutionLock = originals.releaseExecutionLock;
   return loaded;
 }

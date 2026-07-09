@@ -18,7 +18,7 @@ const {
 const { buildExecutionPlan, loadInstitutionRegistry } = require("./plan");
 const { createCandidateState } = require("./candidate-state");
 const { institutionFile } = require("./path-safety");
-const { loadValidatorRegistry, selectRequiredValidators, validatorsForPhase } = require("./validators");
+const { loadValidatorRegistry, loadValidatorRegistryForTest, selectRequiredValidators, validatorsForPhase } = require("./validators");
 const { runValidationPhase } = require("./validation-cycle");
 const { writeValidationResult } = require("./validation-result-store");
 const {
@@ -68,14 +68,19 @@ function freezeResult(result) {
 // failure after mutation begins rolls back through Phase 2; unprovable rollback
 // yields recovery_required and fails closed.
 async function executeApprovedTransaction(transactionId, options = {}) {
+  return executeApprovedTransactionInternal(transactionId, options, loadValidatorRegistry, false);
+}
+
+async function executeApprovedTransactionForTest(transactionId, options = {}) {
+  return executeApprovedTransactionInternal(transactionId, options, loadValidatorRegistryForTest, true);
+}
+
+async function executeApprovedTransactionInternal(transactionId, options, registryLoader, allowTestRootOverride) {
   const rootDir = options.rootDir || repositoryRoot;
   const ledgerPath = options.ledgerPath || defaultExecutionLedgerPath(rootDir);
   const policyPath = options.policyPath || path.join(rootDir, "kernel", "execution", "policy.json");
   const validatorsDir = options.validatorsDir || path.join(__dirname, "validators");
   const timeoutMs = options.timeoutMs;
-  if (Object.prototype.hasOwnProperty.call(options, "onStep") || Object.values(options).some((value) => typeof value === "function")) {
-    throw new ExecutionRejected(["Production orchestrator rejects caller-supplied executable callbacks."]);
-  }
 
   const bindings = {
     attemptId: null,
@@ -94,6 +99,13 @@ async function executeApprovedTransaction(transactionId, options = {}) {
   };
 
   try {
+    if (!allowTestRootOverride && Object.prototype.hasOwnProperty.call(options, "projectRoot")) {
+      throw new ExecutionRejected(["Production orchestrator rejects caller-selected projectRoot."]);
+    }
+    if (Object.prototype.hasOwnProperty.call(options, "onStep") || Object.values(options).some((value) => typeof value === "function")) {
+      throw new ExecutionRejected(["Production orchestrator rejects caller-supplied executable callbacks."]);
+    }
+
     // 1. Load the recorded transaction from authoritative repository state.
     let transaction;
     try {
@@ -194,12 +206,12 @@ async function executeApprovedTransaction(transactionId, options = {}) {
     bindings.policyHash = policyHash;
 
     // 10. Load and hash the current validator registry.
-    let loaded;
     let validatorSetHash;
     let descriptors;
     try {
-      const registry = loadValidatorRegistry({ validatorsDir, projectRoot: options.projectRoot });
-      loaded = registry.loaded;
+      const registry = allowTestRootOverride
+        ? registryLoader({ validatorsDir, projectRoot: options.projectRoot })
+        : registryLoader({ validatorsDir });
       descriptors = registry.descriptors;
       validatorSetHash = registry.validatorSetHash;
     } catch (error) {
@@ -367,4 +379,4 @@ async function executeApprovedTransaction(transactionId, options = {}) {
   }
 }
 
-module.exports = { BASELINE_REQUIRED_VALIDATORS, executeApprovedTransaction };
+module.exports = { BASELINE_REQUIRED_VALIDATORS, executeApprovedTransaction, executeApprovedTransactionForTest };

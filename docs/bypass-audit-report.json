@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-09T00:56:24.445Z",
+  "generatedAt": "2026-07-09T02:18:52.024Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -685,147 +685,122 @@
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "defaultExecutionLedgerPath",
-          "line": 72
+          "line": 80
         },
         {
           "module": "kernel/transactions/store.js",
           "exportName": "getTransaction",
-          "line": 100
+          "line": 112
         },
         {
           "module": "kernel/transactions/validate.js",
           "exportName": "assertValidTransaction",
-          "line": 106
+          "line": 118
         },
         {
           "module": "kernel/approvals/decision-store.js",
           "exportName": "verifyApprovalDecisionForIntent",
-          "line": 111
+          "line": 123
         },
         {
           "module": "kernel/runtime/agent-registry.js",
           "exportName": "resolveRegisteredAgent",
-          "line": 128
+          "line": 140
         },
         {
           "module": "kernel/runtime/runtime-provenance.js",
           "exportName": "reviewedSandboxHelperSourceHash",
-          "line": 138
+          "line": 150
         },
         {
           "module": "kernel/transactions/validate.js",
           "exportName": "computeWriteSetHash",
-          "line": 142
+          "line": 154
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 150
+          "line": 162
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "hasCommittedTransaction",
-          "line": 155
+          "line": 167
         },
         {
           "module": "kernel/execution/recovery-session.js",
           "exportName": "assertNoRecoveryBarrier",
-          "line": 157
+          "line": 169
         },
         {
           "module": "kernel/authority/engine.js",
           "exportName": "loadAuthorityStateAtRoot",
-          "line": 166
+          "line": 178
         },
         {
           "module": "kernel/authority/engine.js",
           "exportName": "checkActionAtRoot",
-          "line": 167
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 201
+          "line": 179
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "selectRequiredValidators",
-          "line": 227
+          "line": 239
         },
         {
           "module": "kernel/execution/plan.js",
           "exportName": "loadInstitutionRegistry",
-          "line": 242
+          "line": 254
         },
         {
           "module": "kernel/execution/plan.js",
           "exportName": "buildExecutionPlan",
-          "line": 243
+          "line": 255
         },
         {
           "module": "kernel/execution/path-safety.js",
           "exportName": "institutionFile",
-          "line": 260
+          "line": 272
         },
         {
           "module": "kernel/execution/candidate-state.js",
           "exportName": "createCandidateState",
-          "line": 267
+          "line": 279
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 269
+          "line": 281
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "validatorsForPhase",
-          "line": 269
+          "line": 281
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 275
+          "line": 287
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 275
+          "line": 287
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "createExecutionAttempt",
-          "line": 279
+          "line": 291
         },
         {
           "module": "kernel/execution/recovery-session.js",
           "exportName": "beginRecoveryAttempt",
-          "line": 294
+          "line": 306
         },
         {
           "module": "kernel/execution/recovery-session.js",
           "exportName": "applyJournaledWrites",
-          "line": 304
-        },
-        {
-          "module": "kernel/execution/ledger.js",
-          "exportName": "transitionExecutionAttempt",
-          "line": 307
-        },
-        {
-          "module": "kernel/execution/validation-cycle.js",
-          "exportName": "runValidationPhase",
-          "line": 309
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "validatorsForPhase",
-          "line": 309
-        },
-        {
-          "module": "kernel/execution/validation-result-store.js",
-          "exportName": "writeValidationResult",
-          "line": 317
+          "line": 316
         },
         {
           "module": "kernel/execution/ledger.js",
@@ -833,19 +808,39 @@
           "line": 319
         },
         {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 321
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "validatorsForPhase",
+          "line": 321
+        },
+        {
+          "module": "kernel/execution/validation-result-store.js",
+          "exportName": "writeValidationResult",
+          "line": 329
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "transitionExecutionAttempt",
+          "line": 331
+        },
+        {
           "module": "kernel/execution/rollback.js",
           "exportName": "rollbackExecutionAttempt",
-          "line": 327
+          "line": 339
         },
         {
           "module": "kernel/execution/exclusive-boundary.js",
           "exportName": "releaseExecutionLock",
-          "line": 341
+          "line": 353
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "getExecutionAttempt",
-          "line": 348
+          "line": 360
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -2030,17 +2025,17 @@
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 97
+          "line": 98
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 159
+          "line": 160
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 159
+          "line": 160
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -2204,49 +2199,49 @@
       },
       "capabilityEdges": [
         {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "resolveAuthoritativeRoot",
-          "line": 26
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 42
+        },
+        {
+          "module": "kernel/lib/canonical-json.js",
+          "exportName": "canonicalStringify",
+          "line": 42
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 57
+          "line": 141
         },
         {
-          "module": "kernel/lib/canonical-json.js",
-          "exportName": "canonicalStringify",
-          "line": 68
+          "module": "kernel/lib/append-only-log.js",
+          "exportName": "sha256",
+          "line": 148
         },
         {
-          "module": "kernel/lib/canonical-json.js",
-          "exportName": "canonicalStringify",
-          "line": 68
-        },
-        {
-          "module": "kernel/lib/canonical-json.js",
-          "exportName": "canonicalStringify",
-          "line": 69
-        },
-        {
-          "module": "kernel/lib/canonical-json.js",
-          "exportName": "canonicalStringify",
-          "line": 69
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "resolveAuthoritativeRoot",
+          "line": 156
         },
         {
           "module": "kernel/execution/validator-closure.js",
           "exportName": "buildValidatorClosure",
-          "line": 74
+          "line": 186
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "inspectAndRead",
+          "line": 187
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 85
+          "line": 233
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 85
+          "line": 233
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -2431,42 +2426,42 @@
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 22
+          "line": 27
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 40
+          "line": 45
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 40
+          "line": 45
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 41
+          "line": 46
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 41
+          "line": 46
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 62
+          "line": 67
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 64
+          "line": 69
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 64
+          "line": 69
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -4542,222 +4537,227 @@
         {
           "module": "kernel/transactions/validate.js",
           "exportName": "computeWriteSetHash",
-          "line": 74
+          "line": 75
         },
         {
           "module": "kernel/runtime/agent-registry.js",
           "exportName": "resolveRegisteredAgent",
-          "line": 75
+          "line": 76
         },
         {
           "module": "kernel/runtime/runtime-provenance.js",
           "exportName": "reviewedSandboxHelperSourceHash",
-          "line": 79
+          "line": 80
         },
         {
           "module": "kernel/approvals/decision-store.js",
           "exportName": "recordApprovalDecision",
-          "line": 84
+          "line": 85
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "appendEntry",
-          "line": 91
+          "line": 92
         },
         {
           "module": "kernel/transactions/store.js",
           "exportName": "recordTransaction",
-          "line": 93
+          "line": 94
         },
         {
           "module": "tests/support/orchestrator-fault-adapter.js",
           "exportName": "loadFaultInjectedOrchestrator",
-          "line": 99
+          "line": 100
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 136
+          "line": 138
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "getExecutionAttempt",
-          "line": 139
+          "line": 141
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 152
+          "line": 154
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 165
+          "line": 167
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 179
+          "line": 181
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 192
+          "line": 194
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 205
+          "line": 207
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 215
-        },
-        {
-          "module": "kernel/execution/ledger.js",
-          "exportName": "getExecutionAttempt",
           "line": 217
         },
         {
-          "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 224
-        },
-        {
           "module": "kernel/execution/ledger.js",
           "exportName": "getExecutionAttempt",
+          "line": 219
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
           "line": 226
         },
         {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 228
+        },
+        {
           "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 230
+          "exportName": "executeApprovedTransactionForTest",
+          "line": 232
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 239
+          "line": 240
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 250
+          "line": 249
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 258
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistryForTest",
+          "line": 264
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistryForTest",
+          "line": 271
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 273
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 261
+          "line": 280
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 291
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransactionForTest",
+          "line": 302
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "getExecutionAttempt",
-          "line": 278
+          "line": 319
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransactionForTest",
+          "line": 327
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransactionForTest",
+          "line": 338
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransactionForTest",
+          "line": 349
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 286
+          "line": 363
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 297
+          "line": 374
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 308
+          "line": 387
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransactionForTest",
+          "line": 422
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 322
+          "line": 445
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 333
-        },
-        {
-          "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 346
-        },
-        {
-          "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 381
-        },
-        {
-          "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 403
-        },
-        {
-          "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 405
+          "line": 447
         },
         {
           "module": "kernel/execution/exclusive-boundary.js",
           "exportName": "acquireExecutionLock",
-          "line": 415
+          "line": 457
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 416
+          "line": 458
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "createExecutionAttempt",
-          "line": 428
+          "line": 470
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 429
+          "line": 471
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 430
+          "line": 472
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 431
+          "line": 473
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 432
-        },
-        {
-          "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 433
-        },
-        {
-          "module": "kernel/execution/ledger.js",
-          "exportName": "getExecutionAttempt",
-          "line": 456
-        },
-        {
-          "module": "kernel/execution/recovery-paths.js",
-          "exportName": "blobRoot",
-          "line": 450
-        },
-        {
-          "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 464
-        },
-        {
-          "module": "kernel/execution/ledger.js",
-          "exportName": "getExecutionAttempt",
-          "line": 465
+          "line": 474
         },
         {
           "module": "kernel/execution/orchestrator.js",
@@ -4767,102 +4767,127 @@
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "getExecutionAttempt",
-          "line": 480
+          "line": 498
+        },
+        {
+          "module": "kernel/execution/recovery-paths.js",
+          "exportName": "blobRoot",
+          "line": 492
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 489
+          "line": 506
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 507
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 517
+        },
+        {
+          "module": "kernel/execution/ledger.js",
+          "exportName": "getExecutionAttempt",
+          "line": 522
+        },
+        {
+          "module": "kernel/execution/orchestrator.js",
+          "exportName": "executeApprovedTransaction",
+          "line": 531
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "createExecutionAttempt",
-          "line": 504
+          "line": 546
         },
         {
           "module": "kernel/execution/mutation-journal.js",
           "exportName": "appendMutationRecord",
-          "line": 505
+          "line": 547
         },
         {
           "module": "kernel/execution/validators/exact-materialization.js",
           "exportName": "validate",
-          "line": 506
+          "line": 548
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 519
+          "line": 561
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 535
+          "line": 577
         },
         {
           "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 573
+          "exportName": "loadValidatorRegistryForTest",
+          "line": 615
         },
         {
           "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 575
+          "exportName": "loadValidatorRegistryForTest",
+          "line": 617
         },
         {
           "module": "kernel/execution/exclusive-boundary.js",
           "exportName": "readExecutionLock",
-          "line": 596
+          "line": 638
         },
         {
           "module": "kernel/execution/startup-recovery.js",
           "exportName": "recoverIncompleteExecution",
-          "line": 597
+          "line": 639
         },
         {
           "module": "kernel/execution/exclusive-boundary.js",
           "exportName": "readExecutionLock",
-          "line": 599
+          "line": 641
         },
         {
           "module": "kernel/runtime/governed-tree-guard.js",
           "exportName": "snapshotGovernedTree",
-          "line": 606
+          "line": 648
         },
         {
           "module": "kernel/execution/runtime-isolation-barrier.js",
           "exportName": "recordRuntimeIsolationBarrier",
-          "line": 607
+          "line": 649
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 614
+          "line": 656
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 646
+          "line": 688
         },
         {
           "module": "kernel/execution/orchestrator.js",
           "exportName": "executeApprovedTransaction",
-          "line": 655
+          "line": 697
         },
         {
           "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 664
+          "exportName": "loadValidatorRegistryForTest",
+          "line": 706
         },
         {
           "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 666
+          "exportName": "loadValidatorRegistryForTest",
+          "line": 708
         },
         {
           "module": "kernel/execution/orchestrator.js",
-          "exportName": "executeApprovedTransaction",
-          "line": 710
+          "exportName": "executeApprovedTransactionForTest",
+          "line": 752
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -4989,52 +5014,47 @@
         {
           "module": "kernel/runtime/proposed-writes.js",
           "exportName": "validateProposedWrites",
-          "line": 96
+          "line": 102
         },
         {
           "module": "kernel/transactions/validate.js",
           "exportName": "computeWriteSetHash",
-          "line": 98
+          "line": 104
         },
         {
           "module": "kernel/runtime/transaction-intent.js",
           "exportName": "deriveTransactionId",
-          "line": 99
+          "line": 105
         },
         {
           "module": "kernel/approvals/decision-store.js",
           "exportName": "recordApprovalDecision",
-          "line": 102
+          "line": 108
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 152
+          "line": 159
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 164
+          "line": 172
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 187
+          "line": 196
         },
         {
           "module": "kernel/runtime/proposed-writes.js",
           "exportName": "validateProposedWrites",
-          "line": 197
+          "line": 207
         },
         {
           "module": "kernel/runtime/proposed-writes.js",
           "exportName": "validateProposedWrites",
-          "line": 206
-        },
-        {
-          "module": "kernel/runtime/proposed-writes.js",
-          "exportName": "validateProposedWrites",
-          "line": 217
+          "line": 216
         },
         {
           "module": "kernel/runtime/proposed-writes.js",
@@ -5044,202 +5064,207 @@
         {
           "module": "kernel/runtime/proposed-writes.js",
           "exportName": "validateProposedWrites",
-          "line": 240
+          "line": 237
+        },
+        {
+          "module": "kernel/runtime/proposed-writes.js",
+          "exportName": "validateProposedWrites",
+          "line": 250
         },
         {
           "module": "kernel/runtime/transaction-intent.js",
           "exportName": "buildTransactionIntent",
-          "line": 241
+          "line": 251
         },
         {
           "module": "kernel/transactions/validate.js",
           "exportName": "computeWriteSetHash",
-          "line": 242
+          "line": 252
         },
         {
           "module": "kernel/runtime/transaction-intent.js",
           "exportName": "deriveTransactionId",
-          "line": 244
+          "line": 254
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 252
+          "line": 262
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 264
+          "line": 275
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 273
+          "line": 285
         },
         {
           "module": "kernel/transactions/store.js",
           "exportName": "getTransaction",
-          "line": 277
+          "line": 290
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "getExecutionAttempt",
-          "line": 279
+          "line": 292
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 300
+          "line": 313
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 311
+          "line": 325
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 323
+          "line": 338
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 342
+          "line": 357
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 360
+          "line": 375
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 373
+          "line": 388
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 386
+          "line": 401
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 403
+          "line": 418
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 414
+          "line": 429
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 427
+          "line": 442
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 437
+          "line": 452
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "getExecutionAttempt",
-          "line": 438
+          "line": 454
         },
         {
           "module": "kernel/approvals/decision-store.js",
           "exportName": "recordApprovalDecision",
-          "line": 448
+          "line": 464
         },
         {
           "module": "kernel/transactions/validate.js",
           "exportName": "computeWriteSetHash",
-          "line": 452
+          "line": 468
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 460
+          "line": 476
         },
         {
           "module": "kernel/transactions/validate.js",
           "exportName": "computeWriteSetHash",
-          "line": 478
+          "line": 495
         },
         {
           "module": "kernel/runtime/transaction-intent.js",
           "exportName": "deriveTransactionId",
-          "line": 482
+          "line": 499
         },
         {
           "module": "kernel/approvals/decision-store.js",
           "exportName": "recordApprovalDecision",
-          "line": 496
-        },
-        {
-          "module": "kernel/runtime/transactional-runtime.js",
-          "exportName": "runTransactionalAgent",
-          "line": 498
-        },
-        {
-          "module": "kernel/runtime/transactional-runtime.js",
-          "exportName": "runTransactionalAgent",
           "line": 513
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 515
+        },
+        {
+          "module": "kernel/runtime/transactional-runtime.js",
+          "exportName": "runTransactionalAgent",
+          "line": 531
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "createExecutionAttempt",
-          "line": 525
+          "line": 544
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 526
+          "line": 545
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 527
+          "line": 546
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 528
+          "line": 547
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "transitionExecutionAttempt",
-          "line": 529
+          "line": 548
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 530
+          "line": 549
         },
         {
           "module": "kernel/execution/exclusive-boundary.js",
           "exportName": "acquireExecutionLock",
-          "line": 539
+          "line": 558
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 541
+          "line": 560
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 550
+          "line": 569
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 553
+          "line": 573
         },
         {
           "module": "kernel/execution/ledger.js",
           "exportName": "readExecutionLedger",
-          "line": 555
+          "line": 575
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -5404,302 +5429,272 @@
         {
           "module": "kernel/runtime/agent-registry.js",
           "exportName": "resolveRegisteredAgent",
-          "line": 40
+          "line": 41
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 43
+          "line": 44
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "runExternalAgentIsolated",
-          "line": 44
+          "line": 45
         },
         {
           "module": "kernel/runtime/governed-tree-guard.js",
           "exportName": "snapshotGovernedTree",
-          "line": 51
+          "line": 52
         },
         {
           "module": "kernel/runtime/governed-tree-guard.js",
           "exportName": "inspectAndRestoreGovernedTree",
-          "line": 53
+          "line": 55
         },
         {
           "module": "kernel/runtime/governed-tree-guard.js",
           "exportName": "snapshotGovernedTree",
-          "line": 56
+          "line": 58
         },
         {
           "module": "kernel/runtime/governed-tree-guard.js",
           "exportName": "diffGovernedTrees",
-          "line": 57
+          "line": 59
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "probeIsolationCapability",
-          "line": 65
+          "line": 67
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 75
+          "line": 79
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "runExternalAgentIsolated",
-          "line": 76
+          "line": 80
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 82
+          "line": 86
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 94
+          "line": 99
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "runExternalAgentIsolated",
-          "line": 95
+          "line": 100
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 98
+          "line": 103
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 106
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
           "line": 111
         },
         {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 116
+        },
+        {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "runExternalAgentIsolated",
-          "line": 108
+          "line": 113
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 134
+          "line": 140
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "runExternalAgentIsolated",
-          "line": 135
+          "line": 141
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 137
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "createWorkspace",
-          "line": 142
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "assertWorkspaceIsolation",
           "line": 143
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
-          "line": 145
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 151
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
-          "line": 154
+          "line": 148
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "assertWorkspaceIsolation",
-          "line": 153
+          "line": 149
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 168
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
-          "line": 176
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
-          "line": 183
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
-          "line": 191
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
-          "line": 198
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
-          "line": 206
-        },
-        {
-          "module": "kernel/runtime/agent-workspace.js",
-          "exportName": "cleanupWorkspace",
-          "line": 214
+          "line": 151
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 219
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "runExternalAgentIsolated",
-          "line": 220
+          "line": 157
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 223
+          "line": 158
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 235
+          "line": 160
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "assertWorkspaceIsolation",
+          "line": 159
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 249
+          "line": 175
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 262
+          "line": 184
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 192
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 201
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 209
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 218
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 227
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 267
+          "line": 233
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "runExternalAgentIsolated",
-          "line": 268
+          "line": 234
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 276
+          "line": 237
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 250
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 265
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 279
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "createWorkspace",
+          "line": 285
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "runExternalAgentIsolated",
+          "line": 286
+        },
+        {
+          "module": "kernel/runtime/agent-workspace.js",
+          "exportName": "cleanupWorkspace",
+          "line": 294
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 301
+          "line": 320
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 341
+          "line": 361
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "workspaceRoot",
-          "line": 347
+          "line": 367
         },
         {
           "module": "kernel/execution/runtime-isolation-barrier.js",
           "exportName": "recordRuntimeIsolationBarrier",
-          "line": 357
+          "line": 377
         },
         {
           "module": "kernel/runtime/governed-tree-guard.js",
           "exportName": "snapshotGovernedTree",
-          "line": 362
+          "line": 382
         },
         {
           "module": "kernel/execution/runtime-isolation-barrier.js",
           "exportName": "runtimeIsolationBarrierPath",
-          "line": 364
+          "line": 384
         },
         {
           "module": "kernel/runtime/transactional-runtime.js",
           "exportName": "runTransactionalAgent",
-          "line": 365
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "clearTrustedHelperCacheForTests",
-          "line": 380
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "ensureSandboxHelper",
-          "line": 381
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "clearTrustedHelperCacheForTests",
           "line": 385
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 401
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "ensureSandboxHelper",
-          "line": 386
+          "line": 402
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "clearTrustedHelperCacheForTests",
-          "line": 392
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "ensureSandboxHelper",
-          "line": 393
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "clearTrustedHelperCacheForTests",
-          "line": 398
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "ensureSandboxHelper",
-          "line": 399
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "clearTrustedHelperCacheForTests",
-          "line": 405
-        },
-        {
-          "module": "kernel/runtime/isolation-adapter.js",
-          "exportName": "ensureSandboxHelper",
           "line": 406
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "ensureSandboxHelper",
-          "line": 408
+          "line": 407
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
@@ -5713,13 +5708,33 @@
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 420
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "ensureSandboxHelper",
-          "line": 419
+          "line": 421
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "clearTrustedHelperCacheForTests",
-          "line": 425
+          "line": 428
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 429
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 431
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 438
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
@@ -5727,34 +5742,49 @@
           "line": 439
         },
         {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 443
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "clearTrustedHelperCacheForTests",
+          "line": 450
+        },
+        {
+          "module": "kernel/runtime/isolation-adapter.js",
+          "exportName": "ensureSandboxHelper",
+          "line": 464
+        },
+        {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 457
+          "line": 482
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 459
+          "line": 484
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "runExternalAgentIsolated",
-          "line": 458
+          "line": 483
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "createWorkspace",
-          "line": 468
+          "line": 493
         },
         {
           "module": "kernel/runtime/agent-workspace.js",
           "exportName": "cleanupWorkspace",
-          "line": 470
+          "line": 495
         },
         {
           "module": "kernel/runtime/isolation-adapter.js",
           "exportName": "runExternalAgentIsolated",
-          "line": 469
+          "line": 494
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -5795,11 +5825,10 @@
       ],
       "directCapabilities": [
         "durableStateMutation",
-        "filesystemMutation"
-      ],
-      "transitiveCapabilities": [
+        "filesystemMutation",
         "processExecution"
       ],
+      "transitiveCapabilities": [],
       "detectedCapabilities": {
         "filesystemMutation": true,
         "processExecution": true,
@@ -5811,142 +5840,162 @@
         {
           "module": "kernel/execution/validator-closure.js",
           "exportName": "buildValidatorClosure",
-          "line": 31
+          "line": 36
         },
         {
           "module": "kernel/execution/validator-closure.js",
           "exportName": "buildValidatorClosure",
-          "line": 40
+          "line": 46
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 44
+          "line": 50
         },
         {
           "module": "kernel/execution/validator-closure.js",
           "exportName": "buildValidatorClosure",
-          "line": 114
+          "line": 120
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 167
+          "line": 198
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "extractStaticValidatorContract",
+          "line": 204
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "extractStaticValidatorContract",
+          "line": 214
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 180
+          "line": 307
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 187
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 189
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 200
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 222
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 228
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 234
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 246
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 257
-        },
-        {
-          "module": "kernel/execution/validation-cycle.js",
-          "exportName": "runValidationPhase",
-          "line": 259
-        },
-        {
-          "module": "kernel/execution/validation-cycle.js",
-          "exportName": "runValidationPhase",
-          "line": 261
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "resolveAuthoritativeRoot",
-          "line": 273
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "resolveAuthoritativeRoot",
-          "line": 276
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 281
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 289
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 294
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 301
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 308
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 314
-        },
-        {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
           "line": 320
         },
         {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
           "line": 327
         },
         {
-          "module": "kernel/execution/validator-closure.js",
-          "exportName": "buildValidatorClosure",
-          "line": 332
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 329
         },
         {
           "module": "kernel/execution/validator-closure.js",
           "exportName": "buildValidatorClosure",
-          "line": 339
+          "line": 340
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 362
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 368
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 374
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 386
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 395
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 414
+        },
+        {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 416
+        },
+        {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 418
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "resolveAuthoritativeRoot",
+          "line": 430
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "resolveAuthoritativeRoot",
+          "line": 433
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 438
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 446
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 451
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 458
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 466
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 472
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 478
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 485
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 491
+        },
+        {
+          "module": "kernel/execution/validator-closure.js",
+          "exportName": "buildValidatorClosure",
+          "line": 498
         }
       ],
       "sourceBehaviorChecks": "passed",

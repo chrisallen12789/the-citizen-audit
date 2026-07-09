@@ -9,6 +9,8 @@ const { readExecutionLock } = require("../kernel/execution/exclusive-boundary");
 const { createPreStateManifest, loadPreStateManifest, blobPath } = require("../kernel/execution/recovery-store");
 const { applyJournaledWrites, beginRecoveryAttempt, rollbackExecutionAttempt } = require("../kernel/execution/recovery");
 
+const ENFORCE_POSIX_MODE_ASSERTIONS = process.platform !== "win32";
+
 const hashes = {
   writeSetHash: "1".repeat(64),
   authorityStateHash: "2".repeat(64),
@@ -69,7 +71,9 @@ test("journaled write rolls back to exact bytes and mode", () => withRoot(({ roo
   const result = rollbackExecutionAttempt(rootDir, "ATTEMPT-001", { ledgerPath, lock: session.lock });
   assert.equal(result.status, "rolled_back");
   assert.equal(fs.readFileSync(target, "utf8"), "original");
-  assert.equal(fs.statSync(target).mode & 0o777, 0o640);
+  if (ENFORCE_POSIX_MODE_ASSERTIONS) {
+    assert.equal(fs.statSync(target).mode & 0o777, 0o640);
+  }
   assert.equal(getExecutionAttempt("ATTEMPT-001", { ledgerPath }).state, "rolled_back");
   assert.equal(readExecutionLock(rootDir), null);
 }));

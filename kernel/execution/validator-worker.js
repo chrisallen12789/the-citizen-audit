@@ -22,6 +22,7 @@ const { parentPort, workerData } = require("worker_threads");
 const LIMITS = workerData.limits || {};
 const MAX_RESULT_BYTES = LIMITS.maxResultBytes || 262144;
 const MAX_ARRAY_LEN = LIMITS.maxArrayLen || 10000;
+const ENFORCE_POSIX_WRITE_BITS = process.platform !== "win32";
 
 const ALLOWED_BUILTINS = {
   path: require("path"), crypto: require("crypto"), util: require("util"),
@@ -29,6 +30,7 @@ const ALLOWED_BUILTINS = {
 };
 
 function fail(reason) { try { parentPort.postMessage({ ok: false, error: reason }); } catch (e) { /* parent gone */ } }
+function canonicalArray(value) { return Array.isArray(value) ? [...value].map(String).sort() : []; }
 function boundArray(value, label, problems) {
   if (value === undefined) return [];
   if (!Array.isArray(value)) { problems.push(`${label} is not an array`); return []; }
@@ -59,7 +61,7 @@ function loadClosureEntry(closure) {
       const st = fs.fstatSync(fd);
       if (!st.isFile()) throw new Error(`closure module is not a regular file: ${relPath}`);
       if (st.nlink > 1) throw new Error(`closure module is hard-linked at execution: ${relPath}`);
-      if (st.mode & 0o022) throw new Error(`closure module is group/world-writable at execution: ${relPath}`);
+      if (ENFORCE_POSIX_WRITE_BITS && (st.mode & 0o022)) throw new Error(`closure module is group/world-writable at execution: ${relPath}`);
       if (st.size !== want.size) throw new Error(`closure module size mismatch at execution: ${relPath}`);
       if ((st.mode & 0o777) !== want.mode) throw new Error(`closure module mode change at execution: ${relPath}`);
       if (String(st.dev) !== String(want.dev) || String(st.ino) !== String(want.ino)) throw new Error(`closure module inode replacement at execution: ${relPath}`);
@@ -111,11 +113,20 @@ function loadClosureEntry(closure) {
 }
 
 try {
-  const { closure, expectedVersion, validatorId, phase, context } = workerData;
+  const { closure, expectedContract, validatorId, phase, context } = workerData;
   if (!closure || !Array.isArray(closure.modules) || !closure.entryRelPath) { fail(`missing validator closure: ${validatorId}`); }
   else {
     const validator = loadClosureEntry(closure);
-    if (!validator || validator.id !== validatorId || validator.version !== expectedVersion || typeof validator.validate !== "function") {
+    if (
+      !validator
+      || validator.id !== validatorId
+      || !expectedContract
+      || validator.version !== expectedContract.version
+      || Boolean(validator.semantic) !== Boolean(expectedContract.semantic)
+      || JSON.stringify(canonicalArray(validator.actions)) !== JSON.stringify(canonicalArray(expectedContract.actions))
+      || JSON.stringify(canonicalArray(validator.supportedPhases)) !== JSON.stringify(canonicalArray(expectedContract.supportedPhases))
+      || typeof validator.validate !== "function"
+    ) {
       fail(`validator contract mismatch in worker: ${validatorId}`);
     } else if (!Array.isArray(validator.supportedPhases) || !validator.supportedPhases.includes(phase)) {
       fail(`validator does not support phase ${phase}: ${validatorId}`);

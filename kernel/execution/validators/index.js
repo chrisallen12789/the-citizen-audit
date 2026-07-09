@@ -1,11 +1,24 @@
 const fs = require("fs");
 const path = require("path");
+const acorn = require("acorn");
+
 const { canonicalStringify } = require("../../lib/canonical-json");
 const { sha256 } = require("../../lib/append-only-log");
 const { VALIDATION_PHASES } = require("../validation-results");
-const { buildValidatorClosure, resolveAuthoritativeRoot, REPO_ROOT } = require("../validator-closure");
+const {
+  buildValidatorClosure,
+  inspectAndRead,
+  resolveAuthoritativeRoot,
+  REPO_ROOT,
+  ROOT_POLICY_VERSION
+} = require("../validator-closure");
 
 const SEMVER = /^\d+\.\d+\.\d+$/;
+const VALIDATOR_RUNNER_VERSION = "2.0.0";
+const VALIDATOR_REGISTRY_LOADER_VERSION = "2.0.0";
+const PRODUCTION_ROOT_POLICY_ID = "authoritative-reviewed-repository-root";
+const VALIDATOR_RUNNER_PATH = path.join(__dirname, "..", "validator-worker.js");
+const VALIDATOR_CLOSURE_LOADER_PATH = path.join(__dirname, "..", "validator-closure.js");
 
 function assertSupportedPhases(value, label) {
   if (!Array.isArray(value) || value.length === 0) throw new Error(`${label} must declare supportedPhases.`);
@@ -14,16 +27,133 @@ function assertSupportedPhases(value, label) {
   }
 }
 
-// Deterministic validator-registry loader. Rejects duplicate ids, path escape,
-// contract mismatch, unsupported/omitted phases, and version omission. The
-// canonical hash of the registry is bound into the execution attempt.
-function loadValidatorRegistry(options = {}) {
+function deepFreeze(value) {
+  if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
+  Object.freeze(value);
+  if (Array.isArray(value)) {
+    for (const item of value) deepFreeze(item);
+    return value;
+  }
+  for (const key of Object.keys(value)) deepFreeze(value[key]);
+  return value;
+}
+
+function sameSet(left, right) {
+  return canonicalStringify([...left].sort()) === canonicalStringify([...right].sort());
+}
+
+function readStaticString(node, label) {
+  if (!node || node.type !== "Literal" || typeof node.value !== "string" || !node.value) {
+    throw new Error(`${label} must be a static non-empty string literal.`);
+  }
+  return node.value;
+}
+
+function readStaticBoolean(node, label) {
+  if (!node || node.type !== "Literal" || typeof node.value !== "boolean") {
+    throw new Error(`${label} must be a static boolean literal.`);
+  }
+  return node.value;
+}
+
+function readStaticStringArray(node, label) {
+  if (!node || node.type !== "ArrayExpression") throw new Error(`${label} must be a static string-literal array.`);
+  return node.elements.map((element, index) => {
+    if (!element || element.type !== "Literal" || typeof element.value !== "string" || !element.value) {
+      throw new Error(`${label}[${index}] must be a static non-empty string literal.`);
+    }
+    return element.value;
+  });
+}
+
+function isModuleExportsTarget(node) {
+  return Boolean(
+    node
+    && node.type === "MemberExpression"
+    && node.computed === false
+    && node.object
+    && node.object.type === "Identifier"
+    && node.object.name === "module"
+    && node.property
+    && node.property.type === "Identifier"
+    && node.property.name === "exports"
+  );
+}
+
+function extractStaticValidatorContract(source, label) {
+  let ast;
+  try {
+    ast = acorn.parse(source, { ecmaVersion: "latest", sourceType: "script", allowHashBang: true });
+  } catch (error) {
+    throw new Error(`Validator contract is not valid JavaScript: ${label} (${error.message}).`);
+  }
+
+  let contractObject = null;
+  for (const statement of ast.body) {
+    if (!statement || statement.type !== "ExpressionStatement") continue;
+    const expression = statement.expression;
+    if (!expression || expression.type !== "AssignmentExpression" || expression.operator !== "=") continue;
+    if (!isModuleExportsTarget(expression.left)) continue;
+    if (expression.right.type !== "ObjectExpression") {
+      throw new Error(`Validator contract must assign a static object literal to module.exports: ${label}.`);
+    }
+    contractObject = expression.right;
+  }
+  if (!contractObject) throw new Error(`Validator contract must assign a static object literal to module.exports: ${label}.`);
+
+  const fields = new Map();
+  for (const property of contractObject.properties) {
+    if (!property || property.type !== "Property" || property.computed || property.kind !== "init") {
+      throw new Error(`Validator contract uses unsupported dynamic property syntax: ${label}.`);
+    }
+    const key = property.key.type === "Identifier"
+      ? property.key.name
+      : property.key.type === "Literal" && typeof property.key.value === "string"
+        ? property.key.value
+        : null;
+    if (!key) throw new Error(`Validator contract property names must be static literals: ${label}.`);
+    if (fields.has(key)) throw new Error(`Validator contract declares duplicate property ${key}: ${label}.`);
+    fields.set(key, property.value);
+  }
+
+  const id = readStaticString(fields.get("id"), `${label} id`);
+  const version = readStaticString(fields.get("version"), `${label} version`);
+  if (!SEMVER.test(version)) throw new Error(`${label} version must be semantic (x.y.z).`);
+  const semantic = fields.has("semantic") ? readStaticBoolean(fields.get("semantic"), `${label} semantic`) : false;
+  const actions = fields.has("actions") ? readStaticStringArray(fields.get("actions"), `${label} actions`) : [];
+  const supportedPhases = readStaticStringArray(fields.get("supportedPhases"), `${label} supportedPhases`);
+  assertSupportedPhases(supportedPhases, `${label} contract`);
+  if (semantic && actions.length === 0) throw new Error(`${label} semantic validator must declare static actions.`);
+  if (!fields.has("validate")) throw new Error(`${label} must export validate.`);
+
+  return deepFreeze({
+    id,
+    version,
+    semantic,
+    actions: [...actions].sort(),
+    supportedPhases: [...supportedPhases].sort()
+  });
+}
+
+function validatorRuntimeIdentity() {
+  return deepFreeze({
+    version: VALIDATOR_RUNNER_VERSION,
+    hash: sha256(fs.readFileSync(VALIDATOR_RUNNER_PATH))
+  });
+}
+
+function closureLoaderIdentity() {
+  return deepFreeze({
+    version: VALIDATOR_REGISTRY_LOADER_VERSION,
+    hash: sha256(fs.readFileSync(VALIDATOR_CLOSURE_LOADER_PATH))
+  });
+}
+
+function loadValidatorRegistryInternal(options = {}, mode = "production") {
   const validatorsDir = path.resolve(options.validatorsDir || __dirname);
-  // ONE authoritative project root. Validators and all local dependencies must
-  // resolve inside it. Defaults to the reviewed repo root; an explicit override
-  // (e.g. an authorized temporary test root) is validated (not overly broad) by
-  // resolveAuthoritativeRoot. A caller cannot widen acceptance with `/` etc.
-  const projectRoot = resolveAuthoritativeRoot(options.projectRoot || REPO_ROOT);
+  const projectRoot = mode === "production"
+    ? REPO_ROOT
+    : resolveAuthoritativeRoot(options.projectRoot || REPO_ROOT);
   const realValidatorsDir = fs.realpathSync(validatorsDir);
   if (realValidatorsDir !== projectRoot && path.relative(projectRoot, realValidatorsDir).startsWith("..")) {
     throw new Error(`Validators directory is outside the authoritative project root: ${validatorsDir}.`);
@@ -32,75 +162,122 @@ function loadValidatorRegistry(options = {}) {
   const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
   if (!Array.isArray(registry.validators)) throw new Error("Validator registry validators must be an array.");
 
-  const loaded = new Map();
+  const contracts = new Map();
   const descriptors = new Map();
   const canonicalEntries = [];
+  const runner = validatorRuntimeIdentity();
+  const loader = closureLoaderIdentity();
+
   for (const entry of registry.validators) {
     if (!entry || typeof entry.id !== "string" || typeof entry.module !== "string") throw new Error("Validator registry contains an invalid entry.");
     if (typeof entry.version !== "string" || !SEMVER.test(entry.version)) throw new Error(`Validator registry entry omits a semantic version: ${entry.id}.`);
     assertSupportedPhases(entry.supportedPhases, `Validator registry entry ${entry.id}`);
     if (entry.semantic !== undefined && typeof entry.semantic !== "boolean") throw new Error(`Validator semantic flag is invalid: ${entry.id}.`);
     if (entry.semantic && (!Array.isArray(entry.actions) || entry.actions.length === 0 || entry.actions.some((action) => typeof action !== "string" || !action))) throw new Error(`Semantic validator must declare actions: ${entry.id}.`);
-    if (loaded.has(entry.id)) throw new Error(`Duplicate validator id: ${entry.id}.`);
+    if (contracts.has(entry.id)) throw new Error(`Duplicate validator id: ${entry.id}.`);
 
     const modulePath = path.resolve(validatorsDir, entry.module);
     if (path.dirname(modulePath) !== validatorsDir) throw new Error(`Validator module escapes validator directory: ${entry.module}.`);
 
-    let validator;
+    let closure;
     let moduleHash;
+    let source;
     try {
-      // Reject symlinked or non-regular module files: the path-escape check above
-      // only constrains the entry path, but a symlink inside the directory can
-      // still redirect require()/readFile to code outside the reviewed set.
-      const moduleStat = fs.lstatSync(modulePath);
-      if (!moduleStat.isFile()) throw new Error("validator module is not a regular file");
-      moduleHash = sha256(fs.readFileSync(modulePath));
-      const resolvedModule = require.resolve(modulePath);
-      delete require.cache[resolvedModule];
-      validator = require(resolvedModule);
+      closure = buildValidatorClosure(modulePath, projectRoot);
+      const inspected = inspectAndRead(modulePath, projectRoot);
+      moduleHash = inspected.hash;
+      source = inspected.bytes.toString("utf8");
     } catch (error) {
       throw new Error(`Validator module is unavailable: ${entry.id} (${error.message}).`);
     }
-    if (!validator || validator.id !== entry.id || typeof validator.validate !== "function") throw new Error(`Validator module contract mismatch: ${entry.id}.`);
-    if (validator.version !== entry.version) throw new Error(`Validator version mismatch: ${entry.id}.`);
-    assertSupportedPhases(validator.supportedPhases, `Validator module ${entry.id}`);
-    if (Boolean(validator.semantic) !== Boolean(entry.semantic)) throw new Error(`Validator semantic flag mismatch: ${entry.id}.`);
-    if (entry.semantic && canonicalStringify([...(validator.actions || [])].sort()) !== canonicalStringify([...entry.actions].sort())) throw new Error(`Validator action binding mismatch: ${entry.id}.`);
-    if (canonicalStringify([...validator.supportedPhases].sort()) !== canonicalStringify([...entry.supportedPhases].sort())) {
-      throw new Error(`Validator supportedPhases mismatch: ${entry.id}.`);
-    }
 
-    loaded.set(entry.id, validator);
-    const closure = buildValidatorClosure(modulePath, projectRoot);
-    descriptors.set(entry.id, Object.freeze({
-      id: entry.id, version: entry.version, modulePath, moduleHash,
-      semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(),
-      supportedPhases: [...entry.supportedPhases].sort(),
-      closure: Object.freeze({ closureRoot: closure.closureRoot, rootPolicy: closure.rootPolicy, entryRelPath: closure.entryRelPath, modules: closure.manifest, builtins: closure.builtins, closureHash: closure.closureHash })
+    const contract = extractStaticValidatorContract(source, `Validator module ${entry.id}`);
+    if (contract.id !== entry.id) throw new Error(`Validator contract id mismatch: ${entry.id}.`);
+    if (contract.version !== entry.version) throw new Error(`Validator version mismatch: ${entry.id}.`);
+    if (Boolean(contract.semantic) !== Boolean(entry.semantic)) throw new Error(`Validator semantic flag mismatch: ${entry.id}.`);
+    if (entry.semantic && !sameSet(contract.actions, entry.actions || [])) throw new Error(`Validator action binding mismatch: ${entry.id}.`);
+    if (!sameSet(contract.supportedPhases, entry.supportedPhases || [])) throw new Error(`Validator supportedPhases mismatch: ${entry.id}.`);
+
+    contracts.set(entry.id, contract);
+    const descriptor = deepFreeze({
+      id: contract.id,
+      version: contract.version,
+      modulePath,
+      moduleHash,
+      semantic: contract.semantic,
+      actions: [...contract.actions],
+      supportedPhases: [...contract.supportedPhases],
+      closure: {
+        closureRoot: closure.closureRoot,
+        rootPolicy: deepFreeze({ ...closure.rootPolicy }),
+        entryRelPath: closure.entryRelPath,
+        modules: closure.manifest.map((moduleEntry) => deepFreeze({ ...moduleEntry })),
+        builtins: [...closure.builtins],
+        closureHash: closure.closureHash
+      },
+      contract
+    });
+    descriptors.set(entry.id, descriptor);
+    canonicalEntries.push(deepFreeze({
+      id: contract.id,
+      version: contract.version,
+      module: entry.module,
+      moduleHash,
+      contract,
+      closureHash: closure.closureHash,
+      closurePolicyVersion: closure.rootPolicy.version
     }));
-    canonicalEntries.push({ id: entry.id, version: entry.version, module: entry.module, moduleHash, closureHash: closure.closureHash, rootPolicyVersion: closure.rootPolicy.version, semantic: Boolean(entry.semantic), actions: [...(entry.actions || [])].sort(), supportedPhases: [...entry.supportedPhases].sort() });
   }
 
   canonicalEntries.sort((a, b) => a.id.localeCompare(b.id));
-  const validatorSetHash = sha256(canonicalStringify({ version: registry.version || null, rootPolicyVersion: (canonicalEntries[0] && canonicalEntries[0].rootPolicyVersion) || null, validators: canonicalEntries }));
-  return { loaded, descriptors, validatorSetHash, entries: canonicalEntries };
-}
+  const validatorSetHash = sha256(canonicalStringify({
+    version: registry.version || null,
+    authoritativeRootPolicyId: PRODUCTION_ROOT_POLICY_ID,
+    closurePolicyVersion: ROOT_POLICY_VERSION,
+    validatorRunner: runner,
+    closureLoader: loader,
+    validators: canonicalEntries
+  }));
 
-// Resolve the policy-required validator DESCRIPTORS, failing closed if any is
-// unavailable. Descriptors carry the modulePath + moduleHash so the execution
-// boundary can prove the exact hashed bytes are executed.
-function selectRequiredValidators(policy, descriptors) {
-  if (!Array.isArray(policy.requiredValidators) || policy.requiredValidators.length === 0) throw new Error("Execution policy must declare requiredValidators.");
-  return policy.requiredValidators.map((id) => {
-    const descriptor = descriptors.get(id);
-    if (!descriptor) throw new Error(`Execution policy references an unavailable mandatory validator: ${id}.`);
-    return descriptor;
+  return deepFreeze({
+    contracts,
+    descriptors,
+    validatorSetHash,
+    entries: canonicalEntries,
+    validatorRuntime: runner,
+    closureLoaderRuntime: loader,
+    authoritativeRootPolicyId: PRODUCTION_ROOT_POLICY_ID
   });
 }
 
-// Descriptors (from the required set) that support a given phase.
-function validatorsForPhase(required, phase) {
-  return required.filter((descriptor) => descriptor.supportedPhases.includes(phase));
+function loadValidatorRegistry(options = {}) {
+  return loadValidatorRegistryInternal(options, "production");
 }
 
-module.exports = { loadValidatorRegistry, selectRequiredValidators, validatorsForPhase };
+function loadValidatorRegistryForTest(options = {}) {
+  return loadValidatorRegistryInternal(options, "test");
+}
+
+function selectRequiredValidators(policy, descriptors) {
+  if (!Array.isArray(policy.requiredValidators) || policy.requiredValidators.length === 0) throw new Error("Execution policy must declare requiredValidators.");
+  return deepFreeze(policy.requiredValidators.map((id) => {
+    const descriptor = descriptors.get(id);
+    if (!descriptor) throw new Error(`Execution policy references an unavailable mandatory validator: ${id}.`);
+    return descriptor;
+  }));
+}
+
+function validatorsForPhase(required, phase) {
+  return deepFreeze(required.filter((descriptor) => descriptor.supportedPhases.includes(phase)));
+}
+
+module.exports = {
+  PRODUCTION_ROOT_POLICY_ID,
+  VALIDATOR_REGISTRY_LOADER_VERSION,
+  VALIDATOR_RUNNER_VERSION,
+  extractStaticValidatorContract,
+  loadValidatorRegistry,
+  loadValidatorRegistryForTest,
+  selectRequiredValidators,
+  validatorsForPhase
+};

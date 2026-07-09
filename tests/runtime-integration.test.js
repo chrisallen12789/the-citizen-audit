@@ -16,9 +16,12 @@ const { runTransactionalAgent } = require("../kernel/runtime/transactional-runti
 const { validateProposedWrites } = require("../kernel/runtime/proposed-writes");
 const { buildTransactionIntent, deriveTransactionId } = require("../kernel/runtime/transaction-intent");
 
+const ISOLATION_SUPPORTED = process.platform === "linux";
+
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(value, null, 2));
+  try { fs.chmodSync(filePath, 0o600); } catch (e) {}
 }
 
 const REQUIRED_SYSTEMS = [
@@ -42,7 +45,7 @@ function makeFixture(overrides = {}) {
   fs.mkdirSync(path.join(root, "public", "data"), { recursive: true });
 
   writeJson(path.join(root, "kernel", "registry", "institution.json"), { version: "1.0.0", updated: "2026-07-06", objects });
-  writeJson(path.join(root, "agents", "registry.json"), { agents: [{ id: "AGENT-REPAIR", status: "active", authorityLevel: 1, capabilities: ["write_report"], command: "node repair", runtime: { executable: "node", arguments: ["-e", "process.exit(0)"] } }] });
+  writeJson(path.join(root, "agents", "registry.json"), { agents: [{ id: "AGENT-REPAIR", status: "active", authorityLevel: 1, capabilities: ["write_report"], command: "node repair", runtime: { executable: process.execPath, arguments: ["-e", "process.exit(0)"] } }] });
   writeJson(path.join(root, "kernel", "authority", "approval-authorities.json"), { version: "1.0.0", authorities: [{ type: "human", id: "human-approver", status: "active", authorities: ["approve_execution"] }] });
   writeJson(path.join(root, "kernel", "permissions", "rules.json"), { rules: [{ id: "RULE-WRITE-REPORT", action: "write_report", minimumAuthorityLevel: 1, requiresHumanApproval: false }] });
   writeJson(path.join(root, "kernel", "permissions", "authority-levels.json"), { levels: [{ level: 0 }, { level: 1 }] });
@@ -59,6 +62,9 @@ function makeFixture(overrides = {}) {
 }
 
 function cleanup(fx) { fs.rmSync(fx.root, { recursive: true, force: true }); }
+function assertIsolationUnavailable(result) {
+  assert.equal(result.institutionalResult, "isolation_unavailable");
+}
 
 function externalNodeAgent(source, extra = {}) {
   return { command: process.execPath, args: ["-e", source], ...extra };
@@ -129,6 +135,7 @@ function makeValidatorsDir(entries) {
   const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
   for (const entry of entries) {
     fs.writeFileSync(path.join(dir, `${entry.id}.js`), entry.source);
+    try { fs.chmodSync(path.join(dir, `${entry.id}.js`), 0o600); } catch (e) {}
     const record = { id: entry.id, module: `${entry.id}.js`, version: entry.version || "1.0.0", supportedPhases: entry.supportedPhases };
     const index = registry.validators.findIndex((candidate) => candidate.id === entry.id);
     if (index === -1) registry.validators.push(record); else registry.validators[index] = record;
@@ -150,6 +157,7 @@ test("agent runs in an isolated workspace outside the live root", async () => {
     fs.writeFileSync(path.join(outputDir, "public", "data", "report.json"), JSON.stringify({ workspaceIsSandbox: process.env.CITIZEN_AUDIT_WORKSPACE === "/workspace" }));
   `, { expectedWrites: [{ operation: "write", path: "public/data/report.json", content: JSON.stringify({ workspaceIsSandbox: true }), encoding: "utf8" }] });
   const result = await runTransactionalAgent(baseRun(fx, { testAgent: agent }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.institutionalResult, "committed");
   const payload = JSON.parse(fs.readFileSync(fx.targetPath, "utf8"));
   assert.equal(payload.workspaceIsSandbox, true);
@@ -162,6 +170,7 @@ test("agent output does not mutate governed state before commit", async () => {
   const fx = makeFixture();
   // Deny approval: the agent still runs and proposes, but nothing is committed.
   const denied = await runTransactionalAgent(baseRun(fx, { runId: "RUN-NOCOMMIT-1", denyApproval: true }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(denied); cleanup(fx); return; }
   assert.equal(denied.proposal.status, "created");
   assert.equal(denied.proposal.writeCount, 1);
   assert.equal(denied.institutionalResult, "not_approved");
@@ -185,6 +194,7 @@ test("external absolute-path governed write is prevented by chroot isolation", a
     fs.writeFileSync(path.join(outputDir, "public", "data", "report.json"), JSON.stringify({ denied }));
   `.replace("${JSON.stringify(protectedPath)}", JSON.stringify(protectedPath)), { expectedWrites: [{ operation: "write", path: "public/data/report.json", content: JSON.stringify({ denied: true }), encoding: "utf8" }] });
   const result = await runTransactionalAgent(baseRun(fx, { runId: "RUN-DIRECT-1", testAgent: agent }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.institutionalResult, "committed");
   assert.equal(fs.readFileSync(protectedPath, "utf8"), "ORIGINAL CHARTER");
   assert.equal(JSON.parse(fs.readFileSync(fx.targetPath, "utf8")).denied, true);
@@ -213,7 +223,7 @@ test("path traversal is rejected", () => {
 test("symlink component is rejected", () => {
   const fx = makeFixture();
   fs.mkdirSync(path.join(fx.root, "public", "data", "real"), { recursive: true });
-  fs.symlinkSync(path.join(fx.root, "public", "data", "real"), path.join(fx.root, "public", "data", "link"));
+  try { fs.symlinkSync(path.join(fx.root, "public", "data", "real"), path.join(fx.root, "public", "data", "link")); } catch (error) { if (error.code === "EPERM") { cleanup(fx); return; } throw error; }
   const { problems, writes } = validateProposedWrites(fx.root, [{ operation: "create", path: "public/data/link/x.json", content: "x", encoding: "utf8" }]);
   assert.equal(writes.length, 0);
   assert.ok(problems.length > 0);
@@ -250,6 +260,7 @@ test("proposed writes become an immutable transaction with matching write-set ha
 test("denied approval causes no mutation", async () => {
   const fx = makeFixture();
   const result = await runTransactionalAgent(baseRun(fx, { runId: "RUN-DENY-1", denyApproval: true }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.institutionalResult, "not_approved");
   assert.equal(result.approval.status, "denied");
   assert.ok(!fs.existsSync(fx.targetPath));
@@ -262,6 +273,7 @@ test("missing approval causes no mutation", async () => {
   const fx = makeFixture();
   const opts = baseRun(fx, { runId: "RUN-NOAPPROVE-1", omitApproval: true });
   const result = await runTransactionalAgent(opts);
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.institutionalResult, "not_approved");
   assert.ok(!fs.existsSync(fx.targetPath));
   cleanup(fx);
@@ -271,6 +283,7 @@ test("missing approval causes no mutation", async () => {
 test("approved execution commits through the orchestrator", async () => {
   const fx = makeFixture();
   const result = await runTransactionalAgent(baseRun(fx, { runId: "RUN-COMMIT-1" }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.institutionalResult, "committed");
   assert.equal(result.execution.disposition, "committed");
   assert.ok(fs.existsSync(fx.targetPath));
@@ -298,6 +311,7 @@ test("agent exit zero with prohibited output does not succeed", async () => {
     fs.writeFileSync(path.join(outputDir, "kernel", "registry", "institution.json"), "{}");
   `);
   const result = await runTransactionalAgent(baseRun(fx, { runId: "RUN-INVALID-1", testAgent: agent }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.agentProcess.status, 0, "agent process exited zero");
   assert.equal(result.institutionalResult, "proposal_rejected");
   assert.equal(result.transactionId, null, "prohibited proposal is rejected before transaction recording");
@@ -309,6 +323,7 @@ test("agent process failure causes no mutation", async () => {
   const fx = makeFixture();
   const agent = externalNodeAgent(`process.stderr.write("agent crashed\\n"); process.exit(7);`);
   const result = await runTransactionalAgent(baseRun(fx, { runId: "RUN-FAIL-1", testAgent: agent }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.institutionalResult, "agent_failed");
   assert.equal(result.agentProcess.status, 7);
   assert.ok(!fs.existsSync(fx.targetPath));
@@ -365,9 +380,9 @@ test("production runtime never executes post-commit callbacks", async () => {
   cleanup(fx);
 });
 
-test("production runtime rejects caller-selected validator and ledger paths", async () => {
+test("production runtime rejects caller-selected validator, root, and ledger paths", async () => {
   const fx = makeFixture();
-  for (const [key, value] of [["validatorsDir", fx.root], ["policyPath", fx.root], ["ledgerPath", fx.root]]) {
+  for (const [key, value] of [["validatorsDir", fx.root], ["policyPath", fx.root], ["projectRoot", fx.root], ["ledgerPath", fx.root]]) {
     const options = baseRun(fx, { runId: `RUN-OVERRIDE-${key.toUpperCase()}` });
     options[key] = value;
     const result = await runTransactionalAgent(options);
@@ -435,6 +450,7 @@ test("caller cannot claim a registered agent while supplying another executable"
 test("runtime result matches durable ledger disposition", async () => {
   const fx = makeFixture();
   const result = await runTransactionalAgent(baseRun(fx, { runId: "RUN-MATCH-1" }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   const attempt = getExecutionAttempt(result.execution.attemptId, { ledgerPath: fx.ledgerPath });
   assert.equal(result.institutionalResult, attempt.state);
   assert.equal(result.execution.disposition, attempt.state);
@@ -458,6 +474,7 @@ test("approval decision bound to a different transaction is rejected", async () 
   });
   options.approvalDecisionId = "DEC-MISMATCH-TX";
   const result = await runTransactionalAgent(options);
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.institutionalResult, "not_approved");
   assert.ok(result.problems.some((problem) => /exact intent.*transaction id/i.test(problem)));
   assert.ok(!fs.existsSync(fx.targetPath));
@@ -496,6 +513,7 @@ test("approval decision bound to a different write set, actor, or action is reje
     recordApprovalDecision(fx.root, input);
     options.approvalDecisionId = input.decisionId;
     const result = await runTransactionalAgent(options);
+    if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); continue; }
     assert.equal(result.institutionalResult, "not_approved");
     assert.ok(result.problems.some((problem) => variant.match.test(problem)));
     assert.ok(!fs.existsSync(fx.targetPath));
@@ -511,6 +529,7 @@ test("tampered approval decision record is rejected", async () => {
   record.transactionId = "TX-TAMPERED";
   fs.writeFileSync(decisionPath, `${JSON.stringify(record)}\n`);
   const result = await runTransactionalAgent(options);
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(result); cleanup(fx); return; }
   assert.equal(result.institutionalResult, "not_approved");
   assert.ok(result.problems.some((problem) => /record hash verification failed/i.test(problem)));
   assert.ok(!fs.existsSync(fx.targetPath));
@@ -548,6 +567,7 @@ test("held execution lock blocks a concurrent runtime run", async () => {
 test("duplicate runtime execution cannot commit the same transaction twice", async () => {
   const fx = makeFixture();
   const first = await runTransactionalAgent(baseRun(fx, { runId: "RUN-DUP-1" }));
+  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(first); cleanup(fx); return; }
   assert.equal(first.institutionalResult, "committed");
   // Same runId + identical write set => identical transaction id => second commit is refused.
   const second = await runTransactionalAgent(baseRun(fx, { runId: "RUN-DUP-1" }));
