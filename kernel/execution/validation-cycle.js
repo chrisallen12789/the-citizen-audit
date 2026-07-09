@@ -4,13 +4,12 @@ const path = require("path");
 const { Worker } = require("worker_threads");
 
 const { normalizeValidationResult } = require("./validation-results");
+const { DEFAULT_TIMEOUT_MS, REVIEWED_VALIDATOR_LIMITS } = require("./validator-limits");
 const { canonicalStringify } = require("../lib/canonical-json");
 const { sha256 } = require("../lib/append-only-log");
 const { loadValidatorRegistry, selectRequiredValidators, validatorsForPhase } = require("./validators");
 
-const DEFAULT_TIMEOUT_MS = 5000;
 const WORKER_PATH = path.join(__dirname, "validator-worker.js");
-const LIMITS = { maxResultBytes: 262144, maxArrayLen: 10000, maxStdBytes: 65536 };
 
 function serializableContext(context) {
   return {
@@ -65,8 +64,7 @@ function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, conte
           validatorId: descriptor.id,
           expectedValidatorSetHash,
           phase,
-          context: serializableContext(context),
-          limits: LIMITS
+          context: serializableContext(context)
         },
         stdout: true,
         stderr: true
@@ -78,7 +76,7 @@ function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, conte
 
     const capture = (stream) => stream.on("data", (chunk) => {
       stdBytes += chunk.length;
-      if (stdBytes > LIMITS.maxStdBytes) finish({ ok: false, error: `validator exceeded ${LIMITS.maxStdBytes} bytes of stdio` });
+      if (stdBytes > REVIEWED_VALIDATOR_LIMITS.maxStdBytes) finish({ ok: false, error: `validator exceeded ${REVIEWED_VALIDATOR_LIMITS.maxStdBytes} bytes of stdio` });
     });
     capture(worker.stdout);
     capture(worker.stderr);
@@ -163,4 +161,4 @@ async function runValidationPhase(phase, validatorIds, context, options = {}) {
   );
 }
 
-module.exports = { DEFAULT_TIMEOUT_MS, LIMITS, runValidationPhase };
+module.exports = { DEFAULT_TIMEOUT_MS, runValidationPhase };

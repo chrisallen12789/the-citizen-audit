@@ -16,6 +16,7 @@ const { loadValidatorRegistryForTest } = require("./support/validator-test-harne
 const REAL_VALIDATORS = path.join(__dirname, "..", "kernel", "execution", "validators");
 const HOLDER = path.join(__dirname, "..", "kernel", "execution");
 const PRODUCTION_WORKER_PATH = path.join(__dirname, "..", "kernel", "execution", "validator-worker.js");
+const PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH = path.join(REAL_VALIDATORS, "execution-plan.js");
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-mods-"));
 test.after(() => { try { fs.rmSync(scratch, { recursive: true, force: true }); } catch (e) {} });
 
@@ -78,6 +79,41 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
     worker.on("error", (error) => finish({ kind: "error", error }));
     worker.on("exit", (code) => finish({ kind: "exit", code }));
   });
+}
+
+function authoritativeWorkerContext(writeSetHash = "a".repeat(64)) {
+  return {
+    transaction: {
+      action: "write_report",
+      writeSetHash,
+      affectedObjects: ["OBJ-1"],
+      proposedWrites: [{ path: "public/data/report.json" }]
+    },
+    plan: {
+      action: "write_report",
+      writeSetHash,
+      affectedObjects: ["OBJ-1"],
+      writes: [{ path: "public/data/report.json" }]
+    },
+    writeSetHash
+  };
+}
+
+async function withTemporaryProductionValidatorSource(filePath, source, callback) {
+  const original = fs.readFileSync(filePath, "utf8");
+  let originalMode = null;
+  try {
+    originalMode = fs.statSync(filePath).mode & 0o777;
+  } catch (error) {}
+  writeStrictFile(filePath, source);
+  try {
+    return await callback();
+  } finally {
+    fs.writeFileSync(filePath, original);
+    if (originalMode !== null) {
+      try { fs.chmodSync(filePath, originalMode); } catch (error) {}
+    }
+  }
 }
 
 const ABNORMAL = {
@@ -449,28 +485,142 @@ test("closure loader identity is bound to the real production implementation byt
 
 test("production validation cycle executes authoritative validator ids through the reviewed registry", async () => {
   const reg = loadValidatorRegistry();
-  const writeSetHash = "a".repeat(64);
   const result = await require("../kernel/execution/validation-cycle").runValidationPhase(
     "candidate",
     ["execution-plan"],
-    {
-      transaction: {
-        action: "write_report",
-        writeSetHash,
-        affectedObjects: ["OBJ-1"],
-        proposedWrites: [{ path: "public/data/report.json" }]
-      },
-      plan: {
-        action: "write_report",
-        writeSetHash,
-        affectedObjects: ["OBJ-1"],
-        writes: [{ path: "public/data/report.json" }]
-      },
-      writeSetHash
-    },
+    authoritativeWorkerContext(),
     { timeoutMs: 1500, expectedValidatorSetHash: reg.validatorSetHash }
   );
   assert.equal(result.status, "passed");
+});
+
+test("production validation-cycle exports no mutable LIMITS reference", () => {
+  const validationCycle = require("../kernel/execution/validation-cycle");
+  assert.equal(Object.prototype.hasOwnProperty.call(validationCycle, "LIMITS"), false);
+});
+
+test("production reviewed validator limits metadata is deeply frozen", () => {
+  const limitsModule = require("../kernel/execution/validator-limits");
+  assert.ok(Object.isFrozen(limitsModule));
+  assert.ok(Object.isFrozen(limitsModule.REVIEWED_VALIDATOR_LIMITS));
+  const before = { ...limitsModule.REVIEWED_VALIDATOR_LIMITS };
+  try { limitsModule.REVIEWED_VALIDATOR_LIMITS.maxResultBytes = 1; } catch (error) {}
+  try { limitsModule.REVIEWED_VALIDATOR_LIMITS.maxArrayLen = Infinity; } catch (error) {}
+  assert.deepEqual(limitsModule.REVIEWED_VALIDATOR_LIMITS, before);
+});
+
+test("attempted direct-import mutation cannot alter later authoritative validation result", async () => {
+  const validationCycle = require("../kernel/execution/validation-cycle");
+  const limitsModule = require("../kernel/execution/validator-limits");
+  const reg = loadValidatorRegistry();
+  const baseline = await validationCycle.runValidationPhase(
+    "candidate",
+    ["execution-plan"],
+    authoritativeWorkerContext("c".repeat(64)),
+    { timeoutMs: 1500, expectedValidatorSetHash: reg.validatorSetHash }
+  );
+  assert.equal(baseline.status, "passed");
+
+  validationCycle.LIMITS = { maxResultBytes: 1, maxArrayLen: 1, maxStdBytes: 1 };
+  try { limitsModule.REVIEWED_VALIDATOR_LIMITS.maxResultBytes = 1; } catch (error) {}
+  try { limitsModule.REVIEWED_VALIDATOR_LIMITS.maxArrayLen = 1; } catch (error) {}
+  try { limitsModule.REVIEWED_VALIDATOR_LIMITS.maxStdBytes = 1; } catch (error) {}
+
+  const afterMutationAttempt = await validationCycle.runValidationPhase(
+    "candidate",
+    ["execution-plan"],
+    authoritativeWorkerContext("d".repeat(64)),
+    { timeoutMs: 1500, expectedValidatorSetHash: reg.validatorSetHash }
+  );
+  assert.equal(afterMutationAttempt.status, "passed");
+  assert.equal(limitsModule.REVIEWED_VALIDATOR_LIMITS.maxResultBytes, 262144);
+  assert.equal(limitsModule.REVIEWED_VALIDATOR_LIMITS.maxArrayLen, 10000);
+  assert.equal(limitsModule.REVIEWED_VALIDATOR_LIMITS.maxStdBytes, 65536);
+});
+
+test("direct worker launch with Infinity limits cannot disable fixed reviewed result bounds", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:["x".repeat(300000)],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("e".repeat(64)),
+        limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Number.MAX_SAFE_INTEGER }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, false);
+      assert.match(outcome.message.error, /262144 bytes/);
+    }
+  );
+});
+
+test("direct worker launch with Infinity limits cannot disable fixed reviewed array bounds", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const checkedObjects=[]; for(let i=0;i<20050;i++) checkedObjects.push("OBJ-"+i); return {status:"passed",problems:[],warnings:[],checkedObjects,checkedPaths:["public/data/report.json"]};}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("7".repeat(64)),
+        limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, true);
+      assert.match(outcome.message.raw.problems.join(" "), /checkedObjects exceeds 10000 entries/i);
+      assert.equal(outcome.message.raw.checkedObjects.length, 10000);
+    }
+  );
+});
+
+test("direct worker launch with maxResultBytes set to 1 cannot replace reviewed internal limits", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("f".repeat(64)),
+        limits: { maxResultBytes: 1, maxArrayLen: 1, maxStdBytes: 1 }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, true);
+      assert.equal(outcome.message.raw.status, "passed");
+    }
+  );
+});
+
+test("direct worker launch ignores invalid caller-supplied limit types in favor of fixed reviewed limits", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("9".repeat(64)),
+        limits: {
+          maxResultBytes: "Infinity",
+          maxArrayLen: { bogus: true },
+          maxStdBytes: -1
+        }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, true);
+      assert.equal(outcome.message.raw.status, "passed");
+    }
+  );
 });
 
 test("production worker direct attack cannot execute an external validator from a temporary root", async () => {

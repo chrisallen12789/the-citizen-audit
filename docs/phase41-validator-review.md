@@ -1,18 +1,18 @@
-# Phase 4.1 - Validator Worker Source-Boundary Review
+# Phase 4.1 - Validator Limits Surface Review
 
-Base checkpoint: `d92f69c`
+Base checkpoint: `8dba97b`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, fabricated descriptor execution, and direct worker source bypass are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, and mutable validator-limit surfaces are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `d92f69c132c5c958cd2ac22ee1c2fbeb96b1727b` and closes the rejected production validator-worker bypass:
+This checkpoint continues from `8dba97b8430765df01a9afc162b6f405b21138dc` and closes the remaining mutable production validator-limit surface:
 
-1. production `validator-worker.js` no longer accepts caller-supplied closure, contract, manifest, entry-path, or equivalent validator-source material
-2. production `validation-cycle.js` now passes only validator identity data plus the expected authoritative `validatorSetHash`
-3. production worker independently reloads the authoritative production registry and verifies `validatorSetHash` before validator execution
-4. closure-loader identity remains bound to the actual closure-building implementation bytes
-5. test-only descriptor execution and alternate validator roots remain confined to `tests/support/**`
-6. immutable lookup handling continues to reject inherited-object key confusion and unsafe validator ids
+1. production `validation-cycle.js` no longer exports the mutable internal `LIMITS` object
+2. reviewed validator limits now live in an immutable production module and are not caller-mutable through direct import
+3. production `validator-worker.js` no longer trusts caller-supplied `workerData.limits`
+4. direct worker launches cannot weaken or tighten reviewed result, array, or stdio bounds through hostile limit payloads
+5. authoritative validator execution still uses the reviewed bounds and still passes through the normal production path
+6. the previously fixed direct worker external-validator source attack remains closed
 
 OS-level validator confinement was not started.
 
@@ -87,7 +87,6 @@ Production `kernel/execution/validator-worker.js` now accepts only:
 - `expectedValidatorSetHash`
 - `phase`
 - serializable validation context
-- bounded result limits
 
 Inside the worker, it now independently:
 - loads the fixed authoritative production validator registry
@@ -102,7 +101,27 @@ Direct worker regressions prove:
 - no external validator top-level or validate-function marker file is created
 - `validatorSetHash` mismatch fails closed before execution
 - caller-supplied `closureHash` values are irrelevant because caller-supplied closure material is ignored
+- caller-supplied `limits` values are irrelevant because reviewed production bounds are loaded inside the worker
 - authoritative validators still execute through the normal production validation-cycle path
+
+### Production validator-limit lock
+Production reviewed validator limits now live in:
+- `kernel/execution/validator-limits.js`
+
+The production path now works as follows:
+- `validation-cycle.js` imports immutable reviewed limits and no longer exports a mutable `LIMITS` object
+- `validation-cycle.js` no longer passes `limits` into the production worker
+- `validator-worker.js` imports the same immutable reviewed limits internally
+- caller-provided `workerData.limits` are ignored and cannot weaken or tighten the reviewed bounds
+
+Direct-import and direct-worker regressions prove:
+- `validation-cycle.js` exports no mutable `LIMITS` reference
+- `validator-limits.js` exports a frozen metadata object
+- attempted direct-import mutation cannot alter a later authoritative validation outcome
+- direct worker launch with `Infinity` cannot disable reviewed result-byte bounds
+- direct worker launch with `Infinity` cannot disable reviewed array bounds
+- direct worker launch with `maxResultBytes = 1` cannot tighten the reviewed internal bound
+- invalid caller-supplied limit types are ignored in favor of the reviewed internal limits
 
 ### Production validator-closure lock
 Production `kernel/execution/validator-closure.js` now exports only fixed reviewed-source policy metadata.
@@ -153,9 +172,9 @@ Production no longer leaves a direct-import path to:
 - injected execution surfaces
 
 ## Test totals observed in this workspace
-- validator-security: 84/84
+- validator-security: 91/91
 - execution-orchestrator: 56/56
-- execution suite: 280/280
+- execution suite: 287/287
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -164,7 +183,7 @@ Production no longer leaves a direct-import path to:
 - bypass-audit self-test: 29/29
 - capability audit: 92/92 owned, 0 unexplained, 0 violations
 - capability audit stale classifications: 0
-- JavaScript syntax sweep: passed on 146 files
+- JavaScript syntax sweep: passed on 147 files
 - `git diff --check`: passed
 - `git fsck --full`: passed
 - Institutional QA: 159 HTML files passed
@@ -177,9 +196,12 @@ Linux-host note:
 - no configurable execution function is exported from `kernel/**`
 - no alternate validator source can be selected by direct module import
 - no production worker accepts caller-supplied closure or contract material
+- no production worker accepts caller-supplied limit values as authoritative
 - no production import accepts arbitrary validator descriptors or closure material
 - no alternate validator root, directory, entry path, or source can execute through the production worker
 - `validatorSetHash` is verified inside the worker before validator execution
+- no mutable production configuration export can change validator behavior
+- hard result and array bounds cannot be weakened through `workerData`
 - production modules do not import test support
 - immutable lookup does not expose inherited properties
 - actual closure implementation bytes are bound into `validatorSetHash`

@@ -23,7 +23,6 @@ function executeWithInjectedRegistry(loader, transactionId, options = {}) {
     loaded: true,
     exports: {
       DEFAULT_TIMEOUT_MS: validationCycleTestCore.DEFAULT_TIMEOUT_MS,
-      LIMITS: validationCycleTestCore.LIMITS,
       async runValidationPhase(phase, validatorIds, context, runOptions = {}) {
         const registry = loader();
         if (typeof runOptions.expectedValidatorSetHash === "string" && runOptions.expectedValidatorSetHash !== registry.validatorSetHash) {

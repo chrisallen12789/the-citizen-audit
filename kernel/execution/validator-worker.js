@@ -18,11 +18,11 @@ const crypto = require("crypto");
 const vm = require("vm");
 const { parentPort, workerData } = require("worker_threads");
 const { loadValidatorRegistry } = require("./validators");
+const { REVIEWED_VALIDATOR_LIMITS } = require("./validator-limits");
 
 
-const LIMITS = workerData.limits || {};
-const MAX_RESULT_BYTES = LIMITS.maxResultBytes || 262144;
-const MAX_ARRAY_LEN = LIMITS.maxArrayLen || 10000;
+const MAX_RESULT_BYTES = REVIEWED_VALIDATOR_LIMITS.maxResultBytes;
+const MAX_ARRAY_LEN = REVIEWED_VALIDATOR_LIMITS.maxArrayLen;
 const ENFORCE_POSIX_WRITE_BITS = process.platform !== "win32";
 const UNSAFE_VALIDATOR_IDS = new Set(["__proto__", "prototype", "constructor"]);
 
