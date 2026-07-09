@@ -139,18 +139,6 @@
       ]
     },
     {
-      "path": "kernel/execution/orchestrator.js",
-      "category": 1,
-      "justification": "Sole authoritative governed mutation orchestrator; all durable mutation is delegated to reviewed Phase 2 primitives.",
-      "capabilities": [
-        "durableStateMutation",
-        "eventWriting",
-        "filesystemMutation",
-        "processExecution",
-        "transactionRecording"
-      ]
-    },
-    {
       "path": "kernel/execution/orchestrator-core.js",
       "category": 1,
       "justification": "Internal authoritative execution core behind the production orchestrator wrapper and test harness; all durable mutation remains delegated to reviewed Phase 2 primitives.",
@@ -242,18 +230,6 @@
       "capabilities": [
         "durableStateMutation",
         "filesystemMutation",
-        "transactionRecording"
-      ]
-    },
-    {
-      "path": "kernel/execution/run.js",
-      "category": 5,
-      "justification": "CLI wrapper for the authoritative orchestrator.",
-      "capabilities": [
-        "durableStateMutation",
-        "eventWriting",
-        "filesystemMutation",
-        "processExecution",
         "transactionRecording"
       ]
     },
@@ -355,15 +331,6 @@
       "path": "kernel/execution/validators/exact-materialization.js",
       "category": 5,
       "justification": "Post-write exact materialization validator.",
-      "capabilities": [
-        "durableStateMutation",
-        "filesystemMutation"
-      ]
-    },
-    {
-      "path": "kernel/execution/validators/index.js",
-      "category": 5,
-      "justification": "Production validator registry entrypoint locked to the reviewed validator directory and source-boundary loader.",
       "capabilities": [
         "durableStateMutation",
         "filesystemMutation"
@@ -870,6 +837,15 @@
       ]
     },
     {
+      "path": "tests/support/validator-closure-test-core.js",
+      "category": 4,
+      "justification": "Test-only configurable validator-closure builder used to exercise alternate validator roots and entry sources; not imported by production modules.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
       "path": "scripts/deployment-certify.js",
       "category": 3,
       "justification": "Deployment-certification harness (diagnostic). Spawns capability probes (unshare/gcc/file/ldd) and compiles the reviewed sandbox helper; writes certification reports under docs/certification/ and temporary directories only. No governed-record mutation; not reachable from any production runtime entry point.",
@@ -909,15 +885,6 @@
         "durableStateMutation",
         "filesystemMutation",
         "processExecution"
-      ]
-    },
-    {
-      "path": "kernel/execution/validator-closure.js",
-      "category": 5,
-      "justification": "Deterministic validator code-closure builder against an authoritative project root: statically resolves and hashes the dependency closure via O_NOFOLLOW same-fd inspect+read, rejecting dynamic require/symlink/nonregular/hardlink/world-writable/absolute/parent-escape/overly-broad-root, and binds the root policy + closure into validatorSetHash. Read-only fs.open* is modeled as filesystem/durable capability; no governed mutation.",
-      "capabilities": [
-        "durableStateMutation",
-        "filesystemMutation"
       ]
     }
   ],

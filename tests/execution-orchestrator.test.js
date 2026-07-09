@@ -347,7 +347,8 @@ test("direct kernel imports do not expose configurable execution surfaces", () =
     ["../kernel/execution/orchestrator-core", require("../kernel/execution/orchestrator-core")],
     ["../kernel/execution/validators", require("../kernel/execution/validators")],
     ["../kernel/execution/validators/index.js", require("../kernel/execution/validators/index.js")],
-    ["../kernel/execution/validators/registry-core.js", require("../kernel/execution/validators/registry-core.js")]
+    ["../kernel/execution/validators/registry-core.js", require("../kernel/execution/validators/registry-core.js")],
+    ["../kernel/execution/validator-closure.js", require("../kernel/execution/validator-closure.js")]
   ];
   for (const [modulePath, exported] of modules) {
     assert.equal(Object.prototype.hasOwnProperty.call(exported, "executeApprovedTransactionInternal"), false, modulePath);
@@ -355,6 +356,9 @@ test("direct kernel imports do not expose configurable execution surfaces", () =
     assert.equal(Object.prototype.hasOwnProperty.call(exported, "executionSurface"), false, modulePath);
     assert.equal(Object.prototype.hasOwnProperty.call(exported, "allowProjectRootOverride"), false, modulePath);
     assert.equal(Object.prototype.hasOwnProperty.call(exported, "allowValidatorsDirOverride"), false, modulePath);
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "buildValidatorClosure"), false, modulePath);
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "resolveAuthoritativeRoot"), false, modulePath);
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "inspectAndRead"), false, modulePath);
   }
 });
 
@@ -372,6 +376,10 @@ test("direct kernel imports still reject alternate validator sources", async () 
     assert.equal(result.disposition, "rejected");
     assert.ok(result.problems.some((problem) => /caller-selected (validatorsDir|projectRoot)/i.test(problem)));
     assert.throws(() => require("../kernel/execution/validators/registry-core").loadValidatorRegistry({ validatorsDir: dir }), /caller-selected validatorsDir/i);
+    const validatorClosure = require("../kernel/execution/validator-closure.js");
+    assert.equal(typeof validatorClosure.buildValidatorClosure, "undefined");
+    assert.equal(typeof validatorClosure.resolveAuthoritativeRoot, "undefined");
+    assert.equal(typeof validatorClosure.inspectAndRead, "undefined");
   } finally {
     cleanupValidatorsDir(dir);
     cleanup(fx);

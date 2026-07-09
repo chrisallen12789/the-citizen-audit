@@ -8,7 +8,7 @@ const test = require("node:test");
 
 const { runValidationPhase } = require("../kernel/execution/validation-cycle");
 const { extractStaticValidatorContract, loadValidatorRegistry } = require("../kernel/execution/validators");
-const { buildValidatorClosure } = require("../kernel/execution/validator-closure");
+const { buildValidatorClosure, resolveAuthoritativeRoot } = require("./support/validator-closure-test-core");
 const { loadValidatorRegistryForTest } = require("./support/validator-test-harness");
 
 const REAL_VALIDATORS = path.join(__dirname, "..", "kernel", "execution", "validators");
@@ -474,8 +474,6 @@ test("closure is re-verified at post_write: drift before post-write fails closed
 });
 
 // ---- Authoritative-root source boundary (this checkpoint) ----
-const { resolveAuthoritativeRoot } = require("../kernel/execution/validator-closure");
-
 function writeModule(name, src) { const p = path.join(scratch, name); writeStrictFile(p, src); return p; }
 const VALID_BODY = `module.exports={id:"x",version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`;
 

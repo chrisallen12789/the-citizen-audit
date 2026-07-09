@@ -2,7 +2,7 @@
 
 Authoritative base: `8681daeae981af197f84ed582fe0098893c1740a`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - configurable validator and orchestrator cores are no longer directly importable; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator root selection is no longer directly importable; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -17,8 +17,10 @@ Repository audit result:
 - 90/90 capable files owned
 - 0 unexplained files
 - 0 violations
+- 0 stale classifications
 
 New owned files in this checkpoint:
+- `tests/support/validator-closure-test-core.js`
 - `tests/support/validator-registry-test-core.js`
 
 No broad capability declarations were added.
@@ -27,9 +29,11 @@ No broad capability declarations were added.
 
 | Case | Status | Evidence |
 |---|---|---|
+| Direct import of `kernel/execution/validator-closure.js` exposes configurable closure construction | FIXED | production module now exports only fixed policy metadata; regression directly probes missing builder/root-selector exports |
 | Direct import of `kernel/execution/orchestrator-core.js` exposes configurable execution | FIXED | core export replaced with fixed production executor; regression added |
 | Direct import of `kernel/execution/validators/registry-core.js` exposes alternate-directory loading | FIXED | core export replaced with fixed production loader; regression added |
 | Production kernel surface still exposes injected execution surfaces or override flags | FIXED | direct-require regression enumerates all production orchestrator/validator modules |
+| Production imports can still select an alternate validator entry source | FIXED | `validator-closure.js` direct-import probe shows no callable closure builder or inspector remains |
 | Production caller can still select another validator directory inside the repository | FIXED | existing rejection regression retained |
 | Production caller can still select a temporary validator directory | FIXED | existing rejection regression retained |
 | Production caller can still select a copied registry with the same ids | FIXED | existing rejection regression retained |
@@ -37,6 +41,7 @@ No broad capability declarations were added.
 | Production code imports `tests/**` or `tests/support/**` | FIXED | import-graph regression scans every `kernel/**/*.js` file |
 | Immutable lookup can expose inherited Object prototype values | FIXED | null-prototype lookup backing plus own-property `get`/`has` regression |
 | Unsafe validator ids can poison lookup behavior | FIXED | `__proto__`, `prototype`, and `constructor` are rejected with regressions |
+| Delivered replacement patch is not a valid unified diff | FIXED | replacement packaging requires `git diff --binary <parent>..<commit>` and `git apply --check` before delivery |
 
 ## Suites run for this checkpoint
 
@@ -54,6 +59,8 @@ No broad capability declarations were added.
 | `npm run archive:manifest:test` | PASS, 36/36 |
 | `npm run execution:test` | PASS, 274/274 |
 | `npm run qa` | PASS, 159 HTML files |
+| `git diff --check` | PASS |
+| `git fsck --full` | PASS |
 
 ## Residual items intentionally not started here
 - OS-level validator confinement

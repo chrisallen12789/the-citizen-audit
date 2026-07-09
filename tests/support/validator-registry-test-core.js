@@ -11,7 +11,7 @@ const {
   resolveAuthoritativeRoot,
   REPO_ROOT,
   ROOT_POLICY_VERSION
-} = require("../../kernel/execution/validator-closure");
+} = require("./validator-closure-test-core");
 
 const SEMVER = /^\d+\.\d+\.\d+$/;
 const VALIDATOR_RUNNER_VERSION = "2.0.0";
