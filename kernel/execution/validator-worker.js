@@ -25,22 +25,33 @@ const HOST_PROCESS = process;
 const HOST_GLOBAL = globalThis;
 const SafeArrayIncludes = Function.call.bind(Array.prototype.includes);
 const SafeArrayIsArray = Array.isArray;
+const SafeArrayJoin = Function.call.bind(Array.prototype.join);
+const SafeArraySlice = Function.call.bind(Array.prototype.slice);
 const SafeArraySort = Function.call.bind(Array.prototype.sort);
 const SafeBufferByteLength = Buffer.byteLength.bind(Buffer);
 const SafeBufferFrom = Buffer.from.bind(Buffer);
+const SafeBufferSubarray = Function.call.bind(Buffer.prototype.subarray);
+const SafeBufferToString = Function.call.bind(Buffer.prototype.toString);
 const SafeJSONStringify = JSON.stringify;
 const SafeObjectCreate = Object.create;
 const SafeObjectDefineProperty = Object.defineProperty;
 const SafeObjectFreeze = Object.freeze;
 const SafeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 const SafeObjectGetOwnPropertyNames = Object.getOwnPropertyNames;
+const SafeObjectGetPrototypeOf = Object.getPrototypeOf;
 const SafeObjectHasOwn = Function.call.bind(Object.prototype.hasOwnProperty);
+const SafeObjectSetPrototypeOf = Object.setPrototypeOf;
 const SafeMapGet = Function.call.bind(Map.prototype.get);
 const SafeMapHas = Function.call.bind(Map.prototype.has);
 const SafeMapSet = Function.call.bind(Map.prototype.set);
+const SafePromiseCatch = Function.call.bind(Promise.prototype.catch);
 const SafePromiseResolve = Promise.resolve.bind(Promise);
+const SafePromiseThen = Function.call.bind(Promise.prototype.then);
 const SafeReflectOwnKeys = Reflect.ownKeys;
 const SafeSetHas = Function.call.bind(Set.prototype.has);
+const SafeStringSlice = Function.call.bind(String.prototype.slice);
+const SafeStringSplit = Function.call.bind(String.prototype.split);
+const SafeStringStartsWith = Function.call.bind(String.prototype.startsWith);
 const SafeString = String;
 
 const HARNESS_CHANNEL_TYPE = "validator-harness-channel-v1";
@@ -66,11 +77,29 @@ function defineReadOnly(target, key, value) {
   SafeObjectDefineProperty(target, key, { value, enumerable: true, writable: false, configurable: false });
 }
 
+function frozenRecord(entries) {
+  const record = SafeObjectCreate(null);
+  for (let index = 0; index < entries.length; index += 1) {
+    defineReadOnly(record, entries[index][0], entries[index][1]);
+  }
+  return SafeObjectFreeze(record);
+}
+
+function safeCallable(fn, receiver) {
+  const callable = fn.bind(receiver);
+  try { SafeObjectSetPrototypeOf(callable, null); } catch (error) {}
+  defineReadOnly(callable, "constructor", undefined);
+  return SafeObjectFreeze(callable);
+}
+
 function makeReadOnlyFacade(source, receiver = source, seen = new Map()) {
   if (source === null || (typeof source !== "object" && typeof source !== "function")) return source;
-  if (seen.has(source)) return seen.get(source);
+  if (SafeMapHas(seen, source)) return SafeMapGet(seen, source);
   const facade = typeof source === "function" ? source.bind(receiver) : SafeObjectCreate(null);
-  seen.set(source, facade);
+  if (typeof facade === "function") {
+    try { SafeObjectSetPrototypeOf(facade, null); } catch (error) {}
+  }
+  SafeMapSet(seen, source, facade);
   for (const key of SafeReflectOwnKeys(source)) {
     if (key === "prototype" || key === "constructor") continue;
     const descriptor = SafeObjectGetOwnPropertyDescriptor(source, key);
@@ -81,29 +110,74 @@ function makeReadOnlyFacade(source, receiver = source, seen = new Map()) {
   return SafeObjectFreeze(facade);
 }
 
-const SAFE_BUFFER_FACADE = SafeObjectFreeze({
-  from: Buffer.from.bind(Buffer),
-  byteLength: Buffer.byteLength.bind(Buffer),
-  isBuffer: Buffer.isBuffer.bind(Buffer),
-  concat: Buffer.concat.bind(Buffer),
-  alloc: Buffer.alloc.bind(Buffer),
-  allocUnsafe: Buffer.allocUnsafe.bind(Buffer)
-});
-const SAFE_BUFFER_MODULE = SafeObjectFreeze({ Buffer: SAFE_BUFFER_FACADE });
-const SAFE_JSON_FACADE = SafeObjectFreeze({
-  parse: JSON.parse.bind(JSON),
-  stringify: JSON.stringify.bind(JSON)
-});
-const ALLOWED_BUILTINS = SafeObjectFreeze({
-  path: makeReadOnlyFacade(require("path")),
-  crypto: makeReadOnlyFacade(require("crypto")),
-  util: makeReadOnlyFacade(require("util")),
-  assert: makeReadOnlyFacade(require("assert")),
-  buffer: SAFE_BUFFER_MODULE,
-  os: makeReadOnlyFacade(require("os")),
-  fs: makeReadOnlyFacade(require("fs"))
-});
+const SAFE_BUFFER_FACADE = frozenRecord([
+  ["from", safeCallable(Buffer.from, Buffer)],
+  ["byteLength", safeCallable(Buffer.byteLength, Buffer)],
+  ["isBuffer", safeCallable(Buffer.isBuffer, Buffer)],
+  ["concat", safeCallable(Buffer.concat, Buffer)],
+  ["alloc", safeCallable(Buffer.alloc, Buffer)],
+  ["allocUnsafe", safeCallable(Buffer.allocUnsafe, Buffer)]
+]);
+const SAFE_BUFFER_MODULE = frozenRecord([["Buffer", SAFE_BUFFER_FACADE]]);
+const SAFE_JSON_FACADE = frozenRecord([
+  ["parse", safeCallable(JSON.parse, JSON)],
+  ["stringify", safeCallable(JSON.stringify, JSON)]
+]);
+const ALLOWED_BUILTINS = frozenRecord([
+  ["path", makeReadOnlyFacade(require("path"))],
+  ["crypto", makeReadOnlyFacade(require("crypto"))],
+  ["util", makeReadOnlyFacade(require("util"))],
+  ["assert", makeReadOnlyFacade(require("assert"))],
+  ["buffer", SAFE_BUFFER_MODULE],
+  ["os", makeReadOnlyFacade(require("os"))],
+  ["fs", makeReadOnlyFacade(require("fs"))]
+]);
 const TRANSPORT_PRIMITIVE_TYPES = new Set(["string", "number", "boolean", "bigint", "undefined"]);
+
+function addIntrinsicTarget(targets, target) {
+  if (target && (typeof target === "object" || typeof target === "function")) targets[targets.length] = target;
+}
+
+function addPrototypeChain(targets, target) {
+  let current = target;
+  while (current && (typeof current === "object" || typeof current === "function")) {
+    addIntrinsicTarget(targets, current);
+    current = SafeObjectGetPrototypeOf(current);
+  }
+}
+
+function addIteratorPrototype(targets, iterator) {
+  try { addPrototypeChain(targets, SafeObjectGetPrototypeOf(iterator)); } catch (error) {}
+}
+
+function hardenValidatorIntrinsics() {
+  const targets = [];
+  const constructors = [
+    Object, Array, String, Function, Promise, Map, Set, WeakMap, WeakSet,
+    Error, EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError,
+    RegExp, Symbol, Number, Boolean, BigInt, Date, ArrayBuffer, DataView,
+    Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array,
+    Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array,
+    BigUint64Array, Buffer
+  ];
+  if (typeof AggregateError === "function") constructors[constructors.length] = AggregateError;
+  if (typeof SharedArrayBuffer === "function") constructors[constructors.length] = SharedArrayBuffer;
+  for (let index = 0; index < constructors.length; index += 1) {
+    const ctor = constructors[index];
+    addIntrinsicTarget(targets, ctor);
+    try { addPrototypeChain(targets, ctor.prototype); } catch (error) {}
+  }
+  addIntrinsicTarget(targets, JSON);
+  addIntrinsicTarget(targets, Math);
+  addIntrinsicTarget(targets, Reflect);
+  try { addIteratorPrototype(targets, [][Symbol.iterator]()); } catch (error) {}
+  try { addIteratorPrototype(targets, ""[Symbol.iterator]()); } catch (error) {}
+  try { addIteratorPrototype(targets, new Map()[Symbol.iterator]()); } catch (error) {}
+  try { addIteratorPrototype(targets, new Set()[Symbol.iterator]()); } catch (error) {}
+  for (let index = 0; index < targets.length; index += 1) {
+    try { SafeObjectFreeze(targets[index]); } catch (error) {}
+  }
+}
 
 function setGlobalValue(name, value) {
   try {
@@ -118,6 +192,7 @@ function setProcessValue(name, value) {
 }
 
 function lockValidatorHostAccess() {
+  hardenValidatorIntrinsics();
   setProcessValue("getBuiltinModule", undefined);
   setProcessValue("binding", undefined);
   setProcessValue("_linkedBinding", undefined);
@@ -152,8 +227,8 @@ function safeFailureCode(code) {
 function truncateUtf8(text, maxBytes) {
   if (typeof text !== "string") return undefined;
   if (SafeBufferByteLength(text, "utf8") <= maxBytes) return text;
-  let truncated = SafeBufferFrom(text, "utf8").subarray(0, maxBytes).toString("utf8");
-  while (SafeBufferByteLength(truncated, "utf8") > maxBytes) truncated = truncated.slice(0, -1);
+  let truncated = SafeBufferToString(SafeBufferSubarray(SafeBufferFrom(text, "utf8"), 0, maxBytes), "utf8");
+  while (SafeBufferByteLength(truncated, "utf8") > maxBytes) truncated = SafeStringSlice(truncated, 0, -1);
   return truncated;
 }
 
@@ -210,7 +285,7 @@ function canonicalArray(value) {
 function boundArray(value, label, problems) {
   if (value === undefined) return [];
   if (!SafeArrayIsArray(value)) { problems[problems.length] = `${label} is not an array`; return []; }
-  if (value.length > MAX_ARRAY_LEN) { problems[problems.length] = `${label} exceeds ${MAX_ARRAY_LEN} entries`; return value.slice(0, MAX_ARRAY_LEN); }
+  if (value.length > MAX_ARRAY_LEN) { problems[problems.length] = `${label} exceeds ${MAX_ARRAY_LEN} entries`; return SafeArraySlice(value, 0, MAX_ARRAY_LEN); }
   return value;
 }
 
@@ -270,15 +345,28 @@ function normalizeTransportedResult(raw) {
   const warnings = boundTransportStringArray(raw, "warnings", transportProblems);
   const checkedObjects = boundTransportStringArray(raw, "checkedObjects", transportProblems);
   const checkedPaths = boundTransportStringArray(raw, "checkedPaths", transportProblems);
-  if (statusValue !== "passed" && statusValue !== "failed") transportProblems.push("status is invalid");
+  if (statusValue !== "passed" && statusValue !== "failed") transportProblems[transportProblems.length] = "status is invalid";
   const status = transportProblems.length > 0 ? "failed" : statusValue;
   return {
     status: status === "failed" ? "failed" : "passed",
-    problems: transportProblems.length > 0 ? [...problems, ...transportProblems] : problems,
+    problems: transportProblems.length > 0 ? concatStringArrays(problems, transportProblems) : problems,
     warnings,
     checkedObjects,
     checkedPaths
   };
+}
+
+function concatStringArrays(left, right) {
+  const combined = [];
+  for (let index = 0; index < left.length; index += 1) combined[combined.length] = left[index];
+  for (let index = 0; index < right.length; index += 1) combined[combined.length] = right[index];
+  return combined;
+}
+
+function relativePathEscapes(root, target) {
+  const relative = path.relative(root, target);
+  const normalized = SafeArrayJoin(SafeStringSplit(relative, path.sep), "/");
+  return path.isAbsolute(relative) || SafeStringStartsWith(normalized, "..");
 }
 
 function loadClosureEntry(closure) {
@@ -296,7 +384,7 @@ function loadClosureEntry(closure) {
     const want = SafeMapGet(expected, relPath);
     if (!want) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "undeclared closure module");
     const abs = path.join(ROOT, relPath);
-    if (path.relative(ROOT, abs).split(path.sep).join("/").startsWith("..")) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure path escape");
+    if (relativePathEscapes(ROOT, abs)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure path escape");
     let fd;
     try { fd = fs.openSync(abs, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW); }
     catch (e) {
@@ -313,32 +401,34 @@ function loadClosureEntry(closure) {
       if (SafeString(st.dev) !== SafeString(want.dev) || SafeString(st.ino) !== SafeString(want.ino)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module inode replacement at execution");
       if (st.uid !== want.uid || st.gid !== want.gid) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module ownership change at execution");
       const real = fs.realpathSync(abs);
-      if (real !== abs || path.relative(ROOT, real).startsWith("..")) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module resolves outside root at execution");
+      if (real !== abs || relativePathEscapes(ROOT, real)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module resolves outside root at execution");
       const bytes = Buffer.alloc(st.size);
       let off = 0;
       while (off < st.size) { const n = fs.readSync(fd, bytes, off, st.size - off, off); if (n <= 0) break; off += n; }
-      const data = bytes.subarray(0, off);
+      const data = SafeBufferSubarray(bytes, 0, off);
       const hash = crypto.createHash("sha256").update(data).digest("hex");
       if (hash !== want.hash) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module hash mismatch at execution");
-      return data.toString("utf8");
+      return SafeBufferToString(data, "utf8");
     } finally { fs.closeSync(fd); }
   }
 
   function resolveLocal(fromRel, spec) {
     const dir = path.posix.dirname(fromRel);
     const base = path.posix.normalize(path.posix.join(dir, spec));
-    for (const cand of [base, `${base}.js`, `${base}/index.js`]) {
+    const candidates = [base, `${base}.js`, `${base}/index.js`];
+    for (let index = 0; index < candidates.length; index += 1) {
+      const cand = candidates[index];
       if (SafeMapHas(expected, cand)) return cand;
     }
     throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "undeclared closure dependency");
   }
 
   function requireFrom(fromRel, spec) {
-    if (spec === "." || spec === ".." || spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/")) {
+    if (spec === "." || spec === ".." || SafeStringStartsWith(spec, "./") || SafeStringStartsWith(spec, "../") || SafeStringStartsWith(spec, "/")) {
       const target = resolveLocal(fromRel, spec);
       return loadModule(target);
     }
-    const builtin = spec.startsWith("node:") ? spec.slice(5) : spec;
+    const builtin = SafeStringStartsWith(spec, "node:") ? SafeStringSlice(spec, 5) : spec;
     if (!SafeObjectHasOwn(ALLOWED_BUILTINS, builtin)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "non-allowlisted builtin required in closure");
     return ALLOWED_BUILTINS[builtin];
   }
@@ -373,7 +463,7 @@ function loadAuthoritativeDescriptor(workerPayload) {
   const validatorId = workerPayload && workerPayload.validatorId;
   const expectedValidatorSetHash = workerPayload && workerPayload.expectedValidatorSetHash;
   if (typeof validatorId !== "string" || !validatorId) throw workerFailure("REGISTRY_MISMATCH", "validator worker requires a non-empty validatorId");
-  if (UNSAFE_VALIDATOR_IDS.has(validatorId)) throw workerFailure("REGISTRY_MISMATCH", "validator worker rejected unsafe validator id");
+  if (SafeSetHas(UNSAFE_VALIDATOR_IDS, validatorId)) throw workerFailure("REGISTRY_MISMATCH", "validator worker rejected unsafe validator id");
   if (typeof expectedValidatorSetHash !== "string" || !expectedValidatorSetHash) throw workerFailure("REGISTRY_MISMATCH", "validator worker requires an expected validatorSetHash");
 
   let registry;
@@ -424,8 +514,9 @@ try {
     } else if (validatorLoaded && (!SafeArrayIsArray(validator.supportedPhases) || !SafeArrayIncludes(validator.supportedPhases, phase))) {
       fail("VALIDATOR_RESULT_INVALID", "validator does not support requested phase");
     } else if (validatorLoaded) {
-      SafePromiseResolve()
-        .then(() => {
+      const validationChain = SafePromiseThen(
+        SafePromiseResolve(),
+        () => {
           let validationResult;
           try {
             validationResult = validator.validate({ ...context, phase });
@@ -433,21 +524,26 @@ try {
             fail("VALIDATOR_THROW");
             return undefined;
           }
-          return SafePromiseResolve(validationResult)
-            .then((raw) => ({ raw }))
-            .catch(() => {
+          return SafePromiseThen(
+            SafePromiseResolve(validationResult),
+            (raw) => ({ raw }),
+            () => {
               fail("VALIDATOR_REJECTION");
               return undefined;
-            });
-        })
-        .then((outcome) => {
+            }
+          );
+        }
+      );
+      SafePromiseCatch(
+        SafePromiseThen(validationChain, (outcome) => {
           if (!outcome) return undefined;
           const raw = outcome.raw;
           if (!raw || typeof raw !== "object" || SafeArrayIsArray(raw)) return fail("VALIDATOR_RESULT_INVALID", "validator returned a non-object result");
           const normalized = normalizeTransportedResult(raw);
           succeed(normalized);
-        })
-        .catch((error) => failFromCaught(error, "WORKER_INTERNAL_FAILURE"));
+        }),
+        (error) => failFromCaught(error, "WORKER_INTERNAL_FAILURE")
+      );
     }
   }
 } catch (error) {

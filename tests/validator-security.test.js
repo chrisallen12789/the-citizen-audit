@@ -958,6 +958,37 @@ test("validator cannot send an oversized direct parentPort message", async () =>
   );
 });
 
+test("validator cannot recover worker MessagePort objects or create a direct MessageChannel", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      try {
+        const workerThreads = process.getBuiltinModule("worker_threads");
+        if (workerThreads && workerThreads.parentPort) workerThreads.parentPort.postMessage("direct-parent");
+        if (workerThreads && workerThreads.MessageChannel) {
+          const channel = new workerThreads.MessageChannel();
+          channel.port1.postMessage("direct-port");
+          if (workerThreads.parentPort) workerThreads.parentPort.postMessage(channel.port2, [channel.port2]);
+        }
+      } catch (error) {}
+      return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bh".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+    }
+  );
+});
+
 test("validator cannot forge a success envelope before runtime contract verification", async () => {
   await withTemporaryProductionValidatorSource(
     PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
@@ -1078,6 +1109,265 @@ test("validator mutation of host primordials cannot weaken envelope construction
       assert.equal(outcome.kind, "message");
       assertNoDirectWorkerMessages(outcome);
       assert.equal(parseTransportedWorkerFailureMessage(outcome.message).code, "VALIDATOR_RESULT_INVALID");
+    }
+  );
+});
+
+test("replacing Promise.prototype.then cannot bypass validate execution", async () => {
+  const marker = path.join(os.tmpdir(), `vsec-promise-then-${seq++}.txt`);
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nconst fs=require("node:fs");\ntry{Promise.prototype.then=function(onFulfilled){return Promise.resolve({raw:{status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}});};}catch(error){}\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const count=fs.existsSync(${JSON.stringify(marker)})?Number(fs.readFileSync(${JSON.stringify(marker)},"utf8")):0; fs.writeFileSync(${JSON.stringify(marker)},String(count+1)); throw new Error("validate must run and fail");}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ax".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(parseTransportedWorkerFailureMessage(outcome.message).code, "VALIDATOR_THROW");
+      assert.equal(fs.readFileSync(marker, "utf8"), "1");
+    }
+  );
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+});
+
+test("replacing Promise.prototype.catch cannot change rejection handling", async () => {
+  const marker = path.join(os.tmpdir(), `vsec-promise-catch-${seq++}.txt`);
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nconst fs=require("node:fs");\ntry{Promise.prototype.catch=function(onRejected){return Promise.resolve({status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]});};}catch(error){}\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){fs.writeFileSync(${JSON.stringify(marker)},"called"); return Promise.reject(new Error("reject must fail"));}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ay".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(parseTransportedWorkerFailureMessage(outcome.message).code, "VALIDATOR_REJECTION");
+      assert.equal(fs.readFileSync(marker, "utf8"), "called");
+    }
+  );
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+});
+
+test("validate is invoked exactly once before success is possible", async () => {
+  const marker = path.join(os.tmpdir(), `vsec-validate-once-${seq++}.txt`);
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nconst fs=require("node:fs");\ntry{Promise.prototype.then=function(){return Promise.resolve({raw:{status:"passed",problems:[],warnings:[],checkedObjects:[],checkedPaths:[]}});};}catch(error){}\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const count=fs.existsSync(${JSON.stringify(marker)})?Number(fs.readFileSync(${JSON.stringify(marker)},"utf8")):0; fs.writeFileSync(${JSON.stringify(marker)},String(count+1)); return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("az".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(parseTransportedWorkerSuccessMessage(outcome.message).status, "passed");
+      assert.equal(fs.readFileSync(marker, "utf8"), "1");
+    }
+  );
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+});
+
+test("replacing Array.prototype.push cannot suppress normalization problems", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      try { Array.prototype.push = function(){ return this.length; }; } catch (error) {}
+      return {status:"not-a-valid-status",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ba".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "failed");
+      assert.match(parsed.problems.join(" "), /status is invalid/);
+    }
+  );
+});
+
+test("array and string prototype replacement cannot alter closure or transport enforcement", async () => {
+  const marker = path.join(os.tmpdir(), `vsec-array-string-${seq++}.txt`);
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\ntry{Array.prototype.slice=function(){return [];}; Array.prototype.includes=function(){return true;}; Array.prototype.sort=function(){return this;}; Array.prototype[Symbol.iterator]=function*(){yield \"forged\";}; String.prototype.slice=function(){return \"tiny\";}; String.prototype.startsWith=function(){return false;}; String.prototype.split=function(){return [this];};}catch(error){}\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const fs=require("node:fs"); fs.writeFileSync(${JSON.stringify(marker)},"called"); const checkedObjects=[]; for(let i=0;i<20050;i++) checkedObjects[checkedObjects.length]=\"OBJ-\"+i; return {status:"passed",problems:[],warnings:[],checkedObjects,checkedPaths:["public/data/report.json"]};}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bb".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "failed");
+      assert.match(parsed.problems.join(" "), /checkedObjects exceeds 10000 entries/);
+      assert.equal(fs.readFileSync(marker, "utf8"), "called");
+    }
+  );
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+});
+
+test("broad intrinsic prototype mutations cannot affect harness normalization", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      try { Object.getOwnPropertyDescriptor = function(){ return { value: "passed" }; }; Object.prototype.status = "passed"; } catch (error) {}
+      try { Map.prototype.has = function(){ return true; }; Map.prototype.get = function(){ return "forged"; }; } catch (error) {}
+      try { Set.prototype.has = function(){ return true; }; } catch (error) {}
+      try { JSON.stringify = function(){ return "{\\"ok\\":true,\\"result\\":{\\"status\\":\\"passed\\",\\"problems\\":[],\\"warnings\\":[],\\"checkedObjects\\":[],\\"checkedPaths\\":[]}}"; }; } catch (error) {}
+      try { Buffer.byteLength = function(){ return 1; }; Buffer.prototype.toString = function(){ return "tiny"; }; } catch (error) {}
+      try { Error.prototype.toString = function(){ return "tiny"; }; RegExp.prototype.test = function(){ return true; }; } catch (error) {}
+      try { Promise.resolve = function(value){ return { then:function(resolve){ return resolve(value); } }; }; Promise.prototype.then = function(resolve){ return resolve({status:"passed",problems:[],warnings:[],checkedObjects:[],checkedPaths:[]}); }; } catch (error) {}
+      try { String.prototype.startsWith = function(){ return false; }; Function.prototype.call = function(){ return undefined; }; } catch (error) {}
+      return {status:"not-a-valid-status",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bc".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "failed");
+      assert.match(parsed.problems.join(" "), /status is invalid/);
+    }
+  );
+});
+
+test("thenables and custom Promise subclasses cannot bypass normalization or rejection", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      return { then:function(resolve){ resolve({status:"not-a-valid-status",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}); } };
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bd".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "failed");
+      assert.match(parsed.problems.join(" "), /status is invalid/);
+    }
+  );
+
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      return { then:function(resolve, reject){ reject(new Error("thenable rejection")); } };
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("be".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(parseTransportedWorkerFailureMessage(outcome.message).code, "VALIDATOR_REJECTION");
+    }
+  );
+
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      class EvilPromise extends Promise {}
+      return new EvilPromise((resolve) => resolve({status:"not-a-valid-status",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}));
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bf".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "failed");
+      assert.match(parsed.problems.join(" "), /status is invalid/);
+    }
+  );
+});
+
+test("host capability facades do not expose host constructors or harness lexical state", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const problems = [];
+      const pathMod = require("node:path");
+      const bufferMod = require("node:buffer").Buffer;
+      const probes = [
+        ["path.join.constructor", function(){ return pathMod.join.constructor; }],
+        ["path.join prototype constructor", function(){ const proto = Object.getPrototypeOf(pathMod.join); return proto && proto.constructor; }],
+        ["buffer.from.constructor", function(){ return bufferMod.from.constructor; }],
+        ["buffer.from prototype constructor", function(){ const proto = Object.getPrototypeOf(bufferMod.from); return proto && proto.constructor; }],
+        ["JSON.stringify.constructor", function(){ return JSON.stringify.constructor; }],
+        ["object constructor chain", function(){ return ({}).constructor && ({}).constructor.constructor; }]
+      ];
+      for (const probe of probes) {
+        try {
+          const ctor = probe[1]();
+          if (typeof ctor !== "function") continue;
+          let proc;
+          try { proc = ctor("return process")(); } catch (error) {}
+          if (proc && proc.getBuiltinModule) problems[problems.length] = probe[0] + " recovered process";
+          let lexical = "error";
+          try { lexical = ctor("return typeof HARNESS_RESULT_PORT")(); } catch (error) {}
+          if (lexical !== "undefined" && lexical !== "error") problems[problems.length] = probe[0] + " reached harness lexical state";
+        } catch (error) {}
+      }
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bg".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
     }
   );
 });

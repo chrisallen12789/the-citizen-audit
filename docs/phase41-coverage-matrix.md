@@ -1,8 +1,8 @@
-# Phase 4.1 - Coverage Matrix for Validator Channel-Lockdown Checkpoint
+# Phase 4.1 - Coverage Matrix for Validator Intrinsic-Hardening Checkpoint
 
-Authoritative base: `e73517535bb6fefb98b7b8355d2671a66fab49ec`
+Authoritative base: `5f2eac728dd7b465f6f65136471617bce38cc59b`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 result-byte enforcement, success/failure transport binding, and worker channel impersonation are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, and shared-intrinsic mutation are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -26,41 +26,36 @@ No broad capability declarations were added.
 
 | Case | Status | Evidence |
 |---|---|---|
-| Validator can obtain `parentPort` with `process.getBuiltinModule("worker_threads")` | FIXED | worker disables host process builtin acquisition before validator bytes execute and direct worker regression observes no direct messages |
-| Validator can send a 400,000-byte default-channel message | FIXED | direct worker regression proves no oversized raw message reaches the parent |
-| Parent accepts the first valid-looking worker message as success | FIXED | parent now accepts only the harness-owned result port envelope |
-| Forged success envelope can preempt runtime contract verification | FIXED | regression proves mismatched runtime contract fails with `VALIDATOR_RESULT_INVALID` and cannot report `passed` |
-| Throwing validator can preemptively report `passed` | FIXED | forged-envelope regression verifies `validate()` throw cannot be hidden by an early message |
-| `globalThis.process` or `global.process` can recover the channel | FIXED | regression proves global process aliases are unavailable |
-| `Function("return process")()` or constructor-chain variants can recover the channel | FIXED | regression covers direct `Function`, object-constructor, `require.constructor`, and `module.constructor` paths |
+| Validator replaces `Promise.prototype.then` to fabricate approval | FIXED | direct worker regression proves `validate()` runs and throwing validation fails with `VALIDATOR_THROW` |
+| Validator replaces `Promise.prototype.catch` to change rejection handling | FIXED | direct worker regression proves rejected validation fails with `VALIDATOR_REJECTION` |
+| Validator can pass without `validate()` executing | FIXED | marker regression proves success is possible only after exactly one validate invocation |
+| Throwing `validate()` can be reported as passed | FIXED | Promise-prototype forged-approval regression fails closed |
+| Validator replaces `Array.prototype.push` to suppress normalization problems | FIXED | invalid-status regression still records `status is invalid` and returns failed |
+| Invalid status normalizes to passed | FIXED | invalid status remains failed after Array prototype replacement |
+| Validator replaces `Array.prototype.slice`, `includes`, `sort`, iterator methods, or `Symbol.iterator` | FIXED | array/string prototype regression still enforces array bounds |
+| Validator replaces `String.prototype.slice`, `startsWith`, or `split` | FIXED | closure-local `require("node:fs")` and transport enforcement still behave correctly after attempted mutation |
+| Validator replaces `Object`, `Map`, `Set`, `JSON`, `Buffer`, `Error`, `RegExp`, `Promise`, `String`, `Function`, or prototypes | FIXED | broad intrinsic mutation regression still fails invalid status closed and cannot forge envelope sizing |
+| Thenables bypass rejection or normalization | FIXED | thenable resolve/reject regressions fail closed or normalize invalid status to failed |
+| Custom `Promise` subclasses bypass normalization | FIXED | subclass regression resolves invalid status and remains failed |
+| Constructor chains recover trusted harness functions or lexical state | FIXED | host facade regression cannot recover process authority or `HARNESS_RESULT_PORT` lexical state |
+| Host capability facades expose host constructors | FIXED | read-only facades and Buffer/JSON callables have null-prototype/constructor-hidden wrappers |
+| Direct `parentPort` message reaches parent | FIXED | direct parentPort regression observes no direct messages |
+| Direct `MessagePort` or `MessageChannel` reaches parent | FIXED | MessagePort/MessageChannel regression observes no direct messages |
+| Forged success envelope can preempt runtime contract verification | FIXED | regression proves mismatched runtime contract fails with `VALIDATOR_RESULT_INVALID` |
+| Validator can obtain `parentPort` with `process.getBuiltinModule("worker_threads")` | FIXED | runtime guard disables process builtin acquisition before validator bytes execute |
 | `process.getBuiltinModule()` bypasses the recorded builtin allowlist | FIXED | regression proves `child_process`, `net`, `worker_threads`, and `module` are not reachable |
-| Validator mutation of host primordials weakens envelope construction | FIXED | regression mutates `JSON`, `Buffer`, `Promise`, `Object`, `Map`, `Set`, and `Array` methods and still fails closed on oversized output |
-| Failure worker message can transport an arbitrary validator exception string | FIXED | worker sends only a bounded serialized failure envelope with fixed reviewed codes |
-| Validator throwing a 400,000-character ASCII `Error` can exceed `maxResultBytes` | FIXED | direct worker regression proves the complete envelope stays within the reviewed byte bound |
-| Validator throwing a large emoji or multibyte `Error` can exceed `maxResultBytes` | FIXED | direct worker regression proves emoji failure messages remain compact and bounded |
-| Rejected `Promise` containing a large `Error` can exceed `maxResultBytes` | FIXED | direct worker regression proves rejection reasons use `VALIDATOR_REJECTION` without raw message transport |
-| Parent accepts unchecked failure messages | FIXED | production validation cycle rechecks the complete serialized envelope before parsing success or failure |
+| Failure worker message can transport arbitrary validator exception text | FIXED | worker sends only bounded serialized failure envelopes with fixed reviewed codes |
+| Parent accepts unchecked worker messages | FIXED | production validation cycle rechecks complete serialized envelopes and ignores default-channel validator messages |
 | Complete transport limit definition is ambiguous | FIXED | review report and tests define `maxResultBytes` as the complete serialized worker response envelope |
-| Direct import of `kernel/execution/validator-closure.js` exposes configurable closure construction | FIXED | production module exports only fixed policy metadata; regression directly probes missing builder/root-selector exports |
-| Direct import of `kernel/execution/validation-cycle.js` accepts caller-supplied descriptors or closure material | FIXED | production cycle accepts only validator ids plus expected authoritative `validatorSetHash`; fabricated descriptor regression fails closed |
+| Direct import of production validator-closure or validation-cycle exposes configurable source selection | FIXED | production modules expose no alternate root, directory, entry source, descriptor, or execution-surface override |
 | Direct launch of `kernel/execution/validator-worker.js` accepts caller-supplied closure or contract material | FIXED | production worker reconstructs the authoritative descriptor from the reviewed registry and ignores caller-supplied source material |
-| Production kernel surface still exposes injected execution surfaces or override flags | FIXED | direct-require regression enumerates production orchestrator and validator modules |
 | Fabricated workerData can execute validator bytes from an external temporary root | FIXED | direct worker regression proves the production worker fails closed and creates no marker files |
 | Production worker can skip authoritative `validatorSetHash` binding | FIXED | direct worker mismatch regression proves the worker rejects mismatched hashes before execution |
-| Direct import can mutate production validator result and array limits | FIXED | `validation-cycle.js` exports no `LIMITS`; immutable reviewed limits remain in `validator-limits.js` |
-| Direct worker launch can weaken reviewed result-byte bounds with `Infinity` | FIXED | worker ignores caller `limits`; regression proves oversized authoritative results still fail |
-| Direct worker launch can tighten reviewed result-byte bounds with `maxResultBytes = 1` | FIXED | regression proves authoritative validator still passes under reviewed internal bounds |
-| Measured success representation differs from transported object | FIXED | worker transports only the exact checked serialized envelope string and never posts a raw normalized object |
-| Non-enumerable `toJSON()` can shrink checked success representation | FIXED | direct worker regression proves `toJSON()` is not invoked and no oversized payload reaches the parent |
-| Accessor getters can produce a smaller checked value than transported success value | FIXED | direct worker regression proves accessor properties are rejected without invoking the getter |
-| Prototype getters or custom class instances can bypass the result ceiling | FIXED | direct worker regression proves prototype-backed and non-plain values fail closed |
-| Multibyte BMP Unicode payload can exceed reviewed byte ceiling | FIXED | regression proves BMP Unicode result fails closed by UTF-8 byte count |
-| Astral-character or emoji payload can exceed reviewed byte ceiling | FIXED | regression proves emoji result fails closed by UTF-8 byte count |
-| Multibyte payload immediately below the reviewed envelope ceiling can still pass | FIXED | regression proves a below-limit multibyte result passes unchanged |
-| Circular or unserializable validator result can cross the worker boundary | FIXED | regression proves non-transport-safe result surfaces fail closed before acceptance |
+| Direct import or workerData can mutate reviewed result and array limits | FIXED | `validation-cycle.js` exports no mutable `LIMITS`; worker ignores caller `limits` |
+| Measured success representation differs from transported object | FIXED | worker transports only the exact checked serialized envelope string |
+| `toJSON`, accessor, prototype getter, structured clone, multibyte, emoji, circular result attacks | FIXED | retained direct worker regressions remain green |
 | Production code imports `tests/**` or `tests/support/**` | FIXED | import-graph regression scans every `kernel/**/*.js` file |
-| Immutable lookup can expose inherited Object prototype values | FIXED | null-prototype lookup backing plus own-property `get` and `has` regression |
-| Unsafe validator ids can poison lookup behavior | FIXED | `__proto__`, `prototype`, and `constructor` are rejected with regressions |
+| Immutable lookup can expose inherited Object prototype values or unsafe ids | FIXED | own-property/null-prototype lookup and unsafe-id regressions remain green |
 | Closure implementation identity is bound to metadata-only bytes | FIXED | regression proves the recorded loader hash equals `registry-core.js` and mutating that identity changes `validatorSetHash` |
 | Replacement checkpoint patch can be rejected because of BOM or CRLF conversion | FIXED | packaging uses raw Git diff bytes and verifies no BOM, LF-only newlines, and `git apply --check` from the exact parent |
 
@@ -68,8 +63,8 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 114/114 |
-| `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 123/123 |
+| `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
 | repository JavaScript syntax sweep | PASS, 147 tracked `.js` files checked |
@@ -78,7 +73,7 @@ No broad capability declarations were added.
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 310/310, normal exit on this host |
+| `npm run execution:test` | PASS, 319/319, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |
@@ -87,4 +82,4 @@ No broad capability declarations were added.
 ## Residual Items Intentionally Not Started Here
 - OS-level validator confinement
 - independent Linux-host termination reproduction, because no Linux runtime is installed locally
-- later confinement and runtime hardening outside this channel-lockdown checkpoint
+- later confinement and runtime hardening outside this intrinsic-hardening checkpoint
