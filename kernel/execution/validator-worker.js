@@ -17,12 +17,14 @@ const path = require("path");
 const crypto = require("crypto");
 const vm = require("vm");
 const { parentPort, workerData } = require("worker_threads");
+const { loadValidatorRegistry } = require("./validators");
 
 
 const LIMITS = workerData.limits || {};
 const MAX_RESULT_BYTES = LIMITS.maxResultBytes || 262144;
 const MAX_ARRAY_LEN = LIMITS.maxArrayLen || 10000;
 const ENFORCE_POSIX_WRITE_BITS = process.platform !== "win32";
+const UNSAFE_VALIDATOR_IDS = new Set(["__proto__", "prototype", "constructor"]);
 
 const ALLOWED_BUILTINS = {
   path: require("path"), crypto: require("crypto"), util: require("util"),
@@ -112,14 +114,34 @@ function loadClosureEntry(closure) {
   return loadModule(closure.entryRelPath);
 }
 
+function loadAuthoritativeDescriptor(workerPayload) {
+  const validatorId = workerPayload && workerPayload.validatorId;
+  const expectedValidatorSetHash = workerPayload && workerPayload.expectedValidatorSetHash;
+  if (typeof validatorId !== "string" || !validatorId) throw new Error("validator worker requires a non-empty validatorId");
+  if (UNSAFE_VALIDATOR_IDS.has(validatorId)) throw new Error(`validator worker rejected unsafe validator id: ${validatorId}`);
+  if (typeof expectedValidatorSetHash !== "string" || !expectedValidatorSetHash) throw new Error(`validator worker requires an expected validatorSetHash: ${validatorId}`);
+
+  const registry = loadValidatorRegistry();
+  if (registry.validatorSetHash !== expectedValidatorSetHash) {
+    throw new Error(`validatorSetHash mismatch in worker: ${validatorId}`);
+  }
+  const descriptor = registry.descriptors.get(validatorId);
+  if (!descriptor) throw new Error(`authoritative validator is unavailable in worker: ${validatorId}`);
+  return descriptor;
+}
+
 try {
-  const { closure, expectedContract, validatorId, phase, context } = workerData;
-  if (!closure || !Array.isArray(closure.modules) || !closure.entryRelPath) { fail(`missing validator closure: ${validatorId}`); }
-  else {
+  const { validatorId, phase, context } = workerData;
+  const descriptor = loadAuthoritativeDescriptor(workerData);
+  const closure = descriptor.closure;
+  if (!closure || !Array.isArray(closure.modules) || !closure.entryRelPath) {
+    fail(`missing authoritative validator closure: ${validatorId}`);
+  } else {
     const validator = loadClosureEntry(closure);
+    const expectedContract = descriptor.contract;
     if (
       !validator
-      || validator.id !== validatorId
+      || validator.id !== descriptor.id
       || !expectedContract
       || validator.version !== expectedContract.version
       || Boolean(validator.semantic) !== Boolean(expectedContract.semantic)
@@ -127,14 +149,14 @@ try {
       || JSON.stringify(canonicalArray(validator.supportedPhases)) !== JSON.stringify(canonicalArray(expectedContract.supportedPhases))
       || typeof validator.validate !== "function"
     ) {
-      fail(`validator contract mismatch in worker: ${validatorId}`);
+      fail(`validator contract mismatch in worker: ${descriptor.id}`);
     } else if (!Array.isArray(validator.supportedPhases) || !validator.supportedPhases.includes(phase)) {
-      fail(`validator does not support phase ${phase}: ${validatorId}`);
+      fail(`validator does not support phase ${phase}: ${descriptor.id}`);
     } else {
       Promise.resolve()
         .then(() => validator.validate({ ...context, phase }))
         .then((raw) => {
-          if (!raw || typeof raw !== "object" || Array.isArray(raw)) return fail(`validator returned a non-object result: ${validatorId}`);
+          if (!raw || typeof raw !== "object" || Array.isArray(raw)) return fail(`validator returned a non-object result: ${descriptor.id}`);
           const problems = [];
           const normalized = {
             status: raw.status,
@@ -145,8 +167,8 @@ try {
           };
           if (problems.length) normalized.problems = [...normalized.problems, ...problems];
           let serialized;
-          try { serialized = JSON.stringify(normalized); } catch (e) { return fail(`validator result is not serializable (circular/deep): ${validatorId}`); }
-          if (serialized.length > MAX_RESULT_BYTES) return fail(`validator result exceeds ${MAX_RESULT_BYTES} bytes: ${validatorId}`);
+          try { serialized = JSON.stringify(normalized); } catch (e) { return fail(`validator result is not serializable (circular/deep): ${descriptor.id}`); }
+          if (serialized.length > MAX_RESULT_BYTES) return fail(`validator result exceeds ${MAX_RESULT_BYTES} bytes: ${descriptor.id}`);
           parentPort.postMessage({ ok: true, raw: normalized });
         })
         .catch((error) => fail(`validator threw: ${(error && error.message) || String(error)}`));

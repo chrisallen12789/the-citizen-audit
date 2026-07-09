@@ -829,6 +829,16 @@
       ]
     },
     {
+      "path": "tests/support/validator-worker-test-core.js",
+      "category": 4,
+      "justification": "Test-only worker entry that accepts fabricated closure and contract material for adversarial validator execution regressions; never imported by production code.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
       "path": "tests/support/validator-test-harness.js",
       "category": 4,
       "justification": "Test-only validator-registry harness exposing alternate validator roots for fixtures; not exported through production validator entry points.",

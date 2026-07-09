@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-09T12:57:09.825Z",
+  "generatedAt": "2026-07-09T17:26:51.518Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -25,8 +25,8 @@
   "sandboxHelper": "kernel/runtime/sandbox-exec.c",
   "assuranceStatement": "AST/import analysis inventories discovered direct and transitive mutation capabilities; unknown or unowned capability fails closed. This is an enforceable inventory, not a claim that textual search proves absence of every bypass.",
   "summary": {
-    "mutationCapableFiles": 91,
-    "classified": 91,
+    "mutationCapableFiles": 92,
+    "classified": 92,
     "securityChecks": 4,
     "unexplained": 0,
     "unacceptable": 0,
@@ -1879,42 +1879,42 @@
         {
           "module": "kernel/execution/validation-results.js",
           "exportName": "normalizeValidationResult",
-          "line": 108
+          "line": 107
         },
         {
           "module": "kernel/execution/validation-results.js",
           "exportName": "normalizeValidationResult",
-          "line": 111
+          "line": 110
         },
         {
           "module": "kernel/execution/validation-results.js",
           "exportName": "normalizeValidationResult",
-          "line": 117
+          "line": 116
         },
         {
           "module": "kernel/lib/append-only-log.js",
           "exportName": "sha256",
-          "line": 130
+          "line": 129
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 130
+          "line": 129
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 143
+          "line": 142
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "selectRequiredValidators",
-          "line": 153
+          "line": 152
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "validatorsForPhase",
-          "line": 160
+          "line": 159
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -2023,7 +2023,13 @@
         "eventWriting": false,
         "durableStateMutation": true
       },
-      "capabilityEdges": [],
+      "capabilityEdges": [
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 124
+        }
+      ],
       "sourceBehaviorChecks": "passed",
       "violations": []
     },
@@ -6089,6 +6095,32 @@
       "violations": []
     },
     {
+      "file": "tests/support/validator-worker-test-core.js",
+      "category": 4,
+      "justification": "Test-only worker entry that accepts fabricated closure and contract material for adversarial validator execution regressions; never imported by production code.",
+      "declaredCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "directCapabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ],
+      "transitiveCapabilities": [],
+      "detectedCapabilities": {
+        "filesystemMutation": true,
+        "processExecution": true,
+        "transactionRecording": false,
+        "eventWriting": false,
+        "durableStateMutation": true
+      },
+      "capabilityEdges": [],
+      "sourceBehaviorChecks": "passed",
+      "violations": []
+    },
+    {
       "file": "tests/validator-security.test.js",
       "category": 4,
       "justification": "Test-only: adversarial validator result-handling and registry-integrity regressions on temporary validator directories.",
@@ -6116,67 +6148,57 @@
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 38
+          "line": 40
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 48
+          "line": 50
         },
         {
           "module": "tests/support/validation-cycle-test-core.js",
           "exportName": "runValidationPhase",
-          "line": 52
+          "line": 54
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 122
+          "line": 150
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 200
+          "line": 228
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "extractStaticValidatorContract",
-          "line": 206
+          "line": 234
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "extractStaticValidatorContract",
-          "line": 216
+          "line": 244
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 314
+          "line": 342
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 327
+          "line": 355
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 334
+          "line": 362
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 336
-        },
-        {
-          "module": "tests/support/validator-closure-test-core.js",
-          "exportName": "buildValidatorClosure",
-          "line": 347
-        },
-        {
-          "module": "tests/support/validator-closure-test-core.js",
-          "exportName": "buildValidatorClosure",
-          "line": 369
+          "line": 364
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
@@ -6186,112 +6208,157 @@
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 381
+          "line": 397
         },
         {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 393
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
+          "module": "tests/support/validator-closure-test-core.js",
+          "exportName": "buildValidatorClosure",
           "line": 403
+        },
+        {
+          "module": "tests/support/validator-closure-test-core.js",
+          "exportName": "buildValidatorClosure",
+          "line": 409
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 421
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 431
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 411
+          "line": 439
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 422
+          "line": 451
+        },
+        {
+          "module": "kernel/execution/validation-cycle.js",
+          "exportName": "runValidationPhase",
+          "line": 453
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 435
+          "line": 477
+        },
+        {
+          "module": "tests/support/validator-closure-test-core.js",
+          "exportName": "buildValidatorClosure",
+          "line": 484
+        },
+        {
+          "module": "tests/support/validator-closure-test-core.js",
+          "exportName": "buildValidatorClosure",
+          "line": 511
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 536
+        },
+        {
+          "module": "tests/support/validator-closure-test-core.js",
+          "exportName": "buildValidatorClosure",
+          "line": 543
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 568
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 581
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 472
+          "line": 618
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 488
+          "line": 634
         },
         {
           "module": "tests/support/validation-cycle-test-core.js",
           "exportName": "runValidationPhase",
-          "line": 490
+          "line": 636
         },
         {
           "module": "tests/support/validation-cycle-test-core.js",
           "exportName": "runValidationPhase",
-          "line": 492
+          "line": 638
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "resolveAuthoritativeRoot",
-          "line": 502
+          "line": 648
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "resolveAuthoritativeRoot",
-          "line": 505
+          "line": 651
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 510
+          "line": 656
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 518
+          "line": 664
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 523
+          "line": 669
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 530
+          "line": 676
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 538
+          "line": 684
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 544
+          "line": 690
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 550
+          "line": 696
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 557
+          "line": 703
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 563
+          "line": 709
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 570
+          "line": 716
         }
       ],
       "sourceBehaviorChecks": "passed",

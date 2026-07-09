@@ -8,7 +8,7 @@ const { canonicalStringify } = require("../../kernel/lib/canonical-json");
 const { sha256 } = require("../../kernel/lib/append-only-log");
 
 const DEFAULT_TIMEOUT_MS = 5000;
-const WORKER_PATH = path.join(__dirname, "..", "..", "kernel", "execution", "validator-worker.js");
+const WORKER_PATH = path.join(__dirname, "validator-worker-test-core.js");
 const LIMITS = { maxResultBytes: 262144, maxArrayLen: 10000, maxStdBytes: 65536 };
 
 function serializableContext(context) {

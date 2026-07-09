@@ -43,7 +43,7 @@ function invalidValidatorIds(validatorIds) {
   return !Array.isArray(validatorIds) || validatorIds.some((validatorId) => typeof validatorId !== "string" || !validatorId);
 }
 
-function runValidatorBoundary(descriptor, phase, context, timeoutMs) {
+function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, context, timeoutMs) {
   return new Promise((resolve) => {
     let settled = false;
     let stdBytes = 0;
@@ -62,9 +62,8 @@ function runValidatorBoundary(descriptor, phase, context, timeoutMs) {
     try {
       worker = new Worker(WORKER_PATH, {
         workerData: {
-          closure: descriptor.closure,
-          expectedContract: descriptor.contract,
           validatorId: descriptor.id,
+          expectedValidatorSetHash,
           phase,
           context: serializableContext(context),
           limits: LIMITS
@@ -103,11 +102,11 @@ function coverageProblems(descriptor, raw, context) {
   return problems;
 }
 
-async function runValidator(descriptor, phase, context, timeoutMs) {
+async function runValidator(descriptor, expectedValidatorSetHash, phase, context, timeoutMs) {
   if (!Array.isArray(descriptor.supportedPhases) || !descriptor.supportedPhases.includes(phase)) {
     return normalizeValidationResult(descriptor, phase, null, new Error(`does not support phase ${phase}`));
   }
-  const outcome = await runValidatorBoundary(descriptor, phase, context, timeoutMs);
+  const outcome = await runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, context, timeoutMs);
   if (!outcome.ok) return normalizeValidationResult(descriptor, phase, null, new Error(outcome.error));
   const raw = outcome.raw;
   const extraProblems = coverageProblems(descriptor, raw, context);
@@ -117,11 +116,11 @@ async function runValidator(descriptor, phase, context, timeoutMs) {
   return normalizeValidationResult(descriptor, phase, raw, null);
 }
 
-async function runAuthoritativeDescriptorPhase(phase, descriptors, context, timeoutMs) {
+async function runAuthoritativeDescriptorPhase(phase, descriptors, expectedValidatorSetHash, context, timeoutMs) {
   const ordered = [...descriptors].sort((left, right) => left.id.localeCompare(right.id));
   const results = [];
   for (const descriptor of ordered) {
-    results.push(await runValidator(descriptor, phase, context, timeoutMs));
+    results.push(await runValidator(descriptor, expectedValidatorSetHash, phase, context, timeoutMs));
   }
   const problems = results.flatMap((result) => result.problems.map((problem) => `${result.validatorId}: ${problem}`));
   const warnings = results.flatMap((result) => result.warnings.map((warning) => `${result.validatorId}: ${warning}`));
@@ -158,6 +157,7 @@ async function runValidationPhase(phase, validatorIds, context, options = {}) {
   return runAuthoritativeDescriptorPhase(
     phase,
     validatorsForPhase(required, phase),
+    options.expectedValidatorSetHash,
     context,
     options.timeoutMs || DEFAULT_TIMEOUT_MS
   );

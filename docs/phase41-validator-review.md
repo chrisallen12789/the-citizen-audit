@@ -1,24 +1,25 @@
-# Phase 4.1 - Validator Execution Surface Review
+# Phase 4.1 - Validator Worker Source-Boundary Review
 
-Base checkpoint: `eef24a4`
+Base checkpoint: `d92f69c`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection and fabricated descriptor execution are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, fabricated descriptor execution, and direct worker source bypass are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `eef24a40c27daeeee7bc04813751d50238cec411` and closes the rejected production validation-surface defects:
+This checkpoint continues from `d92f69c132c5c958cd2ac22ee1c2fbeb96b1727b` and closes the rejected production validator-worker bypass:
 
-1. production `validation-cycle.js` no longer accepts caller-supplied validator descriptors or closure material
-2. production validator loading remains fixed to the reviewed repository root and reviewed validator directory
-3. closure-loader identity is now bound to the actual closure-building implementation bytes
-4. test-only descriptor execution and alternate validator roots remain confined to `tests/support/**`
-5. immutable lookup handling continues to reject inherited-object key confusion and unsafe validator ids
+1. production `validator-worker.js` no longer accepts caller-supplied closure, contract, manifest, entry-path, or equivalent validator-source material
+2. production `validation-cycle.js` now passes only validator identity data plus the expected authoritative `validatorSetHash`
+3. production worker independently reloads the authoritative production registry and verifies `validatorSetHash` before validator execution
+4. closure-loader identity remains bound to the actual closure-building implementation bytes
+5. test-only descriptor execution and alternate validator roots remain confined to `tests/support/**`
+6. immutable lookup handling continues to reject inherited-object key confusion and unsafe validator ids
 
 OS-level validator confinement was not started.
 
 ## Architecture verified
 
 ### Fixed production kernel surface
-Direct-path `require()` of production kernel modules no longer exposes configurable execution, registry loading, validator-closure construction, or arbitrary descriptor execution.
+Direct-path `require()` of production kernel modules and the executable worker entry no longer expose configurable execution, registry loading, validator-closure construction, arbitrary descriptor execution, or caller-selected closure material.
 
 Fixed production modules:
 - `kernel/execution/orchestrator.js`
@@ -36,6 +37,7 @@ None exports:
 - `resolveAuthoritativeRoot`
 - `inspectAndRead`
 - descriptor-driven validator execution
+- caller-supplied worker closure or contract execution
 - test mode selection
 - alternate `projectRoot` or `validatorsDir` selection
 - injected execution surfaces or override flags
@@ -47,11 +49,13 @@ Direct-require regressions prove:
 - direct import of `validator-closure.js` exposes no callable production closure builder, root selector, or entry-source inspector
 - direct import of `validation-cycle.js` accepts only authoritative validator ids plus the expected authoritative `validatorSetHash`
 - a fabricated descriptor built from an external temporary validator root fails closed and never executes through any production import surface
+- direct launch of `kernel/execution/validator-worker.js` with a fabricated external closure now fails closed before any external validator bytes execute
 
 ### Test-only configurability confinement
 Alternate validator roots remain available only through test support:
 - `tests/support/orchestrator-test-harness.js`
 - `tests/support/validation-cycle-test-core.js`
+- `tests/support/validator-worker-test-core.js`
 - `tests/support/validator-closure-test-core.js`
 - `tests/support/validator-test-harness.js`
 - `tests/support/validator-registry-test-core.js`
@@ -76,6 +80,29 @@ The production API now:
 
 Descriptor-driven execution required by adversarial tests is confined to:
 - `tests/support/validation-cycle-test-core.js`
+
+### Production validator-worker lock
+Production `kernel/execution/validator-worker.js` now accepts only:
+- `validatorId`
+- `expectedValidatorSetHash`
+- `phase`
+- serializable validation context
+- bounded result limits
+
+Inside the worker, it now independently:
+- loads the fixed authoritative production validator registry
+- verifies the authoritative `validatorSetHash` equals the caller-provided expected hash
+- rejects unsafe validator ids
+- resolves the authoritative descriptor only from the reviewed registry
+- obtains closure and contract only from that authoritative descriptor
+- ignores any caller-supplied closure, manifest, contract, module hash, or closure hash fields
+
+Direct worker regressions prove:
+- a fabricated external validator under a temporary root cannot execute through the production worker
+- no external validator top-level or validate-function marker file is created
+- `validatorSetHash` mismatch fails closed before execution
+- caller-supplied `closureHash` values are irrelevant because caller-supplied closure material is ignored
+- authoritative validators still execute through the normal production validation-cycle path
 
 ### Production validator-closure lock
 Production `kernel/execution/validator-closure.js` now exports only fixed reviewed-source policy metadata.
@@ -121,22 +148,23 @@ Production no longer leaves a direct-import path to:
 - alternate project roots
 - alternate validator entry sources
 - alternate validator descriptors or closure manifests
+- alternate worker closure or contract material
 - injected registry loaders
 - injected execution surfaces
 
 ## Test totals observed in this workspace
-- validator-security: 80/80
+- validator-security: 84/84
 - execution-orchestrator: 56/56
-- execution suite: 276/276
+- execution suite: 280/280
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
 - events: 7/7
 - archive: 36/36
 - bypass-audit self-test: 29/29
-- capability audit: 91/91 owned, 0 unexplained, 0 violations
+- capability audit: 92/92 owned, 0 unexplained, 0 violations
 - capability audit stale classifications: 0
-- JavaScript syntax sweep: passed on 145 files
+- JavaScript syntax sweep: passed on 146 files
 - `git diff --check`: passed
 - `git fsck --full`: passed
 - Institutional QA: 159 HTML files passed
@@ -148,7 +176,10 @@ Linux-host note:
 ## Additional confirmations
 - no configurable execution function is exported from `kernel/**`
 - no alternate validator source can be selected by direct module import
+- no production worker accepts caller-supplied closure or contract material
 - no production import accepts arbitrary validator descriptors or closure material
+- no alternate validator root, directory, entry path, or source can execute through the production worker
+- `validatorSetHash` is verified inside the worker before validator execution
 - production modules do not import test support
 - immutable lookup does not expose inherited properties
 - actual closure implementation bytes are bound into `validatorSetHash`
@@ -157,4 +188,4 @@ Linux-host note:
 - no `platform/**`, `schemas/platform-*`, or generated `public/data/platform-*` changes remain in the checkpoint
 
 ## Residual hold
-This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, and fabricated-descriptor execution defects are corrected, but runtime sandboxing of validator execution remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, and direct worker source-bypass defects are corrected, but runtime sandboxing of validator execution remains future work and the HOLD stays in place.

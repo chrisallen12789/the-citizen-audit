@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
+const { Worker } = require("node:worker_threads");
 
 const { canonicalStringify } = require("../kernel/lib/canonical-json");
 const { extractStaticValidatorContract, loadValidatorRegistry } = require("../kernel/execution/validators");
@@ -14,6 +15,7 @@ const { loadValidatorRegistryForTest } = require("./support/validator-test-harne
 
 const REAL_VALIDATORS = path.join(__dirname, "..", "kernel", "execution", "validators");
 const HOLDER = path.join(__dirname, "..", "kernel", "execution");
+const PRODUCTION_WORKER_PATH = path.join(__dirname, "..", "kernel", "execution", "validator-worker.js");
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-mods-"));
 test.after(() => { try { fs.rmSync(scratch, { recursive: true, force: true }); } catch (e) {} });
 
@@ -50,6 +52,32 @@ function rawDescriptor(id, source, over = {}) {
 }
 async function runOne(descriptor, context = {}, timeoutMs = 1500) {
   return runValidationPhase(descriptor.supportedPhases[0], [descriptor], context, { timeoutMs });
+}
+
+function launchProductionWorker(workerPayload, timeoutMs = 1500) {
+  return new Promise((resolve) => {
+    let settled = false;
+    let worker;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      if (worker) {
+        try { worker.terminate(); } catch (error) {}
+      }
+      resolve(result);
+    };
+    const timer = setTimeout(() => finish({ kind: "timeout" }), timeoutMs);
+    try {
+      worker = new Worker(PRODUCTION_WORKER_PATH, { workerData: workerPayload });
+    } catch (error) {
+      finish({ kind: "startup-error", error });
+      return;
+    }
+    worker.on("message", (message) => finish({ kind: "message", message }));
+    worker.on("error", (error) => finish({ kind: "error", error }));
+    worker.on("exit", (code) => finish({ kind: "exit", code }));
+  });
 }
 
 const ABNORMAL = {
@@ -417,6 +445,124 @@ test("closure loader identity is bound to the real production implementation byt
     validators: reg.entries
   })).digest("hex");
   assert.notEqual(rebound, reg.validatorSetHash);
+});
+
+test("production validation cycle executes authoritative validator ids through the reviewed registry", async () => {
+  const reg = loadValidatorRegistry();
+  const writeSetHash = "a".repeat(64);
+  const result = await require("../kernel/execution/validation-cycle").runValidationPhase(
+    "candidate",
+    ["execution-plan"],
+    {
+      transaction: {
+        action: "write_report",
+        writeSetHash,
+        affectedObjects: ["OBJ-1"],
+        proposedWrites: [{ path: "public/data/report.json" }]
+      },
+      plan: {
+        action: "write_report",
+        writeSetHash,
+        affectedObjects: ["OBJ-1"],
+        writes: [{ path: "public/data/report.json" }]
+      },
+      writeSetHash
+    },
+    { timeoutMs: 1500, expectedValidatorSetHash: reg.validatorSetHash }
+  );
+  assert.equal(result.status, "passed");
+});
+
+test("production worker direct attack cannot execute an external validator from a temporary root", async () => {
+  const reg = loadValidatorRegistry();
+  const externalRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-worker-external-"));
+  const topLevelMarker = path.join(externalRoot, "top-level-marker.txt");
+  const validateMarker = path.join(externalRoot, "validate-marker.txt");
+  const validatorPath = path.join(externalRoot, "external-pass.js");
+  try {
+    writeStrictFile(validatorPath, `"use strict";\nrequire("node:fs").writeFileSync(${JSON.stringify(topLevelMarker)},"top-level");\nmodule.exports={id:"external-pass",version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){require("node:fs").writeFileSync(${JSON.stringify(validateMarker)},"validate"); return {status:"passed",problems:[],warnings:[]};}};`);
+    const closure = buildValidatorClosure(validatorPath, externalRoot);
+    const outcome = await launchProductionWorker({
+      validatorId: "external-pass",
+      expectedValidatorSetHash: reg.validatorSetHash,
+      phase: "candidate",
+      context: {},
+      limits: { maxResultBytes: 262144, maxArrayLen: 10000 },
+      closure: { closureRoot: closure.closureRoot, entryRelPath: closure.entryRelPath, modules: closure.manifest, closureHash: "0".repeat(64) },
+      expectedContract: { id: "external-pass", version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate"] }
+    });
+    assert.equal(outcome.kind, "message");
+    assert.equal(outcome.message.ok, false);
+    assert.match(outcome.message.error, /unavailable|validator worker failure|unsafe|mismatch/i);
+    assert.equal(fs.existsSync(topLevelMarker), false);
+    assert.equal(fs.existsSync(validateMarker), false);
+  } finally {
+    fs.rmSync(externalRoot, { recursive: true, force: true });
+  }
+});
+
+test("production worker verifies validatorSetHash before validator execution", async () => {
+  const externalRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-worker-hash-"));
+  const topLevelMarker = path.join(externalRoot, "top-level-marker.txt");
+  const validateMarker = path.join(externalRoot, "validate-marker.txt");
+  const validatorPath = path.join(externalRoot, "external-pass.js");
+  try {
+    writeStrictFile(validatorPath, `"use strict";\nrequire("node:fs").writeFileSync(${JSON.stringify(topLevelMarker)},"top-level");\nmodule.exports={id:"execution-plan",version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){require("node:fs").writeFileSync(${JSON.stringify(validateMarker)},"validate"); return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};`);
+    const closure = buildValidatorClosure(validatorPath, externalRoot);
+    const outcome = await launchProductionWorker({
+      validatorId: "execution-plan",
+      expectedValidatorSetHash: "0".repeat(64),
+      phase: "candidate",
+      context: {
+        transaction: { action: "write_report", writeSetHash: "a".repeat(64), affectedObjects: ["OBJ-1"], proposedWrites: [{ path: "public/data/report.json" }] },
+        plan: { action: "write_report", writeSetHash: "a".repeat(64), affectedObjects: ["OBJ-1"], writes: [{ path: "public/data/report.json" }] },
+        writeSetHash: "a".repeat(64)
+      },
+      limits: { maxResultBytes: 262144, maxArrayLen: 10000 },
+      closure: { closureRoot: closure.closureRoot, entryRelPath: closure.entryRelPath, modules: closure.manifest, closureHash: "0".repeat(64) },
+      expectedContract: { id: "execution-plan", version: "1.0.0", semantic: false, actions: [], supportedPhases: ["candidate"] }
+    });
+    assert.equal(outcome.kind, "message");
+    assert.equal(outcome.message.ok, false);
+    assert.match(outcome.message.error, /validatorSetHash mismatch/i);
+    assert.equal(fs.existsSync(topLevelMarker), false);
+    assert.equal(fs.existsSync(validateMarker), false);
+  } finally {
+    fs.rmSync(externalRoot, { recursive: true, force: true });
+  }
+});
+
+test("production worker ignores caller-supplied closure material and executes only the authoritative descriptor", async () => {
+  const reg = loadValidatorRegistry();
+  const externalRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-worker-authoritative-"));
+  const topLevelMarker = path.join(externalRoot, "top-level-marker.txt");
+  const validateMarker = path.join(externalRoot, "validate-marker.txt");
+  const validatorPath = path.join(externalRoot, "external-pass.js");
+  try {
+    writeStrictFile(validatorPath, `"use strict";\nrequire("node:fs").writeFileSync(${JSON.stringify(topLevelMarker)},"top-level");\nmodule.exports={id:"execution-plan",version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){require("node:fs").writeFileSync(${JSON.stringify(validateMarker)},"validate"); return {status:"passed",problems:[],warnings:[]};}};`);
+    const closure = buildValidatorClosure(validatorPath, externalRoot);
+    const writeSetHash = "b".repeat(64);
+    const outcome = await launchProductionWorker({
+      validatorId: "execution-plan",
+      expectedValidatorSetHash: reg.validatorSetHash,
+      phase: "candidate",
+      context: {
+        transaction: { action: "write_report", writeSetHash, affectedObjects: ["OBJ-1"], proposedWrites: [{ path: "public/data/report.json" }] },
+        plan: { action: "write_report", writeSetHash, affectedObjects: ["OBJ-1"], writes: [{ path: "public/data/report.json" }] },
+        writeSetHash
+      },
+      limits: { maxResultBytes: 262144, maxArrayLen: 10000 },
+      closure: { closureRoot: closure.closureRoot, entryRelPath: closure.entryRelPath, modules: closure.manifest, closureHash: "0".repeat(64) },
+      expectedContract: { id: "execution-plan", version: "9.9.9", semantic: true, actions: ["bogus"], supportedPhases: ["candidate"] }
+    });
+    assert.equal(outcome.kind, "message");
+    assert.equal(outcome.message.ok, true);
+    assert.equal(outcome.message.raw.status, "passed");
+    assert.equal(fs.existsSync(topLevelMarker), false);
+    assert.equal(fs.existsSync(validateMarker), false);
+  } finally {
+    fs.rmSync(externalRoot, { recursive: true, force: true });
+  }
 });
 test("registry descriptors are deep-frozen after loading", () => {
   const reg = loadValidatorRegistry();
