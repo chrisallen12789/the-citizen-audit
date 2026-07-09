@@ -341,6 +341,53 @@ test("production modules do not export test-only harness functions", () => {
   assert.equal(validators.loadValidatorRegistryForTest, undefined);
 });
 
+test("direct kernel imports do not expose configurable execution surfaces", () => {
+  const modules = [
+    ["../kernel/execution/orchestrator", require("../kernel/execution/orchestrator")],
+    ["../kernel/execution/orchestrator-core", require("../kernel/execution/orchestrator-core")],
+    ["../kernel/execution/validators", require("../kernel/execution/validators")],
+    ["../kernel/execution/validators/index.js", require("../kernel/execution/validators/index.js")],
+    ["../kernel/execution/validators/registry-core.js", require("../kernel/execution/validators/registry-core.js")]
+  ];
+  for (const [modulePath, exported] of modules) {
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "executeApprovedTransactionInternal"), false, modulePath);
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "loadValidatorRegistryAtDirectory"), false, modulePath);
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "executionSurface"), false, modulePath);
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "allowProjectRootOverride"), false, modulePath);
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "allowValidatorsDirOverride"), false, modulePath);
+  }
+});
+
+test("direct kernel imports still reject alternate validator sources", async () => {
+  const fx = makeFixture({ txId: "TX-007I" });
+  const dir = makeValidatorsDir([]);
+  try {
+    const orchestratorCore = require("../kernel/execution/orchestrator-core");
+    const result = await orchestratorCore.executeApprovedTransaction("TX-007I", {
+      rootDir: fx.root,
+      ledgerPath: fx.ledgerPath,
+      validatorsDir: dir,
+      projectRoot: testProjectRoot(dir)
+    });
+    assert.equal(result.disposition, "rejected");
+    assert.ok(result.problems.some((problem) => /caller-selected (validatorsDir|projectRoot)/i.test(problem)));
+    assert.throws(() => require("../kernel/execution/validators/registry-core").loadValidatorRegistry({ validatorsDir: dir }), /caller-selected validatorsDir/i);
+  } finally {
+    cleanupValidatorsDir(dir);
+    cleanup(fx);
+  }
+});
+
+test("kernel import graph does not reach tests support", () => {
+  const kernelRoot = path.join(__dirname, "..", "kernel");
+  const forbidden = /(?:require\s*\(\s*["'][^"']*tests(?:\/|\\)|from\s+["'][^"']*tests(?:\/|\\))/;
+  for (const relative of fs.readdirSync(kernelRoot, { recursive: true })) {
+    if (!relative.endsWith(".js")) continue;
+    const source = fs.readFileSync(path.join(kernelRoot, relative), "utf8");
+    assert.doesNotMatch(source, forbidden, relative);
+  }
+});
+
 // 8. Missing mandatory validator fails closed.
 test("missing mandatory validator fails closed", async () => {
   const fx = makeFixture({ txId: "TX-008", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["execution-plan", "does-not-exist"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });

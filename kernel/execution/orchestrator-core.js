@@ -29,7 +29,7 @@ const { rollbackExecutionAttempt } = require("./rollback");
 const { releaseExecutionLock } = require("./exclusive-boundary");
 const { resolveRegisteredAgent } = require("../runtime/agent-registry");
 const { ISOLATION_ADAPTER_VERSION, reviewedSandboxHelperSourceHash } = require("../runtime/runtime-provenance");
-const { PRODUCTION_VALIDATORS_DIR, selectRequiredValidators, validatorsForPhase } = require("./validators/registry-core");
+const { loadValidatorRegistry, selectRequiredValidators, validatorsForPhase } = require("./validators");
 
 const repositoryRoot = path.resolve(__dirname, "..", "..");
 const BASELINE_REQUIRED_VALIDATORS = Object.freeze([
@@ -59,17 +59,11 @@ function freezeResult(result) {
   return Object.freeze(JSON.parse(JSON.stringify(result)));
 }
 
-async function executeApprovedTransactionInternal(transactionId, options = {}, executionSurface) {
+async function executeApprovedTransaction(transactionId, options = {}) {
   const rootDir = options.rootDir || repositoryRoot;
   const ledgerPath = options.ledgerPath || defaultExecutionLedgerPath(rootDir);
   const policyPath = options.policyPath || path.join(rootDir, "kernel", "execution", "policy.json");
   const timeoutMs = options.timeoutMs;
-  const registryLoader = executionSurface.loadValidatorRegistry;
-  const allowProjectRootOverride = executionSurface.allowProjectRootOverride === true;
-  const allowValidatorsDirOverride = executionSurface.allowValidatorsDirOverride === true;
-  const validatorsDir = allowValidatorsDirOverride
-    ? path.resolve(options.validatorsDir || PRODUCTION_VALIDATORS_DIR)
-    : PRODUCTION_VALIDATORS_DIR;
 
   const bindings = {
     attemptId: null,
@@ -88,10 +82,10 @@ async function executeApprovedTransactionInternal(transactionId, options = {}, e
   };
 
   try {
-    if (!allowProjectRootOverride && Object.prototype.hasOwnProperty.call(options, "projectRoot")) {
+    if (Object.prototype.hasOwnProperty.call(options, "projectRoot")) {
       throw new ExecutionRejected(["Production orchestrator rejects caller-selected projectRoot."]);
     }
-    if (!allowValidatorsDirOverride && Object.prototype.hasOwnProperty.call(options, "validatorsDir")) {
+    if (Object.prototype.hasOwnProperty.call(options, "validatorsDir")) {
       throw new ExecutionRejected(["Production orchestrator rejects caller-selected validatorsDir."]);
     }
     if (Object.prototype.hasOwnProperty.call(options, "onStep") || Object.values(options).some((value) => typeof value === "function")) {
@@ -194,9 +188,7 @@ async function executeApprovedTransactionInternal(transactionId, options = {}, e
     let validatorSetHash;
     let descriptors;
     try {
-      const registry = allowProjectRootOverride || allowValidatorsDirOverride
-        ? registryLoader({ validatorsDir, projectRoot: options.projectRoot })
-        : registryLoader();
+      const registry = loadValidatorRegistry();
       descriptors = registry.descriptors;
       validatorSetHash = registry.validatorSetHash;
     } catch (error) {
@@ -346,4 +338,4 @@ async function executeApprovedTransactionInternal(transactionId, options = {}, e
   }
 }
 
-module.exports = { BASELINE_REQUIRED_VALIDATORS, executeApprovedTransactionInternal };
+module.exports = { BASELINE_REQUIRED_VALIDATORS, executeApprovedTransaction };

@@ -291,12 +291,17 @@ test("registry loading does not execute a transitive dependency side effect", ()
   }
 });
 
-test("registry loader source contains no ordinary validator require path", () => {
-  const source = fs.readFileSync(path.join(REAL_VALIDATORS, "index.js"), "utf8");
-  assert.doesNotMatch(source, /require\.resolve\(modulePath\)/);
-  assert.doesNotMatch(source, /delete require\.cache/);
-  assert.doesNotMatch(source, /require\(resolvedModule\)/);
-  assert.doesNotMatch(source, /require\(modulePath\)/);
+test("registry loader sources contain no ordinary validator require path", () => {
+  for (const sourcePath of [
+    path.join(REAL_VALIDATORS, "index.js"),
+    path.join(REAL_VALIDATORS, "registry-core.js")
+  ]) {
+    const source = fs.readFileSync(sourcePath, "utf8");
+    assert.doesNotMatch(source, /require\.resolve\(modulePath\)/, sourcePath);
+    assert.doesNotMatch(source, /delete require\.cache/, sourcePath);
+    assert.doesNotMatch(source, /require\(resolvedModule\)/, sourcePath);
+    assert.doesNotMatch(source, /require\(modulePath\)/, sourcePath);
+  }
 });
 test("loader rejects symlinked validator module", () => {
   const dir = tempValidatorDir();
@@ -422,12 +427,35 @@ test("registry collections are actually immutable", () => {
   assert.equal(reg.contracts.get("execution-plan"), originalContract);
   assert.equal(Object.prototype.hasOwnProperty.call(reg.descriptors, "extra"), false);
   assert.equal(reg.descriptors.size > 0, true);
+  assert.equal(reg.descriptors.get("__proto__"), undefined);
+  assert.equal(reg.descriptors.has("__proto__"), false);
+  assert.equal(reg.contracts.get("constructor"), undefined);
+  assert.equal(reg.contracts.has("constructor"), false);
 });
 
 test("production exports do not expose a test-only root override", () => {
   const validators = require("../kernel/execution/validators");
   assert.equal(Object.prototype.hasOwnProperty.call(validators, "loadValidatorRegistryForTest"), false);
 });
+
+for (const unsafeId of ["__proto__", "prototype", "constructor"]) {
+  test(`registry loader rejects unsafe validator id ${unsafeId}`, () => {
+    const dir = tempValidatorDir();
+    try {
+      installAttackValidator(
+        dir,
+        unsafeId,
+        sideEffectAttackSource(unsafeId, "")
+      );
+      assert.throws(
+        () => loadValidatorRegistryForTest({ validatorsDir: dir, projectRoot: path.resolve(dir, "..", "..", "..") }),
+        /unsafe validator id/i
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+}
 
 // ---- WORK UNIT 4: cross-phase re-verification ----
 test("closure is re-verified at post_write: drift before post-write fails closed", async () => {

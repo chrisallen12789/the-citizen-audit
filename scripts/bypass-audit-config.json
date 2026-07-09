@@ -861,6 +861,15 @@
       ]
     },
     {
+      "path": "tests/support/validator-registry-test-core.js",
+      "category": 4,
+      "justification": "Test-only validator-registry implementation that constructs fixture descriptors for alternate validator roots; not imported by production modules.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
       "path": "scripts/deployment-certify.js",
       "category": 3,
       "justification": "Deployment-certification harness (diagnostic). Spawns capability probes (unshare/gcc/file/ldd) and compiles the reviewed sandbox helper; writes certification reports under docs/certification/ and temporary directories only. No governed-record mutation; not reachable from any production runtime entry point.",

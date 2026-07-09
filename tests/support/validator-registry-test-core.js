@@ -2,23 +2,24 @@ const fs = require("fs");
 const path = require("path");
 const acorn = require("acorn");
 
-const { canonicalStringify } = require("../../lib/canonical-json");
-const { sha256 } = require("../../lib/append-only-log");
-const { VALIDATION_PHASES } = require("../validation-results");
+const { canonicalStringify } = require("../../kernel/lib/canonical-json");
+const { sha256 } = require("../../kernel/lib/append-only-log");
+const { VALIDATION_PHASES } = require("../../kernel/execution/validation-results");
 const {
   buildValidatorClosure,
   inspectAndRead,
+  resolveAuthoritativeRoot,
   REPO_ROOT,
   ROOT_POLICY_VERSION
-} = require("../validator-closure");
+} = require("../../kernel/execution/validator-closure");
 
 const SEMVER = /^\d+\.\d+\.\d+$/;
 const VALIDATOR_RUNNER_VERSION = "2.0.0";
 const VALIDATOR_REGISTRY_LOADER_VERSION = "2.0.0";
 const PRODUCTION_ROOT_POLICY_ID = "authoritative-reviewed-repository-root";
-const PRODUCTION_VALIDATORS_DIR = __dirname;
-const VALIDATOR_RUNNER_PATH = path.join(__dirname, "..", "validator-worker.js");
-const VALIDATOR_CLOSURE_LOADER_PATH = path.join(__dirname, "..", "validator-closure.js");
+const PRODUCTION_VALIDATORS_DIR = path.join(__dirname, "..", "..", "kernel", "execution", "validators");
+const VALIDATOR_RUNNER_PATH = path.join(__dirname, "..", "..", "kernel", "execution", "validator-worker.js");
+const VALIDATOR_CLOSURE_LOADER_PATH = path.join(__dirname, "..", "..", "kernel", "execution", "validator-closure.js");
 const UNSAFE_VALIDATOR_IDS = new Set(["__proto__", "prototype", "constructor"]);
 
 function assertSafeValidatorId(id, label) {
@@ -292,33 +293,13 @@ function buildValidatorRegistry(validatorsDir, projectRoot) {
   });
 }
 
-function loadValidatorRegistry(options = {}) {
-  if (Object.prototype.hasOwnProperty.call(options, "validatorsDir")) {
-    throw new Error("Production validator registry rejects caller-selected validatorsDir.");
+function loadValidatorRegistryAtDirectory(options = {}) {
+  if (options.mode && options.mode !== "test") {
+    throw new Error(`Unsupported test loader mode: ${options.mode}.`);
   }
-  if (Object.prototype.hasOwnProperty.call(options, "projectRoot")) {
-    throw new Error("Production validator registry rejects caller-selected projectRoot.");
-  }
-  if (Object.prototype.hasOwnProperty.call(options, "mode")) {
-    throw new Error("Production validator registry rejects test-mode selection.");
-  }
-  if (Object.keys(options).length !== 0) {
-    throw new Error("Production validator registry accepts no source-location overrides.");
-  }
-  return buildValidatorRegistry(PRODUCTION_VALIDATORS_DIR, REPO_ROOT);
-}
-
-function selectRequiredValidators(policy, descriptors) {
-  if (!Array.isArray(policy.requiredValidators) || policy.requiredValidators.length === 0) throw new Error("Execution policy must declare requiredValidators.");
-  return deepFreeze(policy.requiredValidators.map((id) => {
-    const descriptor = descriptors.get(id);
-    if (!descriptor) throw new Error(`Execution policy references an unavailable mandatory validator: ${id}.`);
-    return descriptor;
-  }));
-}
-
-function validatorsForPhase(required, phase) {
-  return deepFreeze(required.filter((descriptor) => descriptor.supportedPhases.includes(phase)));
+  const validatorsDir = path.resolve(options.validatorsDir || PRODUCTION_VALIDATORS_DIR);
+  const projectRoot = resolveAuthoritativeRoot(options.projectRoot || REPO_ROOT);
+  return buildValidatorRegistry(validatorsDir, projectRoot);
 }
 
 module.exports = {
@@ -326,7 +307,5 @@ module.exports = {
   VALIDATOR_REGISTRY_LOADER_VERSION,
   VALIDATOR_RUNNER_VERSION,
   extractStaticValidatorContract,
-  loadValidatorRegistry,
-  selectRequiredValidators,
-  validatorsForPhase
+  loadValidatorRegistryAtDirectory
 };

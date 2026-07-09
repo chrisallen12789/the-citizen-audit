@@ -3,10 +3,8 @@ const {
   VALIDATOR_REGISTRY_LOADER_VERSION,
   VALIDATOR_RUNNER_VERSION,
   extractStaticValidatorContract,
-  loadValidatorRegistryAtDirectory,
-  selectRequiredValidators,
-  validatorsForPhase
-} = require("../../kernel/execution/validators/registry-core");
+  loadValidatorRegistryAtDirectory
+} = require("./validator-registry-test-core");
 
 function loadValidatorRegistryForTest(options = {}) {
   return loadValidatorRegistryAtDirectory({ ...options, mode: "test" });
@@ -17,7 +15,5 @@ module.exports = {
   VALIDATOR_REGISTRY_LOADER_VERSION,
   VALIDATOR_RUNNER_VERSION,
   extractStaticValidatorContract,
-  loadValidatorRegistryForTest,
-  selectRequiredValidators,
-  validatorsForPhase
+  loadValidatorRegistryForTest
 };

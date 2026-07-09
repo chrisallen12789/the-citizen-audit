@@ -1,62 +1,68 @@
 # Phase 4.1 - Validator Registry Source-Boundary Review
 
-Base checkpoint: `21de95c`
+Base checkpoint: `8681dae`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - parent-process registry execution removed; production override surfaces removed; OS confinement still pending by instruction**
+Ruling: **HOLD - configurable validator and orchestrator cores are no longer directly importable; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `21de95cc49556756e9e8e5429ecea394de3cc386` and closes three remaining issues:
+This checkpoint continues from `8681daeae981af197f84ed582fe0098893c1740a` and closes the remaining direct-import production-surface defect:
 
-1. the mode-change regression now uses a genuinely different bound mode
-2. production validator-directory override is removed
-3. mutable registry/test-only export surfaces are removed
+1. configurable validator-registry and orchestrator core exports are removed from `kernel/**`
+2. production validator loading remains fixed to the reviewed repository root and reviewed validator directory
+3. test configurability is confined to `tests/support/**`
+4. immutable lookup handling now rejects inherited-object key confusion and unsafe validator ids
 
 OS-level validator confinement was not started.
 
 ## Architecture verified
 
-### Production validator registry lock
-Production loading is now locked to the reviewed validator directory:
-- `kernel/execution/validators/index.js` rejects caller-supplied `validatorsDir`
-- production `loadValidatorRegistry()` always loads the reviewed directory
-- production `executeApprovedTransaction()` rejects caller-supplied `validatorsDir`
-- alternate validator directories remain available only through `tests/support/validator-test-harness.js`
+### Fixed production kernel surface
+Direct-path `require()` of production kernel modules no longer exposes configurable execution or registry loading.
 
-Regression coverage proves production rejects:
-- another directory inside the repository
-- a temporary validator directory
-- a copied registry with the same validator ids
-- an always-pass replacement registry
+Fixed production modules:
+- `kernel/execution/orchestrator.js`
+- `kernel/execution/orchestrator-core.js`
+- `kernel/execution/validators/index.js`
+- `kernel/execution/validators/registry-core.js`
 
-### Test-only surface removal
-Production entrypoints no longer export:
-- `executeApprovedTransactionForTest`
-- `loadValidatorRegistryForTest`
+None exports:
+- `executeApprovedTransactionInternal`
+- `loadValidatorRegistryAtDirectory`
+- test mode selection
+- alternate `projectRoot` or `validatorsDir` selection
+- injected execution surfaces or override flags
 
-Test-only alternate-root execution now lives behind:
+Direct-require regressions prove:
+- no configurable execution function is exported from `kernel/**`
+- direct import of `orchestrator-core.js` still rejects caller-selected `projectRoot` and `validatorsDir`
+- direct import of `registry-core.js` still rejects caller-selected validator directories
+
+### Test-only configurability confinement
+Alternate validator roots remain available only through test support:
 - `tests/support/orchestrator-test-harness.js`
 - `tests/support/validator-test-harness.js`
+- `tests/support/validator-registry-test-core.js`
 
-Production export tests prove the override path is no longer reachable through the orchestrator or validator-registry entrypoints.
+Production code does not import `tests/support/**`. An import-graph regression scans every `kernel/**/*.js` file and proves no production module reaches test support.
 
-### Registry immutability fix
-The registry no longer exposes mutable `Map` instances. Internal maps remain private and the public result now exposes immutable lookup objects with frozen:
-- `get`
-- `has`
-- `keys`
-- `values`
-- `entries`
-- `forEach`
-- iterator support
+### Production validator registry lock
+Production registry loading is still bound to the reviewed validator tree:
+- `loadValidatorRegistry()` accepts no source-location options
+- the reviewed repository root is always authoritative
+- the reviewed validator directory is always authoritative
+- no alternate-directory loader is exported from any kernel module
 
-There is no exposed `set`, `delete`, or `clear` surface. Callers cannot add, replace, delete, or clear descriptor or contract collections through the returned registry object.
+### Immutable lookup hardening
+Registry collections remain immutable and no longer expose inherited object-prototype values:
+- lookup backing objects use a null prototype
+- `get()` returns a value only for own keys
+- `has()` uses own-property checks
+- unsafe validator ids are rejected: `__proto__`, `prototype`, `constructor`
 
-### Mode-change regression fix
-The execution-time mode-change test now reads the original recorded mode and then selects a different expected mode:
-- `0o400` when the original is `0o600`
-- otherwise `0o600`
-
-The test asserts the replacement mode differs from the recorded mode before running the worker. Runtime mode verification itself was not weakened.
+Regressions prove callers cannot:
+- add, replace, delete, or clear descriptor or contract collections
+- retrieve inherited prototype values through lookup keys
+- register unsafe validator ids
 
 ## Security outcome
 The validator registry still avoids parent-process validator execution:
@@ -65,28 +71,33 @@ The validator registry still avoids parent-process validator execution:
 - contract metadata is parsed statically from exact module bytes
 - dynamic contract construction is rejected
 
-Production also no longer allows caller control over validator root or validator directory selection.
+Production no longer leaves a direct-import path to:
+- alternate validator directories
+- alternate project roots
+- injected registry loaders
+- injected execution surfaces
 
 ## Test totals observed in this workspace
-- validator-security: 76/76
-- execution-orchestrator: 52/52
-- execution suite: 268/268
+- validator-security: 79/79
+- execution-orchestrator: 55/55
+- execution suite: 274/274
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
 - events: 7/7
 - archive: 36/36
 - bypass-audit self-test: 29/29
-- capability audit: 92/92 owned, 0 unexplained, 0 violations
+- capability audit: 90/90 owned, 0 unexplained, 0 violations
 - JavaScript syntax sweep: passed
 - Institutional QA: 159 HTML files passed
 
 ## Additional confirmations
-- no production `validatorsDir` override remains
-- no test-only functions are exported from production modules
-- registry collections are actually immutable
+- no configurable execution function is exported from `kernel/**`
+- no alternate validator source can be selected by direct module import
+- production modules do not import test support
+- immutable lookup does not expose inherited properties
 - no broad capability declarations were added
-- no `platform/**` or `schemas/platform-*` files were changed
+- no `platform/**`, `schemas/platform-*`, or generated `public/data/platform-*` changes remain in the checkpoint
 
 ## Residual hold
-This checkpoint intentionally stops before OS-level validator confinement. The registry/source-boundary and production override defects are corrected, but runtime sandboxing of validator execution remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, and direct-import surface defects are corrected, but runtime sandboxing of validator execution remains future work and the HOLD stays in place.
