@@ -17,6 +17,7 @@ const { recordRuntimeIsolationBarrier } = require("../kernel/execution/runtime-i
 const { snapshotGovernedTree } = require("../kernel/runtime/governed-tree-guard");
 const { loadFaultInjectedOrchestrator } = require("./support/orchestrator-fault-adapter");
 const { executeApprovedTransactionForTest } = require("./support/orchestrator-test-harness");
+const { buildValidatorClosure } = require("./support/validator-closure-test-core");
 const { loadValidatorRegistryForTest } = require("./support/validator-test-harness");
 const { resolveRegisteredAgent } = require("../kernel/runtime/agent-registry");
 const { ISOLATION_ADAPTER_VERSION, reviewedSandboxHelperSourceHash } = require("../kernel/runtime/runtime-provenance");
@@ -345,6 +346,7 @@ test("direct kernel imports do not expose configurable execution surfaces", () =
   const modules = [
     ["../kernel/execution/orchestrator", require("../kernel/execution/orchestrator")],
     ["../kernel/execution/orchestrator-core", require("../kernel/execution/orchestrator-core")],
+    ["../kernel/execution/validation-cycle", require("../kernel/execution/validation-cycle")],
     ["../kernel/execution/validators", require("../kernel/execution/validators")],
     ["../kernel/execution/validators/index.js", require("../kernel/execution/validators/index.js")],
     ["../kernel/execution/validators/registry-core.js", require("../kernel/execution/validators/registry-core.js")],
@@ -359,6 +361,7 @@ test("direct kernel imports do not expose configurable execution surfaces", () =
     assert.equal(Object.prototype.hasOwnProperty.call(exported, "buildValidatorClosure"), false, modulePath);
     assert.equal(Object.prototype.hasOwnProperty.call(exported, "resolveAuthoritativeRoot"), false, modulePath);
     assert.equal(Object.prototype.hasOwnProperty.call(exported, "inspectAndRead"), false, modulePath);
+    assert.equal(Object.prototype.hasOwnProperty.call(exported, "runValidationPhaseWithDescriptors"), false, modulePath);
   }
 });
 
@@ -384,6 +387,92 @@ test("direct kernel imports still reject alternate validator sources", async () 
     cleanupValidatorsDir(dir);
     cleanup(fx);
   }
+});
+
+test("direct production imports cannot execute a fabricated external validator descriptor", async () => {
+  const fx = makeFixture({ txId: "TX-007J" });
+  const externalRoot = fs.mkdtempSync(path.join(os.tmpdir(), "phase41-external-validator-"));
+  const markerPath = path.join(externalRoot, "fabricated-marker.txt");
+  const validatorPath = path.join(externalRoot, "always-pass.js");
+  const validatorId = "fabricated-external-pass";
+  writeJson(path.join(externalRoot, "package.json"), { private: true });
+  fs.writeFileSync(
+    validatorPath,
+    `require("node:fs").writeFileSync(${JSON.stringify(markerPath)}, "executed");\nmodule.exports={id:${JSON.stringify(validatorId)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:()=>({status:"passed",problems:[],warnings:[]})};`
+  );
+  try { fs.chmodSync(validatorPath, 0o600); } catch (error) {}
+  const closure = buildValidatorClosure(validatorPath, externalRoot);
+  const fabricatedDescriptor = {
+    id: validatorId,
+    version: "1.0.0",
+    modulePath: validatorPath,
+    moduleHash: sha256(fs.readFileSync(validatorPath)),
+    semantic: false,
+    actions: [],
+    supportedPhases: ["candidate"],
+    closure: {
+      closureRoot: closure.closureRoot,
+      rootPolicy: closure.rootPolicy,
+      entryRelPath: closure.entryRelPath,
+      modules: closure.manifest,
+      builtins: closure.builtins,
+      closureHash: "0".repeat(64)
+    },
+    contract: {
+      id: validatorId,
+      version: "1.0.0",
+      semantic: false,
+      actions: [],
+      supportedPhases: ["candidate"]
+    }
+  };
+
+  const productionRegistry = loadValidatorRegistry();
+  const validationCycle = require("../kernel/execution/validation-cycle");
+  const validationResult = await validationCycle.runValidationPhase(
+    "candidate",
+    [fabricatedDescriptor],
+    { rootDir: fx.root, transaction: fx.transaction, plan: { affectedObjects: [], writes: [] }, writeSetHash: "a".repeat(64) },
+    { timeoutMs: 250, expectedValidatorSetHash: productionRegistry.validatorSetHash }
+  );
+  assert.equal(validationResult.status, "failed");
+  assert.equal(fs.existsSync(markerPath), false);
+
+  const orchestrator = require("../kernel/execution/orchestrator");
+  const orchestratorResult = await orchestrator.executeApprovedTransaction("TX-007J", {
+    rootDir: fx.root,
+    ledgerPath: fx.ledgerPath,
+    validatorsDir: externalRoot,
+    projectRoot: externalRoot
+  });
+  assert.equal(orchestratorResult.disposition, "rejected");
+  assert.equal(fs.existsSync(markerPath), false);
+
+  const orchestratorCore = require("../kernel/execution/orchestrator-core");
+  const orchestratorCoreResult = await orchestratorCore.executeApprovedTransaction("TX-007J", {
+    rootDir: fx.root,
+    ledgerPath: fx.ledgerPath,
+    validatorsDir: externalRoot,
+    projectRoot: externalRoot
+  });
+  assert.equal(orchestratorCoreResult.disposition, "rejected");
+  assert.equal(fs.existsSync(markerPath), false);
+
+  assert.throws(() => require("../kernel/execution/validators").loadValidatorRegistry({ validatorsDir: externalRoot }), /caller-selected validatorsDir/i);
+  assert.throws(() => require("../kernel/execution/validators/index.js").loadValidatorRegistry({ validatorsDir: externalRoot }), /caller-selected validatorsDir/i);
+  assert.throws(() => require("../kernel/execution/validators/registry-core.js").loadValidatorRegistry({ validatorsDir: externalRoot }), /caller-selected validatorsDir/i);
+  assert.equal(fs.existsSync(markerPath), false);
+
+  const validatorClosure = require("../kernel/execution/validator-closure.js");
+  assert.equal(typeof validatorClosure.buildValidatorClosure, "undefined");
+  assert.equal(typeof validatorClosure.resolveAuthoritativeRoot, "undefined");
+
+  const validatorWorkerSource = fs.readFileSync(path.join(__dirname, "..", "kernel", "execution", "validator-worker.js"), "utf8");
+  assert.doesNotMatch(validatorWorkerSource, /module\.exports\s*=/);
+  assert.equal(fs.existsSync(markerPath), false);
+
+  fs.rmSync(externalRoot, { recursive: true, force: true });
+  cleanup(fx);
 });
 
 test("kernel import graph does not reach tests support", () => {

@@ -3,13 +3,12 @@
 const path = require("path");
 const { Worker } = require("worker_threads");
 
-const { normalizeValidationResult } = require("./validation-results");
-const { canonicalStringify } = require("../lib/canonical-json");
-const { sha256 } = require("../lib/append-only-log");
-const { loadValidatorRegistry, selectRequiredValidators, validatorsForPhase } = require("./validators");
+const { normalizeValidationResult } = require("../../kernel/execution/validation-results");
+const { canonicalStringify } = require("../../kernel/lib/canonical-json");
+const { sha256 } = require("../../kernel/lib/append-only-log");
 
 const DEFAULT_TIMEOUT_MS = 5000;
-const WORKER_PATH = path.join(__dirname, "validator-worker.js");
+const WORKER_PATH = path.join(__dirname, "..", "..", "kernel", "execution", "validator-worker.js");
 const LIMITS = { maxResultBytes: 262144, maxArrayLen: 10000, maxStdBytes: 65536 };
 
 function serializableContext(context) {
@@ -21,26 +20,6 @@ function serializableContext(context) {
     attemptId: context.attemptId,
     manifest: context.manifest
   };
-}
-
-function validationFailure(phase, validatorIds, message) {
-  const orderedIds = [...validatorIds].map(String).sort((left, right) => left.localeCompare(right));
-  const results = orderedIds.map((validatorId) => normalizeValidationResult({ id: validatorId }, phase, null, new Error(message)));
-  const problems = results.flatMap((result) => result.problems.map((problem) => `${result.validatorId}: ${problem}`));
-  const warnings = results.flatMap((result) => result.warnings.map((warning) => `${result.validatorId}: ${warning}`));
-  const body = { phase, status: "failed", results };
-  return {
-    phase,
-    status: "failed",
-    results,
-    problems,
-    warnings,
-    resultHash: sha256(canonicalStringify(body))
-  };
-}
-
-function invalidValidatorIds(validatorIds) {
-  return !Array.isArray(validatorIds) || validatorIds.some((validatorId) => typeof validatorId !== "string" || !validatorId);
 }
 
 function runValidatorBoundary(descriptor, phase, context, timeoutMs) {
@@ -117,7 +96,8 @@ async function runValidator(descriptor, phase, context, timeoutMs) {
   return normalizeValidationResult(descriptor, phase, raw, null);
 }
 
-async function runAuthoritativeDescriptorPhase(phase, descriptors, context, timeoutMs) {
+async function runValidationPhase(phase, descriptors, context, options = {}) {
+  const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
   const ordered = [...descriptors].sort((left, right) => left.id.localeCompare(right.id));
   const results = [];
   for (const descriptor of ordered) {
@@ -128,39 +108,6 @@ async function runAuthoritativeDescriptorPhase(phase, descriptors, context, time
   const status = results.every((result) => result.status === "passed") ? "passed" : "failed";
   const body = { phase, status, results };
   return { phase, status, results, problems, warnings, resultHash: sha256(canonicalStringify(body)) };
-}
-
-async function runValidationPhase(phase, validatorIds, context, options = {}) {
-  if (invalidValidatorIds(validatorIds)) {
-    return validationFailure(phase, [], "production validation cycle accepts only authoritative validator ids");
-  }
-  if (typeof options.expectedValidatorSetHash !== "string" || !options.expectedValidatorSetHash) {
-    return validationFailure(phase, validatorIds, "production validation cycle requires an authoritative validatorSetHash");
-  }
-
-  let registry;
-  try {
-    registry = loadValidatorRegistry();
-  } catch (error) {
-    return validationFailure(phase, validatorIds, `validator registry is invalid: ${error.message}`);
-  }
-  if (registry.validatorSetHash !== options.expectedValidatorSetHash) {
-    return validationFailure(phase, validatorIds, "validatorSetHash mismatch for authoritative validation phase");
-  }
-
-  let required;
-  try {
-    required = selectRequiredValidators({ requiredValidators: [...new Set(validatorIds)] }, registry.descriptors);
-  } catch (error) {
-    return validationFailure(phase, validatorIds, error.message);
-  }
-
-  return runAuthoritativeDescriptorPhase(
-    phase,
-    validatorsForPhase(required, phase),
-    context,
-    options.timeoutMs || DEFAULT_TIMEOUT_MS
-  );
 }
 
 module.exports = { DEFAULT_TIMEOUT_MS, LIMITS, runValidationPhase };

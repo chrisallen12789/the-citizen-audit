@@ -6,9 +6,10 @@ const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 
-const { runValidationPhase } = require("../kernel/execution/validation-cycle");
+const { canonicalStringify } = require("../kernel/lib/canonical-json");
 const { extractStaticValidatorContract, loadValidatorRegistry } = require("../kernel/execution/validators");
 const { buildValidatorClosure, resolveAuthoritativeRoot } = require("./support/validator-closure-test-core");
+const { runValidationPhase } = require("./support/validation-cycle-test-core");
 const { loadValidatorRegistryForTest } = require("./support/validator-test-harness");
 
 const REAL_VALIDATORS = path.join(__dirname, "..", "kernel", "execution", "validators");
@@ -396,6 +397,26 @@ test("closureHash is folded into validatorSetHash (real registry)", () => {
   assert.equal(typeof reg.authoritativeRootPolicyId, "string");
   const entry = reg.entries.find((candidate) => candidate.id === "execution-plan");
   assert.ok(entry && entry.contract && Array.isArray(entry.contract.supportedPhases));
+});
+
+test("closure loader identity is bound to the real production implementation bytes", () => {
+  const reg = loadValidatorRegistry();
+  const implementationPath = require.resolve("../kernel/execution/validators/registry-core.js");
+  const implementationBytes = fs.readFileSync(implementationPath);
+  const implementationHash = crypto.createHash("sha256").update(implementationBytes).digest("hex");
+  assert.equal(reg.closureLoaderRuntime.hash, implementationHash);
+
+  const registryVersion = JSON.parse(fs.readFileSync(path.join(REAL_VALIDATORS, "registry.json"), "utf8")).version || null;
+  const mutatedLoaderHash = crypto.createHash("sha256").update(Buffer.concat([implementationBytes, Buffer.from("\n// implementation mutation\n")])).digest("hex");
+  const rebound = crypto.createHash("sha256").update(canonicalStringify({
+    version: registryVersion,
+    authoritativeRootPolicyId: reg.authoritativeRootPolicyId,
+    closurePolicyVersion: "1.0.0",
+    validatorRunner: reg.validatorRuntime,
+    closureLoader: { ...reg.closureLoaderRuntime, hash: mutatedLoaderHash },
+    validators: reg.entries
+  })).digest("hex");
+  assert.notEqual(rebound, reg.validatorSetHash);
 });
 test("registry descriptors are deep-frozen after loading", () => {
   const reg = loadValidatorRegistry();

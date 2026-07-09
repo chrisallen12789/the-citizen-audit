@@ -251,7 +251,12 @@ async function executeApprovedTransaction(transactionId, options = {}) {
 
     const candidateState = createCandidateState(rootDir, plan.writes);
     const candidateContext = { rootDir, transaction, plan, writeSetHash, candidateState };
-    const candidatePhase = await runValidationPhase("candidate", validatorsForPhase(required, "candidate"), candidateContext, { timeoutMs });
+    const candidatePhase = await runValidationPhase(
+      "candidate",
+      validatorsForPhase(required, "candidate").map((descriptor) => descriptor.id),
+      candidateContext,
+      { timeoutMs, expectedValidatorSetHash: validatorSetHash }
+    );
     bindings.validationResults.candidate = candidatePhase;
     if (candidatePhase.status !== "passed") throw new ExecutionRejected(["Candidate validation failed.", ...candidatePhase.problems]);
 
@@ -285,7 +290,12 @@ async function executeApprovedTransaction(transactionId, options = {}) {
       applyJournaledWrites(session, { ledgerPath });
       transitionExecutionAttempt(attemptId, "validating", {}, { ledgerPath });
       const postContext = { rootDir, transaction, plan, writeSetHash, attemptId, manifest: session.manifest };
-      const postPhase = await runValidationPhase("post_write", validatorsForPhase(required, "post_write"), postContext, { timeoutMs });
+      const postPhase = await runValidationPhase(
+        "post_write",
+        validatorsForPhase(required, "post_write").map((descriptor) => descriptor.id),
+        postContext,
+        { timeoutMs, expectedValidatorSetHash: validatorSetHash }
+      );
       bindings.validationResults.post_write = postPhase;
 
       if (postPhase.status !== "passed") {

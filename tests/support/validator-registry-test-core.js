@@ -19,7 +19,7 @@ const VALIDATOR_REGISTRY_LOADER_VERSION = "2.0.0";
 const PRODUCTION_ROOT_POLICY_ID = "authoritative-reviewed-repository-root";
 const PRODUCTION_VALIDATORS_DIR = path.join(__dirname, "..", "..", "kernel", "execution", "validators");
 const VALIDATOR_RUNNER_PATH = path.join(__dirname, "..", "..", "kernel", "execution", "validator-worker.js");
-const VALIDATOR_CLOSURE_LOADER_PATH = path.join(__dirname, "..", "..", "kernel", "execution", "validator-closure.js");
+const VALIDATOR_CLOSURE_IMPLEMENTATION_PATH = path.join(__dirname, "validator-closure-test-core.js");
 const UNSAFE_VALIDATOR_IDS = new Set(["__proto__", "prototype", "constructor"]);
 
 function assertSafeValidatorId(id, label) {
@@ -153,7 +153,7 @@ function validatorRuntimeIdentity() {
 function closureLoaderIdentity() {
   return deepFreeze({
     version: VALIDATOR_REGISTRY_LOADER_VERSION,
-    hash: sha256(fs.readFileSync(VALIDATOR_CLOSURE_LOADER_PATH))
+    hash: sha256(fs.readFileSync(VALIDATOR_CLOSURE_IMPLEMENTATION_PATH))
   });
 }
 

@@ -819,6 +819,16 @@
       ]
     },
     {
+      "path": "tests/support/validation-cycle-test-core.js",
+      "category": 4,
+      "justification": "Test-only descriptor-driven validator execution harness used to exercise fabricated closures and fail-closed worker behavior outside the production import surface.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
       "path": "tests/support/validator-test-harness.js",
       "category": 4,
       "justification": "Test-only validator-registry harness exposing alternate validator roots for fixtures; not exported through production validator entry points.",
