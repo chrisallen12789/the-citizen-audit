@@ -10,6 +10,7 @@ const LIMITS = workerData.limits || {};
 const MAX_RESULT_BYTES = LIMITS.maxResultBytes || 262144;
 const MAX_ARRAY_LEN = LIMITS.maxArrayLen || 10000;
 const ENFORCE_POSIX_WRITE_BITS = process.platform !== "win32";
+const TRANSPORT_PRIMITIVE_TYPES = new Set(["string", "number", "boolean", "bigint", "undefined"]);
 
 const ALLOWED_BUILTINS = {
   path: require("path"),
@@ -28,6 +29,73 @@ function boundArray(value, label, problems) {
   if (!Array.isArray(value)) { problems.push(`${label} is not an array`); return []; }
   if (value.length > MAX_ARRAY_LEN) { problems.push(`${label} exceeds ${MAX_ARRAY_LEN} entries`); return value.slice(0, MAX_ARRAY_LEN); }
   return value;
+}
+
+function readOwnDataProperty(object, label, problems) {
+  const descriptor = Object.getOwnPropertyDescriptor(object, label);
+  if (!descriptor) return undefined;
+  if (Object.prototype.hasOwnProperty.call(descriptor, "get") || Object.prototype.hasOwnProperty.call(descriptor, "set")) {
+    problems.push(`${label} uses an accessor property`);
+    return undefined;
+  }
+  return descriptor.value;
+}
+
+function safeTransportString(value) {
+  if (value === null) return "null";
+  if (TRANSPORT_PRIMITIVE_TYPES.has(typeof value)) return String(value);
+  return null;
+}
+
+function boundTransportStringArray(raw, label, problems, options = {}) {
+  const value = readOwnDataProperty(raw, label, problems);
+  if (value === undefined) {
+    if (options.required) problems.push(`${label} is not an array`);
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    problems.push(`${label} is not an array`);
+    return [];
+  }
+  const normalized = [];
+  const limit = value.length > MAX_ARRAY_LEN ? MAX_ARRAY_LEN : value.length;
+  if (value.length > MAX_ARRAY_LEN) problems.push(`${label} exceeds ${MAX_ARRAY_LEN} entries`);
+  for (let index = 0; index < limit; index += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (!descriptor) {
+      normalized.push("undefined");
+      continue;
+    }
+    if (Object.prototype.hasOwnProperty.call(descriptor, "get") || Object.prototype.hasOwnProperty.call(descriptor, "set")) {
+      problems.push(`${label}[${index}] uses an accessor property`);
+      continue;
+    }
+    const rendered = safeTransportString(descriptor.value);
+    if (rendered === null) {
+      problems.push(`${label}[${index}] is not a transport-safe primitive`);
+      continue;
+    }
+    normalized.push(rendered);
+  }
+  return normalized;
+}
+
+function normalizeTransportedResult(raw) {
+  const transportProblems = [];
+  const statusValue = readOwnDataProperty(raw, "status", transportProblems);
+  const problems = boundTransportStringArray(raw, "problems", transportProblems, { required: true });
+  const warnings = boundTransportStringArray(raw, "warnings", transportProblems);
+  const checkedObjects = boundTransportStringArray(raw, "checkedObjects", transportProblems);
+  const checkedPaths = boundTransportStringArray(raw, "checkedPaths", transportProblems);
+  if (statusValue !== "passed" && statusValue !== "failed") transportProblems.push("status is invalid");
+  const status = transportProblems.length > 0 ? "failed" : statusValue;
+  return {
+    status: status === "failed" ? "failed" : "passed",
+    problems: transportProblems.length > 0 ? [...problems, ...transportProblems] : problems,
+    warnings,
+    checkedObjects,
+    checkedPaths
+  };
 }
 
 function loadClosureEntry(closure) {
@@ -128,20 +196,12 @@ try {
         .then(() => validator.validate({ ...context, phase }))
         .then((raw) => {
           if (!raw || typeof raw !== "object" || Array.isArray(raw)) return fail(`validator returned a non-object result: ${validatorId}`);
-          const problems = [];
-          const normalized = {
-            status: raw.status,
-            problems: boundArray(raw.problems, "problems", problems),
-            warnings: boundArray(raw.warnings, "warnings", problems),
-            checkedObjects: boundArray(raw.checkedObjects, "checkedObjects", problems),
-            checkedPaths: boundArray(raw.checkedPaths, "checkedPaths", problems)
-          };
-          if (problems.length) normalized.problems = [...normalized.problems, ...problems];
+          const normalized = normalizeTransportedResult(raw);
           let serialized;
           try { serialized = JSON.stringify(normalized); } catch (error) { return fail(`validator result is not serializable (circular/deep): ${validatorId}`); }
           const serializedBytes = Buffer.byteLength(serialized, "utf8");
           if (serializedBytes > MAX_RESULT_BYTES) return fail(`validator result exceeds ${MAX_RESULT_BYTES} bytes: ${validatorId}`);
-          parentPort.postMessage({ ok: true, raw: normalized });
+          parentPort.postMessage({ ok: true, serializedResult: serialized });
         })
         .catch((error) => fail(`validator threw: ${(error && error.message) || String(error)}`));
     }

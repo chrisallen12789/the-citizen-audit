@@ -1,25 +1,26 @@
-# Phase 4.1 - Validator UTF-8 Result-Bound Review
+# Phase 4.1 - Validator Result Transport-Boundary Review
 
-Base checkpoint: `1606cc3`
+Base checkpoint: `c008caa`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, and UTF-8 result-byte enforcement are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 result-byte enforcement, and worker transport binding are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `1606cc32c9dd0ced1dcdfd22173b4b34d0b65e52` and closes the remaining bounded-result defect in validator result-byte enforcement:
+This checkpoint continues from `c008caa56b7b1b59ffa79f5666a0db155ed8099d` and closes the remaining bounded-transport defect in validator result handling:
 
-1. production `validator-worker.js` now enforces the reviewed result ceiling using deterministic UTF-8 byte measurement rather than JavaScript string length
-2. multibyte BMP Unicode and astral-character/emoji payloads now fail closed when their serialized UTF-8 byte size exceeds `REVIEWED_VALIDATOR_LIMITS.maxResultBytes`
-3. authoritative results immediately below the reviewed byte ceiling can still pass and are returned unchanged over worker transport
-4. immutable reviewed limits remain locked and caller-supplied worker limits remain ignored
-5. the previously fixed direct worker external-validator source attack remains closed
-6. the replacement checkpoint patch is delivered as raw Git diff output with no BOM and canonical LF newlines
+1. production `validator-worker.js` now checks and transports the exact same representation
+2. the worker no longer measures one JSON string and then posts a different validator-controlled object through structured clone
+3. the parent now independently rechecks the transported serialized result and parses only that checked string
+4. non-enumerable `toJSON`, accessor getters, prototype properties, custom class instances, circular values, and other non-plain transport surfaces now fail closed
+5. immutable reviewed limits remain locked and caller-supplied worker limits remain ignored
+6. the previously fixed direct worker external-validator source attack remains closed
+7. the replacement checkpoint patch is delivered as raw Git diff output with no BOM and canonical LF newlines
 
 OS-level validator confinement was not started.
 
 ## Architecture verified
 
 ### Fixed production kernel surface
-Direct-path `require()` of production kernel modules and the executable worker entry no longer expose configurable execution, registry loading, validator-closure construction, arbitrary descriptor execution, or caller-selected closure material.
+Direct-path `require()` of production kernel modules and the executable worker entry no longer expose configurable execution, registry loading, validator-closure construction, arbitrary descriptor execution, caller-selected closure material, or mutable validator transport policy.
 
 Fixed production modules:
 - `kernel/execution/orchestrator.js`
@@ -41,6 +42,8 @@ None exports:
 - test mode selection
 - alternate `projectRoot` or `validatorsDir` selection
 - injected execution surfaces or override flags
+- mutable production result or transport limits
+- a raw validator-result transport object shared with worker internals
 
 Direct-require regressions prove:
 - no configurable execution function is exported from `kernel/**`
@@ -49,7 +52,8 @@ Direct-require regressions prove:
 - direct import of `validator-closure.js` exposes no callable production closure builder, root selector, or entry-source inspector
 - direct import of `validation-cycle.js` accepts only authoritative validator ids plus the expected authoritative `validatorSetHash`
 - a fabricated descriptor built from an external temporary validator root fails closed and never executes through any production import surface
-- direct launch of `kernel/execution/validator-worker.js` with a fabricated external closure now fails closed before any external validator bytes execute
+- direct launch of `kernel/execution/validator-worker.js` with a fabricated external closure still fails closed before any external validator bytes execute
+- direct import of production execution modules cannot mutate internal reviewed transport bounds
 
 ### Test-only configurability confinement
 Alternate validator roots remain available only through test support:
@@ -77,6 +81,10 @@ The production API now:
 - reloads the authoritative production registry internally
 - verifies the caller-provided expected `validatorSetHash` against the authoritative registry hash
 - resolves descriptors exclusively from the authoritative registry before any worker execution occurs
+- accepts worker success only when the worker returns a checked serialized result string
+- independently rechecks the serialized UTF-8 byte length in the parent before parsing
+- parses only the checked serialized string into a plain JSON result object
+- rejects malformed, oversized, or structurally invalid worker success payloads before result handling
 
 Descriptor-driven execution required by adversarial tests is confined to:
 - `tests/support/validation-cycle-test-core.js`
@@ -95,6 +103,12 @@ Inside the worker, it now independently:
 - resolves the authoritative descriptor only from the reviewed registry
 - obtains closure and contract only from that authoritative descriptor
 - ignores any caller-supplied closure, manifest, contract, module hash, or closure hash fields
+- normalizes the raw validator result into a transport-safe plain JSON structure
+- reads only own data properties and never invokes accessor getters while building the transport object
+- rejects non-primitive array members and malformed result fields before serialization
+- serializes the normalized result exactly once
+- measures the UTF-8 byte size of that exact serialized string with `Buffer.byteLength`
+- transports only the checked serialized string to the parent
 
 Direct worker regressions prove:
 - a fabricated external validator under a temporary root cannot execute through the production worker
@@ -102,7 +116,27 @@ Direct worker regressions prove:
 - `validatorSetHash` mismatch fails closed before execution
 - caller-supplied `closureHash` values are irrelevant because caller-supplied closure material is ignored
 - caller-supplied `limits` values are irrelevant because reviewed production bounds are loaded inside the worker
+- a non-enumerable `toJSON()` method cannot make the checked representation small while transporting a larger object
+- accessor getters cannot produce a small checked value and a larger transported value
+- prototype getters and custom class instances cannot smuggle large validator-controlled state across worker transport
+- circular or unserializable transport surfaces fail closed
 - authoritative validators still execute through the normal production validation-cycle path
+
+### Bounded transport contract
+The reviewed `maxResultBytes` ceiling now applies to the exact serialized validator result representation transported from the worker to the parent.
+
+The contract is now:
+1. normalize the raw validator result into transport-safe plain JSON data
+2. serialize that normalized data exactly once
+3. measure the UTF-8 byte size of that exact string
+4. reject the result if it exceeds the reviewed byte ceiling
+5. send only the checked serialized string across the worker boundary
+6. remeasure the transported string in the parent
+7. parse only that exact checked string in the parent
+8. reject parse failure or malformed normalized result content
+9. use only the parsed value for later validation-cycle result handling
+
+No unmeasured validator-controlled object crosses the production worker boundary.
 
 ### Production validator-limit lock
 Production reviewed validator limits now live in:
@@ -112,7 +146,7 @@ The production path now works as follows:
 - `validation-cycle.js` imports immutable reviewed limits and no longer exports a mutable `LIMITS` object
 - `validation-cycle.js` no longer passes `limits` into the production worker
 - `validator-worker.js` imports the same immutable reviewed limits internally
-- `validator-worker.js` serializes the normalized result and measures its UTF-8 byte size with `Buffer.byteLength(serialized, "utf8")`
+- `validator-worker.js` uses those reviewed bounds when normalizing, truncating, serializing, measuring, and transporting validator results
 - caller-provided `workerData.limits` are ignored and cannot weaken or tighten the reviewed bounds
 
 Direct-import and direct-worker regressions prove:
@@ -123,8 +157,7 @@ Direct-import and direct-worker regressions prove:
 - an ASCII result above the reviewed byte ceiling fails closed
 - a multibyte BMP Unicode result with JavaScript length below the ceiling but UTF-8 byte size above it fails closed
 - an astral-character emoji result above the UTF-8 byte ceiling fails closed
-- a multibyte Unicode result immediately below the reviewed byte ceiling can pass
-- a circular production-worker result still fails closed
+- a multibyte Unicode result immediately below the reviewed byte ceiling can pass unchanged
 - direct worker launch with `Infinity` cannot disable reviewed result-byte bounds
 - direct worker launch with `Infinity` cannot disable reviewed array bounds
 - direct worker launch with `maxResultBytes = 1` cannot tighten the reviewed internal bound
@@ -169,7 +202,7 @@ The validator registry still avoids parent-process validator execution:
 - contract metadata is parsed statically from exact module bytes
 - dynamic contract construction is rejected
 
-Production no longer leaves a direct-import path to:
+Production no longer leaves a direct-import or worker-transport path to:
 - alternate validator directories
 - alternate project roots
 - alternate validator entry sources
@@ -177,11 +210,13 @@ Production no longer leaves a direct-import path to:
 - alternate worker closure or contract material
 - injected registry loaders
 - injected execution surfaces
+- mutable production result or transport policy
+- a larger transported object than the representation whose bytes were checked
 
 ## Test totals observed in this workspace
-- validator-security: 97/97
+- validator-security: 101/101
 - execution-orchestrator: 56/56
-- execution suite: 293/293
+- execution suite: 297/297
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -200,12 +235,16 @@ Linux-host note:
 - an installed Linux verification environment was not available in this desktop session, so the reproduced termination evidence above is from the current local host only
 
 ## Additional confirmations
+- the measured representation is exactly the transported representation
+- no worker success message transports a raw validator-controlled object
+- the parent rechecks the bounded serialized result before parsing it
+- no `toJSON`, structured-clone, getter, prototype, or custom-instance discrepancy can bypass the byte ceiling
 - no configurable execution function is exported from `kernel/**`
 - no alternate validator source can be selected by direct module import
 - no production worker accepts caller-supplied closure or contract material
 - no production worker accepts caller-supplied limit values as authoritative
 - UTF-8 byte bounds are enforced instead of JavaScript character counts
-- multibyte result-bound attack fails closed before any worker success message is posted
+- multibyte result-bound attacks fail closed before any worker success message is accepted
 - no production import accepts arbitrary validator descriptors or closure material
 - no alternate validator root, directory, entry path, or source can execute through the production worker
 - `validatorSetHash` is verified inside the worker before validator execution
@@ -226,4 +265,4 @@ The replacement checkpoint patch must be packaged as raw Git output:
 - delivered patch bytes verified against a separately regenerated raw `git diff --binary`
 
 ## Residual hold
-This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, mutable-limit, and UTF-8 result-byte defects are corrected, but runtime sandboxing of validator execution remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, and bounded-transport defects are corrected, but runtime sandboxing of validator execution remains future work and the HOLD stays in place.

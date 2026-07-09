@@ -941,7 +941,7 @@ for (const scenario of [
     id: "semantic-malformed",
     body: "()=>({nonsense:true})",
     timeoutMs: 5000,
-    match: /invalid status|malformed problems/i
+    match: /invalid status|malformed problems|not an array/i
   },
   {
     name: "semantically failing",

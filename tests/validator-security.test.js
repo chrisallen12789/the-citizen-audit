@@ -82,6 +82,14 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
   });
 }
 
+function parseTransportedWorkerSuccessMessage(message) {
+  assert.equal(message.ok, true);
+  assert.equal(typeof message.serializedResult, "string");
+  assert.equal(Object.prototype.hasOwnProperty.call(message, "raw"), false);
+  assert.ok(Buffer.byteLength(message.serializedResult, "utf8") <= REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+  return JSON.parse(message.serializedResult);
+}
+
 function authoritativeWorkerContext(writeSetHash = "a".repeat(64)) {
   return {
     transaction: {
@@ -612,8 +620,7 @@ test("ASCII result below the reviewed UTF-8 byte ceiling passes through the prod
         limits: { maxResultBytes: 1 }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, true);
-      assert.deepEqual(outcome.message.raw, expected);
+      assert.deepEqual(parseTransportedWorkerSuccessMessage(outcome.message), expected);
     }
   );
 });
@@ -711,8 +718,7 @@ test("multibyte Unicode result immediately below the reviewed UTF-8 byte ceiling
         limits: { maxResultBytes: 0, maxArrayLen: -1, maxStdBytes: "bogus" }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, true);
-      assert.deepEqual(outcome.message.raw, expected);
+      assert.deepEqual(parseTransportedWorkerSuccessMessage(outcome.message), expected);
     }
   );
 });
@@ -731,9 +737,9 @@ test("direct worker launch with Infinity limits cannot disable fixed reviewed ar
         limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Infinity }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, true);
-      assert.match(outcome.message.raw.problems.join(" "), /checkedObjects exceeds 10000 entries/i);
-      assert.equal(outcome.message.raw.checkedObjects.length, 10000);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.match(parsed.problems.join(" "), /checkedObjects exceeds 10000 entries/i);
+      assert.equal(parsed.checkedObjects.length, 10000);
     }
   );
 });
@@ -752,10 +758,123 @@ test("direct production worker still fails closed on a circular result", async (
         limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Infinity }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, false);
-      assert.match(outcome.message.error, /not serializable/i);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.match(parsed.problems.join(" "), /transport-safe primitive/i);
     }
   );
+});
+
+test("non-enumerable toJSON cannot cause a larger object to cross worker transport", async () => {
+  const markerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-tojson-"));
+  const toJsonMarker = path.join(markerDir, "tojson-marker.txt");
+  try {
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const problem={payload:"x".repeat(400000)}; Object.defineProperty(problem,"toJSON",{enumerable:false,value:function(){require("node:fs").writeFileSync(${JSON.stringify(toJsonMarker)},"called"); return "tiny";}}); return {status:"passed",problems:[problem],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const outcome = await launchProductionWorker({
+          validatorId: "execution-plan",
+          expectedValidatorSetHash: reg.validatorSetHash,
+          phase: "candidate",
+          context: authoritativeWorkerContext("ag".repeat(32)),
+          limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Infinity }
+        });
+        assert.equal(outcome.kind, "message");
+        assert.equal(fs.existsSync(toJsonMarker), false);
+        const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+        assert.match(parsed.problems.join(" "), /transport-safe primitive/i);
+        assert.equal(outcome.message.serializedResult.includes('"tiny"'), false);
+        assert.equal(outcome.message.serializedResult.includes('"payload"'), false);
+        assert.ok(Buffer.byteLength(outcome.message.serializedResult, "utf8") < REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+      }
+    );
+  } finally {
+    fs.rmSync(markerDir, { recursive: true, force: true });
+  }
+});
+
+test("accessor properties cannot produce a smaller checked value than the transported representation", async () => {
+  const markerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-getter-"));
+  const getterMarker = path.join(markerDir, "getter-marker.txt");
+  try {
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const result={status:"passed",warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}; Object.defineProperty(result,"problems",{enumerable:true,get:function(){require("node:fs").writeFileSync(${JSON.stringify(getterMarker)},"getter"); return ["x".repeat(400000)];}}); return result;}};\n`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const outcome = await launchProductionWorker({
+          validatorId: "execution-plan",
+          expectedValidatorSetHash: reg.validatorSetHash,
+          phase: "candidate",
+          context: authoritativeWorkerContext("ah".repeat(32)),
+          limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Infinity }
+        });
+        assert.equal(outcome.kind, "message");
+        assert.equal(fs.existsSync(getterMarker), false);
+        const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+        assert.match(parsed.problems.join(" "), /accessor property/i);
+        assert.equal(outcome.message.serializedResult.includes("x".repeat(1024)), false);
+      }
+    );
+  } finally {
+    fs.rmSync(markerDir, { recursive: true, force: true });
+  }
+});
+
+test("prototype getters and custom class instances cannot bypass the result ceiling", async () => {
+  const markerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-prototype-"));
+  const getterMarker = path.join(markerDir, "prototype-getter-marker.txt");
+  try {
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";\nclass AttackResult { constructor(){ this.status="passed"; this.warnings=[]; this.checkedObjects=["OBJ-1"]; this.checkedPaths=["public/data/report.json"]; } }\nObject.defineProperty(AttackResult.prototype,"problems",{enumerable:true,get:function(){require("node:fs").writeFileSync(${JSON.stringify(getterMarker)},"prototype-getter"); return ["x".repeat(400000)];}});\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return new AttackResult();}};\n`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const outcome = await launchProductionWorker({
+          validatorId: "execution-plan",
+          expectedValidatorSetHash: reg.validatorSetHash,
+          phase: "candidate",
+          context: authoritativeWorkerContext("ai".repeat(32)),
+          limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Infinity }
+        });
+        assert.equal(outcome.kind, "message");
+        assert.equal(fs.existsSync(getterMarker), false);
+        const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+        assert.match(parsed.problems.join(" "), /problems is not an array/i);
+        assert.equal(outcome.message.serializedResult.includes("x".repeat(1024)), false);
+      }
+    );
+  } finally {
+    fs.rmSync(markerDir, { recursive: true, force: true });
+  }
+});
+
+test("production validation cycle parent receives only the exact parsed contents of the bounded serialization", async () => {
+  const markerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-parent-transport-"));
+  const toJsonMarker = path.join(markerDir, "tojson-marker.txt");
+  try {
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const problem={payload:"x".repeat(400000)}; Object.defineProperty(problem,"toJSON",{enumerable:false,value:function(){require("node:fs").writeFileSync(${JSON.stringify(toJsonMarker)},"called"); return "tiny";}}); return {status:"passed",problems:[problem],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const phase = await require("../kernel/execution/validation-cycle").runValidationPhase(
+          "candidate",
+          ["execution-plan"],
+          authoritativeWorkerContext("aj".repeat(32)),
+          { timeoutMs: 1500, expectedValidatorSetHash: reg.validatorSetHash }
+        );
+        assert.equal(fs.existsSync(toJsonMarker), false);
+        assert.equal(phase.status, "failed");
+        assert.equal(phase.results.length, 1);
+        assert.match(phase.results[0].problems.join(" "), /transport-safe primitive/i);
+        assert.equal(phase.results[0].problems.join(" ").includes("x".repeat(1024)), false);
+      }
+    );
+  } finally {
+    fs.rmSync(markerDir, { recursive: true, force: true });
+  }
 });
 
 test("direct worker launch with maxResultBytes set to 1 cannot replace reviewed internal limits", async () => {
@@ -772,8 +891,8 @@ test("direct worker launch with maxResultBytes set to 1 cannot replace reviewed 
         limits: { maxResultBytes: 1, maxArrayLen: 1, maxStdBytes: 1 }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, true);
-      assert.equal(outcome.message.raw.status, "passed");
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
     }
   );
 });
@@ -796,8 +915,8 @@ test("direct worker launch ignores invalid caller-supplied limit types in favor 
         }
       });
       assert.equal(outcome.kind, "message");
-      assert.equal(outcome.message.ok, true);
-      assert.equal(outcome.message.raw.status, "passed");
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
     }
   );
 });
@@ -886,7 +1005,8 @@ test("production worker ignores caller-supplied closure material and executes on
     });
     assert.equal(outcome.kind, "message");
     assert.equal(outcome.message.ok, true);
-    assert.equal(outcome.message.raw.status, "passed");
+    const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+    assert.equal(parsed.status, "passed");
     assert.equal(fs.existsSync(topLevelMarker), false);
     assert.equal(fs.existsSync(validateMarker), false);
   } finally {

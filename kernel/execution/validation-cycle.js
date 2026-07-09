@@ -10,6 +10,7 @@ const { sha256 } = require("../lib/append-only-log");
 const { loadValidatorRegistry, selectRequiredValidators, validatorsForPhase } = require("./validators");
 
 const WORKER_PATH = path.join(__dirname, "validator-worker.js");
+const TRANSPORT_RESULT_FIELDS = Object.freeze(["status", "problems", "warnings", "checkedObjects", "checkedPaths"]);
 
 function serializableContext(context) {
   return {
@@ -40,6 +41,52 @@ function validationFailure(phase, validatorIds, message) {
 
 function invalidValidatorIds(validatorIds) {
   return !Array.isArray(validatorIds) || validatorIds.some((validatorId) => typeof validatorId !== "string" || !validatorId);
+}
+
+function isStringArray(value) {
+  return Array.isArray(value) && value.every((entry) => typeof entry === "string");
+}
+
+function parseTransportedValidatorResult(message) {
+  if (!message || typeof message !== "object") {
+    return { ok: false, error: "validator produced a malformed worker message" };
+  }
+  if (message.ok !== true) {
+    return {
+      ok: false,
+      error: typeof message.error === "string" && message.error ? message.error : "validator produced a malformed worker message"
+    };
+  }
+  if (typeof message.serializedResult !== "string") {
+    return { ok: false, error: "validator produced a malformed serialized result" };
+  }
+  const serializedBytes = Buffer.byteLength(message.serializedResult, "utf8");
+  if (serializedBytes > REVIEWED_VALIDATOR_LIMITS.maxResultBytes) {
+    return { ok: false, error: `validator result exceeds ${REVIEWED_VALIDATOR_LIMITS.maxResultBytes} bytes` };
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(message.serializedResult);
+  } catch (error) {
+    return { ok: false, error: "validator transported invalid JSON" };
+  }
+  const keys = parsed && typeof parsed === "object" && !Array.isArray(parsed) ? Object.keys(parsed) : [];
+  const knownKeysOnly = keys.length === TRANSPORT_RESULT_FIELDS.length
+    && TRANSPORT_RESULT_FIELDS.every((key) => Object.prototype.hasOwnProperty.call(parsed, key));
+  if (
+    !parsed
+    || typeof parsed !== "object"
+    || Array.isArray(parsed)
+    || !knownKeysOnly
+    || (parsed.status !== "passed" && parsed.status !== "failed")
+    || !isStringArray(parsed.problems)
+    || !isStringArray(parsed.warnings)
+    || !isStringArray(parsed.checkedObjects)
+    || !isStringArray(parsed.checkedPaths)
+  ) {
+    return { ok: false, error: "validator transported malformed normalized content" };
+  }
+  return { ok: true, raw: parsed };
 }
 
 function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, context, timeoutMs) {
@@ -80,7 +127,7 @@ function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, conte
     });
     capture(worker.stdout);
     capture(worker.stderr);
-    worker.on("message", (msg) => finish(msg && typeof msg === "object" ? msg : { ok: false, error: "validator produced a malformed worker message" }));
+    worker.on("message", (msg) => finish(parseTransportedValidatorResult(msg)));
     worker.on("error", (error) => finish({ ok: false, error: `validator worker crashed: ${error.message}` }));
     worker.on("exit", (code) => finish({ ok: false, error: `validator worker exited without a result (code ${code})` }));
   });
