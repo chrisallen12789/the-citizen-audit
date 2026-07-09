@@ -1,18 +1,18 @@
-# Phase 4.1 - Validator Limits Surface Review
+# Phase 4.1 - Validator UTF-8 Result-Bound Review
 
-Base checkpoint: `8dba97b`
+Base checkpoint: `1606cc3`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, and mutable validator-limit surfaces are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, and UTF-8 result-byte enforcement are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `8dba97b8430765df01a9afc162b6f405b21138dc` and closes the remaining mutable production validator-limit surface:
+This checkpoint continues from `1606cc32c9dd0ced1dcdfd22173b4b34d0b65e52` and closes the remaining bounded-result defect in validator result-byte enforcement:
 
-1. production `validation-cycle.js` no longer exports the mutable internal `LIMITS` object
-2. reviewed validator limits now live in an immutable production module and are not caller-mutable through direct import
-3. production `validator-worker.js` no longer trusts caller-supplied `workerData.limits`
-4. direct worker launches cannot weaken or tighten reviewed result, array, or stdio bounds through hostile limit payloads
-5. authoritative validator execution still uses the reviewed bounds and still passes through the normal production path
-6. the previously fixed direct worker external-validator source attack remains closed
+1. production `validator-worker.js` now enforces the reviewed result ceiling using deterministic UTF-8 byte measurement rather than JavaScript string length
+2. multibyte BMP Unicode and astral-character/emoji payloads now fail closed when their serialized UTF-8 byte size exceeds `REVIEWED_VALIDATOR_LIMITS.maxResultBytes`
+3. authoritative results immediately below the reviewed byte ceiling can still pass and are returned unchanged over worker transport
+4. immutable reviewed limits remain locked and caller-supplied worker limits remain ignored
+5. the previously fixed direct worker external-validator source attack remains closed
+6. the replacement checkpoint patch is delivered as raw Git diff output with no BOM and canonical LF newlines
 
 OS-level validator confinement was not started.
 
@@ -112,12 +112,19 @@ The production path now works as follows:
 - `validation-cycle.js` imports immutable reviewed limits and no longer exports a mutable `LIMITS` object
 - `validation-cycle.js` no longer passes `limits` into the production worker
 - `validator-worker.js` imports the same immutable reviewed limits internally
+- `validator-worker.js` serializes the normalized result and measures its UTF-8 byte size with `Buffer.byteLength(serialized, "utf8")`
 - caller-provided `workerData.limits` are ignored and cannot weaken or tighten the reviewed bounds
 
 Direct-import and direct-worker regressions prove:
 - `validation-cycle.js` exports no mutable `LIMITS` reference
 - `validator-limits.js` exports a frozen metadata object
 - attempted direct-import mutation cannot alter a later authoritative validation outcome
+- an ASCII result below the reviewed byte ceiling passes through the production worker unchanged
+- an ASCII result above the reviewed byte ceiling fails closed
+- a multibyte BMP Unicode result with JavaScript length below the ceiling but UTF-8 byte size above it fails closed
+- an astral-character emoji result above the UTF-8 byte ceiling fails closed
+- a multibyte Unicode result immediately below the reviewed byte ceiling can pass
+- a circular production-worker result still fails closed
 - direct worker launch with `Infinity` cannot disable reviewed result-byte bounds
 - direct worker launch with `Infinity` cannot disable reviewed array bounds
 - direct worker launch with `maxResultBytes = 1` cannot tighten the reviewed internal bound
@@ -172,9 +179,9 @@ Production no longer leaves a direct-import path to:
 - injected execution surfaces
 
 ## Test totals observed in this workspace
-- validator-security: 91/91
+- validator-security: 97/97
 - execution-orchestrator: 56/56
-- execution suite: 287/287
+- execution suite: 293/293
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -197,6 +204,8 @@ Linux-host note:
 - no alternate validator source can be selected by direct module import
 - no production worker accepts caller-supplied closure or contract material
 - no production worker accepts caller-supplied limit values as authoritative
+- UTF-8 byte bounds are enforced instead of JavaScript character counts
+- multibyte result-bound attack fails closed before any worker success message is posted
 - no production import accepts arbitrary validator descriptors or closure material
 - no alternate validator root, directory, entry path, or source can execute through the production worker
 - `validatorSetHash` is verified inside the worker before validator execution
@@ -209,5 +218,12 @@ Linux-host note:
 - no broad capability declarations were added
 - no `platform/**`, `schemas/platform-*`, or generated `public/data/platform-*` changes remain in the checkpoint
 
+## Patch delivery verification
+The replacement checkpoint patch must be packaged as raw Git output:
+- no UTF-8 BOM
+- canonical LF line endings
+- `git apply --check` verified from the exact parent commit
+- delivered patch bytes verified against a separately regenerated raw `git diff --binary`
+
 ## Residual hold
-This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, and direct worker source-bypass defects are corrected, but runtime sandboxing of validator execution remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, mutable-limit, and UTF-8 result-byte defects are corrected, but runtime sandboxing of validator execution remains future work and the HOLD stays in place.

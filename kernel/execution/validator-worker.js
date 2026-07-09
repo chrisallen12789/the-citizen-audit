@@ -168,7 +168,8 @@ try {
           if (problems.length) normalized.problems = [...normalized.problems, ...problems];
           let serialized;
           try { serialized = JSON.stringify(normalized); } catch (e) { return fail(`validator result is not serializable (circular/deep): ${descriptor.id}`); }
-          if (serialized.length > MAX_RESULT_BYTES) return fail(`validator result exceeds ${MAX_RESULT_BYTES} bytes: ${descriptor.id}`);
+          const serializedBytes = Buffer.byteLength(serialized, "utf8");
+          if (serializedBytes > MAX_RESULT_BYTES) return fail(`validator result exceeds ${MAX_RESULT_BYTES} bytes: ${descriptor.id}`);
           parentPort.postMessage({ ok: true, raw: normalized });
         })
         .catch((error) => fail(`validator threw: ${(error && error.message) || String(error)}`));

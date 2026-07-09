@@ -1,8 +1,8 @@
-# Phase 4.1 - Coverage Matrix for Validator Limits Surface Checkpoint
+# Phase 4.1 - Coverage Matrix for Validator UTF-8 Result-Bound Checkpoint
 
-Authoritative base: `8dba97b8430765df01a9afc162b6f405b21138dc`
+Authoritative base: `1606cc32c9dd0ced1dcdfd22173b4b34d0b65e52`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, and mutable validator-limit surfaces are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, and UTF-8 result-byte enforcement are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -40,6 +40,11 @@ No broad capability declarations were added.
 | Direct worker launch can weaken reviewed array bounds with `Infinity` | FIXED | worker ignores caller `limits`; regression proves `checkedObjects` is still capped at 10000 |
 | Direct worker launch can tighten reviewed result-byte bounds with `maxResultBytes = 1` | FIXED | regression proves authoritative validator still passes because internal reviewed bound is unchanged |
 | Invalid caller-supplied limit types can replace reviewed bounds | FIXED | regression proves strings, objects, and negative values are ignored in favor of fixed reviewed limits |
+| Production worker enforces result ceiling using JavaScript string length instead of UTF-8 bytes | FIXED | `validator-worker.js` now measures `Buffer.byteLength(serialized, "utf8")` before posting the worker result |
+| Multibyte BMP Unicode payload can stay under JavaScript string length but exceed reviewed byte ceiling | FIXED | regression proves BMP Unicode result fails closed when UTF-8 bytes exceed 262144 |
+| Astral-character or emoji payload can exceed reviewed byte ceiling while bypassing character-count enforcement | FIXED | regression proves emoji result fails closed when UTF-8 bytes exceed 262144 |
+| Multibyte payload immediately below the reviewed byte ceiling can still pass unchanged | FIXED | regression proves the exact normalized result passes unchanged when its serialized UTF-8 bytes remain within the ceiling |
+| Replacement checkpoint patch can be rejected because of BOM or CRLF conversion | FIXED | replacement packaging uses raw Git diff bytes and verifies no BOM, LF-only newlines, and `git apply --check` from the exact parent |
 | Production caller can still select another validator directory inside the repository | FIXED | existing rejection regression retained |
 | Production caller can still select a temporary validator directory | FIXED | existing rejection regression retained |
 | Production caller can still select a copied registry with the same ids | FIXED | existing rejection regression retained |
@@ -53,7 +58,7 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 91/91 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 97/97 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56 |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
@@ -63,7 +68,7 @@ No broad capability declarations were added.
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 287/287 |
+| `npm run execution:test` | PASS, 293/293 |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |

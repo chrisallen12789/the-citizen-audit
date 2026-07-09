@@ -9,6 +9,7 @@ const { Worker } = require("node:worker_threads");
 
 const { canonicalStringify } = require("../kernel/lib/canonical-json");
 const { extractStaticValidatorContract, loadValidatorRegistry } = require("../kernel/execution/validators");
+const { REVIEWED_VALIDATOR_LIMITS } = require("../kernel/execution/validator-limits");
 const { buildValidatorClosure, resolveAuthoritativeRoot } = require("./support/validator-closure-test-core");
 const { runValidationPhase } = require("./support/validation-cycle-test-core");
 const { loadValidatorRegistryForTest } = require("./support/validator-test-harness");
@@ -97,6 +98,40 @@ function authoritativeWorkerContext(writeSetHash = "a".repeat(64)) {
     },
     writeSetHash
   };
+}
+
+function normalizedWorkerResult(problemText) {
+  return {
+    status: "passed",
+    problems: [problemText],
+    warnings: [],
+    checkedObjects: ["OBJ-1"],
+    checkedPaths: ["public/data/report.json"]
+  };
+}
+
+function serializedWorkerResult(problemText) {
+  return JSON.stringify(normalizedWorkerResult(problemText));
+}
+
+function serializedWorkerResultBytes(problemText) {
+  return Buffer.byteLength(serializedWorkerResult(problemText), "utf8");
+}
+
+function maxRepeatCountWithinReviewedBytes(token, slackBytes = 0) {
+  const limit = REVIEWED_VALIDATOR_LIMITS.maxResultBytes - slackBytes;
+  let low = 0;
+  let high = REVIEWED_VALIDATOR_LIMITS.maxResultBytes;
+  while (low < high) {
+    const mid = Math.floor((low + high + 1) / 2);
+    if (serializedWorkerResultBytes(token.repeat(mid)) <= limit) low = mid;
+    else high = mid - 1;
+  }
+  return low;
+}
+
+function validatorSourceForResultExpression(expression) {
+  return `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return ${expression};}};\n`;
 }
 
 async function withTemporaryProductionValidatorSource(filePath, source, callback) {
@@ -541,7 +576,7 @@ test("attempted direct-import mutation cannot alter later authoritative validati
 test("direct worker launch with Infinity limits cannot disable fixed reviewed result bounds", async () => {
   await withTemporaryProductionValidatorSource(
     PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
-    `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:["x".repeat(300000)],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    validatorSourceForResultExpression(`{status:"passed",problems:["x".repeat(300000)],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}`),
     async () => {
       const reg = loadValidatorRegistry();
       const outcome = await launchProductionWorker({
@@ -554,6 +589,130 @@ test("direct worker launch with Infinity limits cannot disable fixed reviewed re
       assert.equal(outcome.kind, "message");
       assert.equal(outcome.message.ok, false);
       assert.match(outcome.message.error, /262144 bytes/);
+    }
+  );
+});
+
+test("ASCII result below the reviewed UTF-8 byte ceiling passes through the production worker unchanged", async () => {
+  const count = maxRepeatCountWithinReviewedBytes("x", 64);
+  const problemText = "x".repeat(count);
+  const expected = normalizedWorkerResult(problemText);
+  assert.ok(Buffer.byteLength(JSON.stringify(expected), "utf8") < REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForResultExpression(`{status:"passed",problems:["x".repeat(${count})],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("aa".repeat(32)),
+        limits: { maxResultBytes: 1 }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, true);
+      assert.deepEqual(outcome.message.raw, expected);
+    }
+  );
+});
+
+test("ASCII result above the reviewed UTF-8 byte ceiling fails closed in the production worker", async () => {
+  const count = maxRepeatCountWithinReviewedBytes("x") + 1;
+  assert.ok(serializedWorkerResultBytes("x".repeat(count)) > REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForResultExpression(`{status:"passed",problems:["x".repeat(${count})],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ab".repeat(32)),
+        limits: { maxResultBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, false);
+      assert.match(outcome.message.error, /262144 bytes/);
+    }
+  );
+});
+
+test("multibyte Unicode result with JavaScript length below the ceiling but UTF-8 bytes above it fails closed", async () => {
+  const count = maxRepeatCountWithinReviewedBytes("é") + 1;
+  const problemText = "é".repeat(count);
+  const serialized = serializedWorkerResult(problemText);
+  assert.ok(serialized.length < REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+  assert.ok(Buffer.byteLength(serialized, "utf8") > REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForResultExpression(`{status:"passed",problems:["é".repeat(${count})],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ac".repeat(32)),
+        limits: { maxResultBytes: Number.MAX_SAFE_INTEGER }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, false);
+      assert.match(outcome.message.error, /262144 bytes/);
+    }
+  );
+});
+
+test("astral-character emoji result above the UTF-8 byte ceiling fails closed", async () => {
+  const count = maxRepeatCountWithinReviewedBytes("😀") + 1;
+  const problemText = "😀".repeat(count);
+  assert.ok(Buffer.byteLength(serializedWorkerResult(problemText), "utf8") > REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForResultExpression(`{status:"passed",problems:["😀".repeat(${count})],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ad".repeat(32)),
+        limits: { maxResultBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, false);
+      assert.match(outcome.message.error, /262144 bytes/);
+    }
+  );
+});
+
+test("multibyte Unicode result immediately below the reviewed UTF-8 byte ceiling can pass", async () => {
+  const count = maxRepeatCountWithinReviewedBytes("é");
+  const problemText = "é".repeat(count);
+  const expected = normalizedWorkerResult(problemText);
+  assert.ok(Buffer.byteLength(JSON.stringify(expected), "utf8") <= REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+  assert.ok(Buffer.byteLength(serializedWorkerResult("é".repeat(count + 1)), "utf8") > REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
+
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForResultExpression(`{status:"passed",problems:["é".repeat(${count})],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("ae".repeat(32)),
+        limits: { maxResultBytes: 0, maxArrayLen: -1, maxStdBytes: "bogus" }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, true);
+      assert.deepEqual(outcome.message.raw, expected);
     }
   );
 });
@@ -579,10 +738,30 @@ test("direct worker launch with Infinity limits cannot disable fixed reviewed ar
   );
 });
 
+test("direct production worker still fails closed on a circular result", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const c={}; c.self=c; return {status:"passed",problems:[c],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("af".repeat(32)),
+        limits: { maxResultBytes: Infinity, maxArrayLen: Infinity, maxStdBytes: Infinity }
+      });
+      assert.equal(outcome.kind, "message");
+      assert.equal(outcome.message.ok, false);
+      assert.match(outcome.message.error, /not serializable/i);
+    }
+  );
+});
+
 test("direct worker launch with maxResultBytes set to 1 cannot replace reviewed internal limits", async () => {
   await withTemporaryProductionValidatorSource(
     PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
-    `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    validatorSourceForResultExpression(`{status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}`),
     async () => {
       const reg = loadValidatorRegistry();
       const outcome = await launchProductionWorker({
@@ -602,7 +781,7 @@ test("direct worker launch with maxResultBytes set to 1 cannot replace reviewed 
 test("direct worker launch ignores invalid caller-supplied limit types in favor of fixed reviewed limits", async () => {
   await withTemporaryProductionValidatorSource(
     PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
-    `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+    validatorSourceForResultExpression(`{status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}`),
     async () => {
       const reg = loadValidatorRegistry();
       const outcome = await launchProductionWorker({
