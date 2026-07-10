@@ -63,6 +63,9 @@ const SafeMapSet = Function.call.bind(Map.prototype.set);
 const SafePromiseCatch = Function.call.bind(Promise.prototype.catch);
 const SafePromiseResolve = Promise.resolve.bind(Promise);
 const SafePromiseThen = Function.call.bind(Promise.prototype.then);
+const SafeSetAdd = Function.call.bind(Set.prototype.add);
+const SafeSetDelete = Function.call.bind(Set.prototype.delete);
+const SafeSetForEach = Function.call.bind(Set.prototype.forEach);
 const SafeSetHas = Function.call.bind(Set.prototype.has);
 const SafeStringSlice = Function.call.bind(String.prototype.slice);
 const SafeStringSplit = Function.call.bind(String.prototype.split);
@@ -1126,7 +1129,7 @@ function loadClosureEntry(closure) {
   const validatorRuntime = createValidatorContext();
   lockValidatorHostAccess();
   const validatorContext = validatorRuntime.context;
-  const compiledCache = new Map(); // relPath -> module.exports
+  const compiledCache = new Map(); // relPath -> {exports,state,dependencies,dependents}
 
   function verifyOneModule(relPath) {
     const want = SafeMapGet(expected, relPath);
@@ -1188,7 +1191,7 @@ function loadClosureEntry(closure) {
   function requireFrom(fromRel, spec) {
     if (spec === "." || spec === ".." || SafeStringStartsWith(spec, "./") || SafeStringStartsWith(spec, "../") || SafeStringStartsWith(spec, "/")) {
       const target = resolveLocal(fromRel, spec);
-      return loadModule(target);
+      return loadModule(target, fromRel);
     }
     const builtin = SafeStringStartsWith(spec, "node:") ? SafeStringSlice(spec, 5) : spec;
     if (!SafeObjectHasOwn(ALLOWED_BUILTINS, builtin)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "non-allowlisted builtin required in closure");
@@ -1214,6 +1217,51 @@ function loadClosureEntry(closure) {
     return "VALIDATOR_THROW";
   }
 
+  function recordDependency(fromRel, targetRel) {
+    if (!fromRel || fromRel === targetRel) return;
+    const fromEntry = SafeMapGet(compiledCache, fromRel);
+    const targetEntry = SafeMapGet(compiledCache, targetRel);
+    if (!fromEntry || !targetEntry) return;
+    SafeSetAdd(fromEntry.dependencies, targetRel);
+    SafeSetAdd(targetEntry.dependents, fromRel);
+  }
+
+  function deleteDependencyEdges(relPath, entry) {
+    SafeSetForEach(entry.dependencies, (dependencyRel) => {
+      const dependencyEntry = SafeMapGet(compiledCache, dependencyRel);
+      if (dependencyEntry) SafeSetDelete(dependencyEntry.dependents, relPath);
+    });
+    SafeSetForEach(entry.dependents, (dependentRel) => {
+      const dependentEntry = SafeMapGet(compiledCache, dependentRel);
+      if (dependentEntry) SafeSetDelete(dependentEntry.dependencies, relPath);
+    });
+  }
+
+  function invalidateModuleGraph(relPath) {
+    const pending = [relPath];
+    const invalidated = new Set();
+    let cursor = 0;
+    while (cursor < pending.length) {
+      const current = pending[cursor];
+      cursor += 1;
+      if (SafeSetHas(invalidated, current)) continue;
+      const entry = SafeMapGet(compiledCache, current);
+      if (!entry) continue;
+      SafeSetAdd(invalidated, current);
+      SafeSetForEach(entry.dependents, (dependentRel) => {
+        if (!SafeSetHas(invalidated, dependentRel)) pending[pending.length] = dependentRel;
+      });
+    }
+    for (let index = 0; index < pending.length; index += 1) {
+      const current = pending[index];
+      if (!SafeSetHas(invalidated, current)) continue;
+      const entry = SafeMapGet(compiledCache, current);
+      if (!entry) continue;
+      deleteDependencyEdges(current, entry);
+      SafeMapDelete(compiledCache, current);
+    }
+  }
+
   function createValidatorRequire(fromRel) {
     return validatorRuntime.runtime.createRequire((spec) => {
       try {
@@ -1224,32 +1272,42 @@ function loadClosureEntry(closure) {
     });
   }
 
-  function loadModule(relPath) {
-    if (SafeMapHas(compiledCache, relPath)) return SafeMapGet(compiledCache, relPath);
+  function loadModule(relPath, requesterRelPath) {
+    if (SafeMapHas(compiledCache, relPath)) {
+      const cached = SafeMapGet(compiledCache, relPath);
+      if (cached && (cached.state === "loading" || cached.state === "loaded")) {
+        recordDependency(requesterRelPath, relPath);
+        return cached.exports;
+      }
+      throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "invalid validator module cache state");
+    }
     if (!SafeMapHas(verifiedSources, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module was not captured before execution");
     const source = SafeMapGet(verifiedSources, relPath);
     const module = validatorRuntime.runtime.createModule();
-    SafeMapSet(compiledCache, relPath, module.exports); // seed for cycles
+    const cacheEntry = { exports: module.exports, state: "loading", dependencies: new Set(), dependents: new Set() };
+    SafeMapSet(compiledCache, relPath, cacheEntry); // seed for cycles
     const absFile = path.join(ROOT, relPath);
     let wrapper;
     try {
       wrapper = SafeVmCompileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile, parsingContext: validatorContext });
     } catch (error) {
-      SafeMapDelete(compiledCache, relPath);
+      invalidateModuleGraph(relPath);
       throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "validator module compilation failed");
     }
     try {
       wrapper(module.exports, createValidatorRequire(relPath), module, absFile, path.dirname(absFile));
     } catch (error) {
-      SafeMapDelete(compiledCache, relPath);
+      invalidateModuleGraph(relPath);
       if (error instanceof WorkerFailure) throw error;
       throw workerFailure("VALIDATOR_THROW");
     }
-    SafeMapSet(compiledCache, relPath, module.exports);
+    cacheEntry.exports = module.exports;
+    cacheEntry.state = "loaded";
+    recordDependency(requesterRelPath, relPath);
     return module.exports;
   }
 
-  return { exports: loadModule(closure.entryRelPath), runtime: validatorRuntime.runtime };
+  return { exports: loadModule(closure.entryRelPath, null), runtime: validatorRuntime.runtime };
 }
 
 function loadAuthoritativeDescriptor(workerPayload) {

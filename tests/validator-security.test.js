@@ -2372,6 +2372,335 @@ module.exports = {
   }
 });
 
+test("failed CommonJS cycle peers that captured provisional exports are invalidated", async () => {
+  const suffix = `failed-cycle-${seq++}`;
+  const preloadPath = path.join(scratch, `${suffix}-preload.js`);
+  const hostMarker = path.join(scratch, `${suffix}-host-marker.txt`);
+  const writtenDeps = [];
+  const markers = [];
+  const depName = (label) => `${suffix}-${label}.js`;
+  const depPath = (label) => path.join(REAL_VALIDATORS, depName(label));
+  const markerPath = (label) => {
+    const filePath = path.join(scratch, `${suffix}-${label}.count`);
+    markers[markers.length] = filePath;
+    return filePath;
+  };
+  const bumpSource = (filePath) => `
+const fs = require("node:fs");
+let count = 0;
+try { count = Number(fs.readFileSync(${JSON.stringify(filePath)}, "utf8")) || 0; } catch (error) {}
+fs.writeFileSync(${JSON.stringify(filePath)}, String(count + 1));
+`;
+  const writeDep = (label, source) => {
+    const filePath = depPath(label);
+    writtenDeps[writtenDeps.length] = filePath;
+    writeStrictFile(filePath, source);
+  };
+  const counts = new Map();
+  const countMarker = (label) => {
+    if (!counts.has(label)) counts.set(label, markerPath(label));
+    return counts.get(label);
+  };
+  const thrownCases = [
+    ["error", `throw new Error("cycle error");`],
+    ["custom-error", `class CustomCycleError extends Error {}; throw new CustomCycleError("custom cycle error");`],
+    ["aggregate", `throw new AggregateError([new Error("inner")], "aggregate cycle error");`],
+    ["string", `throw "cycle string";`],
+    ["symbol", `throw Symbol.for("cycle.symbol");`],
+    ["null", `throw null;`],
+    ["object", `throw { label: "plain object", nested: { ok: true } };`],
+    ["array", `throw ["array", { nested: true }];`],
+    ["proxy", `throw new Proxy({ label: "proxy" }, { get(target, key) { if (key === "message") return "proxy message"; return target[key]; } });`],
+    ["revoked-proxy", `const pair = Proxy.revocable({ label: "revoked" }, {}); pair.revoke(); throw pair.proxy;`],
+    ["accessor", `const thrown = {}; Object.defineProperty(thrown, "message", { get() { return "accessor"; } }); throw thrown;`],
+    ["cause", `throw new Error("outer", { cause: { nested: "cause" } });`]
+  ];
+  writeStrictFile(preloadPath, `
+    const fs = require("fs");
+    class Pool { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "pool"); } }
+    class Client { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "client"); } }
+    class Dispatcher { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "dispatcher"); } }
+    class Agent {
+      constructor(label) {
+        this.label = label;
+        this[Symbol("factory")] = function factory() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "factory"); return new Pool(); };
+        this[Symbol("clients")] = new Map([["client", new Client()]]);
+        this[Symbol("options")] = { callback: function callback() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "callback"); } };
+      }
+      dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "agent-" + this.label); }
+    }
+    function makeAgent(label) { return new Agent(label); }
+    Object.defineProperty(Object.getPrototypeOf(globalThis), Symbol.for("audit.cycleCache.inheritedAgent"), { value: makeAgent("inherited"), configurable: true });
+    Object.defineProperty(Object.prototype, Symbol.for("audit.cycleCache.objectPrototypeAgent"), { value: makeAgent("object-prototype"), configurable: true });
+    function installLate(label) {
+      globalThis[Symbol.for("audit.cycleCache.late." + label)] = makeAgent(label);
+      globalThis["auditCycleCacheLate" + label] = makeAgent(label + "-string");
+    }
+    process.nextTick(() => installLate("nextTick"));
+    queueMicrotask(() => installLate("microtask"));
+    Promise.resolve().then(() => installLate("promise"));
+    setImmediate(() => installLate("immediate"));
+  `);
+  try {
+    writeDep("unrelated-before", `"use strict";\n${bumpSource(countMarker("unrelated-before"))}\nmodule.exports = { label: "unrelated-before", identity: {} };\n`);
+    writeDep("unrelated-during", `"use strict";\n${bumpSource(countMarker("unrelated-during"))}\nmodule.exports = { label: "unrelated-during", identity: {} };\n`);
+    writeDep("catch-leaf", `"use strict";\n${bumpSource(countMarker("catch-leaf"))}\nexports.partial = "catch-leaf";\nthrow new Error("catch leaf stop");\n`);
+    writeDep("catch-parent", `"use strict";\n${bumpSource(countMarker("catch-parent"))}\nlet caught = false;\ntry { require("./${depName("catch-leaf")}"); } catch (error) { caught = error && error.code === "VALIDATOR_THROW"; }\nmodule.exports = { label: "catch-parent", caught };\n`);
+    writeDep("ok-direct", `"use strict";\n${bumpSource(countMarker("ok-direct"))}\nmodule.exports = { label: "ok-direct", nested: { ok: true } };\n`);
+    writeDep("ok-leaf", `"use strict";\n${bumpSource(countMarker("ok-leaf"))}\nmodule.exports = { label: "ok-leaf" };\n`);
+    writeDep("ok-parent", `"use strict";\n${bumpSource(countMarker("ok-parent"))}\nconst leaf = require("./${depName("ok-leaf")}");\nmodule.exports = { label: "ok-parent", leaf };\n`);
+    writeDep("success2-a", `"use strict";\n${bumpSource(countMarker("success2-a"))}\nexports.name = "success2-a";\nconst b = require("./${depName("success2-b")}");\nexports.fromB = b.name || "pending";\nexports.done = true;\n`);
+    writeDep("success2-b", `"use strict";\n${bumpSource(countMarker("success2-b"))}\nexports.name = "success2-b";\nconst a = require("./${depName("success2-a")}");\nexports.fromA = a.name || "pending";\nexports.done = true;\n`);
+    writeDep("success3-a", `"use strict";\n${bumpSource(countMarker("success3-a"))}\nexports.name = "success3-a";\nconst b = require("./${depName("success3-b")}");\nexports.fromB = b.name || "pending";\nexports.done = true;\n`);
+    writeDep("success3-b", `"use strict";\n${bumpSource(countMarker("success3-b"))}\nexports.name = "success3-b";\nconst c = require("./${depName("success3-c")}");\nexports.fromC = c.name || "pending";\nexports.done = true;\n`);
+    writeDep("success3-c", `"use strict";\n${bumpSource(countMarker("success3-c"))}\nexports.name = "success3-c";\nconst a = require("./${depName("success3-a")}");\nexports.fromA = a.name || "pending";\nexports.done = true;\n`);
+    writeDep("fail2-a", `"use strict";\n${bumpSource(countMarker("fail2-a"))}\nexports.partial = "a-partial";\nexports.partialFunction = function(){ return "a-partial-function"; };\nexports.graph = { nested: [{ call: function(){ return "a-graph"; } }] };\nexports.graph.self = exports.graph;\nconst b = require("./${depName("fail2-b")}");\nexports.fromB = b.name;\nthrow new Error("a-stop");\n`);
+    writeDep("fail2-b", `"use strict";\n${bumpSource(countMarker("fail2-b"))}\nexports.name = "b-complete";\nconst a = require("./${depName("fail2-a")}");\nexports.a = a;\nexports.done = true;\n`);
+    writeDep("fail3-a", `"use strict";\n${bumpSource(countMarker("fail3-a"))}\nexports.partial = "a3-partial";\nconst b = require("./${depName("fail3-b")}");\nexports.fromB = b.name;\nthrow new Error("a3-stop");\n`);
+    writeDep("fail3-b", `"use strict";\n${bumpSource(countMarker("fail3-b"))}\nexports.name = "b3-complete";\nconst c = require("./${depName("fail3-c")}");\nexports.c = c;\nexports.done = true;\n`);
+    writeDep("fail3-c", `"use strict";\n${bumpSource(countMarker("fail3-c"))}\nexports.name = "c3-complete";\nconst a = require("./${depName("fail3-a")}");\nexports.a = a;\nexports.done = true;\n`);
+    writeDep("fail-graph-a", `"use strict";\n${bumpSource(countMarker("fail-graph-a"))}\nmodule.exports = function reassignedPartial(){ return "reassigned-partial"; };\nmodule.exports.primitive = "graph-a";\nmodule.exports.fn = function(){ return "graph-a-fn"; };\nmodule.exports.nested = { array: [{ call: function(){ return "graph-a-nested"; } }] };\nmodule.exports.nested.self = module.exports.nested;\nconst b = require("./${depName("fail-graph-b")}");\nmodule.exports.fromB = b.name;\nthrow new Error("graph-a-stop");\n`);
+    writeDep("fail-graph-b", `"use strict";\n${bumpSource(countMarker("fail-graph-b"))}\nexports.name = "graph-b-complete";\nconst a = require("./${depName("fail-graph-a")}");\nexports.a = a;\nexports.done = true;\n`);
+    for (const [label, thrownStatement] of thrownCases) {
+      writeDep(`case-${label}-a`, `"use strict";\n${bumpSource(countMarker(`case-${label}-a`))}\nexports.partial = ${JSON.stringify(`${label}-partial`)};\nconst b = require("./${depName(`case-${label}-b`)}");\nexports.fromB = b.name;\n${thrownStatement}\n`);
+      writeDep(`case-${label}-b`, `"use strict";\n${bumpSource(countMarker(`case-${label}-b`))}\nexports.name = ${JSON.stringify(`${label}-b-complete`)};\nconst a = require("./${depName(`case-${label}-a`)}");\nexports.a = a;\nexports.done = true;\n`);
+    }
+    const topCaseAttempts = thrownCases.map(([label]) => `
+repeatFail(topProblems, "case ${label} A top", function(){ return require("./${depName(`case-${label}-a`)}"); }, 1);
+repeatFail(topProblems, "case ${label} B top", function(){ return require("./${depName(`case-${label}-b`)}"); }, 1);`).join("\n");
+    const validateCaseAttempts = thrownCases.map(([label]) => `
+repeatFail(problems, "case ${label} A validate", function(){ return require("./${depName(`case-${label}-a`)}"); }, 1);
+repeatFail(problems, "case ${label} B validate", function(){ return require("./${depName(`case-${label}-b`)}"); }, 1);`).join("\n");
+    const expectedCounts = Object.fromEntries([
+      ["unrelated-before", 1],
+      ["unrelated-during", 1],
+      ["catch-leaf", 1],
+      ["catch-parent", 1],
+      ["ok-direct", 1],
+      ["ok-leaf", 1],
+      ["ok-parent", 1],
+      ["success2-a", 1],
+      ["success2-b", 1],
+      ["success3-a", 1],
+      ["success3-b", 1],
+      ["success3-c", 1],
+      ["fail2-a", 6],
+      ["fail2-b", 6],
+      ["fail3-a", 6],
+      ["fail3-b", 6],
+      ["fail3-c", 6],
+      ["fail-graph-a", 4],
+      ["fail-graph-b", 4],
+      ...thrownCases.flatMap(([label]) => [[`case-${label}-a`, 4], [`case-${label}-b`, 4]])
+    ]);
+    const markerMap = Object.fromEntries([...counts.entries()]);
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";
+const fs = require("node:fs");
+const topProblems = [];
+const markerPaths = ${JSON.stringify(markerMap)};
+const expectedCounts = ${JSON.stringify(expectedCounts)};
+const hostSymbols = [
+  "audit.cycleCache.inheritedAgent",
+  "audit.cycleCache.objectPrototypeAgent",
+  "audit.cycleCache.late.nextTick",
+  "audit.cycleCache.late.microtask",
+  "audit.cycleCache.late.promise",
+  "audit.cycleCache.late.immediate"
+].map(function(name){ return Symbol.for(name); });
+function isObjectLike(value) { return value !== null && (typeof value === "object" || typeof value === "function"); }
+function add(problems, problem) { problems[problems.length] = problem; }
+function keyText(key) { try { return String(key); } catch (error) { return "<key>"; } }
+function readCount(label) {
+  try { return Number(fs.readFileSync(markerPaths[label], "utf8")) || 0; } catch (error) { return 0; }
+}
+function inspectAuthority(problems, label, value, seen) {
+  if (!isObjectLike(value)) return;
+  if (!seen) seen = [];
+  if (seen.indexOf(value) !== -1) return;
+  seen[seen.length] = value;
+  let names = "";
+  try { names += String(value.constructor && value.constructor.name); } catch (error) {}
+  try {
+    const proto = Object.getPrototypeOf(value);
+    names += " " + String(proto && proto.constructor && proto.constructor.name);
+  } catch (error) {}
+  if (/Agent|Pool|Client|Dispatcher|WorkerFailure|Map/.test(names)) add(problems, label + " exposed host-like constructor " + names);
+  try {
+    if (typeof value.dispatch === "function") {
+      add(problems, label + " exposed dispatch");
+      try { value.dispatch(); } catch (error) {}
+    }
+  } catch (error) {}
+  for (let index = 0; index < hostSymbols.length; index += 1) {
+    try {
+      if (value[hostSymbols[index]] !== undefined) add(problems, label + " exposed host sentinel " + String(hostSymbols[index]));
+    } catch (error) {}
+  }
+  if (seen.length > 180) return;
+  let keys = [];
+  try { keys = Reflect.ownKeys(value); } catch (error) { return; }
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    let descriptor;
+    try { descriptor = Object.getOwnPropertyDescriptor(value, key); } catch (error) { continue; }
+    if (!descriptor) continue;
+    const child = label + "." + keyText(key);
+    if ("value" in descriptor) inspectAuthority(problems, child, descriptor.value, seen);
+    if ("get" in descriptor && typeof descriptor.get === "function") inspectAuthority(problems, child + ".get", descriptor.get, seen);
+    if ("set" in descriptor && typeof descriptor.set === "function") inspectAuthority(problems, child + ".set", descriptor.set, seen);
+  }
+}
+function inspectRecoveredGlobal(problems, label, candidate) {
+  if (!candidate || candidate === globalThis || !isObjectLike(candidate)) return;
+  add(problems, label + " recovered distinct global");
+  for (let index = 0; index < hostSymbols.length; index += 1) {
+    try { inspectAuthority(problems, label + ".global." + String(hostSymbols[index]), candidate[hostSymbols[index]], []); } catch (error) {}
+  }
+  for (const name of ["auditCycleCacheLatenextTick", "auditCycleCacheLatemicrotask", "auditCycleCacheLatepromise", "auditCycleCacheLateimmediate"]) {
+    try { inspectAuthority(problems, label + ".global." + name, candidate[name], []); } catch (error) {}
+  }
+}
+function tryConstructorEscape(problems, label, value) {
+  const candidates = [value];
+  try { if (value !== undefined && value !== null) candidates[candidates.length] = Object.getPrototypeOf(value); } catch (error) {}
+  try { if (value && value.prototype !== undefined) candidates[candidates.length] = value.prototype; } catch (error) {}
+  try { if (value && value.prototype !== undefined) candidates[candidates.length] = Object.getPrototypeOf(value.prototype); } catch (error) {}
+  for (let index = 0; index < candidates.length; index += 1) {
+    const candidate = candidates[index];
+    if (!candidate) continue;
+    try {
+      const ctor = candidate.constructor;
+      const fn = ctor && ctor.constructor;
+      if (typeof fn === "function") inspectRecoveredGlobal(problems, label + ".constructor[" + index + "]", fn("return globalThis")());
+    } catch (error) {}
+  }
+}
+function auditCaught(problems, label, caught) {
+  if (!isObjectLike(caught)) {
+    add(problems, label + " threw a primitive instead of the reviewed failure record");
+    return;
+  }
+  try { if (Object.getPrototypeOf(caught) !== null) add(problems, label + " failure prototype was not null"); } catch (error) { add(problems, label + " prototype inspection threw"); }
+  try { if (!Object.isFrozen(caught)) add(problems, label + " failure record was not frozen"); } catch (error) { add(problems, label + " freeze inspection threw"); }
+  try { if (caught.name !== "ValidatorRequireFailure") add(problems, label + " failure name mismatch"); } catch (error) { add(problems, label + " name read threw"); }
+  try { if (caught.message !== "validator dependency could not be loaded") add(problems, label + " failure message mismatch"); } catch (error) { add(problems, label + " message read threw"); }
+  try { if (typeof caught.code !== "string" || caught.code !== "VALIDATOR_THROW") add(problems, label + " failure code mismatch " + String(caught.code)); } catch (error) { add(problems, label + " code read threw"); }
+  tryConstructorEscape(problems, label, caught);
+  inspectAuthority(problems, label, caught, []);
+}
+function inspectPartial(problems, label, value, seen) {
+  add(problems, label + " returned stale partial export");
+  if (!isObjectLike(value)) return;
+  if (!seen) seen = [];
+  if (seen.indexOf(value) !== -1) return;
+  seen[seen.length] = value;
+  try {
+    if (typeof value === "function") add(problems, label + " partial function returned " + String(value()));
+  } catch (error) {}
+  let keys = [];
+  try { keys = Reflect.ownKeys(value); } catch (error) { return; }
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    let child;
+    try { child = value[key]; } catch (error) { continue; }
+    if (typeof child === "function") {
+      try { add(problems, label + "." + keyText(key) + " partial function returned " + String(child())); } catch (error) {}
+    }
+    if (isObjectLike(child)) inspectPartial(problems, label + "." + keyText(key), child, seen);
+  }
+}
+function attemptFail(problems, label, load) {
+  try {
+    const value = load();
+    inspectPartial(problems, label, value, []);
+  } catch (caught) {
+    auditCaught(problems, label, caught);
+  }
+}
+function repeatFail(problems, label, load, count) {
+  for (let index = 0; index < count; index += 1) attemptFail(problems, label + "#" + index, load);
+}
+const unrelatedBefore = require("./${depName("unrelated-before")}");
+repeatFail(topProblems, "fail2 A top", function(){ return require("./${depName("fail2-a")}"); }, 2);
+repeatFail(topProblems, "fail2 B top", function(){ return require("./${depName("fail2-b")}"); }, 2);
+const unrelatedDuring = require("./${depName("unrelated-during")}");
+repeatFail(topProblems, "fail3 A top", function(){ return require("./${depName("fail3-a")}"); }, 1);
+repeatFail(topProblems, "fail3 B top", function(){ return require("./${depName("fail3-b")}"); }, 1);
+repeatFail(topProblems, "fail3 C top", function(){ return require("./${depName("fail3-c")}"); }, 1);
+repeatFail(topProblems, "graph A top", function(){ return require("./${depName("fail-graph-a")}"); }, 1);
+repeatFail(topProblems, "graph B top", function(){ return require("./${depName("fail-graph-b")}"); }, 1);
+${topCaseAttempts}
+const catchParent = require("./${depName("catch-parent")}");
+if (!catchParent.caught) add(topProblems, "catching parent did not catch reviewed failure");
+if (catchParent !== require("./${depName("catch-parent")}")) add(topProblems, "catching parent was not cached");
+const okDirect = require("./${depName("ok-direct")}");
+const okParent = require("./${depName("ok-parent")}");
+const success2 = require("./${depName("success2-a")}");
+const success3 = require("./${depName("success3-a")}");
+if (unrelatedBefore !== require("./${depName("unrelated-before")}")) add(topProblems, "unrelated-before identity changed");
+if (unrelatedDuring !== require("./${depName("unrelated-during")}")) add(topProblems, "unrelated-during identity changed");
+if (okDirect !== require("./${depName("ok-direct")}") || okDirect.label !== "ok-direct") add(topProblems, "successful direct dependency changed");
+if (okParent !== require("./${depName("ok-parent")}") || okParent.leaf.label !== "ok-leaf") add(topProblems, "successful transitive dependency changed");
+if (success2 !== require("./${depName("success2-a")}") || success2.name !== "success2-a" || require("./${depName("success2-b")}").name !== "success2-b") add(topProblems, "successful two-module cycle changed");
+if (success3 !== require("./${depName("success3-a")}") || success3.name !== "success3-a" || require("./${depName("success3-b")}").name !== "success3-b" || require("./${depName("success3-c")}").name !== "success3-c") add(topProblems, "successful three-module cycle changed");
+module.exports = {
+  id: "execution-plan",
+  version: "1.0.0",
+  supportedPhases: ["candidate", "post_write"],
+  validate: function(){
+    const problems = topProblems.slice();
+    repeatFail(problems, "fail2 A validate", function(){ return require("./${depName("fail2-a")}"); }, 1);
+    repeatFail(problems, "fail2 B validate", function(){ return require("./${depName("fail2-b")}"); }, 1);
+    repeatFail(problems, "fail3 A validate", function(){ return require("./${depName("fail3-a")}"); }, 1);
+    repeatFail(problems, "fail3 B validate", function(){ return require("./${depName("fail3-b")}"); }, 1);
+    repeatFail(problems, "fail3 C validate", function(){ return require("./${depName("fail3-c")}"); }, 1);
+    repeatFail(problems, "graph A validate", function(){ return require("./${depName("fail-graph-a")}"); }, 1);
+    repeatFail(problems, "graph B validate", function(){ return require("./${depName("fail-graph-b")}"); }, 1);
+${validateCaseAttempts}
+    if (unrelatedBefore !== require("./${depName("unrelated-before")}")) add(problems, "unrelated-before identity changed during validate");
+    if (unrelatedDuring !== require("./${depName("unrelated-during")}")) add(problems, "unrelated-during identity changed during validate");
+    if (catchParent !== require("./${depName("catch-parent")}")) add(problems, "catching parent identity changed during validate");
+    if (okDirect !== require("./${depName("ok-direct")}") || okParent !== require("./${depName("ok-parent")}") || success2 !== require("./${depName("success2-a")}") || success3 !== require("./${depName("success3-a")}")) add(problems, "successful module identity changed during validate");
+    for (const label of Object.keys(expectedCounts)) {
+      const actual = readCount(label);
+      if (actual !== expectedCounts[label]) add(problems, "cache-state count mismatch for " + label + ": " + actual + " !== " + expectedCounts[label]);
+    }
+    return { status: problems.length ? "failed" : "passed", problems, warnings: [], checkedObjects: ["OBJ-1"], checkedPaths: ["public/data/report.json"] };
+  }
+};
+`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const outcome = await launchProductionWorker({
+          validatorId: "execution-plan",
+          expectedValidatorSetHash: reg.validatorSetHash,
+          phase: "candidate",
+          context: authoritativeWorkerContext("bx".repeat(32))
+        }, 7000, { execArgv: ["--require", preloadPath] });
+        assert.equal(outcome.kind, "message");
+        assertNoDirectWorkerMessages(outcome);
+        assert.equal(outcome.stdioBytes, 0);
+        const envelope = parseTransportedWorkerEnvelope(outcome.message);
+        assert.equal(envelope.ok, true, JSON.stringify(envelope));
+        const parsed = envelope.result;
+        assert.equal(parsed.status, "passed", parsed.problems.join("\n"));
+        assert.deepEqual(parsed.problems, []);
+        assert.equal(fs.existsSync(hostMarker), false);
+      }
+    );
+  } finally {
+    for (const filePath of writtenDeps) {
+      try { fs.rmSync(filePath, { force: true }); } catch (error) {}
+    }
+    for (const filePath of markers) {
+      try { fs.rmSync(filePath, { force: true }); } catch (error) {}
+    }
+    try { fs.rmSync(hostMarker, { force: true }); } catch (error) {}
+  }
+});
+
 test("non-neutralizable symbol-keyed global authority fails closed before validator execution", async () => {
   const preloadPath = path.join(scratch, `symbol-agent-locked-preload-${seq++}.js`);
   const topLevelMarker = path.join(scratch, `symbol-agent-locked-top-marker-${seq++}.txt`);

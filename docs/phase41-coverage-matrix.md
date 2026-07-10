@@ -1,8 +1,8 @@
 # Phase 4.1 - Coverage Matrix for Validator Cross-Realm Boundary Checkpoint
 
-Authoritative base: `3ecddc1359fc1285e65ff6b635868b57cdecdd6d`
+Authoritative base: `d4a6e88039eb0c620cb43c7e87e5c1bab29ed0f6`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, and failed-module cache-poisoning attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, failed-module cache-poisoning, and failed CommonJS cycle peer poisoning attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -70,6 +70,12 @@ No broad capability declarations were added.
 | Arbitrary thrown values poison cache or cross the realm boundary on retry | FIXED | retry cases cover `Error`, custom `Error`, `AggregateError`, string, symbol, `null`, object, array, proxy, revoked proxy, proxy prototype trap, accessor object, and `Error.cause` |
 | Cache-state behavior for success and cycles regresses | FIXED | marker counts prove successful direct/transitive modules and successful CommonJS cycles execute once, remain cached, and preserve reviewed cycle behavior |
 | Failed-module cache retry reopens host authority path | FIXED | every repeated failure audits caught values for host constructors, globals, Agent/Pool/Client/Dispatcher, raw `Map`, factories, callbacks, stdio, and direct worker messages |
+| Completed cycle peer remains cached after receiving failed provisional exports | FIXED | two-module `A -> B -> A` regression proves peer `B` is invalidated after `A` throws and cannot return `A`'s partial exports |
+| Failed three-module cycle leaves completed peer or transitive dependent cached | FIXED | `A -> B -> C -> A` regression retries every participant and proves all failed-cycle participants return to absent state |
+| Failed cycle with function/nested/cyclic/reassigned partial exports leaks stale graph | FIXED | regression exports primitive fields, functions, nested arrays/objects, cyclic graphs, and reassigned `module.exports`; every retry fails and no partial graph is recoverable |
+| Failed cycle invalidation clears unrelated loaded modules | FIXED | unrelated modules loaded before and during the failed cycle preserve identity and marker counts, proving the cache graph rollback is scoped |
+| Parent catches reviewed failure but is invalidated despite receiving no exports | FIXED | catching parent remains cached because the failed dependency's exports never successfully returned to it |
+| Successful CommonJS cycles are disabled by cache graph hardening | FIXED | successful two-module and three-module cycle regressions remain cached and available after completion |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
 | `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
@@ -124,7 +130,8 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 138/138 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 139/139 |
+| focused failed-cache and failed-cycle test pattern | PASS, 5/5 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
@@ -135,7 +142,7 @@ No broad capability declarations were added.
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 334/334, normal exit on this host |
+| `npm run execution:test` | PASS, 335/335, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |
