@@ -1,19 +1,18 @@
-# Phase 4.1 - Validator Worker Console/Stdio Channel Review
+# Phase 4.1 - Validator Worker Symbol-Global Review
 
-Base checkpoint: `25f5412e9d664a9258287c30eb2e1d53e846cc88`
+Base checkpoint: `83852956ac6df1150776b20efbbdf28691456119`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, and console/stdout MessagePort attacks are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, and symbol-keyed global dispatcher attacks are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `25f5412e9d664a9258287c30eb2e1d53e846cc88` and closes the remaining default-global worker-channel defect:
+This checkpoint continues from `83852956ac6df1150776b20efbbdf28691456119` and closes the remaining symbol-keyed default-global authority defect:
 
-1. validator code no longer receives the host Node `console` object or its internal stdout/stderr streams
-2. `console._stdout`, `console._stderr`, `console.Console`, symbol enumeration, and constructor-chain recovery cannot expose the worker stdio `MessagePort`
-3. the production worker closes the default `parentPort` after handing off the harness-owned private result channel
-4. risky default globals such as `performance`, `navigator`, `fetch`, `crypto`, `structuredClone`, web streams, timers, `AbortController`, and messaging constructors are removed from the validator global
-5. the fs facade rejects numeric file descriptors so `fs.writeFileSync(1, ...)` and `fs.writeFileSync(2, ...)` cannot bypass stdout/stderr bounds
-6. the direct production-worker regression harness now measures stdout/stderr bytes in addition to default-channel messages
-7. the previously verified realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
+1. before any validator byte executes, the worker enumerates symbol-keyed properties on `globalThis`
+2. primitive symbol-keyed values may remain, but symbol-keyed objects, functions, accessors, dispatchers, factories, maps, pools, clients, and equivalent host authority are replaced with `undefined`
+3. if a nonprimitive symbol-keyed global cannot be neutralized, the worker fails closed before validator module loading or `validate()` execution
+4. the regression preloads an Undici-like `Symbol.for("undici.globalDispatcher.1")` Agent object before the production worker entry starts and proves validator code cannot recover it through `Object.getOwnPropertySymbols(globalThis)`, `Reflect.ownKeys(globalThis)`, or `Symbol.for(...)`
+5. a second regression preloads a non-writable/non-configurable Agent object and proves startup fails closed before validator code can write a marker
+6. the previously verified console/stdout lockdown, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
 
 OS-level validator confinement was not started.
 
@@ -46,6 +45,16 @@ Validator code no longer receives the worker's host `console` object. The global
 - host stdout/stderr streams and their native prototypes
 
 Other reviewed-dangerous default globals are also removed from the validator global, including network/fetch surfaces, global web crypto, structured clone, timer callback handles, web streams, abort/event constructors, blob/form/request/response constructors, and messaging constructors. Validators that need reviewed capabilities must use the closure-local builtin facades instead.
+
+### Symbol-Keyed Global Authority Lockdown
+The worker now audits symbol-keyed globals as a separate authority class:
+- `Object.getOwnPropertySymbols(globalThis)` is captured and used by trusted code before validator execution
+- symbol-keyed primitive values, such as harmless string tags, may remain
+- symbol-keyed objects, functions, accessors, Undici Agent-like dispatchers, raw pools/clients, internal factories, maps, callbacks, and options objects are neutralized before validator code runs
+- writable non-configurable symbol globals are overwritten with `undefined`
+- non-writable/non-configurable symbol globals fail worker startup closed before validator module loading
+
+This is intentionally not tied to a single display string such as `Symbol(undici.globalDispatcher.1)`. The lockdown is value-oriented: any symbol-keyed nonprimitive global authority is removed or causes fail-closed startup.
 
 ### Capability Facade Return Hardening
 Allowed builtins remain explicit, but facades no longer return raw host-native authority objects:
@@ -118,6 +127,14 @@ The previous Phase 4.1 corrections remain in force:
 
 ## Regressions Added
 New direct production-worker regressions prove:
+- `Object.getOwnPropertySymbols(globalThis)` exposes no raw host object or function after a preloaded Agent-like symbol global is scrubbed
+- `Reflect.ownKeys(globalThis)` cannot locate an Undici-like Agent, Pool, Client, Dispatcher, dispatch method, internal factory, clients `Map`, options object, callback function, or manufactured Pool
+- `Symbol.for("undici.globalDispatcher.1")` cannot recover a host Agent-like dispatcher
+- writable non-configurable symbol-keyed dispatcher globals are neutralized
+- non-writable/non-configurable symbol-keyed dispatcher globals fail closed before validator execution
+- no Agent, Pool, Client, Dispatcher constructor or raw internal factory can be recovered from retained global state
+
+Retained direct production-worker regressions prove:
 - `console._stdout` is unavailable
 - `console._stderr` is unavailable
 - `console.Console` is unavailable
@@ -127,8 +144,6 @@ New direct production-worker regressions prove:
 - the parent observes `0` stdout/stderr bytes for the reproduced console/stdout attack
 - risky default globals do not expose raw host authority
 - the fs facade cannot write directly to stdout/stderr file descriptors
-
-Retained direct production-worker regressions prove:
 - `fs.realpathSync(path)` returns a primitive string
 - `fs.realpathSync(path, "buffer")` cannot return a raw host `Buffer`
 - `fs.realpathSync(path, { encoding: "buffer" })` cannot return a raw host `Buffer`
@@ -164,9 +179,9 @@ Retained direct production-worker regressions prove:
 - normal authoritative validators still pass
 
 ## Test Totals Observed In This Workspace
-- validator-security: 131/131
+- validator-security: 133/133
 - execution-orchestrator: 56/56
-- execution suite: 327/327
+- execution suite: 329/329
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -187,6 +202,9 @@ Host note:
 ## Additional Confirmations
 - all closure bytes are verified and captured before any validator byte executes
 - no validator source verification occurs after validator execution begins
+- no string-keyed or symbol-keyed default global exposes raw host authority in the covered regression paths
+- no Undici-like Agent, Pool, Client, Dispatcher, internal factory, clients Map, options object, or callback function is reachable through symbol-keyed global state
+- non-neutralizable symbol-keyed authority fails closed before validator execution
 - no raw stdout/stderr `MessagePort` is reachable through the global console object
 - no validator-controlled stdio payload crossed the parent boundary in the reproduced direct-worker attack
 - maximum observed parent-side stdio bytes for the console/stdout attack: 0

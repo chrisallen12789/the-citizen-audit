@@ -56,7 +56,7 @@ async function runOne(descriptor, context = {}, timeoutMs = 1500) {
   return runValidationPhase(descriptor.supportedPhases[0], [descriptor], context, { timeoutMs });
 }
 
-function launchProductionWorker(workerPayload, timeoutMs = 1500) {
+function launchProductionWorker(workerPayload, timeoutMs = 1500, workerOptions = {}) {
   return new Promise((resolve) => {
     let settled = false;
     let worker;
@@ -97,7 +97,7 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
     };
     const timer = setTimeout(() => finish({ kind: "timeout" }), timeoutMs);
     try {
-      worker = new Worker(PRODUCTION_WORKER_PATH, { workerData: workerPayload, stdout: true, stderr: true });
+      worker = new Worker(PRODUCTION_WORKER_PATH, Object.assign({ workerData: workerPayload, stdout: true, stderr: true }, workerOptions));
     } catch (error) {
       finish({ kind: "startup-error", error });
       return;
@@ -1139,6 +1139,120 @@ test("default validator globals do not expose raw host authority", async () => {
       const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
       assert.equal(parsed.status, "passed");
       assert.deepEqual(parsed.problems, []);
+    }
+  );
+});
+
+test("symbol-keyed globals cannot expose Undici-like host dispatchers", async () => {
+  const preloadPath = path.join(scratch, `symbol-agent-preload-${seq++}.js`);
+  writeStrictFile(preloadPath, `
+    class Pool {
+      dispatch() {}
+    }
+    class Agent {
+      constructor() {
+        this[Symbol("factory")] = function factory() { return new Pool(); };
+        this[Symbol("clients")] = new Map();
+        this[Symbol("options")] = { connect: function connect() {} };
+        this.callbacks = [function callback() {}];
+      }
+      dispatch() {}
+    }
+    Object.defineProperty(globalThis, Symbol.for("undici.globalDispatcher.1"), {
+      value: new Agent(),
+      enumerable: false,
+      configurable: false,
+      writable: true
+    });
+  `);
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const problems = [];
+      function inspect(label, value) {
+        if (value === null || (typeof value !== "object" && typeof value !== "function")) return;
+        const ctorName = value.constructor && value.constructor.name;
+        const proto = Object.getPrototypeOf(value);
+        const protoCtorName = proto && proto.constructor && proto.constructor.name;
+        if (/Agent|Pool|Client|Dispatcher/.test(String(ctorName) + " " + String(protoCtorName))) problems[problems.length] = label + " exposed dispatcher constructor";
+        if (typeof value.dispatch === "function") problems[problems.length] = label + " exposed dispatch";
+        const ownKeys = Reflect.ownKeys(value);
+        for (const key of ownKeys) {
+          let child;
+          try { child = value[key]; } catch (error) { continue; }
+          if (child === null || (typeof child !== "object" && typeof child !== "function")) continue;
+          if (typeof child === "function") problems[problems.length] = label + " exposed internal function";
+          if (child instanceof Map) problems[problems.length] = label + " exposed internal Map";
+          if (child && typeof child.dispatch === "function") problems[problems.length] = label + " manufactured dispatcher";
+          try {
+            if (typeof child === "function") {
+              const produced = child({});
+              if (produced && typeof produced.dispatch === "function") problems[problems.length] = label + " manufactured Pool";
+            }
+          } catch (error) {}
+        }
+      }
+      const symbols = Object.getOwnPropertySymbols(globalThis);
+      for (const symbol of symbols) inspect(String(symbol), globalThis[symbol]);
+      const allKeys = Reflect.ownKeys(globalThis);
+      for (const key of allKeys) {
+        if (typeof key === "symbol") inspect("Reflect.ownKeys " + String(key), globalThis[key]);
+      }
+      inspect("Symbol.for undici", globalThis[Symbol.for("undici.globalDispatcher.1")]);
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bq".repeat(32))
+      }, 1500, { execArgv: ["--require", preloadPath] });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(outcome.stdioBytes, 0);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
+    }
+  );
+});
+
+test("non-neutralizable symbol-keyed global authority fails closed before validator execution", async () => {
+  const preloadPath = path.join(scratch, `symbol-agent-locked-preload-${seq++}.js`);
+  const marker = path.join(scratch, `symbol-agent-locked-marker-${seq++}.txt`);
+  writeStrictFile(preloadPath, `
+    class Agent {
+      dispatch() {}
+    }
+    Object.defineProperty(globalThis, Symbol.for("undici.globalDispatcher.1"), {
+      value: new Agent(),
+      enumerable: false,
+      configurable: false,
+      writable: false
+    });
+  `);
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      require("node:fs").writeFileSync(${JSON.stringify(marker)}, "validate");
+      return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("br".repeat(32))
+      }, 1500, { execArgv: ["--require", preloadPath] });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(outcome.stdioBytes, 0);
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "WORKER_INTERNAL_FAILURE");
+      assert.equal(fs.existsSync(marker), false);
     }
   );
 });

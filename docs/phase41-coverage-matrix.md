@@ -1,8 +1,8 @@
-# Phase 4.1 - Coverage Matrix for Validator Console/Stdio Channel Checkpoint
+# Phase 4.1 - Coverage Matrix for Validator Symbol-Global Checkpoint
 
-Authoritative base: `25f5412e9d664a9258287c30eb2e1d53e846cc88`
+Authoritative base: `83852956ac6df1150776b20efbbdf28691456119`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, and console/stdout MessagePort attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, and symbol-keyed global dispatcher attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -28,6 +28,11 @@ No broad capability declarations were added.
 |---|---|---|
 | Validator replaces `MessagePort.prototype.postMessage` to forge success | FIXED | direct worker regression proves thrown validation still returns bounded `VALIDATOR_THROW`, with no forged pass |
 | Validator replaces `MessagePort.prototype.close` to suppress or alter completion | FIXED | direct worker regression proves harness completion and success envelope still arrive through the private port |
+| Symbol-keyed `globalThis` property exposes Undici-like Agent | FIXED | direct worker preloads `Symbol.for("undici.globalDispatcher.1")` with an Agent-like object and proves validator enumeration cannot recover it |
+| `Object.getOwnPropertySymbols(globalThis)` exposes raw host object/function | FIXED | symbol-keyed nonprimitive values are neutralized before validator bytes execute |
+| `Reflect.ownKeys(globalThis)` locates Agent/Pool/Client/Dispatcher authority | FIXED | regression scans reflected symbol keys and finds no dispatcher constructors, dispatch methods, factories, maps, callbacks, or manufactured pools |
+| `Symbol.for("undici.globalDispatcher.1")` recovers Agent | FIXED | regression proves the symbol lookup returns no raw dispatcher authority |
+| Non-writable/non-configurable symbol-keyed authority cannot be neutralized | FIXED | worker fails closed before validator execution and marker creation |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
 | `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
@@ -82,7 +87,7 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 131/131 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 133/133 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
@@ -92,7 +97,7 @@ No broad capability declarations were added.
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 327/327, normal exit on this host |
+| `npm run execution:test` | PASS, 329/329, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |

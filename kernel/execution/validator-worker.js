@@ -47,6 +47,7 @@ const SafeObjectCreate = Object.create;
 const SafeObjectDefineProperty = Object.defineProperty;
 const SafeObjectFreeze = Object.freeze;
 const SafeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+const SafeObjectGetOwnPropertySymbols = Object.getOwnPropertySymbols;
 const SafeObjectGetPrototypeOf = Object.getPrototypeOf;
 const SafeObjectHasOwn = Function.call.bind(Object.prototype.hasOwnProperty);
 const SafeObjectKeys = Object.keys;
@@ -341,10 +342,48 @@ function setGlobalValue(name, value) {
   } catch (error) {}
 }
 
+function mustSetGlobalValue(name, value) {
+  setGlobalValue(name, value);
+  const descriptor = SafeObjectGetOwnPropertyDescriptor(HOST_GLOBAL, name);
+  if (!descriptor) throw workerFailure("WORKER_INTERNAL_FAILURE", "global lockdown failed");
+  if (!SafeObjectHasOwn(descriptor, "value") || descriptor.value !== value) {
+    throw workerFailure("WORKER_INTERNAL_FAILURE", "global lockdown failed");
+  }
+}
+
 function setProcessValue(name, value) {
   try {
     SafeObjectDefineProperty(HOST_PROCESS, name, { value, writable: false, configurable: false });
   } catch (error) {}
+}
+
+function isPrimitiveGlobalValue(value) {
+  return value === null || (typeof value !== "object" && typeof value !== "function");
+}
+
+function neutralizeGlobalAuthority(key) {
+  try {
+    SafeObjectDefineProperty(HOST_GLOBAL, key, { value: undefined, writable: false, configurable: false });
+  } catch (error) {}
+  const descriptor = SafeObjectGetOwnPropertyDescriptor(HOST_GLOBAL, key);
+  if (!descriptor) return;
+  if (SafeObjectHasOwn(descriptor, "value") && descriptor.value === undefined) return;
+  throw workerFailure("WORKER_INTERNAL_FAILURE", "symbol-keyed global authority could not be neutralized");
+}
+
+function lockSymbolKeyedGlobalAuthorities() {
+  const symbols = SafeObjectGetOwnPropertySymbols(HOST_GLOBAL);
+  for (let index = 0; index < symbols.length; index += 1) {
+    const symbol = symbols[index];
+    const descriptor = SafeObjectGetOwnPropertyDescriptor(HOST_GLOBAL, symbol);
+    if (!descriptor) continue;
+    if (!SafeObjectHasOwn(descriptor, "value")) {
+      neutralizeGlobalAuthority(symbol);
+      continue;
+    }
+    if (isPrimitiveGlobalValue(descriptor.value)) continue;
+    neutralizeGlobalAuthority(symbol);
+  }
 }
 
 function lockValidatorHostAccess() {
@@ -360,8 +399,8 @@ function lockValidatorHostAccess() {
   setGlobalValue("require", undefined);
   setGlobalValue("module", undefined);
   setGlobalValue("exports", undefined);
-  setGlobalValue("Buffer", SAFE_BUFFER_FACADE);
-  setGlobalValue("JSON", SAFE_JSON_FACADE);
+  mustSetGlobalValue("Buffer", SAFE_BUFFER_FACADE);
+  mustSetGlobalValue("JSON", SAFE_JSON_FACADE);
   const inertGlobals = [
     "console",
     "performance",
@@ -399,13 +438,14 @@ function lockValidatorHostAccess() {
     "Request",
     "Response"
   ];
-  for (let index = 0; index < inertGlobals.length; index += 1) setGlobalValue(inertGlobals[index], undefined);
+  for (let index = 0; index < inertGlobals.length; index += 1) mustSetGlobalValue(inertGlobals[index], undefined);
   setGlobalValue("MessagePort", undefined);
   setGlobalValue("MessageChannel", undefined);
   setGlobalValue("BroadcastChannel", undefined);
   setGlobalValue("EventTarget", undefined);
   setGlobalValue("Event", undefined);
   setGlobalValue("MessageEvent", undefined);
+  lockSymbolKeyedGlobalAuthorities();
 }
 
 class WorkerFailure extends Error {
