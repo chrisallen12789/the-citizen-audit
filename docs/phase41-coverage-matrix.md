@@ -1,8 +1,8 @@
-# Phase 4.1 - Coverage Matrix for Validator Realpath Facade Checkpoint
+# Phase 4.1 - Coverage Matrix for Validator Console/Stdio Channel Checkpoint
 
-Authoritative base: `79e46cc50cb6e010aa22c8edec058212484d65ab`
+Authoritative base: `25f5412e9d664a9258287c30eb2e1d53e846cc88`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, and realpath Buffer facade attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, and console/stdout MessagePort attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -28,6 +28,13 @@ No broad capability declarations were added.
 |---|---|---|
 | Validator replaces `MessagePort.prototype.postMessage` to forge success | FIXED | direct worker regression proves thrown validation still returns bounded `VALIDATOR_THROW`, with no forged pass |
 | Validator replaces `MessagePort.prototype.close` to suppress or alter completion | FIXED | direct worker regression proves harness completion and success envelope still arrive through the private port |
+| `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
+| `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
+| `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
+| Symbol enumeration recovers internal stdio `MessagePort` | FIXED | same regression attempts symbol traversal and observes no raw port or direct payload |
+| Direct `stdioPayload` message crosses before byte enforcement | FIXED | 400,000-byte direct stdio attempt produces 0 observed stdout/stderr bytes and exactly one private harness envelope |
+| Default worker globals expose raw host authority | FIXED | direct worker regression proves reviewed-dangerous globals such as console, performance, fetch, crypto, structuredClone, timers, streams, and messaging constructors are unavailable |
+| fs facade writes directly to stdout/stderr file descriptors | FIXED | `fs.writeFileSync(1, ...)` and `fs.writeFileSync(2, ...)` are rejected and produce 0 observed stdio bytes |
 | `fs.realpathSync(__filename, "buffer")` returns raw host `Buffer` | FIXED | direct production-worker regression proves all realpath overloads return primitive strings |
 | `fs.realpathSync(__filename, { encoding: "buffer" })` recovers host `Buffer.allocUnsafe` | FIXED | realpath facade ignores caller-selected encodings and never returns a Buffer object |
 | JSON facade parsing returns host-prototype objects | FIXED | capability regression proves parsed objects are null-prototype and parsed arrays hide constructor recovery |
@@ -75,7 +82,7 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 128/128 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 131/131 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
@@ -85,7 +92,7 @@ No broad capability declarations were added.
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 324/324, normal exit on this host |
+| `npm run execution:test` | PASS, 327/327, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |

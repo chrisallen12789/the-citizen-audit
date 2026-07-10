@@ -70,6 +70,7 @@ const SAFE_BYTE_VALUES = new WeakMap();
 const HARNESS_CHANNEL_TYPE = "validator-harness-channel-v1";
 const { port1: HARNESS_RESULT_PORT, port2: PARENT_RESULT_PORT } = new MessageChannel();
 SafeMessagePortPostMessage(parentPort, { type: HARNESS_CHANNEL_TYPE, port: PARENT_RESULT_PORT }, [PARENT_RESULT_PORT]);
+try { SafeMessagePortClose(parentPort); } catch (error) {}
 
 const MAX_RESULT_BYTES = REVIEWED_VALIDATOR_LIMITS.maxResultBytes;
 const MAX_ARRAY_LEN = REVIEWED_VALIDATOR_LIMITS.maxArrayLen;
@@ -180,6 +181,7 @@ function fsRealpathSyncFacade(args) {
 }
 
 function fsWriteFileSyncFacade(args) {
+  if (typeof args[0] !== "string") throw new TypeError("fs.writeFileSync path must be a string");
   fs.writeFileSync(args[0], unwrapSafeBytes(args[1]), args[2]);
 }
 
@@ -360,6 +362,44 @@ function lockValidatorHostAccess() {
   setGlobalValue("exports", undefined);
   setGlobalValue("Buffer", SAFE_BUFFER_FACADE);
   setGlobalValue("JSON", SAFE_JSON_FACADE);
+  const inertGlobals = [
+    "console",
+    "performance",
+    "navigator",
+    "fetch",
+    "WebSocket",
+    "crypto",
+    "structuredClone",
+    "setTimeout",
+    "setInterval",
+    "setImmediate",
+    "clearTimeout",
+    "clearInterval",
+    "clearImmediate",
+    "queueMicrotask",
+    "AbortController",
+    "AbortSignal",
+    "ReadableStream",
+    "ReadableStreamDefaultReader",
+    "ReadableStreamDefaultController",
+    "WritableStream",
+    "WritableStreamDefaultWriter",
+    "WritableStreamDefaultController",
+    "TransformStream",
+    "TextEncoder",
+    "TextDecoder",
+    "TextEncoderStream",
+    "TextDecoderStream",
+    "CompressionStream",
+    "DecompressionStream",
+    "Blob",
+    "File",
+    "FormData",
+    "Headers",
+    "Request",
+    "Response"
+  ];
+  for (let index = 0; index < inertGlobals.length; index += 1) setGlobalValue(inertGlobals[index], undefined);
   setGlobalValue("MessagePort", undefined);
   setGlobalValue("MessageChannel", undefined);
   setGlobalValue("BroadcastChannel", undefined);

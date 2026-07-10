@@ -1,17 +1,19 @@
-# Phase 4.1 - Validator Worker Realpath Facade Review
+# Phase 4.1 - Validator Worker Console/Stdio Channel Review
 
-Base checkpoint: `79e46cc50cb6e010aa22c8edec058212484d65ab`
+Base checkpoint: `25f5412e9d664a9258287c30eb2e1d53e846cc88`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, and realpath Buffer facade attacks are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, and console/stdout MessagePort attacks are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `79e46cc50cb6e010aa22c8edec058212484d65ab` and closes the remaining capability-facade overload defect plus the observed worker/test cleanup issue:
+This checkpoint continues from `25f5412e9d664a9258287c30eb2e1d53e846cc88` and closes the remaining default-global worker-channel defect:
 
-1. `fs.realpathSync()` is now exposed as a string-only reviewed facade and ignores caller-selected Buffer encodings
-2. `JSON.parse()` facade return values are copied into frozen/null-prototype plain data so parsed objects do not carry host prototypes or constructors
-3. production validation-cycle worker cleanup now closes private result ports, destroys captured stdout/stderr streams, and awaits worker termination where required
-4. test-only worker launch helpers mirror the same explicit MessagePort/worker cleanup so complete test commands terminate normally on this Windows host
-5. the previously verified pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, and immutable limits remain in force
+1. validator code no longer receives the host Node `console` object or its internal stdout/stderr streams
+2. `console._stdout`, `console._stderr`, `console.Console`, symbol enumeration, and constructor-chain recovery cannot expose the worker stdio `MessagePort`
+3. the production worker closes the default `parentPort` after handing off the harness-owned private result channel
+4. risky default globals such as `performance`, `navigator`, `fetch`, `crypto`, `structuredClone`, web streams, timers, `AbortController`, and messaging constructors are removed from the validator global
+5. the fs facade rejects numeric file descriptors so `fs.writeFileSync(1, ...)` and `fs.writeFileSync(2, ...)` cannot bypass stdout/stderr bounds
+6. the direct production-worker regression harness now measures stdout/stderr bytes in addition to default-channel messages
+7. the previously verified realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
 
 OS-level validator confinement was not started.
 
@@ -31,8 +33,19 @@ After the first validator byte executes, the worker does not reopen validator so
 The private-channel correction now avoids prototype dispatch for the harness-owned port:
 - `MessagePort.prototype.postMessage` and `MessagePort.prototype.close` are captured before validator code can run
 - the harness invokes those captured call-bound functions directly against the private result port
+- the default `parentPort` is closed after the private result channel is transferred to the parent
 - validator access to global messaging constructors such as `MessagePort`, `MessageChannel`, `BroadcastChannel`, `EventTarget`, `Event`, and `MessageEvent` is removed or hardened
 - prototype replacement attempts cannot alter the final harness envelope
+
+### Default Global Authority Lockdown
+Validator code no longer receives the worker's host `console` object. The global `console` binding is replaced with `undefined` before any validator byte executes, which removes access to:
+- `console._stdout`
+- `console._stderr`
+- `console.Console`
+- symbol-held internal stdio `MessagePort` objects
+- host stdout/stderr streams and their native prototypes
+
+Other reviewed-dangerous default globals are also removed from the validator global, including network/fetch surfaces, global web crypto, structured clone, timer callback handles, web streams, abort/event constructors, blob/form/request/response constructors, and messaging constructors. Validators that need reviewed capabilities must use the closure-local builtin facades instead.
 
 ### Capability Facade Return Hardening
 Allowed builtins remain explicit, but facades no longer return raw host-native authority objects:
@@ -40,6 +53,7 @@ Allowed builtins remain explicit, but facades no longer return raw host-native a
 - hash `digest()` without an encoding returns a private safe byte wrapper, not a raw `Buffer`
 - `fs.readFileSync()` without an encoding returns a safe byte wrapper
 - `fs.realpathSync()` always returns a primitive UTF-8 string; `"buffer"` and `{ encoding: "buffer" }` overload attempts cannot return a raw host `Buffer`
+- `fs.writeFileSync()` rejects numeric file descriptors and therefore cannot write directly to worker stdout or stderr
 - `fs.statSync()` and `fs.lstatSync()` return null-prototype copied stat records with reviewed predicate wrappers
 - raw fs streams, file handles, watchers, descriptors, and stream factories are not exposed
 - `buffer.Buffer` returns safe byte wrappers through reviewed constructors
@@ -54,14 +68,14 @@ The validation-cycle boundary now performs explicit cleanup on every completion 
 - `worker.terminate()` is awaited unless the worker has already emitted `exit`
 - the same cleanup discipline is used by the test-only production-worker launcher
 
-This preserves normal completion for the full execution-orchestrator, runtime-integration, and aggregate execution commands on this Windows host. Linux-host termination could not be directly reproduced in this desktop session because WSL has no installed distributions and Docker is unavailable.
+This preserves normal completion for the full execution-orchestrator, runtime-integration, runtime-isolation, fault, and aggregate execution commands on this Windows host. Linux-host termination could not be directly reproduced in this desktop session because WSL has no installed distributions and Docker is unavailable.
 
 ### Same-Realm Intrinsic Hardening Retained
 The production worker still uses `vm.compileFunction`, but it no longer relies on mutable shared intrinsics after validator bytes begin executing.
 
 Before loading the authoritative closure entry, `kernel/execution/validator-worker.js` now:
 - freezes reviewed shared constructors and prototypes including `Object`, `Array`, `String`, `Function`, `Promise`, `Map`, `Set`, `Error`, `RegExp`, `Buffer`, typed arrays, `Symbol`, iterator prototypes, `JSON`, `Math`, and `Reflect`
-- disables `globalThis.process`, `global.process`, `Function`, `eval`, global `require`, global `module`, global `exports`, `process.getBuiltinModule`, `process.binding`, `process._linkedBinding`, and `process.dlopen`
+- disables `globalThis.process`, `global.process`, `console`, `Function`, `eval`, global `require`, global `module`, global `exports`, `process.getBuiltinModule`, `process.binding`, `process._linkedBinding`, and `process.dlopen`
 - preserves trusted harness primordials in lexical scope before validator code can run
 - removes host constructor chains from reviewed builtin facades and `Buffer`/`JSON` facade callables
 - exposes only reviewed builtin facades through the closure-local `require`
@@ -104,13 +118,22 @@ The previous Phase 4.1 corrections remain in force:
 
 ## Regressions Added
 New direct production-worker regressions prove:
+- `console._stdout` is unavailable
+- `console._stderr` is unavailable
+- `console.Console` is unavailable
+- symbol enumeration cannot recover an internal stdio `MessagePort`
+- a validator cannot directly send a `stdioPayload` message
+- a 400,000-byte output attempt does not cross the parent boundary
+- the parent observes `0` stdout/stderr bytes for the reproduced console/stdout attack
+- risky default globals do not expose raw host authority
+- the fs facade cannot write directly to stdout/stderr file descriptors
+
+Retained direct production-worker regressions prove:
 - `fs.realpathSync(path)` returns a primitive string
 - `fs.realpathSync(path, "buffer")` cannot return a raw host `Buffer`
 - `fs.realpathSync(path, { encoding: "buffer" })` cannot return a raw host `Buffer`
 - realpath return values do not expose `Buffer.prototype`, the host `Buffer` constructor, or `Buffer.allocUnsafe`
 - JSON facade parsed objects do not expose host prototypes or constructors
-
-Retained direct production-worker regressions prove:
 - replacing `MessagePort.prototype.postMessage` cannot forge success
 - replacing `MessagePort.prototype.close` cannot suppress harness completion
 - a validator whose `validate()` throws remains failed after messaging-prototype attacks
@@ -141,9 +164,9 @@ Retained direct production-worker regressions prove:
 - normal authoritative validators still pass
 
 ## Test Totals Observed In This Workspace
-- validator-security: 128/128
+- validator-security: 131/131
 - execution-orchestrator: 56/56
-- execution suite: 324/324
+- execution suite: 327/327
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -164,6 +187,10 @@ Host note:
 ## Additional Confirmations
 - all closure bytes are verified and captured before any validator byte executes
 - no validator source verification occurs after validator execution begins
+- no raw stdout/stderr `MessagePort` is reachable through the global console object
+- no validator-controlled stdio payload crossed the parent boundary in the reproduced direct-worker attack
+- maximum observed parent-side stdio bytes for the console/stdout attack: 0
+- default globals covered by regression expose no raw host authority
 - no capability facade overload returns raw host-native authority in the covered paths
 - the `fs.realpathSync()` Buffer-return attack is closed
 - MessagePort prototype mutation cannot alter the harness response

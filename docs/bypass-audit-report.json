@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T10:38:40.384Z",
+  "generatedAt": "2026-07-10T11:23:32.990Z",
   "configVersion": "3.0.0",
   "categories": {
     "1": "governed mutation routed through the orchestrator",
@@ -2027,7 +2027,7 @@
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 642
+          "line": 682
         }
       ],
       "sourceBehaviorChecks": "passed",
@@ -6163,137 +6163,132 @@
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 287
+          "line": 306
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 365
+          "line": 384
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "extractStaticValidatorContract",
-          "line": 371
+          "line": 390
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "extractStaticValidatorContract",
-          "line": 381
+          "line": 400
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 479
+          "line": 498
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 492
+          "line": 511
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 499
+          "line": 518
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 501
+          "line": 520
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 512
+          "line": 531
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 534
+          "line": 553
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 540
+          "line": 559
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 546
+          "line": 565
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 552
+          "line": 571
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 564
+          "line": 583
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 574
+          "line": 593
         },
         {
           "module": "kernel/lib/canonical-json.js",
           "exportName": "canonicalStringify",
-          "line": 582
+          "line": 601
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 594
+          "line": 613
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 595
+          "line": 614
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 622
+          "line": 641
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 623
+          "line": 642
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 636
+          "line": 655
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 653
+          "line": 672
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 678
+          "line": 697
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 700
+          "line": 719
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 726
+          "line": 745
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 750
-        },
-        {
-          "module": "kernel/execution/validators/index.js",
-          "exportName": "loadValidatorRegistry",
-          "line": 776
+          "line": 769
         },
         {
           "module": "kernel/execution/validators/index.js",
@@ -6303,307 +6298,327 @@
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 816
+          "line": 814
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 839
+          "line": 835
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 869
+          "line": 858
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 897
+          "line": 888
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 925
+          "line": 916
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 944
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 926
+          "line": 945
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 955
+          "line": 974
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 987
+          "line": 1006
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1009
+          "line": 1060
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1039
+          "line": 1129
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1058
+          "line": 1161
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 1185
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 1215
+        },
+        {
+          "module": "kernel/execution/validators/index.js",
+          "exportName": "loadValidatorRegistry",
+          "line": 1234
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 1069
+          "line": 1245
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1103
+          "line": 1279
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1132
+          "line": 1308
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1162
+          "line": 1338
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1184
+          "line": 1360
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1207
+          "line": 1383
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1230
+          "line": 1406
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1254
+          "line": 1430
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1277
+          "line": 1453
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1310
+          "line": 1486
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1333
+          "line": 1509
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1354
+          "line": 1530
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1374
+          "line": 1550
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1420
+          "line": 1596
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1482
+          "line": 1658
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1523
+          "line": 1699
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1544
+          "line": 1720
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1565
+          "line": 1741
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1585
+          "line": 1761
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1618
+          "line": 1794
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1646
+          "line": 1822
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1663
+          "line": 1839
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1683
+          "line": 1859
         },
         {
           "module": "kernel/execution/validation-cycle.js",
           "exportName": "runValidationPhase",
-          "line": 1684
+          "line": 1860
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1702
+          "line": 1878
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1722
+          "line": 1898
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1742
+          "line": 1918
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1749
+          "line": 1925
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1776
+          "line": 1952
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1801
+          "line": 1977
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1808
+          "line": 1984
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1851
+          "line": 2027
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1877
+          "line": 2053
         },
         {
           "module": "kernel/execution/validators/index.js",
           "exportName": "loadValidatorRegistry",
-          "line": 1890
+          "line": 2066
         },
         {
           "module": "tests/support/validator-test-harness.js",
           "exportName": "loadValidatorRegistryForTest",
-          "line": 1927
+          "line": 2103
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1943
+          "line": 2119
         },
         {
           "module": "tests/support/validation-cycle-test-core.js",
           "exportName": "runValidationPhase",
-          "line": 1945
+          "line": 2121
         },
         {
           "module": "tests/support/validation-cycle-test-core.js",
           "exportName": "runValidationPhase",
-          "line": 1947
+          "line": 2123
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "resolveAuthoritativeRoot",
-          "line": 1957
+          "line": 2133
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "resolveAuthoritativeRoot",
-          "line": 1960
+          "line": 2136
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1965
+          "line": 2141
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1973
+          "line": 2149
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1978
+          "line": 2154
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1985
+          "line": 2161
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1993
+          "line": 2169
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 1999
+          "line": 2175
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 2005
+          "line": 2181
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 2012
+          "line": 2188
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 2018
+          "line": 2194
         },
         {
           "module": "tests/support/validator-closure-test-core.js",
           "exportName": "buildValidatorClosure",
-          "line": 2025
+          "line": 2201
         }
       ],
       "sourceBehaviorChecks": "passed",

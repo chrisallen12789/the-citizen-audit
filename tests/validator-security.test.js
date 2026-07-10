@@ -62,6 +62,19 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
     let worker;
     let resultPort = null;
     const directMessages = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    const withObservedTransport = (result) => Object.assign({
+      directMessages: [...directMessages],
+      stdoutBytes,
+      stderrBytes,
+      stdioBytes: stdoutBytes + stderrBytes
+    }, result);
+    const cleanupStream = (stream) => {
+      if (!stream) return;
+      try { stream.removeAllListeners("data"); } catch (error) {}
+      try { stream.destroy(); } catch (error) {}
+    };
     const finish = (result, options = {}) => {
       if (settled) return;
       settled = true;
@@ -72,19 +85,25 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
           try { resultPort.removeAllListeners(); } catch (error) {}
           try { resultPort.close(); } catch (error) {}
         }
-        if (worker && terminateWorker) {
-          try { await worker.terminate(); } catch (error) {}
+        if (worker) {
+          cleanupStream(worker.stdout);
+          cleanupStream(worker.stderr);
+          if (terminateWorker) {
+            try { await worker.terminate(); } catch (error) {}
+          }
         }
-        resolve(result);
+        resolve(withObservedTransport(result));
       })();
     };
     const timer = setTimeout(() => finish({ kind: "timeout" }), timeoutMs);
     try {
-      worker = new Worker(PRODUCTION_WORKER_PATH, { workerData: workerPayload });
+      worker = new Worker(PRODUCTION_WORKER_PATH, { workerData: workerPayload, stdout: true, stderr: true });
     } catch (error) {
       finish({ kind: "startup-error", error });
       return;
     }
+    if (worker.stdout) worker.stdout.on("data", (chunk) => { stdoutBytes += chunk.length; });
+    if (worker.stderr) worker.stderr.on("data", (chunk) => { stderrBytes += chunk.length; });
     worker.on("message", (message) => {
       if (
         !resultPort
@@ -95,8 +114,8 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
         && typeof message.port.on === "function"
       ) {
         resultPort = message.port;
-        resultPort.on("message", (resultMessage) => finish({ kind: "message", message: resultMessage, directMessages: [...directMessages] }));
-        resultPort.on("close", () => finish({ kind: "channel-closed", directMessages: [...directMessages] }));
+        resultPort.on("message", (resultMessage) => finish({ kind: "message", message: resultMessage }));
+        resultPort.on("close", () => finish({ kind: "channel-closed" }));
         resultPort.start();
         return;
       }
@@ -995,6 +1014,163 @@ test("validator cannot recover worker MessagePort objects or create a direct Mes
       assertNoDirectWorkerMessages(outcome);
       const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
       assert.equal(parsed.status, "passed");
+    }
+  );
+});
+
+test("global console cannot expose internal stdio MessagePorts", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const problems = [];
+      function inspectConsole(label, candidate) {
+        if (candidate === undefined) return;
+        problems[problems.length] = label + " was available";
+        try {
+          if (candidate._stdout !== undefined) problems[problems.length] = label + "._stdout was available";
+          if (candidate._stderr !== undefined) problems[problems.length] = label + "._stderr was available";
+          if (candidate.Console !== undefined) problems[problems.length] = label + ".Console was available";
+          const streams = [candidate._stdout, candidate._stderr];
+          for (const stream of streams) {
+            if (!stream) continue;
+            const symbols = Object.getOwnPropertySymbols(stream);
+            for (const symbol of symbols) {
+              const value = stream[symbol];
+              if (value && typeof value.postMessage === "function") {
+                problems[problems.length] = label + " exposed stdio MessagePort";
+                try {
+                  value.postMessage({type:"stdioPayload",stream:"stdout",chunks:[{chunk:"Z".repeat(400000),encoding:"utf8"}]});
+                } catch (error) {}
+              }
+            }
+          }
+        } catch (error) {
+          problems[problems.length] = label + " inspection failed";
+        }
+      }
+      inspectConsole("console", typeof console === "undefined" ? undefined : console);
+      inspectConsole("globalThis.console", globalThis.console);
+      try {
+        const recovered = globalThis.constructor && globalThis.constructor.constructor("return console")();
+        inspectConsole("constructor console", recovered);
+      } catch (error) {}
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bn".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(outcome.stdioBytes, 0);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
+    }
+  );
+});
+
+test("default validator globals do not expose raw host authority", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const problems = [];
+      const blocked = [
+        "console",
+        "performance",
+        "navigator",
+        "fetch",
+        "WebSocket",
+        "crypto",
+        "structuredClone",
+        "setTimeout",
+        "setInterval",
+        "setImmediate",
+        "queueMicrotask",
+        "AbortController",
+        "AbortSignal",
+        "ReadableStream",
+        "WritableStream",
+        "TransformStream",
+        "TextEncoder",
+        "TextDecoder",
+        "Blob",
+        "FormData",
+        "Headers",
+        "Request",
+        "Response",
+        "MessagePort",
+        "MessageChannel",
+        "BroadcastChannel",
+        "EventTarget",
+        "Event",
+        "MessageEvent"
+      ];
+      for (const name of blocked) {
+        let value;
+        try { value = globalThis[name]; } catch (error) { value = undefined; }
+        if (value !== undefined) problems[problems.length] = name + " remained available";
+      }
+      try {
+        const recoveredConsole = globalThis.constructor.constructor("return console")();
+        if (recoveredConsole !== undefined) problems[problems.length] = "constructor chain recovered console";
+      } catch (error) {}
+      try {
+        const recoveredCrypto = globalThis.constructor.constructor("return crypto")();
+        if (recoveredCrypto !== undefined) problems[problems.length] = "constructor chain recovered crypto";
+      } catch (error) {}
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bo".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(outcome.stdioBytes, 0);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
+    }
+  );
+});
+
+test("fs facade cannot write directly to stdout or stderr file descriptors", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const problems = [];
+      const fs = require("node:fs");
+      for (const fd of [1, 2]) {
+        try {
+          fs.writeFileSync(fd, "Z".repeat(400000));
+          problems[problems.length] = "writeFileSync accepted fd " + fd;
+        } catch (error) {}
+      }
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bp".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(outcome.stdioBytes, 0);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
     }
   );
 });
