@@ -56,6 +56,7 @@ const SafeObjectGetPrototypeOf = Object.getPrototypeOf;
 const SafeObjectHasOwn = Function.call.bind(Object.prototype.hasOwnProperty);
 const SafeObjectKeys = Object.keys;
 const SafeObjectSetPrototypeOf = Object.setPrototypeOf;
+const SafeMapDelete = Function.call.bind(Map.prototype.delete);
 const SafeMapGet = Function.call.bind(Map.prototype.get);
 const SafeMapHas = Function.call.bind(Map.prototype.has);
 const SafeMapSet = Function.call.bind(Map.prototype.set);
@@ -609,7 +610,7 @@ function createCapabilityBridge() {
         case "hash.digest": {
           const hash = SafeMapGet(hashStates, args[0]);
           if (!hash) throw new Error("unknown hash token");
-          hashStates.delete(args[0]);
+          SafeMapDelete(hashStates, args[0]);
           return bridgeResponse(true, encodeBridgeValue(hash.digest(args[1])));
         }
         case "crypto.randomUUID":
@@ -1234,11 +1235,13 @@ function loadClosureEntry(closure) {
     try {
       wrapper = SafeVmCompileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile, parsingContext: validatorContext });
     } catch (error) {
+      SafeMapDelete(compiledCache, relPath);
       throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "validator module compilation failed");
     }
     try {
       wrapper(module.exports, createValidatorRequire(relPath), module, absFile, path.dirname(absFile));
     } catch (error) {
+      SafeMapDelete(compiledCache, relPath);
       if (error instanceof WorkerFailure) throw error;
       throw workerFailure("VALIDATOR_THROW");
     }

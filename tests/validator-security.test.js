@@ -2009,7 +2009,9 @@ ${validateAttempts}
         assert.equal(outcome.kind, "message");
         assertNoDirectWorkerMessages(outcome);
         assert.equal(outcome.stdioBytes, 0);
-        const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+        const envelope = parseTransportedWorkerEnvelope(outcome.message);
+        assert.equal(envelope.ok, true, JSON.stringify(envelope));
+        const parsed = envelope.result;
         assert.equal(parsed.status, "passed", parsed.problems.join("\n"));
         assert.deepEqual(parsed.problems, []);
         assert.equal(fs.existsSync(hostMarker), false);
@@ -2051,6 +2053,322 @@ test("uncaught local dependency failure fails closed without exposing host messa
     );
   } finally {
     try { fs.rmSync(depPath, { force: true }); } catch (error) {}
+  }
+});
+
+test("failed local dependency loads are removed from the provisional module cache", async () => {
+  const suffix = `failed-cache-${seq++}`;
+  const preloadPath = path.join(scratch, `${suffix}-preload.js`);
+  const hostMarker = path.join(scratch, `${suffix}-host-marker.txt`);
+  const writtenDeps = [];
+  const markers = [];
+  const depName = (label) => `${suffix}-${label}.js`;
+  const depPath = (label) => path.join(REAL_VALIDATORS, depName(label));
+  const markerPath = (label) => {
+    const filePath = path.join(scratch, `${suffix}-${label}.count`);
+    markers[markers.length] = filePath;
+    return filePath;
+  };
+  const bumpSource = (filePath) => `
+const fs = require("node:fs");
+let count = 0;
+try { count = Number(fs.readFileSync(${JSON.stringify(filePath)}, "utf8")) || 0; } catch (error) {}
+fs.writeFileSync(${JSON.stringify(filePath)}, String(count + 1));
+`;
+  const writeDep = (label, source) => {
+    const filePath = depPath(label);
+    writtenDeps[writtenDeps.length] = filePath;
+    writeStrictFile(filePath, source);
+  };
+  const writeFailDep = (label, thrownStatement, partialSource = "") => {
+    const countPath = markerPath(label);
+    writeDep(label, `"use strict";\n${bumpSource(countPath)}\nmodule.exports.partial = ${JSON.stringify(label)};\nmodule.exports.partialFunction = function(){ return ${JSON.stringify(`${label}-partial`)}; };\n${partialSource}\n${thrownStatement}\n`);
+  };
+  const thrownCases = [
+    ["error", `throw new Error("dependency error");`],
+    ["custom-error", `class CustomDependencyError extends Error {}; throw new CustomDependencyError("custom dependency error");`],
+    ["aggregate", `throw new AggregateError([new Error("inner")], "aggregate dependency error");`],
+    ["string", `throw "dependency string";`],
+    ["symbol", `throw Symbol.for("dependency.symbol");`],
+    ["null", `throw null;`],
+    ["object", `throw { label: "plain object", nested: { ok: true } };`],
+    ["array", `throw ["array", { nested: true }];`],
+    ["proxy", `throw new Proxy({ label: "proxy" }, { get(target, key) { if (key === "message") return "proxy message"; return target[key]; } });`],
+    ["revoked-proxy", `const pair = Proxy.revocable({ label: "revoked" }, {}); pair.revoke(); throw pair.proxy;`],
+    ["proxy-prototype-trap", `throw new Proxy({ label: "trap" }, { getPrototypeOf() { throw new Error("prototype trap"); } });`],
+    ["accessor", `const thrown = {}; Object.defineProperty(thrown, "message", { get() { return "accessor"; } }); throw thrown;`],
+    ["cause", `throw new Error("outer", { cause: { nested: "cause" } });`]
+  ];
+  writeStrictFile(preloadPath, `
+    const fs = require("fs");
+    class Pool { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "pool"); } }
+    class Client { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "client"); } }
+    class Dispatcher { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "dispatcher"); } }
+    class Agent {
+      constructor(label) {
+        this.label = label;
+        this[Symbol("factory")] = function factory() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "factory"); return new Pool(); };
+        this[Symbol("clients")] = new Map([["client", new Client()]]);
+        this[Symbol("options")] = { callback: function callback() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "callback"); } };
+      }
+      dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "agent-" + this.label); }
+    }
+    function makeAgent(label) { return new Agent(label); }
+    Object.defineProperty(Object.getPrototypeOf(globalThis), Symbol.for("audit.cacheFailure.inheritedAgent"), { value: makeAgent("inherited"), configurable: true });
+    Object.defineProperty(Object.prototype, Symbol.for("audit.cacheFailure.objectPrototypeAgent"), { value: makeAgent("object-prototype"), configurable: true });
+    function installLate(label) {
+      globalThis[Symbol.for("audit.cacheFailure.late." + label)] = makeAgent(label);
+      globalThis["auditCacheFailureLate" + label] = makeAgent(label + "-string");
+    }
+    process.nextTick(() => installLate("nextTick"));
+    queueMicrotask(() => installLate("microtask"));
+    Promise.resolve().then(() => installLate("promise"));
+    setImmediate(() => installLate("immediate"));
+  `);
+  try {
+    writeFailDep("direct-fail", `throw new Error("direct stop");`);
+    writeFailDep("top-validate-fail", `throw new Error("top validate stop");`);
+    writeFailDep("function-partial", `throw new Error("function partial stop");`, `module.exports = function(){ return "function-partial"; };`);
+    writeFailDep(
+      "graph-partial",
+      `throw new Error("graph partial stop");`,
+      `const nested = { array: [{ call: function(){ return "nested-partial"; } }], object: { label: "nested" } }; nested.self = nested; module.exports.graph = nested; module.exports.call = function(){ return "graph-partial"; };`
+    );
+    writeDep("trans-leaf", `"use strict";\n${bumpSource(markerPath("trans-leaf"))}\nmodule.exports.partial = "leaf";\nmodule.exports.partialFunction = function(){ return "leaf-partial"; };\nthrow new Error("leaf stop");\n`);
+    writeDep("trans-parent", `"use strict";\n${bumpSource(markerPath("trans-parent"))}\nmodule.exports = function(){ return "parent-partial"; };\nmodule.exports.partialObject = { nested: ["parent"] };\nrequire("./${depName("trans-leaf")}");\n`);
+    writeDep("ok-direct", `"use strict";\n${bumpSource(markerPath("ok-direct"))}\nmodule.exports = { label: "ok-direct", nested: { ok: true }, factory: function(){ return { made: "ok-direct" }; } };\n`);
+    writeDep("ok-leaf", `"use strict";\n${bumpSource(markerPath("ok-leaf"))}\nmodule.exports = { label: "ok-leaf" };\n`);
+    writeDep("ok-parent", `"use strict";\n${bumpSource(markerPath("ok-parent"))}\nconst leaf = require("./${depName("ok-leaf")}");\nmodule.exports = { label: "ok-parent", leaf };\n`);
+    writeDep("cycle-a", `"use strict";\n${bumpSource(markerPath("cycle-a"))}\nexports.name = "cycle-a";\nconst b = require("./${depName("cycle-b")}");\nexports.fromB = b.name || "pending";\nexports.done = true;\n`);
+    writeDep("cycle-b", `"use strict";\n${bumpSource(markerPath("cycle-b"))}\nexports.name = "cycle-b";\nconst a = require("./${depName("cycle-a")}");\nexports.fromA = a.name || "pending";\nexports.done = true;\n`);
+    for (const [label, thrownStatement] of thrownCases) {
+      writeFailDep(`case-${label}`, thrownStatement);
+    }
+
+    const caseAttempts = thrownCases.map(([label]) => `repeatFail(topProblems, "case ${label}", function(){ return require("./${depName(`case-${label}`)}"); }, 2);`).join("\n");
+    const markerExpectations = [
+      ["direct-fail", 3],
+      ["top-validate-fail", 2],
+      ["function-partial", 3],
+      ["graph-partial", 3],
+      ["trans-parent", 3],
+      ["trans-leaf", 6],
+      ["ok-direct", 1],
+      ["ok-parent", 1],
+      ["ok-leaf", 1],
+      ["cycle-a", 1],
+      ["cycle-b", 1],
+      ...thrownCases.map(([label]) => [`case-${label}`, 2])
+    ];
+    const markerMapSource = JSON.stringify(Object.fromEntries(markerExpectations.map(([label]) => [label, markerPath(label)])));
+    const markerExpectationsSource = JSON.stringify(Object.fromEntries(markerExpectations));
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";
+const fs = require("node:fs");
+const topProblems = [];
+const markerPaths = ${markerMapSource};
+const expectedCounts = ${markerExpectationsSource};
+const hostSymbols = [
+  "audit.cacheFailure.inheritedAgent",
+  "audit.cacheFailure.objectPrototypeAgent",
+  "audit.cacheFailure.late.nextTick",
+  "audit.cacheFailure.late.microtask",
+  "audit.cacheFailure.late.promise",
+  "audit.cacheFailure.late.immediate"
+].map(function(name){ return Symbol.for(name); });
+function isObjectLike(value) { return value !== null && (typeof value === "object" || typeof value === "function"); }
+function add(problems, problem) { problems[problems.length] = problem; }
+function keyText(key) { try { return String(key); } catch (error) { return "<key>"; } }
+function readCount(label) {
+  try { return Number(fs.readFileSync(markerPaths[label], "utf8")) || 0; } catch (error) { return 0; }
+}
+function inspectAuthority(problems, label, value, seen) {
+  if (!isObjectLike(value)) return;
+  if (!seen) seen = [];
+  if (seen.indexOf(value) !== -1) return;
+  seen[seen.length] = value;
+  let names = "";
+  try { names += String(value.constructor && value.constructor.name); } catch (error) {}
+  try {
+    const proto = Object.getPrototypeOf(value);
+    names += " " + String(proto && proto.constructor && proto.constructor.name);
+  } catch (error) {}
+  if (/Agent|Pool|Client|Dispatcher|WorkerFailure|Map/.test(names)) add(problems, label + " exposed host-like constructor " + names);
+  try {
+    if (typeof value.dispatch === "function") {
+      add(problems, label + " exposed dispatch");
+      try { value.dispatch(); } catch (error) {}
+    }
+  } catch (error) {}
+  for (let index = 0; index < hostSymbols.length; index += 1) {
+    try {
+      if (value[hostSymbols[index]] !== undefined) add(problems, label + " exposed host sentinel " + String(hostSymbols[index]));
+    } catch (error) {}
+  }
+  if (seen.length > 180) return;
+  let keys = [];
+  try { keys = Reflect.ownKeys(value); } catch (error) { return; }
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    let descriptor;
+    try { descriptor = Object.getOwnPropertyDescriptor(value, key); } catch (error) { continue; }
+    if (!descriptor) continue;
+    const child = label + "." + keyText(key);
+    if ("value" in descriptor) inspectAuthority(problems, child, descriptor.value, seen);
+    if ("get" in descriptor && typeof descriptor.get === "function") inspectAuthority(problems, child + ".get", descriptor.get, seen);
+    if ("set" in descriptor && typeof descriptor.set === "function") inspectAuthority(problems, child + ".set", descriptor.set, seen);
+  }
+}
+function inspectRecoveredGlobal(problems, label, candidate) {
+  if (!candidate || candidate === globalThis || !isObjectLike(candidate)) return;
+  add(problems, label + " recovered distinct global");
+  for (let index = 0; index < hostSymbols.length; index += 1) {
+    try { inspectAuthority(problems, label + ".global." + String(hostSymbols[index]), candidate[hostSymbols[index]], []); } catch (error) {}
+  }
+  for (const name of ["auditCacheFailureLatenextTick", "auditCacheFailureLatemicrotask", "auditCacheFailureLatepromise", "auditCacheFailureLateimmediate"]) {
+    try { inspectAuthority(problems, label + ".global." + name, candidate[name], []); } catch (error) {}
+  }
+}
+function tryConstructorEscape(problems, label, value) {
+  const candidates = [value];
+  try { if (value !== undefined && value !== null) candidates[candidates.length] = Object.getPrototypeOf(value); } catch (error) {}
+  try { if (value && value.prototype !== undefined) candidates[candidates.length] = value.prototype; } catch (error) {}
+  try { if (value && value.prototype !== undefined) candidates[candidates.length] = Object.getPrototypeOf(value.prototype); } catch (error) {}
+  for (let index = 0; index < candidates.length; index += 1) {
+    const candidate = candidates[index];
+    if (!candidate) continue;
+    try {
+      const ctor = candidate.constructor;
+      const fn = ctor && ctor.constructor;
+      if (typeof fn === "function") inspectRecoveredGlobal(problems, label + ".constructor[" + index + "]", fn("return globalThis")());
+    } catch (error) {}
+  }
+}
+function auditCaught(problems, label, caught) {
+  if (!isObjectLike(caught)) {
+    add(problems, label + " threw a primitive instead of the reviewed failure record");
+    return;
+  }
+  try { if (Object.getPrototypeOf(caught) !== null) add(problems, label + " failure prototype was not null"); } catch (error) { add(problems, label + " prototype inspection threw"); }
+  try { if (!Object.isFrozen(caught)) add(problems, label + " failure record was not frozen"); } catch (error) { add(problems, label + " freeze inspection threw"); }
+  try { if (caught.name !== "ValidatorRequireFailure") add(problems, label + " failure name mismatch"); } catch (error) { add(problems, label + " name read threw"); }
+  try { if (caught.message !== "validator dependency could not be loaded") add(problems, label + " failure message mismatch"); } catch (error) { add(problems, label + " message read threw"); }
+  try { if (typeof caught.code !== "string" || caught.code !== "VALIDATOR_THROW") add(problems, label + " failure code mismatch " + String(caught.code)); } catch (error) { add(problems, label + " code read threw"); }
+  tryConstructorEscape(problems, label, caught);
+  inspectAuthority(problems, label, caught, []);
+  for (const key of ["stack", "cause"]) {
+    try { inspectAuthority(problems, label + "." + key, caught[key], []); } catch (error) { add(problems, label + "." + key + " read threw"); }
+  }
+}
+function inspectPartial(problems, label, value, seen) {
+  add(problems, label + " returned a partial export");
+  if (!isObjectLike(value)) return;
+  if (!seen) seen = [];
+  if (seen.indexOf(value) !== -1) return;
+  seen[seen.length] = value;
+  try {
+    if (typeof value === "function") add(problems, label + " partial function was callable as " + String(value()));
+  } catch (error) {}
+  let keys = [];
+  try { keys = Reflect.ownKeys(value); } catch (error) { return; }
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    let child;
+    try { child = value[key]; } catch (error) { continue; }
+    if (typeof child === "function") {
+      try { add(problems, label + "." + keyText(key) + " partial function returned " + String(child())); } catch (error) {}
+    }
+    if (isObjectLike(child)) inspectPartial(problems, label + "." + keyText(key), child, seen);
+  }
+}
+function attemptFail(problems, label, load) {
+  try {
+    const value = load();
+    inspectPartial(problems, label, value, []);
+  } catch (caught) {
+    auditCaught(problems, label, caught);
+  }
+}
+function repeatFail(problems, label, load, count) {
+  for (let index = 0; index < count; index += 1) attemptFail(problems, label + "#" + index, load);
+}
+function auditSuccess(problems, stage) {
+  try {
+    const direct1 = require("./${depName("ok-direct")}");
+    const direct2 = require("./${depName("ok-direct")}");
+    if (direct1 !== direct2 || direct1.label !== "ok-direct" || direct1.factory().made !== "ok-direct") add(problems, stage + " direct success changed");
+    const parent1 = require("./${depName("ok-parent")}");
+    const parent2 = require("./${depName("ok-parent")}");
+    if (parent1 !== parent2 || parent1.leaf.label !== "ok-leaf") add(problems, stage + " transitive success changed");
+    const cycleA1 = require("./${depName("cycle-a")}");
+    const cycleA2 = require("./${depName("cycle-a")}");
+    const cycleB = require("./${depName("cycle-b")}");
+    if (cycleA1 !== cycleA2 || cycleA1.name !== "cycle-a" || cycleB.name !== "cycle-b" || cycleA1.done !== true || cycleB.done !== true) add(problems, stage + " cycle success changed");
+    inspectAuthority(problems, stage + ".direct", direct1, []);
+    inspectAuthority(problems, stage + ".parent", parent1, []);
+    inspectAuthority(problems, stage + ".cycleA", cycleA1, []);
+  } catch (caught) {
+    add(problems, stage + " successful dependency path threw");
+    auditCaught(problems, stage + ".success", caught);
+  }
+}
+try {
+repeatFail(topProblems, "direct", function(){ return require("./${depName("direct-fail")}"); }, 3);
+attemptFail(topProblems, "top-to-validate top", function(){ return require("./${depName("top-validate-fail")}"); });
+repeatFail(topProblems, "transitive parent", function(){ return require("./${depName("trans-parent")}"); }, 3);
+repeatFail(topProblems, "transitive leaf", function(){ return require("./${depName("trans-leaf")}"); }, 3);
+repeatFail(topProblems, "function partial", function(){ return require("./${depName("function-partial")}"); }, 3);
+repeatFail(topProblems, "graph partial", function(){ return require("./${depName("graph-partial")}"); }, 3);
+${caseAttempts}
+auditSuccess(topProblems, "top");
+} catch (caught) {
+  add(topProblems, "top-level cache audit threw");
+  try { auditCaught(topProblems, "top-level cache audit", caught); } catch (auditError) { add(topProblems, "top-level cache audit failure could not be audited"); }
+}
+module.exports = {
+  id: "execution-plan",
+  version: "1.0.0",
+  supportedPhases: ["candidate", "post_write"],
+  validate: function(){
+    const problems = topProblems.slice();
+    attemptFail(problems, "top-to-validate validate", function(){ return require("./${depName("top-validate-fail")}"); });
+    auditSuccess(problems, "validate");
+    for (const label of Object.keys(expectedCounts)) {
+      const actual = readCount(label);
+      if (actual !== expectedCounts[label]) add(problems, "cache-state count mismatch for " + label + ": " + actual + " !== " + expectedCounts[label]);
+    }
+    return { status: problems.length ? "failed" : "passed", problems, warnings: [], checkedObjects: ["OBJ-1"], checkedPaths: ["public/data/report.json"] };
+  }
+};
+`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const outcome = await launchProductionWorker({
+          validatorId: "execution-plan",
+          expectedValidatorSetHash: reg.validatorSetHash,
+          phase: "candidate",
+          context: authoritativeWorkerContext("bw".repeat(32))
+        }, 5000, { execArgv: ["--require", preloadPath] });
+        assert.equal(outcome.kind, "message");
+        assertNoDirectWorkerMessages(outcome);
+        assert.equal(outcome.stdioBytes, 0);
+        const envelope = parseTransportedWorkerEnvelope(outcome.message);
+        assert.equal(envelope.ok, true, JSON.stringify(envelope));
+        const parsed = envelope.result;
+        assert.equal(parsed.status, "passed", parsed.problems.join("\n"));
+        assert.deepEqual(parsed.problems, []);
+        assert.equal(fs.existsSync(hostMarker), false);
+      }
+    );
+  } finally {
+    for (const filePath of writtenDeps) {
+      try { fs.rmSync(filePath, { force: true }); } catch (error) {}
+    }
+    for (const filePath of markers) {
+      try { fs.rmSync(filePath, { force: true }); } catch (error) {}
+    }
+    try { fs.rmSync(hostMarker, { force: true }); } catch (error) {}
   }
 });
 

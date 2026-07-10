@@ -1,8 +1,8 @@
 # Phase 4.1 - Coverage Matrix for Validator Cross-Realm Boundary Checkpoint
 
-Authoritative base: `fd5b8b26bdf8f4b7b6565c8d8347a0b619827bfb`
+Authoritative base: `3ecddc1359fc1285e65ff6b635868b57cdecdd6d`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, and local-require host-exception attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, and failed-module cache-poisoning attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -60,6 +60,16 @@ No broad capability declarations were added.
 | Inherited or post-lock host sentinels are reachable through caught require failures | FIXED | preload installs Agent-like authority on host prototypes and through nextTick, microtask, Promise, and immediate callbacks; caught failures expose none of it |
 | Uncaught local dependency failure leaks host message data | FIXED | direct worker regression proves uncaught dependency failure fails closed with bounded `VALIDATOR_THROW` and no default-channel messages |
 | Local require failure membrane breaks ordinary dependencies | FIXED | regression verifies normal direct dependencies, transitive dependencies, cycles, builtin facades, and dependency export graphs still load as context-native values |
+| Direct failed dependency remains cached as partial exports | FIXED | regression requires a partially initialized throwing dependency three times; every attempt fails with validator-realm `ValidatorRequireFailure`, and no primitive/callable partial export is returned |
+| Failed dependency required at top level succeeds during later `validate()` retry | FIXED | entry catches the top-level failure, then `validate()` retries the same dependency and observes another safe failure with no partial export |
+| Transitive parent remains cached after leaf failure | FIXED | parent A exports a partial callable then requires failing leaf B; repeated requires of A fail again and never return the callable |
+| Failed transitive leaf remains cached after parent failure | FIXED | direct retries of leaf B after transitive failure re-execute and fail again, proving the leaf returned to absent cache state |
+| Multiple retries of failed direct and transitive modules return partial exports | FIXED | direct, parent, leaf, function-partial, object-graph, and arbitrary-thrown modules are retried repeatedly and never return partial exports |
+| Failed module exports a function before throwing | FIXED | regression proves the partial function export cannot be recovered or invoked through later `require()` |
+| Failed module exports nested object/array/function/cyclic graph before throwing | FIXED | regression proves none of the partial graph is recoverable through later `require()` |
+| Arbitrary thrown values poison cache or cross the realm boundary on retry | FIXED | retry cases cover `Error`, custom `Error`, `AggregateError`, string, symbol, `null`, object, array, proxy, revoked proxy, proxy prototype trap, accessor object, and `Error.cause` |
+| Cache-state behavior for success and cycles regresses | FIXED | marker counts prove successful direct/transitive modules and successful CommonJS cycles execute once, remain cached, and preserve reviewed cycle behavior |
+| Failed-module cache retry reopens host authority path | FIXED | every repeated failure audits caught values for host constructors, globals, Agent/Pool/Client/Dispatcher, raw `Map`, factories, callbacks, stdio, and direct worker messages |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
 | `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
@@ -114,7 +124,7 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 137/137 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 138/138 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
@@ -125,7 +135,7 @@ No broad capability declarations were added.
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 333/333, normal exit on this host |
+| `npm run execution:test` | PASS, 334/334, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |
