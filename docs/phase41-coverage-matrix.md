@@ -1,8 +1,8 @@
 # Phase 4.1 - Coverage Matrix for Validator Cross-Realm Boundary Checkpoint
 
-Authoritative base: `d4a6e88039eb0c620cb43c7e87e5c1bab29ed0f6`
+Authoritative base: `45240f367f69766fdb49b2726fd35213f86cb87f`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, failed-module cache-poisoning, and failed CommonJS cycle peer poisoning attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, failed-module cache-poisoning, failed CommonJS cycle peer poisoning, invalidated-generation resurrection, and stale cycle export-slot attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -76,6 +76,11 @@ No broad capability declarations were added.
 | Failed cycle invalidation clears unrelated loaded modules | FIXED | unrelated modules loaded before and during the failed cycle preserve identity and marker counts, proving the cache graph rollback is scoped |
 | Parent catches reviewed failure but is invalidated despite receiving no exports | FIXED | catching parent remains cached because the failed dependency's exports never successfully returned to it |
 | Successful CommonJS cycles are disabled by cache graph hardening | FIXED | successful two-module and three-module cycle regressions remain cached and available after completion |
+| Invalidated active module finishes and resurrects stale exports | FIXED | exact A/B/C attack invalidates still-running A; post-wrapper exact-entry ownership check prevents A from becoming loaded or returning its obsolete A/B/C graph |
+| Obsolete generation damages a newer same-path generation | FIXED | helper-owned nested retry completes replacement A before old A unwinds; exact-entry graph edges and identity-checked deletion preserve the replacement and reject the old frame |
+| Cache graph records requester or target edges against the wrong generation | FIXED | requester closures carry exact entry identity and dependency edges bind exact entry objects only after a successful return |
+| Loading cycle returns initial export snapshot after `module.exports` reassignment | FIXED | cache hits read the live context-native module export slot; two- and three-module peers observe pre-require reassignment |
+| Successful completion retains stale exports after post-cycle reassignment | FIXED | final cache return reads the live slot after wrapper completion; object, function, array, primitive, null, cyclic graph, and mixed-alias cases retain the correct final value |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
 | `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
@@ -130,22 +135,23 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 139/139 |
-| focused failed-cache and failed-cycle test pattern | PASS, 5/5 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 141/141 |
+| focused active-generation and live-export test pattern | PASS, 2/2 |
+| focused cache, cycle, and require-membrane test pattern | PASS, 5/5 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
 | repository JavaScript syntax sweep | PASS, 147 tracked `.js` files checked |
 | `npm run runtime:integration:test` | PASS, 28/28, normal exit on this host |
-| `npm run runtime:integration:test` repeated locally | NOT LOCAL in this checkpoint; previous Linux termination fix is preserved but this Windows desktop session has no Linux runtime |
 | `npm run runtime:isolation:test` | PASS, 48/48 |
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 335/335, normal exit on this host |
+| `npm run execution:test` | PASS, 337/337, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |
+| three consecutive Windows termination rounds | PASS; every round exited `0` with totals 56/28/48/31/337, and generated fixtures were restored between rounds |
 | Linux-host normal termination reproduction | NOT LOCAL, WSL has no installed distro and Docker is unavailable in this desktop session |
 
 ## Residual Items Intentionally Not Started Here

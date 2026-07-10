@@ -64,6 +64,7 @@ const SafePromiseCatch = Function.call.bind(Promise.prototype.catch);
 const SafePromiseResolve = Promise.resolve.bind(Promise);
 const SafePromiseThen = Function.call.bind(Promise.prototype.then);
 const SafeSetAdd = Function.call.bind(Set.prototype.add);
+const SafeSetClear = Function.call.bind(Set.prototype.clear);
 const SafeSetDelete = Function.call.bind(Set.prototype.delete);
 const SafeSetForEach = Function.call.bind(Set.prototype.forEach);
 const SafeSetHas = Function.call.bind(Set.prototype.has);
@@ -1129,7 +1130,8 @@ function loadClosureEntry(closure) {
   const validatorRuntime = createValidatorContext();
   lockValidatorHostAccess();
   const validatorContext = validatorRuntime.context;
-  const compiledCache = new Map(); // relPath -> {exports,state,dependencies,dependents}
+  const compiledCache = new Map(); // relPath -> exact loading/loaded generation
+  let nextModuleGeneration = 0;
 
   function verifyOneModule(relPath) {
     const want = SafeMapGet(expected, relPath);
@@ -1188,10 +1190,12 @@ function loadClosureEntry(closure) {
     throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "undeclared closure dependency");
   }
 
-  function requireFrom(fromRel, spec) {
+  function requireFrom(requesterEntry, spec) {
+    assertCurrentCacheEntry(requesterEntry, ["loading", "loaded"]);
+    const fromRel = requesterEntry.relPath;
     if (spec === "." || spec === ".." || SafeStringStartsWith(spec, "./") || SafeStringStartsWith(spec, "../") || SafeStringStartsWith(spec, "/")) {
       const target = resolveLocal(fromRel, spec);
-      return loadModule(target, fromRel);
+      return loadModule(target, requesterEntry);
     }
     const builtin = SafeStringStartsWith(spec, "node:") ? SafeStringSlice(spec, 5) : spec;
     if (!SafeObjectHasOwn(ALLOWED_BUILTINS, builtin)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "non-allowlisted builtin required in closure");
@@ -1217,94 +1221,118 @@ function loadClosureEntry(closure) {
     return "VALIDATOR_THROW";
   }
 
-  function recordDependency(fromRel, targetRel) {
-    if (!fromRel || fromRel === targetRel) return;
-    const fromEntry = SafeMapGet(compiledCache, fromRel);
-    const targetEntry = SafeMapGet(compiledCache, targetRel);
-    if (!fromEntry || !targetEntry) return;
-    SafeSetAdd(fromEntry.dependencies, targetRel);
-    SafeSetAdd(targetEntry.dependents, fromRel);
+  function isCurrentCacheEntry(entry, allowedStates) {
+    return Boolean(
+      entry
+      && SafeMapGet(compiledCache, entry.relPath) === entry
+      && SafeArrayIncludes(allowedStates, entry.state)
+    );
   }
 
-  function deleteDependencyEdges(relPath, entry) {
-    SafeSetForEach(entry.dependencies, (dependencyRel) => {
-      const dependencyEntry = SafeMapGet(compiledCache, dependencyRel);
-      if (dependencyEntry) SafeSetDelete(dependencyEntry.dependents, relPath);
-    });
-    SafeSetForEach(entry.dependents, (dependentRel) => {
-      const dependentEntry = SafeMapGet(compiledCache, dependentRel);
-      if (dependentEntry) SafeSetDelete(dependentEntry.dependencies, relPath);
-    });
+  function assertCurrentCacheEntry(entry, allowedStates) {
+    if (!isCurrentCacheEntry(entry, allowedStates)) {
+      throw workerFailure("VALIDATOR_THROW", "validator module generation is no longer active");
+    }
   }
 
-  function invalidateModuleGraph(relPath) {
-    const pending = [relPath];
+  function recordDependency(fromEntry, targetEntry) {
+    if (!fromEntry || fromEntry === targetEntry) return;
+    assertCurrentCacheEntry(fromEntry, ["loading", "loaded"]);
+    assertCurrentCacheEntry(targetEntry, ["loading", "loaded"]);
+    SafeSetAdd(fromEntry.dependencies, targetEntry);
+    SafeSetAdd(targetEntry.dependents, fromEntry);
+  }
+
+  function deleteDependencyEdges(entry) {
+    SafeSetForEach(entry.dependencies, (dependencyEntry) => {
+      SafeSetDelete(dependencyEntry.dependents, entry);
+    });
+    SafeSetForEach(entry.dependents, (dependentEntry) => {
+      SafeSetDelete(dependentEntry.dependencies, entry);
+    });
+    SafeSetClear(entry.dependencies);
+    SafeSetClear(entry.dependents);
+  }
+
+  function invalidateModuleGraph(rootEntry) {
+    const pending = [rootEntry];
     const invalidated = new Set();
     let cursor = 0;
     while (cursor < pending.length) {
-      const current = pending[cursor];
+      const entry = pending[cursor];
       cursor += 1;
-      if (SafeSetHas(invalidated, current)) continue;
-      const entry = SafeMapGet(compiledCache, current);
-      if (!entry) continue;
-      SafeSetAdd(invalidated, current);
-      SafeSetForEach(entry.dependents, (dependentRel) => {
-        if (!SafeSetHas(invalidated, dependentRel)) pending[pending.length] = dependentRel;
+      if (!entry || SafeSetHas(invalidated, entry)) continue;
+      SafeSetAdd(invalidated, entry);
+      entry.state = "invalidated";
+      SafeSetForEach(entry.dependents, (dependentEntry) => {
+        if (!SafeSetHas(invalidated, dependentEntry)) pending[pending.length] = dependentEntry;
       });
     }
     for (let index = 0; index < pending.length; index += 1) {
-      const current = pending[index];
-      if (!SafeSetHas(invalidated, current)) continue;
-      const entry = SafeMapGet(compiledCache, current);
-      if (!entry) continue;
-      deleteDependencyEdges(current, entry);
-      SafeMapDelete(compiledCache, current);
+      const entry = pending[index];
+      if (!entry || !SafeSetHas(invalidated, entry)) continue;
+      deleteDependencyEdges(entry);
+      if (SafeMapGet(compiledCache, entry.relPath) === entry) {
+        SafeMapDelete(compiledCache, entry.relPath);
+      }
     }
   }
 
-  function createValidatorRequire(fromRel) {
+  function createValidatorRequire(requesterEntry) {
     return validatorRuntime.runtime.createRequire((spec) => {
       try {
-        return requireBridgeSuccess(requireFrom(fromRel, spec));
+        return requireBridgeSuccess(requireFrom(requesterEntry, spec));
       } catch (error) {
         return requireBridgeFailure(requireFailureCode(error));
       }
     });
   }
 
-  function loadModule(relPath, requesterRelPath) {
+  function loadModule(relPath, requesterEntry) {
+    if (requesterEntry) assertCurrentCacheEntry(requesterEntry, ["loading", "loaded"]);
     if (SafeMapHas(compiledCache, relPath)) {
       const cached = SafeMapGet(compiledCache, relPath);
       if (cached && (cached.state === "loading" || cached.state === "loaded")) {
-        recordDependency(requesterRelPath, relPath);
-        return cached.exports;
+        const currentExports = cached.module.exports;
+        recordDependency(requesterEntry, cached);
+        return currentExports;
       }
       throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "invalid validator module cache state");
     }
     if (!SafeMapHas(verifiedSources, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module was not captured before execution");
     const source = SafeMapGet(verifiedSources, relPath);
     const module = validatorRuntime.runtime.createModule();
-    const cacheEntry = { exports: module.exports, state: "loading", dependencies: new Set(), dependents: new Set() };
+    const cacheEntry = {
+      relPath,
+      generation: nextModuleGeneration += 1,
+      module,
+      state: "loading",
+      dependencies: new Set(),
+      dependents: new Set()
+    };
     SafeMapSet(compiledCache, relPath, cacheEntry); // seed for cycles
     const absFile = path.join(ROOT, relPath);
     let wrapper;
     try {
       wrapper = SafeVmCompileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile, parsingContext: validatorContext });
+      assertCurrentCacheEntry(cacheEntry, ["loading"]);
     } catch (error) {
-      invalidateModuleGraph(relPath);
+      invalidateModuleGraph(cacheEntry);
+      if (error instanceof WorkerFailure) throw error;
       throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "validator module compilation failed");
     }
     try {
-      wrapper(module.exports, createValidatorRequire(relPath), module, absFile, path.dirname(absFile));
+      wrapper(module.exports, createValidatorRequire(cacheEntry), module, absFile, path.dirname(absFile));
+      assertCurrentCacheEntry(cacheEntry, ["loading"]);
     } catch (error) {
-      invalidateModuleGraph(relPath);
+      invalidateModuleGraph(cacheEntry);
       if (error instanceof WorkerFailure) throw error;
       throw workerFailure("VALIDATOR_THROW");
     }
-    cacheEntry.exports = module.exports;
     cacheEntry.state = "loaded";
-    recordDependency(requesterRelPath, relPath);
-    return module.exports;
+    const finalExports = module.exports;
+    recordDependency(requesterEntry, cacheEntry);
+    return finalExports;
   }
 
   return { exports: loadModule(closure.entryRelPath, null), runtime: validatorRuntime.runtime };
