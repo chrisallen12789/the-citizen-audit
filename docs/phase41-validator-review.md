@@ -1,20 +1,20 @@
-# Phase 4.1 - Validator Worker Durable-Global Review
+# Phase 4.1 - Validator Worker Cross-Realm Boundary Review
 
-Base checkpoint: `a98587433d38a6eadf252e8f48bd408f36567221`
+Base checkpoint: `144369386f270e1e4eca2f47d4a063dc9dcae65e`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, and symbol-keyed dispatcher attacks are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, and cross-realm host-authority attacks are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `a98587433d38a6eadf252e8f48bd408f36567221` and closes the remaining validator-visible global authority defects:
+This checkpoint continues from `144369386f270e1e4eca2f47d4a063dc9dcae65e` and closes the remaining validator-visible host-realm authority defects:
 
-1. validator modules compile and execute inside a separate `vm` context created with a validator-owned global rather than the worker harness global
-2. before validator compilation, the validator-visible `globalThis` is detached from its prototype chain, frozen, and made non-extensible
-3. reviewed-dangerous named globals and host messaging/network/stdio surfaces are installed as immutable `undefined` bindings inside that context
-4. inherited symbol-keyed and string-keyed host authority on the worker global prototype chain is not visible to validator code
-5. host callbacks scheduled before lockdown cannot reintroduce validator-visible globals after the boundary is frozen
-6. the CommonJS shim passed to validators uses null-prototype `module`/`exports` records and a constructor-hidden `require` function so constructor-chain probes cannot climb back into the harness realm
-7. non-neutralizable host-global symbol authority still fails closed before validator top-level code or `validate()` can execute
-8. the previously verified console/stdout lockdown, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
+1. validator modules still compile and execute inside a separate `vm` context with a frozen null-prototype validator global
+2. validator top-level code and `validate()` now receive only validator-realm `module`, `exports`, `require`, builtin facades, validation context objects, arrays, byte wrappers, stat wrappers, hash wrappers, JSON parse results, and dependency return values
+3. the worker no longer passes host-created validation context objects, host CommonJS functions, host capability wrapper functions, or host JSON result objects into validator-visible code
+4. context-native capability facades call a hidden host bridge that accepts serialized primitive/byte-marker arguments and returns only primitives or validator-realm wrappers
+5. capability bridge return values are materialized inside the validator realm, with host Buffers encoded through a captured `Buffer.isBuffer` and copied into safe byte wrappers
+6. the CommonJS shim is created inside the validator context, so `require.prototype`, callable `.prototype` objects, and constructor-chain probes do not climb back into the harness realm
+7. the validation context is serialized in the harness and parsed inside the validator realm, preventing `Object.getPrototypeOf(context).constructor.constructor(...)` host-global recovery
+8. the previously verified console/stdout lockdown, durable global freeze, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
 
 OS-level validator confinement was not started.
 
@@ -66,6 +66,18 @@ The symbol preflight is now backed by a durable validator-visible boundary rathe
 - context self-audit verifies the global prototype is null, the global is frozen/non-extensible, and no symbol-keyed nonprimitive value remains before validator module compilation
 - preloaded `process.nextTick`, `queueMicrotask`, resolved Promise, and `setImmediate` callbacks that add host globals cannot affect the already-detached validator global
 - validator-visible `require`, `module`, and `exports` do not expose host constructors or the harness global through prototype or constructor chains
+
+### Validator-Visible Object Graph Boundary
+The durable global boundary is now paired with a host-free validator-visible object graph:
+- `module`, `exports`, and `require` are constructed inside the validator context rather than in the host harness
+- facade functions are context-native frozen callables with null prototypes and hidden constructors
+- host capability execution is reached only through a hidden bridge closure that is not exposed in any enumerable, prototype, descriptor, or return-value graph visible to validator code
+- bridge arguments are serialized in the validator realm and decoded by trusted host code; bridge responses are serialized by trusted host code and materialized back into validator-realm values
+- `Buffer.from()`, `Buffer.concat()`, `fs.readFileSync()`, and hash `digest()` return safe byte wrappers created in the validator realm, not host Buffers or host JSON marker objects
+- `fs.statSync()` and `fs.lstatSync()` return validator-realm stat wrappers with copied primitive metadata and reviewed predicate callables
+- `JSON.parse()` and validation context parsing produce frozen data whose objects are null-prototype records and whose arrays hide constructor recovery
+- dependency modules execute from the preverified in-memory source map and return validator-realm objects/functions, so dependent-module arrays, objects, and factory results cannot recover host prototypes
+- validator code cannot use `.constructor`, `.prototype`, `Object.getPrototypeOf(...)`, property descriptors, function own keys, arrays, iterators, symbol keys, accessors, or nested return values to recover the host global or a host Agent-like sentinel
 
 ### Capability Facade Return Hardening
 Allowed builtins remain explicit, but facades no longer return raw host-native authority objects:
@@ -138,6 +150,16 @@ The previous Phase 4.1 corrections remain in force:
 
 ## Regressions Added
 New direct production-worker regressions prove:
+- `Object.getPrototypeOf(context).constructor.constructor("return globalThis")()` cannot recover the host global from the validation context
+- `Object.getPrototypeOf(require.prototype).constructor.constructor("return globalThis")()` is absent or fails closed at module top level and during `validate()`
+- every exposed callable, including `fs`, `crypto`, hash, `Buffer`, `path`, `util`, and `assert` facade functions, lacks a host-realm prototype/constructor recovery path
+- nonprimitive capability returns, including JSON arrays/objects, byte wrappers, stat wrappers, hash wrappers, dependency exports, dependency arrays/objects, and dependency factory results, expose no host prototypes, constructors, sentinels, maps, factories, callbacks, or dispatcher-like objects
+- the host realm cannot be recovered during validator module top-level execution before `module.exports` is assigned
+- the host realm cannot be recovered during `validate()` through arguments, globals, CommonJS objects, builtin facades, return values, descriptors, or nested prototypes
+- Agent-like sentinels installed on the host global, the host global prototype, `Object.prototype`, `Function.prototype`, `Array.prototype`, and `Map.prototype` remain unreachable through the complete validator-visible graph
+- post-lock Agent-like sentinels scheduled through `process.nextTick`, `queueMicrotask`, a resolved Promise, and `setImmediate` remain unreachable through context, loader, capability, or return-value paths
+- recursive object-graph inspection with cycle detection covers `globalThis`, validation arguments, `require`, `module`, `exports`, all builtin facades, callable own keys, callable `.prototype` values, prototype chains, descriptors, capability return values, dependency return values, and nested dispatcher-like state
+- normal authoritative validators still pass with context-native Buffer/JSON/facade values
 - `Object.getOwnPropertySymbols(globalThis)` exposes no raw host object or function after a preloaded Agent-like symbol global is scrubbed
 - `Reflect.ownKeys(globalThis)` cannot locate an Undici-like Agent, Pool, Client, Dispatcher, dispatch method, internal factory, clients `Map`, options object, callback function, or manufactured Pool
 - `Symbol.for("undici.globalDispatcher.1")` cannot recover a host Agent-like dispatcher
@@ -198,9 +220,9 @@ Retained direct production-worker regressions prove:
 - normal authoritative validators still pass
 
 ## Test Totals Observed In This Workspace
-- validator-security: 134/134
+- validator-security: 135/135
 - execution-orchestrator: 56/56
-- execution suite: 330/330
+- execution suite: 331/331
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -224,6 +246,7 @@ Host note:
 - all closure bytes are verified and captured before any validator byte executes
 - no validator source verification occurs after validator execution begins
 - no string-keyed or symbol-keyed default global exposes raw host authority in the covered own, inherited, and post-lock regression paths
+- no validator-visible context, CommonJS shim, facade callable, facade return value, dependency return value, descriptor, prototype, or constructor path exposes host-realm authority in the covered object-graph regression paths
 - no Undici-like Agent, Pool, Client, Dispatcher, internal factory, clients Map, options object, or callback function is reachable through symbol-keyed global state
 - late host-global additions scheduled before worker startup cannot become validator-visible after the durable global is frozen
 - validator-visible `globalThis` is null-prototype, frozen, and non-extensible before validator module compilation
@@ -257,4 +280,4 @@ The replacement checkpoint patch must be packaged as raw Git output:
 - delivered patch bytes verified against a separately regenerated raw `git diff --binary`
 
 ## Residual Hold
-This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, shared-intrinsic, MessagePort prototype, and dependency-substitution/hash-prototype defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, shared-intrinsic, MessagePort prototype, dependency-substitution/hash-prototype, durable-global, and cross-realm host-authority defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.

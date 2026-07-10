@@ -38,6 +38,7 @@ const SafeBufferAlloc = Buffer.alloc.bind(Buffer);
 const SafeBufferByteLength = Buffer.byteLength.bind(Buffer);
 const SafeBufferConcat = Buffer.concat.bind(Buffer);
 const SafeBufferFrom = Buffer.from.bind(Buffer);
+const SafeBufferIsBuffer = Buffer.isBuffer.bind(Buffer);
 const SafeBufferSubarray = Function.call.bind(Buffer.prototype.subarray);
 const SafeBufferToString = Function.call.bind(Buffer.prototype.toString);
 const SafeCryptoCreateHash = crypto.createHash.bind(crypto);
@@ -507,6 +508,158 @@ function defineValidatorGlobal(context, name, value) {
   }
 }
 
+function encodeBridgeValue(value) {
+  if (SafeBufferIsBuffer(value)) return { __validatorKind: "bytes", base64: SafeBufferToString(value, "base64") };
+  return value;
+}
+
+function encodeStats(stats) {
+  const data = SafeObjectCreate(null);
+  for (const key of ["dev", "ino", "mode", "nlink", "uid", "gid", "rdev", "size", "blksize", "blocks", "atimeMs", "mtimeMs", "ctimeMs", "birthtimeMs"]) {
+    data[key] = stats[key];
+  }
+  data.isFile = Boolean(stats.isFile());
+  data.isDirectory = Boolean(stats.isDirectory());
+  data.isSymbolicLink = Boolean(stats.isSymbolicLink());
+  data.isBlockDevice = Boolean(stats.isBlockDevice());
+  data.isCharacterDevice = Boolean(stats.isCharacterDevice());
+  data.isFIFO = Boolean(stats.isFIFO());
+  data.isSocket = Boolean(stats.isSocket());
+  return { __validatorKind: "stats", data };
+}
+
+function decodeBridgeValue(value) {
+  if (value && typeof value === "object") {
+    if (value.__validatorKind === "bytes" && typeof value.base64 === "string") return SafeBufferFrom(value.base64, "base64");
+    if (SafeArrayIsArray(value)) {
+      const copy = [];
+      for (let index = 0; index < value.length; index += 1) copy[index] = decodeBridgeValue(value[index]);
+      return copy;
+    }
+    const copy = SafeObjectCreate(null);
+    const keys = SafeObjectKeys(value);
+    for (let index = 0; index < keys.length; index += 1) copy[keys[index]] = decodeBridgeValue(value[keys[index]]);
+    return copy;
+  }
+  return value;
+}
+
+function bridgeResponse(ok, value) {
+  return SafeJSONStringify(ok ? { ok: true, value } : { ok: false });
+}
+
+function createCapabilityBridge() {
+  const hashStates = new Map();
+  let nextHashToken = 0;
+  function readArgs(serializedArgs) {
+    const parsed = SafeJSONParse(serializedArgs);
+    if (!SafeArrayIsArray(parsed)) throw new Error("bridge args must be an array");
+    const args = [];
+    for (let index = 0; index < parsed.length; index += 1) args[index] = decodeBridgeValue(parsed[index]);
+    return args;
+  }
+  return function validatorCapabilityBridge(operation, serializedArgs) {
+    try {
+      const args = readArgs(serializedArgs);
+      switch (operation) {
+        case "bytes.from":
+          return bridgeResponse(true, encodeBridgeValue(SafeBufferFrom(args[0], args[1])));
+        case "bytes.alloc":
+          return bridgeResponse(true, encodeBridgeValue(SafeBufferAlloc(args[0], args[1], args[2])));
+        case "bytes.allocUnsafe":
+          return bridgeResponse(true, encodeBridgeValue(SafeBufferAlloc(args[0])));
+        case "bytes.byteLength":
+          return bridgeResponse(true, SafeBufferByteLength(args[0], args[1] || "utf8"));
+        case "bytes.concat": {
+          const list = args[0];
+          if (!SafeArrayIsArray(list)) throw new TypeError("Buffer.concat list must be an array");
+          const buffers = [];
+          for (let index = 0; index < list.length; index += 1) buffers[index] = SafeBufferFrom(list[index]);
+          return bridgeResponse(true, encodeBridgeValue(SafeBufferConcat(buffers, typeof args[1] === "number" ? args[1] : undefined)));
+        }
+        case "bytes.toString":
+          return bridgeResponse(true, SafeBufferToString(args[0], args[1] || "utf8"));
+        case "bytes.subarray":
+          return bridgeResponse(true, encodeBridgeValue(SafeBufferSubarray(args[0], args[1] || 0, args[2])));
+        case "fs.existsSync":
+          return bridgeResponse(true, Boolean(fs.existsSync(args[0])));
+        case "fs.readFileSync":
+          return bridgeResponse(true, encodeBridgeValue(fs.readFileSync(args[0], args[1])));
+        case "fs.writeFileSync":
+          if (typeof args[0] !== "string") throw new TypeError("fs.writeFileSync path must be a string");
+          fs.writeFileSync(args[0], args[1], args[2]);
+          return bridgeResponse(true, undefined);
+        case "fs.lstatSync":
+          return bridgeResponse(true, encodeStats(fs.lstatSync(args[0], args[1])));
+        case "fs.statSync":
+          return bridgeResponse(true, encodeStats(fs.statSync(args[0], args[1])));
+        case "fs.realpathSync":
+          return bridgeResponse(true, fs.realpathSync(args[0], "utf8"));
+        case "crypto.createHash": {
+          const token = `hash-${++nextHashToken}`;
+          SafeMapSet(hashStates, token, SafeCryptoCreateHash(args[0]));
+          return bridgeResponse(true, token);
+        }
+        case "hash.update": {
+          const hash = SafeMapGet(hashStates, args[0]);
+          if (!hash) throw new Error("unknown hash token");
+          hash.update(args[1], args[2]);
+          return bridgeResponse(true, true);
+        }
+        case "hash.digest": {
+          const hash = SafeMapGet(hashStates, args[0]);
+          if (!hash) throw new Error("unknown hash token");
+          hashStates.delete(args[0]);
+          return bridgeResponse(true, encodeBridgeValue(hash.digest(args[1])));
+        }
+        case "crypto.randomUUID":
+          return bridgeResponse(true, crypto.randomUUID());
+        case "os.hostname":
+          return bridgeResponse(true, os.hostname());
+        case "os.platform":
+          return bridgeResponse(true, os.platform());
+        case "os.tmpdir":
+          return bridgeResponse(true, os.tmpdir());
+        case "os.type":
+          return bridgeResponse(true, os.type());
+        case "os.release":
+          return bridgeResponse(true, os.release());
+        case "os.arch":
+          return bridgeResponse(true, os.arch());
+        case "util.format":
+          return bridgeResponse(true, SafeFunctionApply(util.format, util, args));
+        case "assert.ok":
+          assert.ok(args[0], args[1]);
+          return bridgeResponse(true, undefined);
+        case "assert.equal":
+          assert.equal(args[0], args[1], args[2]);
+          return bridgeResponse(true, undefined);
+        case "assert.strictEqual":
+          assert.strictEqual(args[0], args[1], args[2]);
+          return bridgeResponse(true, undefined);
+        case "assert.deepEqual":
+          assert.deepEqual(args[0], args[1], args[2]);
+          return bridgeResponse(true, undefined);
+        case "assert.deepStrictEqual":
+          assert.deepStrictEqual(args[0], args[1], args[2]);
+          return bridgeResponse(true, undefined);
+        default:
+          if (SafeStringStartsWith(operation, "path.")) {
+            const parts = SafeStringSplit(operation, ".");
+            const variant = parts.length === 3 ? parts[1] : null;
+            const method = parts.length === 3 ? parts[2] : parts[1];
+            const pathModule = variant === "posix" ? path.posix : variant === "win32" ? path.win32 : path;
+            if (!SafeObjectHasOwn(pathModule, method) || typeof pathModule[method] !== "function") throw new Error("unknown path operation");
+            return bridgeResponse(true, SafeFunctionApply(pathModule[method], pathModule, args));
+          }
+          throw new Error("unknown bridge operation");
+      }
+    } catch (error) {
+      return bridgeResponse(false);
+    }
+  };
+}
+
 function createValidatorContext() {
   if (!vm.constants || !vm.constants.DONT_CONTEXTIFY) {
     throw workerFailure("WORKER_INTERNAL_FAILURE", "durable validator context is unavailable");
@@ -517,10 +670,237 @@ function createValidatorContext() {
   } catch (error) {
     throw workerFailure("WORKER_INTERNAL_FAILURE", "durable validator context creation failed");
   }
-  defineValidatorGlobal(context, "Buffer", SAFE_BUFFER_FACADE);
-  defineValidatorGlobal(context, "JSON", SAFE_JSON_FACADE);
   for (let index = 0; index < VALIDATOR_CONTEXT_UNDEFINED_GLOBALS.length; index += 1) {
     defineValidatorGlobal(context, VALIDATOR_CONTEXT_UNDEFINED_GLOBALS[index], undefined);
+  }
+  let runtime;
+  try {
+    runtime = SafeVmRunInContext(`
+      ((bridge) => {
+        const O = Object;
+        const A = Array;
+        const R = Reflect;
+        const J = globalThis.JSON;
+        const define = O.defineProperty;
+        const create = O.create;
+        const freeze = O.freeze;
+        const getOwnDescriptor = O.getOwnPropertyDescriptor;
+        const getPrototypeOf = O.getPrototypeOf;
+        const setPrototypeOf = O.setPrototypeOf;
+        const ownKeys = R.ownKeys;
+        const arrayIsArray = A.isArray;
+        const jsonParse = J.parse;
+        const jsonStringify = J.stringify;
+        const safeBytes = new WeakMap();
+
+        function defineRO(target, key, value) {
+          define(target, key, { value, enumerable: true, writable: false, configurable: false });
+        }
+        function record(entries) {
+          const out = create(null);
+          for (let index = 0; index < entries.length; index += 1) defineRO(out, entries[index][0], entries[index][1]);
+          return freeze(out);
+        }
+        function serialize(value, seen) {
+          if (value === null || (typeof value !== "object" && typeof value !== "function")) return value;
+          if (safeBytes.has(value)) return { __validatorKind: "bytes", base64: safeBytes.get(value) };
+          if (!seen) seen = [];
+          for (let index = 0; index < seen.length; index += 1) if (seen[index] === value) throw "capability operation failed";
+          seen[seen.length] = value;
+          if (arrayIsArray(value)) {
+            const arr = [];
+            for (let index = 0; index < value.length; index += 1) arr[index] = serialize(value[index], seen);
+            return arr;
+          }
+          const out = create(null);
+          const keys = ownKeys(value);
+          for (let index = 0; index < keys.length; index += 1) {
+            const key = keys[index];
+            if (typeof key !== "string") continue;
+            const descriptor = getOwnDescriptor(value, key);
+            if (!descriptor || !("value" in descriptor)) continue;
+            out[key] = serialize(descriptor.value, seen);
+          }
+          return out;
+        }
+        function bridgeCall(operation, args) {
+          const responseText = bridge(operation, jsonStringify(args.map((arg) => serialize(arg))));
+          if (typeof responseText !== "string") throw "capability operation failed";
+          const response = jsonParse(responseText);
+          if (!response || response.ok !== true) throw "capability operation failed: " + operation;
+          return materialize(response.value);
+        }
+        function makeCallable(fn) {
+          const callable = (...args) => fn(args);
+          try { setPrototypeOf(callable, null); } catch (error) {}
+          try { defineRO(callable, "constructor", undefined); } catch (error) {}
+          return freeze(callable);
+        }
+        function makeBridgeCallable(operation) {
+          return makeCallable((args) => bridgeCall(operation, args));
+        }
+        function deepFreezeJson(value, seen) {
+          if (value === null || typeof value !== "object") return value;
+          if (!seen) seen = [];
+          for (let index = 0; index < seen.length; index += 1) if (seen[index] === value) return value;
+          seen[seen.length] = value;
+          if (arrayIsArray(value)) {
+            for (let index = 0; index < value.length; index += 1) deepFreezeJson(value[index], seen);
+            try { defineRO(value, "constructor", undefined); } catch (error) {}
+            return freeze(value);
+          }
+          const copy = create(null);
+          const keys = ownKeys(value);
+          for (let index = 0; index < keys.length; index += 1) {
+            const key = keys[index];
+            if (typeof key !== "string") continue;
+            const descriptor = getOwnDescriptor(value, key);
+            if (!descriptor || !("value" in descriptor)) continue;
+            defineRO(copy, key, deepFreezeJson(descriptor.value, seen));
+          }
+          return freeze(copy);
+        }
+        function createBytes(base64) {
+          const wrapper = create(null);
+          const byteLength = bridgeCall("bytes.byteLength", [{ __validatorKind: "bytes", base64 }]);
+          defineRO(wrapper, "length", byteLength);
+          defineRO(wrapper, "byteLength", byteLength);
+          defineRO(wrapper, "toString", makeCallable((args) => bridgeCall("bytes.toString", [{ __validatorKind: "bytes", base64 }, args[0] || "utf8"])));
+          defineRO(wrapper, "subarray", makeCallable((args) => bridgeCall("bytes.subarray", [{ __validatorKind: "bytes", base64 }, args[0] || 0, args[1]])));
+          defineRO(wrapper, "slice", makeCallable((args) => bridgeCall("bytes.subarray", [{ __validatorKind: "bytes", base64 }, args[0] || 0, args[1]])));
+          defineRO(wrapper, "constructor", undefined);
+          safeBytes.set(wrapper, base64);
+          return freeze(wrapper);
+        }
+        function createStats(data) {
+          const wrapper = create(null);
+          const keys = ownKeys(data);
+          for (let index = 0; index < keys.length; index += 1) {
+            const key = keys[index];
+            if (typeof key === "string" && key.slice(0, 2) !== "is") defineRO(wrapper, key, data[key]);
+          }
+          for (const name of ["isFile", "isDirectory", "isSymbolicLink", "isBlockDevice", "isCharacterDevice", "isFIFO", "isSocket"]) {
+            defineRO(wrapper, name, makeCallable(() => Boolean(data[name])));
+          }
+          defineRO(wrapper, "constructor", undefined);
+          return freeze(wrapper);
+        }
+        function createHash(token) {
+          let digested = false;
+          const wrapper = create(null);
+          defineRO(wrapper, "update", makeCallable((args) => {
+            if (digested) throw "capability operation failed";
+            bridgeCall("hash.update", [token, args[0], args[1]]);
+            return wrapper;
+          }));
+          defineRO(wrapper, "digest", makeCallable((args) => {
+            if (digested) throw "capability operation failed";
+            digested = true;
+            return bridgeCall("hash.digest", [token, args[0]]);
+          }));
+          defineRO(wrapper, "constructor", undefined);
+          return freeze(wrapper);
+        }
+        function materialize(value) {
+          if (value && typeof value === "object") {
+            if (value.__validatorKind === "bytes") return createBytes(value.base64);
+            if (value.__validatorKind === "stats") return createStats(value.data);
+            if (arrayIsArray(value)) {
+              const arr = [];
+              for (let index = 0; index < value.length; index += 1) arr[index] = materialize(value[index]);
+              try { defineRO(arr, "constructor", undefined); } catch (error) {}
+              return freeze(arr);
+            }
+            return deepFreezeJson(value);
+          }
+          return value;
+        }
+        function pathFacade(prefix, includeVariants) {
+          const entries = [
+            ["join", makeBridgeCallable(prefix + "join")],
+            ["resolve", makeBridgeCallable(prefix + "resolve")],
+            ["relative", makeBridgeCallable(prefix + "relative")],
+            ["dirname", makeBridgeCallable(prefix + "dirname")],
+            ["basename", makeBridgeCallable(prefix + "basename")],
+            ["extname", makeBridgeCallable(prefix + "extname")],
+            ["normalize", makeBridgeCallable(prefix + "normalize")],
+            ["isAbsolute", makeBridgeCallable(prefix + "isAbsolute")],
+            ["sep", prefix === "path.win32." ? "\\\\" : "/"],
+            ["delimiter", prefix === "path.win32." ? ";" : ":"]
+          ];
+          if (includeVariants) {
+            entries[entries.length] = ["posix", pathFacade("path.posix.", false)];
+            entries[entries.length] = ["win32", pathFacade("path.win32.", false)];
+          }
+          return record(entries);
+        }
+        const bufferFacade = record([
+          ["from", makeBridgeCallable("bytes.from")],
+          ["byteLength", makeBridgeCallable("bytes.byteLength")],
+          ["isBuffer", makeCallable((args) => safeBytes.has(args[0]))],
+          ["concat", makeBridgeCallable("bytes.concat")],
+          ["alloc", makeBridgeCallable("bytes.alloc")],
+          ["allocUnsafe", makeBridgeCallable("bytes.allocUnsafe")]
+        ]);
+        const jsonFacade = record([
+          ["parse", makeCallable((args) => deepFreezeJson(jsonParse(args[0], args[1])))],
+          ["stringify", makeCallable((args) => jsonStringify(args[0], args[1], args[2]))]
+        ]);
+        const fsFacade = record([
+          ["existsSync", makeBridgeCallable("fs.existsSync")],
+          ["readFileSync", makeBridgeCallable("fs.readFileSync")],
+          ["writeFileSync", makeBridgeCallable("fs.writeFileSync")],
+          ["lstatSync", makeBridgeCallable("fs.lstatSync")],
+          ["statSync", makeBridgeCallable("fs.statSync")],
+          ["realpathSync", makeBridgeCallable("fs.realpathSync")],
+          ["constants", record([["O_RDONLY", 0], ["O_NOFOLLOW", 0]])]
+        ]);
+        const cryptoFacade = record([
+          ["createHash", makeCallable((args) => createHash(bridgeCall("crypto.createHash", args)))],
+          ["randomUUID", makeBridgeCallable("crypto.randomUUID")]
+        ]);
+        const builtins = record([
+          ["path", pathFacade("path.", true)],
+          ["crypto", cryptoFacade],
+          ["util", record([["format", makeBridgeCallable("util.format")]])],
+          ["assert", record([
+            ["ok", makeBridgeCallable("assert.ok")],
+            ["equal", makeBridgeCallable("assert.equal")],
+            ["strictEqual", makeBridgeCallable("assert.strictEqual")],
+            ["deepEqual", makeBridgeCallable("assert.deepEqual")],
+            ["deepStrictEqual", makeBridgeCallable("assert.deepStrictEqual")]
+          ])],
+          ["buffer", record([["Buffer", bufferFacade]])],
+          ["os", record([
+            ["hostname", makeBridgeCallable("os.hostname")],
+            ["platform", makeBridgeCallable("os.platform")],
+            ["tmpdir", makeBridgeCallable("os.tmpdir")],
+            ["type", makeBridgeCallable("os.type")],
+            ["release", makeBridgeCallable("os.release")],
+            ["arch", makeBridgeCallable("os.arch")]
+          ])],
+          ["fs", fsFacade]
+        ]);
+        define(globalThis, "Buffer", { value: bufferFacade, enumerable: false, writable: false, configurable: false });
+        define(globalThis, "JSON", { value: jsonFacade, enumerable: false, writable: false, configurable: false });
+        const runtime = record([
+          ["createModule", makeCallable(() => {
+            const module = create(null);
+            define(module, "exports", { value: create(null), enumerable: true, writable: true, configurable: false });
+            return module;
+          })],
+          ["createRequire", makeCallable((args) => {
+            const localBridge = args[0];
+            return makeCallable((requireArgs) => localBridge(String(requireArgs[0])));
+          })],
+          ["parseJson", makeCallable((args) => deepFreezeJson(jsonParse(args[0])))],
+          ["requireBuiltin", makeCallable((args) => builtins[args[0]])]
+        ]);
+        return runtime;
+      })
+    `, context)(createCapabilityBridge());
+  } catch (error) {
+    throw workerFailure("WORKER_INTERNAL_FAILURE", "validator runtime creation failed");
   }
   try {
     SafeVmRunInContext(`
@@ -560,7 +940,7 @@ function createValidatorContext() {
   if (!SafeArrayIsArray(auditProblems) || auditProblems.length) {
     throw workerFailure("WORKER_INTERNAL_FAILURE", "validator context audit rejected global surface");
   }
-  return context;
+  return { context, runtime };
 }
 
 class WorkerFailure extends Error {
@@ -729,7 +1109,9 @@ function loadClosureEntry(closure) {
   const expected = new Map(); // relPath -> {hash,size,mode,uid,gid,dev,ino,nlink}
   for (const m of closure.modules) SafeMapSet(expected, m.relPath, m);
   const verifiedSources = verifyCompleteClosureSources(ROOT, expected, closure.modules);
-  const validatorContext = createValidatorContext();
+  const validatorRuntime = createValidatorContext();
+  lockValidatorHostAccess();
+  const validatorContext = validatorRuntime.context;
   const compiledCache = new Map(); // relPath -> module.exports
 
   function verifyOneModule(relPath) {
@@ -796,24 +1178,18 @@ function loadClosureEntry(closure) {
     }
     const builtin = SafeStringStartsWith(spec, "node:") ? SafeStringSlice(spec, 5) : spec;
     if (!SafeObjectHasOwn(ALLOWED_BUILTINS, builtin)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "non-allowlisted builtin required in closure");
-    return ALLOWED_BUILTINS[builtin];
+    return validatorRuntime.runtime.requireBuiltin(builtin);
   }
 
   function createValidatorRequire(fromRel) {
-    const callable = function validatorRequire(spec) {
-      return requireFrom(fromRel, spec);
-    };
-    try { SafeObjectSetPrototypeOf(callable, null); } catch (error) {}
-    defineReadOnly(callable, "constructor", undefined);
-    return SafeObjectFreeze(callable);
+    return validatorRuntime.runtime.createRequire((spec) => requireFrom(fromRel, spec));
   }
 
   function loadModule(relPath) {
     if (SafeMapHas(compiledCache, relPath)) return SafeMapGet(compiledCache, relPath);
     if (!SafeMapHas(verifiedSources, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module was not captured before execution");
     const source = SafeMapGet(verifiedSources, relPath);
-    const module = SafeObjectCreate(null);
-    SafeObjectDefineProperty(module, "exports", { value: SafeObjectCreate(null), enumerable: true, writable: true, configurable: false });
+    const module = validatorRuntime.runtime.createModule();
     SafeMapSet(compiledCache, relPath, module.exports); // seed for cycles
     const absFile = path.join(ROOT, relPath);
     let wrapper;
@@ -832,7 +1208,7 @@ function loadClosureEntry(closure) {
     return module.exports;
   }
 
-  return loadModule(closure.entryRelPath);
+  return { exports: loadModule(closure.entryRelPath), runtime: validatorRuntime.runtime };
 }
 
 function loadAuthoritativeDescriptor(workerPayload) {
@@ -864,10 +1240,12 @@ try {
     fail("CLOSURE_VERIFICATION_FAILURE", "missing authoritative validator closure");
   } else {
     let validator;
+    let validatorRealmRuntime;
     let validatorLoaded = false;
     try {
-      lockValidatorHostAccess();
-      validator = loadClosureEntry(closure);
+      const loadedValidator = loadClosureEntry(closure);
+      validator = loadedValidator.exports;
+      validatorRealmRuntime = loadedValidator.runtime;
       validatorLoaded = true;
     } catch (error) {
       failFromCaught(error, "CLOSURE_VERIFICATION_FAILURE");
@@ -895,7 +1273,9 @@ try {
         () => {
           let validationResult;
           try {
-            validationResult = validator.validate({ ...context, phase });
+            const serializedContext = SafeJSONStringify({ ...context, phase });
+            const validationContext = validatorRealmRuntime.parseJson(serializedContext);
+            validationResult = validator.validate(validationContext);
           } catch (error) {
             fail("VALIDATOR_THROW");
             return undefined;

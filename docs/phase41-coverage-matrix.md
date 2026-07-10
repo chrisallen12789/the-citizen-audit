@@ -1,8 +1,8 @@
-# Phase 4.1 - Coverage Matrix for Validator Durable-Global Checkpoint
+# Phase 4.1 - Coverage Matrix for Validator Cross-Realm Boundary Checkpoint
 
-Authoritative base: `a98587433d38a6eadf252e8f48bd408f36567221`
+Authoritative base: `144369386f270e1e4eca2f47d4a063dc9dcae65e`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, and symbol-keyed dispatcher attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, and cross-realm host-authority attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -43,6 +43,14 @@ No broad capability declarations were added.
 | CommonJS shim exposes host constructors through `require`, `module`, or `exports` | FIXED | worker passes null-prototype `module`/`exports` and a constructor-hidden frozen require function into the validator context |
 | Validator-visible global can accept new properties after lockdown | FIXED | validator asserts `Object.isExtensible(globalThis) === false`, `Object.isFrozen(globalThis) === true`, and `Object.getPrototypeOf(globalThis) === null` |
 | Non-writable/non-configurable symbol-keyed authority cannot be neutralized | FIXED | worker fails closed before validator execution and marker creation |
+| Host-created validation context recovers host global through constructor chain | FIXED | direct worker regression serializes context in the harness, parses it inside the validator realm, and proves `Object.getPrototypeOf(context).constructor.constructor(...)` cannot reach host sentinels |
+| Host-created `require` function exposes a `.prototype` route to host `Function` | FIXED | CommonJS `require` is created as a context-native frozen callable; top-level and validate-time probes find no host constructor path |
+| Host-created capability functions expose `.prototype` routes to host `Function` | FIXED | every reviewed facade callable is context-native, null-prototype, constructor-hidden, and recursively audited |
+| Host-realm capability return values expose host prototypes | FIXED | byte, stat, hash, JSON, validation-context, and dependency return values are materialized inside the validator realm and recursively audited |
+| Dependency module arrays, objects, functions, and factory results recover host authority | FIXED | dependency modules execute from the verified source map inside the validator context, and recursive audit proves dependency return graphs contain no host sentinels |
+| Host Agent-like sentinels installed on Object/Function/Array/Map prototypes are reachable through validator-visible values | FIXED | preload installs prototype sentinels and dispatcher-like objects; recursive validator audit finds none through globals, context, facades, module objects, dependencies, descriptors, or prototypes |
+| Post-lock host authority installed after scrub is reachable through validator-visible host objects | FIXED | preload schedules nextTick, microtask, Promise, and immediate installations; context-native values provide no path back to the late host globals |
+| Complete validator-visible object graph contains host `Function`, host constructors, raw maps, factories, callbacks, or dispatchers | FIXED | new direct worker regression recursively inspects `globalThis`, validation arguments, CommonJS objects, builtin facades, callable own keys/prototypes, descriptors, capability returns, dependency returns, and nested dispatcher-like state with cycle detection |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
 | `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
@@ -97,7 +105,7 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 134/134 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 135/135 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
@@ -108,7 +116,7 @@ No broad capability declarations were added.
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 330/330, normal exit on this host |
+| `npm run execution:test` | PASS, 331/331, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |

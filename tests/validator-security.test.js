@@ -1428,6 +1428,287 @@ test("validator global boundary hides inherited and late-installed host authorit
   );
 });
 
+test("validator-visible object graph exposes no host-realm authority", async () => {
+  const preloadPath = path.join(scratch, `cross-realm-host-preload-${seq++}.js`);
+  const hostMarker = path.join(scratch, `cross-realm-host-marker-${seq++}.txt`);
+  const depPath = path.join(REAL_VALIDATORS, "cross-realm-dependency.js");
+  const depSource = `"use strict";\nmodule.exports={array:[1,{nested:true}],object:{label:"dependency-object"},factory:function(){return {made:["dependency-result"]};}};\n`;
+  writeStrictFile(preloadPath, `
+    const fs = require("fs");
+    class Pool { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "pool-dispatch"); } }
+    class Client { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "client-dispatch"); } }
+    class Dispatcher { dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "dispatcher-dispatch"); } }
+    class Agent {
+      constructor(label) {
+        this.label = label;
+        this[Symbol("factory")] = function factory() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "factory"); return new Pool(); };
+        this[Symbol("clients")] = new Map([["client", new Client()]]);
+        this[Symbol("options")] = { callback: function callback() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "callback"); } };
+      }
+      dispatch() { fs.writeFileSync(${JSON.stringify(hostMarker)}, "agent-dispatch-" + this.label); }
+    }
+    function makeAgent(label) { return new Agent(label); }
+    const proto = Object.getPrototypeOf(globalThis);
+    Object.defineProperty(globalThis, Symbol.for("audit.host.own"), { value: makeAgent("own"), configurable: true, writable: true });
+    Object.defineProperty(proto, Symbol.for("audit.host.inherited"), { value: makeAgent("inherited"), configurable: true, writable: true });
+    Object.defineProperty(Object.prototype, Symbol.for("audit.host.object-prototype"), { value: makeAgent("object-prototype"), configurable: false, writable: false });
+    Object.defineProperty(proto, Symbol.for("audit.host.accessor"), { get() { return makeAgent("accessor"); }, configurable: true });
+    Object.defineProperty(Object.prototype, Symbol.for("audit.host.object-prototype-sentinel"), { value: "host-object-prototype", configurable: true });
+    Object.defineProperty(Function.prototype, Symbol.for("audit.host.function-prototype-sentinel"), { value: "host-function-prototype", configurable: true });
+    Object.defineProperty(Array.prototype, Symbol.for("audit.host.array-prototype-sentinel"), { value: "host-array-prototype", configurable: true });
+    Object.defineProperty(Map.prototype, Symbol.for("audit.host.map-prototype-sentinel"), { value: "host-map-prototype", configurable: true });
+    function installLate(label) {
+      globalThis[Symbol.for("audit.host.late." + label)] = makeAgent(label);
+      globalThis["auditHostLate" + label] = makeAgent(label + "-string");
+    }
+    process.nextTick(() => installLate("nextTick"));
+    queueMicrotask(() => installLate("microtask"));
+    Promise.resolve().then(() => installLate("promise"));
+    setImmediate(() => installLate("immediate"));
+  `);
+  writeStrictFile(depPath, depSource);
+  try {
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";
+const topProblems = [];
+function runAudit(stage, context) {
+  const problems = [];
+  function add(problem) { problems[problems.length] = stage + ": " + problem; }
+  function isObjectLike(value) { return value !== null && (typeof value === "object" || typeof value === "function"); }
+  function keyText(key) { try { return String(key); } catch (error) { return "<key>"; } }
+  const hostSymbols = [
+    "audit.host.own",
+    "audit.host.inherited",
+    "audit.host.object-prototype",
+    "audit.host.accessor",
+    "audit.host.late.nextTick",
+    "audit.host.late.microtask",
+    "audit.host.late.promise",
+    "audit.host.late.immediate",
+    "audit.host.object-prototype-sentinel",
+    "audit.host.function-prototype-sentinel",
+    "audit.host.array-prototype-sentinel",
+    "audit.host.map-prototype-sentinel"
+  ].map((name) => Symbol.for(name));
+  function inspectHostValue(label, value, seen) {
+    if (!isObjectLike(value)) return;
+    const ctorName = (() => { try { return value.constructor && value.constructor.name; } catch (error) { return ""; } })();
+    const proto = (() => { try { return Object.getPrototypeOf(value); } catch (error) { return null; } })();
+    const protoCtorName = (() => { try { return proto && proto.constructor && proto.constructor.name; } catch (error) { return ""; } })();
+    if (/Agent|Pool|Client|Dispatcher/.test(String(ctorName) + " " + String(protoCtorName))) {
+      add(label + " exposed host dispatcher constructor");
+      try { if (typeof value.dispatch === "function") value.dispatch(); } catch (error) {}
+    }
+    try {
+      if (typeof value.dispatch === "function" && value !== globalThis) {
+        add(label + " exposed host dispatch function");
+        try { value.dispatch(); } catch (error) {}
+      }
+    } catch (error) {}
+    for (const symbol of hostSymbols) {
+      try {
+        if (value[symbol] !== undefined) add(label + " exposed host sentinel " + String(symbol));
+      } catch (error) {}
+    }
+    if (seen.indexOf(value) !== -1) return;
+    seen[seen.length] = value;
+    let keys = [];
+    try { keys = Reflect.ownKeys(value); } catch (error) { return; }
+    for (let index = 0; index < keys.length; index += 1) {
+      const key = keys[index];
+      let descriptor;
+      try { descriptor = Object.getOwnPropertyDescriptor(value, key); } catch (error) { continue; }
+      if (!descriptor) continue;
+      const childLabel = label + "." + keyText(key);
+      if ("value" in descriptor && isObjectLike(descriptor.value) && seen.length < 160) inspectHostValue(childLabel, descriptor.value, seen);
+      if ("get" in descriptor && typeof descriptor.get === "function") inspectHostValue(childLabel + ".get", descriptor.get, seen);
+      if ("set" in descriptor && typeof descriptor.set === "function") inspectHostValue(childLabel + ".set", descriptor.set, seen);
+    }
+  }
+  function inspectRecoveredGlobal(label, candidate) {
+    if (!candidate || candidate === globalThis || !isObjectLike(candidate)) return;
+    for (const symbol of hostSymbols) {
+      try {
+        if (candidate[symbol] !== undefined) {
+          add(label + " recovered host global through " + String(symbol));
+          inspectHostValue(label + ".hostGlobal", candidate[symbol], []);
+        }
+      } catch (error) {}
+    }
+    for (const name of ["auditHostLatenextTick", "auditHostLatemicrotask", "auditHostLatepromise", "auditHostLateimmediate"]) {
+      try {
+        if (candidate[name] !== undefined) {
+          add(label + " recovered host global string authority " + name);
+          inspectHostValue(label + "." + name, candidate[name], []);
+        }
+      } catch (error) {}
+    }
+  }
+  function tryConstructorEscape(label, value) {
+    const candidates = [value];
+    try { if (value !== undefined && value !== null) candidates[candidates.length] = Object.getPrototypeOf(value); } catch (error) {}
+    try { if (value && value.prototype !== undefined) candidates[candidates.length] = value.prototype; } catch (error) {}
+    try { if (value && value.prototype !== undefined) candidates[candidates.length] = Object.getPrototypeOf(value.prototype); } catch (error) {}
+    for (let index = 0; index < candidates.length; index += 1) {
+      const candidate = candidates[index];
+      if (!candidate) continue;
+      try {
+        const ctor = candidate.constructor;
+        const fn = ctor && ctor.constructor;
+        if (typeof fn === "function") inspectRecoveredGlobal(label + ".constructor[" + index + "]", fn("return globalThis")());
+      } catch (error) {}
+    }
+  }
+  function audit(label, value, depth, seen) {
+    if (!isObjectLike(value) || depth < 0) return;
+    if (!seen) seen = [];
+    if (seen.indexOf(value) !== -1) return;
+    seen[seen.length] = value;
+    tryConstructorEscape(label, value);
+    inspectHostValue(label, value, []);
+    try {
+      const proto = Object.getPrototypeOf(value);
+      if (proto) audit(label + ".[[Prototype]]", proto, depth - 1, seen);
+    } catch (error) {}
+    try {
+      if (value.prototype !== undefined) audit(label + ".prototype", value.prototype, depth - 1, seen);
+    } catch (error) {}
+    let keys = [];
+    try { keys = Reflect.ownKeys(value); } catch (error) { return; }
+    for (let index = 0; index < keys.length; index += 1) {
+      const key = keys[index];
+      let descriptor;
+      try { descriptor = Object.getOwnPropertyDescriptor(value, key); } catch (error) { continue; }
+      if (!descriptor) continue;
+      const childLabel = label + "." + keyText(key);
+      if ("value" in descriptor) audit(childLabel, descriptor.value, depth - 1, seen);
+      if ("get" in descriptor) audit(childLabel + ".get", descriptor.get, depth - 1, seen);
+      if ("set" in descriptor) audit(childLabel + ".set", descriptor.set, depth - 1, seen);
+    }
+  }
+  function auditEverything(contextArg) {
+    const fs = require("node:fs");
+    const crypto = require("node:crypto");
+    const path = require("node:path");
+    const util = require("node:util");
+    const assert = require("node:assert");
+    const Buffer = require("node:buffer").Buffer;
+    const dep = require("./cross-realm-dependency");
+    const hash = crypto.createHash("sha256");
+    hash.update("abc");
+    const values = [];
+    function capture(label, fn) {
+      try { values[values.length] = [label, fn()]; } catch (error) { add(label + " capture failed: " + String(error && error.message ? error.message : error)); }
+    }
+    for (const pair of [
+      ["globalThis", globalThis],
+      ["context", contextArg],
+      ["require", require],
+      ["require.prototype", require.prototype],
+      ["module", module],
+      ["exports", exports],
+      ["fs", fs],
+      ["fs.readFileSync", fs.readFileSync],
+      ["fs.writeFileSync", fs.writeFileSync],
+      ["fs.realpathSync", fs.realpathSync],
+      ["fs.statSync result", fs.statSync(__filename)],
+      ["fs.readFileSync result", fs.readFileSync(__filename)],
+      ["crypto", crypto],
+      ["crypto.createHash", crypto.createHash],
+      ["hash wrapper", hash],
+      ["hash.update", hash.update],
+      ["hash.digest", hash.digest],
+      ["hash digest result", function(){ return hash.digest(); }],
+      ["Buffer facade", Buffer],
+      ["Buffer.from", Buffer.from],
+      ["Buffer.byteLength", Buffer.byteLength],
+      ["Buffer.isBuffer", Buffer.isBuffer],
+      ["Buffer.concat", Buffer.concat],
+      ["Buffer.alloc", Buffer.alloc],
+      ["Buffer.allocUnsafe", Buffer.allocUnsafe],
+      ["Buffer.from result", function(){ return Buffer.from("abc"); }],
+      ["Buffer.concat result", function(){ return Buffer.concat([Buffer.from("a"), Buffer.from("b")]); }],
+      ["path", path],
+      ["path.join", path.join],
+      ["path.resolve", path.resolve],
+      ["path.relative", path.relative],
+      ["path.dirname", path.dirname],
+      ["path.basename", path.basename],
+      ["path.extname", path.extname],
+      ["path.normalize", path.normalize],
+      ["path.isAbsolute", path.isAbsolute],
+      ["path.posix", path.posix],
+      ["path.posix.join", path.posix.join],
+      ["path.win32", path.win32],
+      ["path.win32.join", path.win32.join],
+      ["util", util],
+      ["util.format", util.format],
+      ["assert", assert],
+      ["assert.ok", assert.ok],
+      ["assert.equal", assert.equal],
+      ["assert.strictEqual", assert.strictEqual],
+      ["assert.deepEqual", assert.deepEqual],
+      ["assert.deepStrictEqual", assert.deepStrictEqual],
+      ["JSON", JSON],
+      ["JSON.parse", JSON.parse],
+      ["JSON.stringify", JSON.stringify],
+      ["JSON object", function(){ return JSON.parse('{"items":[{"id":"OBJ-1"}]}'); }],
+      ["JSON array", function(){ return JSON.parse("[1]"); }],
+      ["dependency exports", dep],
+      ["dependency array", dep.array],
+      ["dependency object", dep.object],
+      ["dependency factory", dep.factory],
+      ["dependency factory result", function(){ return dep.factory(); }]
+    ]) {
+      capture(pair[0], typeof pair[1] === "function" && pair[0].endsWith(" result") || pair[0] === "JSON object" || pair[0] === "JSON array" ? pair[1] : function(){ return pair[1]; });
+    }
+    for (let index = 0; index < values.length; index += 1) audit(values[index][0], values[index][1], 4, []);
+  }
+  try {
+    auditEverything(context);
+  } catch (error) {
+    add("audit threw " + String(error && error.message ? error.message : error));
+  }
+  return problems;
+}
+topProblems.push.apply(topProblems, runAudit("top-level", undefined));
+module.exports={
+  id:"execution-plan",
+  version:"1.0.0",
+  supportedPhases:["candidate","post_write"],
+  validate:function(context){
+    const validateProblems = runAudit("validate", context);
+    const problems = topProblems.concat(validateProblems);
+    return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+  }
+};
+`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const outcome = await launchProductionWorker({
+          validatorId: "execution-plan",
+          expectedValidatorSetHash: reg.validatorSetHash,
+          phase: "candidate",
+          context: authoritativeWorkerContext("bt".repeat(32))
+        }, 2500, { execArgv: ["--require", preloadPath] });
+        assert.equal(outcome.kind, "message");
+        assertNoDirectWorkerMessages(outcome);
+        assert.equal(outcome.stdioBytes, 0);
+        const envelope = parseTransportedWorkerEnvelope(outcome.message);
+        assert.equal(envelope.ok, true, JSON.stringify(envelope));
+        const parsed = envelope.result;
+        assert.equal(parsed.status, "passed", parsed.problems.join("\n"));
+        assert.deepEqual(parsed.problems, []);
+        assert.equal(fs.existsSync(hostMarker), false);
+      }
+    );
+  } finally {
+    try { fs.rmSync(depPath, { force: true }); } catch (error) {}
+    try { fs.rmSync(hostMarker, { force: true }); } catch (error) {}
+  }
+});
+
 test("non-neutralizable symbol-keyed global authority fails closed before validator execution", async () => {
   const preloadPath = path.join(scratch, `symbol-agent-locked-preload-${seq++}.js`);
   const topLevelMarker = path.join(scratch, `symbol-agent-locked-top-marker-${seq++}.txt`);
