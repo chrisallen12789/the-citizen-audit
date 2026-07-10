@@ -739,6 +739,13 @@ function createValidatorContext() {
         function makeBridgeCallable(operation) {
           return makeCallable((args) => bridgeCall(operation, args));
         }
+        function createRealmRequireFailure(code) {
+          const failure = create(null);
+          defineRO(failure, "name", "ValidatorRequireFailure");
+          defineRO(failure, "message", "validator dependency could not be loaded");
+          defineRO(failure, "code", typeof code === "string" ? code : "VALIDATOR_THROW");
+          return freeze(failure);
+        }
         function deepFreezeJson(value, seen) {
           if (value === null || typeof value !== "object") return value;
           if (!seen) seen = [];
@@ -891,7 +898,13 @@ function createValidatorContext() {
           })],
           ["createRequire", makeCallable((args) => {
             const localBridge = args[0];
-            return makeCallable((requireArgs) => localBridge(String(requireArgs[0])));
+            return makeCallable((requireArgs) => {
+              const response = localBridge(String(requireArgs[0]));
+              if (!response || response.ok !== true) {
+                throw createRealmRequireFailure(response && response.code);
+              }
+              return response.value;
+            });
           })],
           ["parseJson", makeCallable((args) => deepFreezeJson(jsonParse(args[0])))],
           ["requireBuiltin", makeCallable((args) => builtins[args[0]])]
@@ -1181,8 +1194,33 @@ function loadClosureEntry(closure) {
     return validatorRuntime.runtime.requireBuiltin(builtin);
   }
 
+  function requireBridgeSuccess(value) {
+    const response = SafeObjectCreate(null);
+    response.ok = true;
+    response.value = value;
+    return response;
+  }
+
+  function requireBridgeFailure(code) {
+    const response = SafeObjectCreate(null);
+    response.ok = false;
+    response.code = safeFailureCode(code);
+    return response;
+  }
+
+  function requireFailureCode(error) {
+    if (error instanceof WorkerFailure) return error.failureCode;
+    return "VALIDATOR_THROW";
+  }
+
   function createValidatorRequire(fromRel) {
-    return validatorRuntime.runtime.createRequire((spec) => requireFrom(fromRel, spec));
+    return validatorRuntime.runtime.createRequire((spec) => {
+      try {
+        return requireBridgeSuccess(requireFrom(fromRel, spec));
+      } catch (error) {
+        return requireBridgeFailure(requireFailureCode(error));
+      }
+    });
   }
 
   function loadModule(relPath) {

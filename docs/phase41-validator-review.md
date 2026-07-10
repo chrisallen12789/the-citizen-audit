@@ -1,11 +1,11 @@
 # Phase 4.1 - Validator Worker Cross-Realm Boundary Review
 
-Base checkpoint: `144369386f270e1e4eca2f47d4a063dc9dcae65e`
+Base checkpoint: `fd5b8b26bdf8f4b7b6565c8d8347a0b619827bfb`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, and cross-realm host-authority attacks are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, and local-require host-exception attacks are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `144369386f270e1e4eca2f47d4a063dc9dcae65e` and closes the remaining validator-visible host-realm authority defects:
+This checkpoint continues from `fd5b8b26bdf8f4b7b6565c8d8347a0b619827bfb` and closes the remaining validator-visible host-realm authority defect:
 
 1. validator modules still compile and execute inside a separate `vm` context with a frozen null-prototype validator global
 2. validator top-level code and `validate()` now receive only validator-realm `module`, `exports`, `require`, builtin facades, validation context objects, arrays, byte wrappers, stat wrappers, hash wrappers, JSON parse results, and dependency return values
@@ -14,7 +14,8 @@ This checkpoint continues from `144369386f270e1e4eca2f47d4a063dc9dcae65e` and cl
 5. capability bridge return values are materialized inside the validator realm, with host Buffers encoded through a captured `Buffer.isBuffer` and copied into safe byte wrappers
 6. the CommonJS shim is created inside the validator context, so `require.prototype`, callable `.prototype` objects, and constructor-chain probes do not climb back into the harness realm
 7. the validation context is serialized in the harness and parsed inside the validator realm, preventing `Object.getPrototypeOf(context).constructor.constructor(...)` host-global recovery
-8. the previously verified console/stdout lockdown, durable global freeze, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
+8. local dependency load failures are converted at the host/validator boundary into primitive response records; catchable require failures are created inside the validator realm as frozen null-prototype records
+9. the previously verified console/stdout lockdown, durable global freeze, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
 
 OS-level validator confinement was not started.
 
@@ -78,6 +79,16 @@ The durable global boundary is now paired with a host-free validator-visible obj
 - `JSON.parse()` and validation context parsing produce frozen data whose objects are null-prototype records and whose arrays hide constructor recovery
 - dependency modules execute from the preverified in-memory source map and return validator-realm objects/functions, so dependent-module arrays, objects, and factory results cannot recover host prototypes
 - validator code cannot use `.constructor`, `.prototype`, `Object.getPrototypeOf(...)`, property descriptors, function own keys, arrays, iterators, symbol keys, accessors, or nested return values to recover the host global or a host Agent-like sentinel
+
+### Local Require Failure Membrane
+The closure-local CommonJS loader is now total at the validator realm boundary:
+- the hidden host callback used by context-native `require()` catches every host exception before returning control to validator code
+- successful local dependency loads return only the already context-native dependency export value
+- failed local dependency loads return a null-prototype primitive response record to the validator context rather than throwing a host `WorkerFailure`, host `Error`, or arbitrary thrown value
+- the validator-realm require wrapper creates and throws a frozen null-prototype `ValidatorRequireFailure` record whose `name`, `message`, and `code` fields are primitive strings
+- uncaught dependency failures still fail the worker closed through the reviewed bounded failure envelope
+
+This covers direct dependencies, transitive dependencies, dependency failures during entry-module top-level execution, dependency failures during `validate()`, ordinary `Error` subclasses, `AggregateError`, strings, symbols, `null`, arrays, proxies, accessor-bearing objects, `Error.cause`, and hostile `toString`/`message`/`name`/`stack` accessors. No original host-created thrown value crosses into validator code.
 
 ### Capability Facade Return Hardening
 Allowed builtins remain explicit, but facades no longer return raw host-native authority objects:
@@ -150,6 +161,15 @@ The previous Phase 4.1 corrections remain in force:
 
 ## Regressions Added
 New direct production-worker regressions prove:
+- a declared direct dependency that throws at module top level can be caught by the entry validator without exposing host `WorkerFailure`, host `Error`, host prototypes, host constructors, host globals, inherited Agent-like sentinels, dispatcher functions, factories, callbacks, raw `Map`s, or manufactured pools
+- the same direct dependency failure path remains host-free when caught inside `validate()`
+- transitive dependency failures are membrane-protected both at entry-module top level and during `validate()`
+- dependency thrown values including `Error`, custom `Error` subclasses, `AggregateError`, strings, symbols, `null`, plain objects, arrays, proxies, accessor objects, `Error` with `cause`, and hostile accessor-bearing objects cannot escape as host-visible authority
+- every catchable require-failure representation is recursively audited across own keys, symbol keys, descriptors, getters, setters, prototype chains, constructor chains, `.stack`, `.cause`, nested objects, functions, arrays, and iterator-like surfaces
+- inherited host sentinels and late-installed host sentinels scheduled by `process.nextTick`, `queueMicrotask`, a resolved Promise, and `setImmediate` remain unreachable through caught require failures
+- bridge failure paths for builtin facades still expose only reviewed validator-realm failures
+- normal direct dependencies, transitive dependencies, cycles, builtin facades, and dependency export graphs continue to function with context-native values
+- uncaught local dependency failure fails closed without exposing host messages or default-channel messages
 - `Object.getPrototypeOf(context).constructor.constructor("return globalThis")()` cannot recover the host global from the validation context
 - `Object.getPrototypeOf(require.prototype).constructor.constructor("return globalThis")()` is absent or fails closed at module top level and during `validate()`
 - every exposed callable, including `fs`, `crypto`, hash, `Buffer`, `path`, `util`, and `assert` facade functions, lacks a host-realm prototype/constructor recovery path
@@ -220,9 +240,9 @@ Retained direct production-worker regressions prove:
 - normal authoritative validators still pass
 
 ## Test Totals Observed In This Workspace
-- validator-security: 135/135
+- validator-security: 137/137
 - execution-orchestrator: 56/56
-- execution suite: 331/331
+- execution suite: 333/333
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -236,8 +256,7 @@ Retained direct production-worker regressions prove:
 - `git fsck --full`: passed
 - Institutional QA: 159 HTML files passed
 - execution-orchestrator, runtime-integration, runtime-isolation, fault, and aggregate execution suite all terminated normally on this Windows host
-- runtime-integration completed three consecutive local runs at 28/28
-- the changed-validator-registry binding tests completed five focused local repetitions at 2/2
+- Linux three-run termination reproduction was not local in this desktop session because WSL has no installed distribution and Docker is unavailable
 
 Host note:
 - WSL has no installed Linux distributions and Docker is not installed in this desktop session, so Linux-host termination could not be directly reproduced here. This is recorded as a host limitation, not as a claimed Linux result.
@@ -280,4 +299,4 @@ The replacement checkpoint patch must be packaged as raw Git output:
 - delivered patch bytes verified against a separately regenerated raw `git diff --binary`
 
 ## Residual Hold
-This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, shared-intrinsic, MessagePort prototype, dependency-substitution/hash-prototype, durable-global, and cross-realm host-authority defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, shared-intrinsic, MessagePort prototype, dependency-substitution/hash-prototype, durable-global, cross-realm host-authority, and local-require host-exception defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.

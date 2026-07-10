@@ -1,8 +1,8 @@
 # Phase 4.1 - Coverage Matrix for Validator Cross-Realm Boundary Checkpoint
 
-Authoritative base: `144369386f270e1e4eca2f47d4a063dc9dcae65e`
+Authoritative base: `fd5b8b26bdf8f4b7b6565c8d8347a0b619827bfb`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, and cross-realm host-authority attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, and local-require host-exception attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -51,6 +51,15 @@ No broad capability declarations were added.
 | Host Agent-like sentinels installed on Object/Function/Array/Map prototypes are reachable through validator-visible values | FIXED | preload installs prototype sentinels and dispatcher-like objects; recursive validator audit finds none through globals, context, facades, module objects, dependencies, descriptors, or prototypes |
 | Post-lock host authority installed after scrub is reachable through validator-visible host objects | FIXED | preload schedules nextTick, microtask, Promise, and immediate installations; context-native values provide no path back to the late host globals |
 | Complete validator-visible object graph contains host `Function`, host constructors, raw maps, factories, callbacks, or dispatchers | FIXED | new direct worker regression recursively inspects `globalThis`, validation arguments, CommonJS objects, builtin facades, callable own keys/prototypes, descriptors, capability returns, dependency returns, and nested dispatcher-like state with cycle detection |
+| Local `require()` host callback throws raw host `WorkerFailure` into validator code | FIXED | host callback catches dependency-load failures and returns primitive status records; validator realm creates the catchable failure record |
+| Direct dependency failure at entry-module top level exposes host realm | FIXED | regression catches the failure at top level and recursively audits the caught value, constructor chains, descriptors, `.stack`, `.cause`, and nested values |
+| Direct dependency failure inside `validate()` exposes host realm | FIXED | same attack is repeated inside `validate()` and no host global, Agent-like sentinel, dispatcher, factory, callback, raw `Map`, or Pool is recovered |
+| Transitive dependency failure exposes host realm | FIXED | entry requires dependency A, A requires dependency B that throws, and both top-level and validate-time catch paths remain membrane-protected |
+| Arbitrary thrown values cross the host boundary through dependency loading | FIXED | regressions cover `Error`, custom `Error`, `AggregateError`, string, symbol, `null`, object, array, proxy, accessors, `Error.cause`, and hostile `toString`/`message`/`name`/`stack` accessors |
+| Caught require-failure representation contains host identity | FIXED | recursive caught-error audit checks own keys, symbol keys, descriptors, getters/setters, prototypes, constructors, `.stack`, `.cause`, nested objects/functions/arrays, and iterator-like surfaces |
+| Inherited or post-lock host sentinels are reachable through caught require failures | FIXED | preload installs Agent-like authority on host prototypes and through nextTick, microtask, Promise, and immediate callbacks; caught failures expose none of it |
+| Uncaught local dependency failure leaks host message data | FIXED | direct worker regression proves uncaught dependency failure fails closed with bounded `VALIDATOR_THROW` and no default-channel messages |
+| Local require failure membrane breaks ordinary dependencies | FIXED | regression verifies normal direct dependencies, transitive dependencies, cycles, builtin facades, and dependency export graphs still load as context-native values |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
 | `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
@@ -105,18 +114,18 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 135/135 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 137/137 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
 | repository JavaScript syntax sweep | PASS, 147 tracked `.js` files checked |
 | `npm run runtime:integration:test` | PASS, 28/28, normal exit on this host |
-| `npm run runtime:integration:test` repeated locally | PASS, 3 consecutive 28/28 runs, normal exit on this host |
+| `npm run runtime:integration:test` repeated locally | NOT LOCAL in this checkpoint; previous Linux termination fix is preserved but this Windows desktop session has no Linux runtime |
 | `npm run runtime:isolation:test` | PASS, 48/48 |
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 331/331, normal exit on this host |
+| `npm run execution:test` | PASS, 333/333, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |
