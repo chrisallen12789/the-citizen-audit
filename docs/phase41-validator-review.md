@@ -1,23 +1,52 @@
-# Phase 4.1 - Validator Worker Intrinsic-Hardening Review
+# Phase 4.1 - Validator Worker Preverified-Closure Review
 
-Base checkpoint: `5f2eac728dd7b465f6f65136471617bce38cc59b`
+Base checkpoint: `dc9cb25270b95daa6c2b1c37208496b43fc776cf`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, and shared-intrinsic mutation are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, and dependency-substitution/hash-prototype attacks are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `5f2eac728dd7b465f6f65136471617bce38cc59b` and closes the remaining same-realm validator-worker trust-boundary defect:
+This checkpoint continues from `dc9cb25270b95daa6c2b1c37208496b43fc776cf` and closes the remaining shared-realm validator-worker source and channel defects:
 
-1. validator top-level code can no longer replace `Promise.prototype.then` to fabricate approval without `validate()` running
-2. validator top-level code can no longer replace `Array.prototype.push` to suppress normalization problems
-3. validator code can no longer mutate shared constructors, prototypes, iterator prototypes, or host capability facades in a way that changes trusted harness behavior
-4. trusted post-validator-load code now uses captured call-bound primordials for promise chaining, string checks, buffer slicing/string conversion, map/set lookup, and result normalization
-5. private harness `MessageChannel`, bounded success/failure envelopes, immutable limits, authoritative source selection, and worker-side `validatorSetHash` verification remain in force
+1. validator top-level code can no longer replace `MessagePort.prototype.postMessage` to forge a harness-owned passing result
+2. validator top-level code can no longer replace `MessagePort.prototype.close` to suppress or alter harness completion
+3. entry-module top-level code can no longer overwrite a later dependency, mutate crypto hash prototypes, restore the file, and execute unverified dependency bytes
+4. allowed builtin capability facades no longer return raw host-native `crypto`, `fs`, `Buffer`, stream, file-handle, or object-returning `path` values that can recover host prototypes
+5. all authoritative closure module bytes are verified and captured before any validator byte is compiled or executed, and validator dependencies load only from that captured byte map
+6. private harness `MessageChannel`, bounded success/failure envelopes, immutable limits, authoritative source selection, intrinsic hardening, and worker-side `validatorSetHash` verification remain in force
 
 OS-level validator confinement was not started.
 
 ## Architecture Verified
 
-### Same-Realm Intrinsic Hardening
+### Pre-Execution Closure Capture
+The worker no longer verifies source lazily as each module is required. Before the entry validator module is compiled, `kernel/execution/validator-worker.js` now:
+- opens every authoritative closure module with no-follow semantics
+- verifies regular-file status, hard-link count, write bits where enforced, size, mode, device, inode, ownership, realpath, and SHA-256 hash against the manifest bound into `validatorSetHash`
+- copies each verified byte sequence into a private in-memory source map
+- closes source descriptors before validator execution proceeds
+- compiles all closure modules only from the captured source map
+
+After the first validator byte executes, the worker does not reopen validator source files, rehash validator modules, consult mutable filesystem source, or resolve dependencies from disk.
+
+### MessagePort Dispatch Hardening
+The private-channel correction now avoids prototype dispatch for the harness-owned port:
+- `MessagePort.prototype.postMessage` and `MessagePort.prototype.close` are captured before validator code can run
+- the harness invokes those captured call-bound functions directly against the private result port
+- validator access to global messaging constructors such as `MessagePort`, `MessageChannel`, `BroadcastChannel`, `EventTarget`, `Event`, and `MessageEvent` is removed or hardened
+- prototype replacement attempts cannot alter the final harness envelope
+
+### Capability Facade Return Hardening
+Allowed builtins remain explicit, but facades no longer return raw host-native authority objects:
+- `crypto.createHash()` returns a null-prototype wrapper, not a raw `Hash`
+- hash `digest()` without an encoding returns a private safe byte wrapper, not a raw `Buffer`
+- `fs.readFileSync()` without an encoding returns a safe byte wrapper
+- `fs.statSync()` and `fs.lstatSync()` return null-prototype copied stat records with reviewed predicate wrappers
+- raw fs streams, file handles, watchers, descriptors, and stream factories are not exposed
+- `buffer.Buffer` returns safe byte wrappers through reviewed constructors
+- `path` exposes only reviewed string/boolean operations and omits object-returning helpers such as `path.parse()`
+- capability wrapper failures expose fixed primitive failures rather than raw host `Error` objects
+
+### Same-Realm Intrinsic Hardening Retained
 The production worker still uses `vm.compileFunction`, but it no longer relies on mutable shared intrinsics after validator bytes begin executing.
 
 Before loading the authoritative closure entry, `kernel/execution/validator-worker.js` now:
@@ -46,7 +75,7 @@ The previous private-channel correction remains in force:
 - the worker sends exactly one bounded serialized envelope through a harness-owned `MessageChannel`
 - the parent accepts only the harness-owned result-port message as the validator result
 - default-channel validator messages fail closed
-- direct `parentPort`, direct `MessagePort`, and forged-envelope attempts cannot preempt verification
+- direct `parentPort`, direct `MessagePort`, MessagePort prototype mutation, and forged-envelope attempts cannot preempt verification
 
 ### Complete Worker Transport Contract Retained
 The reviewed `REVIEWED_VALIDATOR_LIMITS.maxResultBytes` ceiling continues to apply to the complete serialized worker response envelope for both success and failure.
@@ -65,6 +94,16 @@ The previous Phase 4.1 corrections remain in force:
 
 ## Regressions Added
 New direct production-worker regressions prove:
+- replacing `MessagePort.prototype.postMessage` cannot forge success
+- replacing `MessagePort.prototype.close` cannot suppress harness completion
+- a validator whose `validate()` throws remains failed after messaging-prototype attacks
+- every closure module is verified and captured before entry top-level code can mutate a later dependency
+- entry top-level code cannot modify a later dependency and have those modified bytes execute
+- crypto hash prototype mutation cannot falsify dependency hash verification
+- `crypto.createHash()`, hash `digest()`, `fs.statSync()`, `fs.readFileSync()`, and `Buffer.from()` expose wrapped/null-prototype values instead of raw host-native objects
+- fs stream/file-handle factories, raw Hmac factories, and object-returning `path.parse()` are not exposed through validator facades
+
+Retained direct production-worker regressions prove:
 - replacing `Promise.prototype.then` cannot bypass `validate()`
 - replacing `Promise.prototype.catch` cannot change rejection handling
 - `validate()` is invoked exactly once before success is possible
@@ -77,8 +116,6 @@ New direct production-worker regressions prove:
 - thenables and custom `Promise` subclasses cannot bypass rejection or normalization
 - constructor chains and host capability facades cannot recover process authority or harness lexical state
 - direct `parentPort` and direct `MessagePort` attacks remain closed
-
-Retained regressions prove:
 - forged-envelope-before-contract-verification remains closed
 - success and failure transports remain exact and bounded
 - `toJSON`, accessor, prototype, structured-clone, multibyte, and emoji result attacks remain closed
@@ -89,9 +126,9 @@ Retained regressions prove:
 - normal authoritative validators still pass
 
 ## Test Totals Observed In This Workspace
-- validator-security: 123/123
+- validator-security: 127/127
 - execution-orchestrator: 56/56
-- execution suite: 319/319
+- execution suite: 323/323
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -110,6 +147,10 @@ Host note:
 - WSL has no installed Linux distributions and Docker is not installed in this desktop session, so Linux-host termination could not be directly reproduced here
 
 ## Additional Confirmations
+- all closure bytes are verified and captured before any validator byte executes
+- no validator source verification occurs after validator execution begins
+- MessagePort prototype mutation cannot alter the harness response
+- capability facades expose no raw mutable host-native return objects capable of changing trusted behavior
 - validator code cannot mutate trusted harness intrinsics in the covered attack paths
 - `validate()` must actually execute before approval
 - invalid statuses fail closed
@@ -131,4 +172,4 @@ The replacement checkpoint patch must be packaged as raw Git output:
 - delivered patch bytes verified against a separately regenerated raw `git diff --binary`
 
 ## Residual Hold
-This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, and shared-intrinsic defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, shared-intrinsic, MessagePort prototype, and dependency-substitution/hash-prototype defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.

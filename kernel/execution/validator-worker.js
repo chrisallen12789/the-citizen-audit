@@ -2,21 +2,24 @@
 
 // Validator execution worker.
 //
-// Executes ONLY the bytes of the validator's verified code closure. Every module
-// in the closure is re-read from disk, checked for symlink/non-regular status,
-// re-hashed against the manifest bound into validatorSetHash, and compiled from
-// those exact bytes through a private in-memory module system. There is no
-// path-based require() fallback: local dependencies resolve only within the
-// closure (undeclared/dynamic/escape are rejected), and built-ins are limited to
-// an explicit allowlist. This proves the executed transitive code matches the
-// bound closureHash. A synchronous infinite loop simply never posts; the parent
-// enforces the hard deadline via worker.terminate().
+// Executes ONLY the bytes of the validator's verified code closure. Before any
+// validator byte is compiled or executed, every module in the closure is opened
+// with no-follow semantics, checked for symlink/non-regular status, re-hashed
+// against the manifest bound into validatorSetHash, and copied into an immutable
+// in-memory source map. The validator module loader never reopens source files
+// after execution begins. There is no path-based require() fallback: local
+// dependencies resolve only within the captured closure, and built-ins are
+// limited to explicit reviewed facades. A synchronous infinite loop simply never
+// posts; the parent enforces the hard deadline via worker.terminate().
 
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const vm = require("vm");
-const { MessageChannel, parentPort, workerData } = require("worker_threads");
+const os = require("os");
+const util = require("util");
+const assert = require("assert");
+const { MessageChannel, MessagePort, parentPort, workerData } = require("worker_threads");
 const { loadValidatorRegistry } = require("./validators");
 const { REVIEWED_VALIDATOR_LIMITS } = require("./validator-limits");
 
@@ -28,16 +31,22 @@ const SafeArrayIsArray = Array.isArray;
 const SafeArrayJoin = Function.call.bind(Array.prototype.join);
 const SafeArraySlice = Function.call.bind(Array.prototype.slice);
 const SafeArraySort = Function.call.bind(Array.prototype.sort);
+const SafeBufferAlloc = Buffer.alloc.bind(Buffer);
 const SafeBufferByteLength = Buffer.byteLength.bind(Buffer);
+const SafeBufferConcat = Buffer.concat.bind(Buffer);
 const SafeBufferFrom = Buffer.from.bind(Buffer);
 const SafeBufferSubarray = Function.call.bind(Buffer.prototype.subarray);
 const SafeBufferToString = Function.call.bind(Buffer.prototype.toString);
+const SafeCryptoCreateHash = crypto.createHash.bind(crypto);
+const SafeFunctionApply = Function.call.bind(Function.prototype.apply);
 const SafeJSONStringify = JSON.stringify;
+const SafeJSONParse = JSON.parse;
+const SafeMessagePortClose = Function.call.bind(MessagePort.prototype.close);
+const SafeMessagePortPostMessage = Function.call.bind(MessagePort.prototype.postMessage);
 const SafeObjectCreate = Object.create;
 const SafeObjectDefineProperty = Object.defineProperty;
 const SafeObjectFreeze = Object.freeze;
 const SafeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-const SafeObjectGetOwnPropertyNames = Object.getOwnPropertyNames;
 const SafeObjectGetPrototypeOf = Object.getPrototypeOf;
 const SafeObjectHasOwn = Function.call.bind(Object.prototype.hasOwnProperty);
 const SafeObjectSetPrototypeOf = Object.setPrototypeOf;
@@ -47,16 +56,19 @@ const SafeMapSet = Function.call.bind(Map.prototype.set);
 const SafePromiseCatch = Function.call.bind(Promise.prototype.catch);
 const SafePromiseResolve = Promise.resolve.bind(Promise);
 const SafePromiseThen = Function.call.bind(Promise.prototype.then);
-const SafeReflectOwnKeys = Reflect.ownKeys;
 const SafeSetHas = Function.call.bind(Set.prototype.has);
 const SafeStringSlice = Function.call.bind(String.prototype.slice);
 const SafeStringSplit = Function.call.bind(String.prototype.split);
 const SafeStringStartsWith = Function.call.bind(String.prototype.startsWith);
 const SafeString = String;
+const SafeWeakMapGet = Function.call.bind(WeakMap.prototype.get);
+const SafeWeakMapHas = Function.call.bind(WeakMap.prototype.has);
+const SafeWeakMapSet = Function.call.bind(WeakMap.prototype.set);
+const SAFE_BYTE_VALUES = new WeakMap();
 
 const HARNESS_CHANNEL_TYPE = "validator-harness-channel-v1";
 const { port1: HARNESS_RESULT_PORT, port2: PARENT_RESULT_PORT } = new MessageChannel();
-parentPort.postMessage({ type: HARNESS_CHANNEL_TYPE, port: PARENT_RESULT_PORT }, [PARENT_RESULT_PORT]);
+SafeMessagePortPostMessage(parentPort, { type: HARNESS_CHANNEL_TYPE, port: PARENT_RESULT_PORT }, [PARENT_RESULT_PORT]);
 
 const MAX_RESULT_BYTES = REVIEWED_VALIDATOR_LIMITS.maxResultBytes;
 const MAX_ARRAY_LEN = REVIEWED_VALIDATOR_LIMITS.maxArrayLen;
@@ -85,52 +97,168 @@ function frozenRecord(entries) {
   return SafeObjectFreeze(record);
 }
 
-function safeCallable(fn, receiver) {
-  const callable = fn.bind(receiver);
+function safeWrapper(fn) {
+  const callable = function safeWrappedCapability() {
+    try {
+      return fn(arguments);
+    } catch (error) {
+      throw "capability operation failed";
+    }
+  };
   try { SafeObjectSetPrototypeOf(callable, null); } catch (error) {}
   defineReadOnly(callable, "constructor", undefined);
   return SafeObjectFreeze(callable);
 }
 
-function makeReadOnlyFacade(source, receiver = source, seen = new Map()) {
-  if (source === null || (typeof source !== "object" && typeof source !== "function")) return source;
-  if (SafeMapHas(seen, source)) return SafeMapGet(seen, source);
-  const facade = typeof source === "function" ? source.bind(receiver) : SafeObjectCreate(null);
-  if (typeof facade === "function") {
-    try { SafeObjectSetPrototypeOf(facade, null); } catch (error) {}
+function createPathFacade(pathModule, includeVariants = false) {
+  const entries = [
+    ["join", safeWrapper((args) => SafeFunctionApply(pathModule.join, pathModule, SafeArraySlice(args)))],
+    ["resolve", safeWrapper((args) => SafeFunctionApply(pathModule.resolve, pathModule, SafeArraySlice(args)))],
+    ["relative", safeWrapper((args) => pathModule.relative(args[0], args[1]))],
+    ["dirname", safeWrapper((args) => pathModule.dirname(args[0]))],
+    ["basename", safeWrapper((args) => pathModule.basename(args[0], args[1]))],
+    ["extname", safeWrapper((args) => pathModule.extname(args[0]))],
+    ["normalize", safeWrapper((args) => pathModule.normalize(args[0]))],
+    ["isAbsolute", safeWrapper((args) => Boolean(pathModule.isAbsolute(args[0])))],
+    ["sep", pathModule.sep],
+    ["delimiter", pathModule.delimiter]
+  ];
+  if (includeVariants) {
+    entries[entries.length] = ["posix", createPathFacade(pathModule.posix, false)];
+    entries[entries.length] = ["win32", createPathFacade(pathModule.win32, false)];
   }
-  SafeMapSet(seen, source, facade);
-  for (const key of SafeReflectOwnKeys(source)) {
-    if (key === "prototype" || key === "constructor") continue;
-    const descriptor = SafeObjectGetOwnPropertyDescriptor(source, key);
-    if (!descriptor || !SafeObjectHasOwn(descriptor, "value")) continue;
-    defineReadOnly(facade, key, makeReadOnlyFacade(descriptor.value, source, seen));
+  return frozenRecord(entries);
+}
+
+function createSafeBytes(value, encoding) {
+  const bytes = SafeBufferFrom(unwrapSafeBytes(value), encoding);
+  const copy = SafeBufferFrom(bytes);
+  const wrapper = SafeObjectCreate(null);
+  defineReadOnly(wrapper, "length", copy.length);
+  defineReadOnly(wrapper, "byteLength", copy.length);
+  defineReadOnly(wrapper, "toString", safeWrapper((args) => SafeBufferToString(copy, args[0] || "utf8")));
+  defineReadOnly(wrapper, "subarray", safeWrapper((args) => createSafeBytes(SafeBufferSubarray(copy, args[0] || 0, args[1]))));
+  defineReadOnly(wrapper, "slice", safeWrapper((args) => createSafeBytes(SafeBufferSubarray(copy, args[0] || 0, args[1]))));
+  defineReadOnly(wrapper, "constructor", undefined);
+  SafeWeakMapSet(SAFE_BYTE_VALUES, wrapper, copy);
+  return SafeObjectFreeze(wrapper);
+}
+
+function unwrapSafeBytes(value) {
+  if (SafeWeakMapHas(SAFE_BYTE_VALUES, value)) return SafeBufferFrom(SafeWeakMapGet(SAFE_BYTE_VALUES, value));
+  return value;
+}
+
+function safeStatMethod(fn) {
+  return safeWrapper(() => Boolean(fn()));
+}
+
+function createSafeStats(stats) {
+  const wrapper = SafeObjectCreate(null);
+  for (const key of ["dev", "ino", "mode", "nlink", "uid", "gid", "rdev", "size", "blksize", "blocks", "atimeMs", "mtimeMs", "ctimeMs", "birthtimeMs"]) {
+    if (SafeObjectHasOwn(stats, key) || stats[key] !== undefined) defineReadOnly(wrapper, key, stats[key]);
   }
-  defineReadOnly(facade, "constructor", undefined);
-  return SafeObjectFreeze(facade);
+  defineReadOnly(wrapper, "isFile", safeStatMethod(() => stats.isFile()));
+  defineReadOnly(wrapper, "isDirectory", safeStatMethod(() => stats.isDirectory()));
+  defineReadOnly(wrapper, "isSymbolicLink", safeStatMethod(() => stats.isSymbolicLink()));
+  defineReadOnly(wrapper, "isBlockDevice", safeStatMethod(() => stats.isBlockDevice()));
+  defineReadOnly(wrapper, "isCharacterDevice", safeStatMethod(() => stats.isCharacterDevice()));
+  defineReadOnly(wrapper, "isFIFO", safeStatMethod(() => stats.isFIFO()));
+  defineReadOnly(wrapper, "isSocket", safeStatMethod(() => stats.isSocket()));
+  defineReadOnly(wrapper, "constructor", undefined);
+  return SafeObjectFreeze(wrapper);
+}
+
+function fsReadFileSyncFacade(args) {
+  const result = fs.readFileSync(args[0], args[1]);
+  return typeof result === "string" ? result : createSafeBytes(result);
+}
+
+function fsWriteFileSyncFacade(args) {
+  fs.writeFileSync(args[0], unwrapSafeBytes(args[1]), args[2]);
+}
+
+function cryptoCreateHashFacade(args) {
+  const hash = SafeCryptoCreateHash(args[0]);
+  let digested = false;
+  const wrapper = SafeObjectCreate(null);
+  defineReadOnly(wrapper, "update", safeWrapper((updateArgs) => {
+    if (digested) throw new Error("hash already digested");
+    hash.update(unwrapSafeBytes(updateArgs[0]), updateArgs[1]);
+    return wrapper;
+  }));
+  defineReadOnly(wrapper, "digest", safeWrapper((digestArgs) => {
+    if (digested) throw new Error("hash already digested");
+    digested = true;
+    const result = hash.digest(digestArgs[0]);
+    return typeof result === "string" ? result : createSafeBytes(result);
+  }));
+  defineReadOnly(wrapper, "constructor", undefined);
+  return SafeObjectFreeze(wrapper);
 }
 
 const SAFE_BUFFER_FACADE = frozenRecord([
-  ["from", safeCallable(Buffer.from, Buffer)],
-  ["byteLength", safeCallable(Buffer.byteLength, Buffer)],
-  ["isBuffer", safeCallable(Buffer.isBuffer, Buffer)],
-  ["concat", safeCallable(Buffer.concat, Buffer)],
-  ["alloc", safeCallable(Buffer.alloc, Buffer)],
-  ["allocUnsafe", safeCallable(Buffer.allocUnsafe, Buffer)]
+  ["from", safeWrapper((args) => createSafeBytes(args[0], args[1]))],
+  ["byteLength", safeWrapper((args) => SafeBufferByteLength(unwrapSafeBytes(args[0]), args[1] || "utf8"))],
+  ["isBuffer", safeWrapper((args) => SafeWeakMapHas(SAFE_BYTE_VALUES, args[0]))],
+  ["concat", safeWrapper((args) => {
+    const list = args[0];
+    if (!SafeArrayIsArray(list)) throw new TypeError("Buffer.concat list must be an array");
+    const buffers = [];
+    for (let index = 0; index < list.length; index += 1) buffers[index] = SafeBufferFrom(unwrapSafeBytes(list[index]));
+    return createSafeBytes(SafeBufferConcat(buffers, args[1]));
+  })],
+  ["alloc", safeWrapper((args) => createSafeBytes(SafeBufferAlloc(args[0], args[1], args[2])))],
+  ["allocUnsafe", safeWrapper((args) => createSafeBytes(SafeBufferAlloc(args[0])))]
 ]);
 const SAFE_BUFFER_MODULE = frozenRecord([["Buffer", SAFE_BUFFER_FACADE]]);
 const SAFE_JSON_FACADE = frozenRecord([
-  ["parse", safeCallable(JSON.parse, JSON)],
-  ["stringify", safeCallable(JSON.stringify, JSON)]
+  ["parse", safeWrapper((args) => SafeJSONParse(args[0], args[1]))],
+  ["stringify", safeWrapper((args) => SafeJSONStringify(args[0], args[1], args[2]))]
 ]);
+const SAFE_FS_FACADE = frozenRecord([
+  ["existsSync", safeWrapper((args) => Boolean(fs.existsSync(args[0])))],
+  ["readFileSync", safeWrapper(fsReadFileSyncFacade)],
+  ["writeFileSync", safeWrapper(fsWriteFileSyncFacade)],
+  ["lstatSync", safeWrapper((args) => createSafeStats(fs.lstatSync(args[0], args[1])))],
+  ["statSync", safeWrapper((args) => createSafeStats(fs.statSync(args[0], args[1])))],
+  ["realpathSync", safeWrapper((args) => fs.realpathSync(args[0], args[1]))],
+  ["constants", frozenRecord([
+    ["O_RDONLY", fs.constants.O_RDONLY],
+    ["O_NOFOLLOW", fs.constants.O_NOFOLLOW]
+  ])]
+]);
+const SAFE_CRYPTO_FACADE = frozenRecord([
+  ["createHash", safeWrapper(cryptoCreateHashFacade)],
+  ["randomUUID", safeWrapper(() => crypto.randomUUID())]
+]);
+const SAFE_OS_FACADE = frozenRecord([
+  ["hostname", safeWrapper(() => os.hostname())],
+  ["platform", safeWrapper(() => os.platform())],
+  ["tmpdir", safeWrapper(() => os.tmpdir())],
+  ["type", safeWrapper(() => os.type())],
+  ["release", safeWrapper(() => os.release())],
+  ["arch", safeWrapper(() => os.arch())]
+]);
+const SAFE_ASSERT_FACADE = frozenRecord([
+  ["ok", safeWrapper((args) => assert.ok(args[0], args[1]))],
+  ["equal", safeWrapper((args) => assert.equal(args[0], args[1], args[2]))],
+  ["strictEqual", safeWrapper((args) => assert.strictEqual(args[0], args[1], args[2]))],
+  ["deepEqual", safeWrapper((args) => assert.deepEqual(args[0], args[1], args[2]))],
+  ["deepStrictEqual", safeWrapper((args) => assert.deepStrictEqual(args[0], args[1], args[2]))]
+]);
+const SAFE_UTIL_FACADE = frozenRecord([
+  ["format", safeWrapper((args) => SafeFunctionApply(util.format, util, SafeArraySlice(args)))]
+]);
+const SAFE_PATH_FACADE = createPathFacade(path, true);
 const ALLOWED_BUILTINS = frozenRecord([
-  ["path", makeReadOnlyFacade(require("path"))],
-  ["crypto", makeReadOnlyFacade(require("crypto"))],
-  ["util", makeReadOnlyFacade(require("util"))],
-  ["assert", makeReadOnlyFacade(require("assert"))],
+  ["path", SAFE_PATH_FACADE],
+  ["crypto", SAFE_CRYPTO_FACADE],
+  ["util", SAFE_UTIL_FACADE],
+  ["assert", SAFE_ASSERT_FACADE],
   ["buffer", SAFE_BUFFER_MODULE],
-  ["os", makeReadOnlyFacade(require("os"))],
-  ["fs", makeReadOnlyFacade(require("fs"))]
+  ["os", SAFE_OS_FACADE],
+  ["fs", SAFE_FS_FACADE]
 ]);
 const TRANSPORT_PRIMITIVE_TYPES = new Set(["string", "number", "boolean", "bigint", "undefined"]);
 
@@ -158,10 +286,14 @@ function hardenValidatorIntrinsics() {
     RegExp, Symbol, Number, Boolean, BigInt, Date, ArrayBuffer, DataView,
     Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array,
     Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array,
-    BigUint64Array, Buffer
+    BigUint64Array, Buffer, MessagePort, MessageChannel
   ];
   if (typeof AggregateError === "function") constructors[constructors.length] = AggregateError;
   if (typeof SharedArrayBuffer === "function") constructors[constructors.length] = SharedArrayBuffer;
+  if (typeof BroadcastChannel === "function") constructors[constructors.length] = BroadcastChannel;
+  if (typeof EventTarget === "function") constructors[constructors.length] = EventTarget;
+  if (typeof Event === "function") constructors[constructors.length] = Event;
+  if (typeof MessageEvent === "function") constructors[constructors.length] = MessageEvent;
   for (let index = 0; index < constructors.length; index += 1) {
     const ctor = constructors[index];
     addIntrinsicTarget(targets, ctor);
@@ -206,6 +338,12 @@ function lockValidatorHostAccess() {
   setGlobalValue("exports", undefined);
   setGlobalValue("Buffer", SAFE_BUFFER_FACADE);
   setGlobalValue("JSON", SAFE_JSON_FACADE);
+  setGlobalValue("MessagePort", undefined);
+  setGlobalValue("MessageChannel", undefined);
+  setGlobalValue("BroadcastChannel", undefined);
+  setGlobalValue("EventTarget", undefined);
+  setGlobalValue("Event", undefined);
+  setGlobalValue("MessageEvent", undefined);
 }
 
 class WorkerFailure extends Error {
@@ -257,8 +395,8 @@ function checkedEnvelopeString(envelope) {
 
 function postEnvelope(envelope) {
   try {
-    HARNESS_RESULT_PORT.postMessage(checkedEnvelopeString(envelope));
-    HARNESS_RESULT_PORT.close();
+    SafeMessagePortPostMessage(HARNESS_RESULT_PORT, checkedEnvelopeString(envelope));
+    SafeMessagePortClose(HARNESS_RESULT_PORT);
   } catch (error) { /* parent gone */ }
 }
 
@@ -373,14 +511,10 @@ function loadClosureEntry(closure) {
   const ROOT = closure.closureRoot;
   const expected = new Map(); // relPath -> {hash,size,mode,uid,gid,dev,ino,nlink}
   for (const m of closure.modules) SafeMapSet(expected, m.relPath, m);
+  const verifiedSources = verifyCompleteClosureSources(ROOT, expected, closure.modules);
   const compiledCache = new Map(); // relPath -> module.exports
 
-  // Open no-follow, then use the SAME fd to fstat, read, and hash — no separate
-  // path check followed by an unprotected reopen. Verify the full recorded
-  // manifest (hash/size/mode/nlink/dev/ino) so replacement, inode swap, mode or
-  // ownership change, hard-linking, or group/world-writability between build and
-  // execution all fail closed.
-  function readVerified(relPath) {
+  function verifyOneModule(relPath) {
     const want = SafeMapGet(expected, relPath);
     if (!want) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "undeclared closure module");
     const abs = path.join(ROOT, relPath);
@@ -402,14 +536,28 @@ function loadClosureEntry(closure) {
       if (st.uid !== want.uid || st.gid !== want.gid) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module ownership change at execution");
       const real = fs.realpathSync(abs);
       if (real !== abs || relativePathEscapes(ROOT, real)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module resolves outside root at execution");
-      const bytes = Buffer.alloc(st.size);
+      const bytes = SafeBufferAlloc(st.size);
       let off = 0;
       while (off < st.size) { const n = fs.readSync(fd, bytes, off, st.size - off, off); if (n <= 0) break; off += n; }
       const data = SafeBufferSubarray(bytes, 0, off);
-      const hash = crypto.createHash("sha256").update(data).digest("hex");
+      const hash = SafeCryptoCreateHash("sha256").update(data).digest("hex");
       if (hash !== want.hash) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module hash mismatch at execution");
-      return SafeBufferToString(data, "utf8");
+      return SafeBufferFrom(data);
     } finally { fs.closeSync(fd); }
+  }
+
+  function verifyCompleteClosureSources(root, expectedModules, modules) {
+    const sourceMap = new Map();
+    for (let index = 0; index < modules.length; index += 1) {
+      const moduleEntry = modules[index];
+      const relPath = moduleEntry && moduleEntry.relPath;
+      if (typeof relPath !== "string" || !relPath) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "invalid closure module entry");
+      if (!SafeMapHas(expectedModules, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure manifest entry is not bound");
+      const verifiedBytes = verifyOneModule(relPath);
+      SafeMapSet(sourceMap, relPath, SafeBufferToString(verifiedBytes, "utf8"));
+    }
+    if (!SafeMapHas(sourceMap, closure.entryRelPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure entry is not captured");
+    return sourceMap;
   }
 
   function resolveLocal(fromRel, spec) {
@@ -435,7 +583,8 @@ function loadClosureEntry(closure) {
 
   function loadModule(relPath) {
     if (SafeMapHas(compiledCache, relPath)) return SafeMapGet(compiledCache, relPath);
-    const source = readVerified(relPath);
+    if (!SafeMapHas(verifiedSources, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module was not captured before execution");
+    const source = SafeMapGet(verifiedSources, relPath);
     const module = SafeObjectCreate(null);
     module["exports"] = SafeObjectCreate(null);
     SafeMapSet(compiledCache, relPath, module.exports); // seed for cycles

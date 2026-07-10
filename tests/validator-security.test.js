@@ -207,6 +207,12 @@ async function withTemporaryProductionValidatorSource(filePath, source, callback
   }
 }
 
+function padAsciiToByteLength(source, targetBytes) {
+  const current = Buffer.byteLength(source, "utf8");
+  assert.ok(current <= targetBytes, "source must not already exceed target byte length");
+  return source + " ".repeat(targetBytes - current);
+}
+
 const ABNORMAL = {
   "non-object result": "return 'nope';",
   "null result": "return null;",
@@ -989,6 +995,57 @@ test("validator cannot recover worker MessagePort objects or create a direct Mes
   );
 });
 
+test("MessagePort.prototype.postMessage replacement cannot forge harness success", async () => {
+  const marker = path.join(os.tmpdir(), `vsec-messageport-post-${seq++}.txt`);
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    `"use strict";\nconst fs=require("node:fs");\ntry{const wt=process.getBuiltinModule("worker_threads"); const originalPost=wt.MessagePort.prototype.postMessage; wt.MessagePort.prototype.postMessage=function(){return originalPost.call(this, JSON.stringify({ok:true,result:{status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]}}));};}catch(error){}\ntry{MessagePort.prototype.postMessage=function(){return undefined;};}catch(error){}\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){fs.writeFileSync(${JSON.stringify(marker)},"validate-called"); throw new Error("must fail despite forged postMessage");}};\n`,
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bi".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const envelope = parseTransportedWorkerFailureMessage(outcome.message);
+      assert.equal(envelope.code, "VALIDATOR_THROW");
+      assert.equal(fs.readFileSync(marker, "utf8"), "validate-called");
+      assert.equal(outcome.message.includes('"status":"passed"'), false);
+    }
+  );
+  try { fs.rmSync(marker, { force: true }); } catch (error) {}
+});
+
+test("MessagePort.prototype.close replacement cannot suppress harness completion", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      try {
+        const wt = process.getBuiltinModule("worker_threads");
+        wt.MessagePort.prototype.close = function(){ return undefined; };
+      } catch (error) {}
+      try { MessagePort.prototype.close = function(){ return undefined; }; } catch (error) {}
+      return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bj".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(parseTransportedWorkerSuccessMessage(outcome.message).status, "passed");
+    }
+  );
+});
+
 test("validator cannot forge a success envelope before runtime contract verification", async () => {
   await withTemporaryProductionValidatorSource(
     PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
@@ -1372,6 +1429,64 @@ test("host capability facades do not expose host constructors or harness lexical
   );
 });
 
+test("capability facade return values do not expose raw host-native prototypes", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const problems = [];
+      const fs = require("node:fs");
+      const crypto = require("node:crypto");
+      const path = require("node:path");
+      const Buffer = require("node:buffer").Buffer;
+      function checkWrapped(label, value) {
+        try {
+          if (value === null || (typeof value !== "object" && typeof value !== "function")) return;
+          const proto = Object.getPrototypeOf(value);
+          if (proto !== null) problems[problems.length] = label + " exposed a host prototype";
+          if (value.constructor !== undefined) problems[problems.length] = label + " exposed constructor";
+          try {
+            const escaped = value.constructor && value.constructor.constructor && value.constructor.constructor("return process")();
+            if (escaped && escaped.getBuiltinModule) problems[problems.length] = label + " recovered process";
+          } catch (error) {}
+        } catch (error) {
+          problems[problems.length] = label + " probe failed";
+        }
+      }
+      const hash = crypto.createHash("sha256");
+      checkWrapped("crypto hash", hash);
+      try {
+        const proto = Object.getPrototypeOf(hash);
+        if (proto) proto.digest = function(){ return "0".repeat(64); };
+      } catch (error) {}
+      if (crypto.createHash("sha256").update("abc").digest("hex") !== "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad") problems[problems.length] = "hash digest was mutable";
+      checkWrapped("hash digest bytes", crypto.createHash("sha256").update("abc").digest());
+      checkWrapped("fs stats", fs.statSync(__filename));
+      checkWrapped("fs bytes", fs.readFileSync(__filename));
+      checkWrapped("buffer bytes", Buffer.from("abc"));
+      if (typeof path.join("a", "b") !== "string" || path.posix.join("a", "b") !== "a/b") problems[problems.length] = "path string facade failed";
+      if (typeof path.parse !== "undefined") problems[problems.length] = "path object-returning parse exposed";
+      if (typeof fs.createReadStream !== "undefined") problems[problems.length] = "fs stream factory exposed";
+      if (typeof fs.openSync !== "undefined") problems[problems.length] = "fs raw file descriptor open exposed";
+      if (typeof crypto.createHmac !== "undefined") problems[problems.length] = "crypto raw Hmac factory exposed";
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bk".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
+    }
+  );
+});
+
 test("validator throwing a large ASCII Error cannot create an oversized worker message", async () => {
   await withTemporaryProductionValidatorSource(
     PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
@@ -1665,6 +1780,50 @@ test("production worker ignores caller-supplied closure material and executes on
     fs.rmSync(externalRoot, { recursive: true, force: true });
   }
 });
+
+test("entry top-level code cannot replace a captured dependency or falsify hashing through crypto prototypes", async () => {
+  const markerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vsec-dep-substitution-"));
+  const originalMarker = path.join(markerDir, "original-dependency.txt");
+  const maliciousMarker = path.join(markerDir, "malicious-dependency.txt");
+  const depName = `execution-plan-preverified-dependency-${seq++}.js`;
+  const depPath = path.join(REAL_VALIDATORS, depName);
+  let originalSource = `"use strict";\nconst fs=require("node:fs");\nmodule.exports={run:function(){fs.writeFileSync(${JSON.stringify(originalMarker)},"original"); return "original";}};\n`;
+  let maliciousSource = `"use strict";\nconst fs=require("node:fs");\nmodule.exports={run:function(){fs.writeFileSync(${JSON.stringify(maliciousMarker)},"malicious"); return "malicious";}};\n`;
+  const targetBytes = Math.max(Buffer.byteLength(originalSource, "utf8"), Buffer.byteLength(maliciousSource, "utf8"));
+  originalSource = padAsciiToByteLength(originalSource, targetBytes);
+  maliciousSource = padAsciiToByteLength(maliciousSource, targetBytes);
+  assert.equal(Buffer.byteLength(originalSource, "utf8"), Buffer.byteLength(maliciousSource, "utf8"));
+  try {
+    writeStrictFile(depPath, originalSource);
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";\nconst fs=require("node:fs");\nconst path=require("node:path");\nconst crypto=require("node:crypto");\nconst depPath=path.join(__dirname,${JSON.stringify(depName)});\nconst originalSource=fs.readFileSync(depPath,"utf8");\nconst originalHash=crypto.createHash("sha256").update(originalSource).digest("hex");\ntry{const proto=Object.getPrototypeOf(crypto.createHash("sha256")); if(proto) proto.digest=function(){return originalHash;};}catch(error){}\nfs.writeFileSync(depPath,${JSON.stringify(maliciousSource)});\nconst dep=require("./${depName}");\ntry{fs.writeFileSync(depPath,originalSource);}catch(error){}\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){const value=dep.run(); return {status:value==="original"?"passed":"failed",problems:value==="original"?[]:["unverified dependency executed"],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const descriptor = reg.descriptors.get("execution-plan");
+        assert.ok(descriptor.closure.modules.some((entry) => entry.relPath.endsWith(depName)), "dependency must be present in the authoritative closure manifest");
+        const outcome = await launchProductionWorker({
+          validatorId: "execution-plan",
+          expectedValidatorSetHash: reg.validatorSetHash,
+          phase: "candidate",
+          context: authoritativeWorkerContext("bl".repeat(32))
+        });
+        assert.equal(outcome.kind, "message");
+        assertNoDirectWorkerMessages(outcome);
+        const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+        assert.equal(parsed.status, "passed");
+        assert.equal(fs.existsSync(originalMarker), true);
+        assert.equal(fs.existsSync(maliciousMarker), false);
+        assert.equal(fs.readFileSync(depPath, "utf8"), originalSource);
+      }
+    );
+  } finally {
+    try { fs.writeFileSync(depPath, originalSource); } catch (error) {}
+    try { fs.rmSync(depPath, { force: true }); } catch (error) {}
+    fs.rmSync(markerDir, { recursive: true, force: true });
+  }
+});
+
 test("registry descriptors are deep-frozen after loading", () => {
   const reg = loadValidatorRegistry();
   const descriptor = reg.descriptors.get("execution-plan");
