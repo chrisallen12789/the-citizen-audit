@@ -62,17 +62,21 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
     let worker;
     let resultPort = null;
     const directMessages = [];
-    const finish = (result) => {
+    const finish = (result, options = {}) => {
       if (settled) return;
       settled = true;
-      if (timer) clearTimeout(timer);
-      if (resultPort) {
-        try { resultPort.close(); } catch (error) {}
-      }
-      if (worker) {
-        try { worker.terminate(); } catch (error) {}
-      }
-      resolve(result);
+      const terminateWorker = options.terminateWorker !== false;
+      (async () => {
+        if (timer) clearTimeout(timer);
+        if (resultPort) {
+          try { resultPort.removeAllListeners(); } catch (error) {}
+          try { resultPort.close(); } catch (error) {}
+        }
+        if (worker && terminateWorker) {
+          try { await worker.terminate(); } catch (error) {}
+        }
+        resolve(result);
+      })();
     };
     const timer = setTimeout(() => finish({ kind: "timeout" }), timeoutMs);
     try {
@@ -99,7 +103,7 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500) {
       directMessages[directMessages.length] = message;
     });
     worker.on("error", (error) => finish({ kind: "error", error }));
-    worker.on("exit", (code) => finish({ kind: "exit", code }));
+    worker.on("exit", (code) => finish({ kind: "exit", code }, { terminateWorker: false }));
   });
 }
 
@@ -1463,6 +1467,10 @@ test("capability facade return values do not expose raw host-native prototypes",
       checkWrapped("fs stats", fs.statSync(__filename));
       checkWrapped("fs bytes", fs.readFileSync(__filename));
       checkWrapped("buffer bytes", Buffer.from("abc"));
+      const parsedJson = JSON.parse('{"items":[{"id":"OBJ-1"}]}');
+      if (Object.getPrototypeOf(parsedJson) !== null) problems[problems.length] = "JSON object exposed a host prototype";
+      if (parsedJson.constructor !== undefined) problems[problems.length] = "JSON object exposed constructor";
+      if (parsedJson.items.constructor !== undefined) problems[problems.length] = "JSON array exposed constructor";
       if (typeof path.join("a", "b") !== "string" || path.posix.join("a", "b") !== "a/b") problems[problems.length] = "path string facade failed";
       if (typeof path.parse !== "undefined") problems[problems.length] = "path object-returning parse exposed";
       if (typeof fs.createReadStream !== "undefined") problems[problems.length] = "fs stream factory exposed";
@@ -1477,6 +1485,47 @@ test("capability facade return values do not expose raw host-native prototypes",
         expectedValidatorSetHash: reg.validatorSetHash,
         phase: "candidate",
         context: authoritativeWorkerContext("bk".repeat(32))
+      });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
+    }
+  );
+});
+
+test("fs.realpathSync facade cannot return raw host Buffer for encoding overloads", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`
+      const problems = [];
+      const fs = require("node:fs");
+      function checkRealpath(label, value) {
+        if (typeof value !== "string") {
+          problems[problems.length] = label + " did not return a primitive string";
+          if (value && (typeof value === "object" || typeof value === "function")) {
+            const proto = Object.getPrototypeOf(value);
+            if (proto) problems[problems.length] = label + " exposed host prototype";
+            if (value.constructor !== undefined) problems[problems.length] = label + " exposed constructor";
+            if (value.constructor && typeof value.constructor.allocUnsafe === "function") problems[problems.length] = label + " recovered Buffer.allocUnsafe";
+          }
+          return;
+        }
+        if (!value.endsWith("execution-plan.js")) problems[problems.length] = label + " returned unexpected path";
+      }
+      checkRealpath("default", fs.realpathSync(__filename));
+      checkRealpath("string buffer option", fs.realpathSync(__filename, "buffer"));
+      checkRealpath("object buffer option", fs.realpathSync(__filename, {encoding:"buffer"}));
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bm".repeat(32))
       });
       assert.equal(outcome.kind, "message");
       assertNoDirectWorkerMessages(outcome);

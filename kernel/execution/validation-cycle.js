@@ -128,17 +128,30 @@ function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, conte
     let stdBytes = 0;
     let worker;
     let resultPort = null;
-    const finish = (outcome) => {
+    const cleanupStream = (stream) => {
+      if (!stream) return;
+      try { stream.removeAllListeners("data"); } catch (error) {}
+      try { stream.destroy(); } catch (error) {}
+    };
+    const finish = (outcome, options = {}) => {
       if (settled) return;
       settled = true;
-      if (timer) clearTimeout(timer);
-      if (resultPort) {
-        try { resultPort.close(); } catch (error) {}
-      }
-      if (worker) {
-        try { worker.terminate(); } catch (error) {}
-      }
-      resolve(outcome);
+      const terminateWorker = options.terminateWorker !== false;
+      (async () => {
+        if (timer) clearTimeout(timer);
+        if (resultPort) {
+          try { resultPort.removeAllListeners(); } catch (error) {}
+          try { resultPort.close(); } catch (error) {}
+        }
+        if (worker) {
+          cleanupStream(worker.stdout);
+          cleanupStream(worker.stderr);
+          if (terminateWorker) {
+            try { await worker.terminate(); } catch (error) {}
+          }
+        }
+        resolve(outcome);
+      })();
     };
     const timer = setTimeout(() => finish({ ok: false, error: "VALIDATOR_TIMEOUT: validator timed out" }), timeoutMs);
 
@@ -182,7 +195,7 @@ function runValidatorBoundary(descriptor, expectedValidatorSetHash, phase, conte
       finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator sent an unauthorized parentPort message" });
     });
     worker.on("error", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker crashed" }));
-    worker.on("exit", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker exited without a result" }));
+    worker.on("exit", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker exited without a result" }, { terminateWorker: false }));
   });
 }
 

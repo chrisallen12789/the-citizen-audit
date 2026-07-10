@@ -106,14 +106,26 @@ function runValidatorBoundary(descriptor, phase, context, timeoutMs) {
     let settled = false;
     let stdBytes = 0;
     let worker;
-    const finish = (outcome) => {
+    const cleanupStream = (stream) => {
+      if (!stream) return;
+      try { stream.removeAllListeners("data"); } catch (error) {}
+      try { stream.destroy(); } catch (error) {}
+    };
+    const finish = (outcome, options = {}) => {
       if (settled) return;
       settled = true;
-      if (timer) clearTimeout(timer);
-      if (worker) {
-        try { worker.terminate(); } catch (error) {}
-      }
-      resolve(outcome);
+      const terminateWorker = options.terminateWorker !== false;
+      (async () => {
+        if (timer) clearTimeout(timer);
+        if (worker) {
+          cleanupStream(worker.stdout);
+          cleanupStream(worker.stderr);
+          if (terminateWorker) {
+            try { await worker.terminate(); } catch (error) {}
+          }
+        }
+        resolve(outcome);
+      })();
     };
     const timer = setTimeout(() => finish({ ok: false, error: "VALIDATOR_TIMEOUT: validator timed out" }), timeoutMs);
 
@@ -143,7 +155,7 @@ function runValidatorBoundary(descriptor, phase, context, timeoutMs) {
     capture(worker.stderr);
     worker.on("message", (msg) => finish(parseTransportedValidatorResult(msg)));
     worker.on("error", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker crashed" }));
-    worker.on("exit", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker exited without a result" }));
+    worker.on("exit", () => finish({ ok: false, error: "WORKER_INTERNAL_FAILURE: validator worker exited without a result" }, { terminateWorker: false }));
   });
 }
 

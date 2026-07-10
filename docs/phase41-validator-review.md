@@ -1,18 +1,17 @@
-# Phase 4.1 - Validator Worker Preverified-Closure Review
+# Phase 4.1 - Validator Worker Realpath Facade Review
 
-Base checkpoint: `dc9cb25270b95daa6c2b1c37208496b43fc776cf`
+Base checkpoint: `79e46cc50cb6e010aa22c8edec058212484d65ab`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, and dependency-substitution/hash-prototype attacks are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, and realpath Buffer facade attacks are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `dc9cb25270b95daa6c2b1c37208496b43fc776cf` and closes the remaining shared-realm validator-worker source and channel defects:
+This checkpoint continues from `79e46cc50cb6e010aa22c8edec058212484d65ab` and closes the remaining capability-facade overload defect plus the observed worker/test cleanup issue:
 
-1. validator top-level code can no longer replace `MessagePort.prototype.postMessage` to forge a harness-owned passing result
-2. validator top-level code can no longer replace `MessagePort.prototype.close` to suppress or alter harness completion
-3. entry-module top-level code can no longer overwrite a later dependency, mutate crypto hash prototypes, restore the file, and execute unverified dependency bytes
-4. allowed builtin capability facades no longer return raw host-native `crypto`, `fs`, `Buffer`, stream, file-handle, or object-returning `path` values that can recover host prototypes
-5. all authoritative closure module bytes are verified and captured before any validator byte is compiled or executed, and validator dependencies load only from that captured byte map
-6. private harness `MessageChannel`, bounded success/failure envelopes, immutable limits, authoritative source selection, intrinsic hardening, and worker-side `validatorSetHash` verification remain in force
+1. `fs.realpathSync()` is now exposed as a string-only reviewed facade and ignores caller-selected Buffer encodings
+2. `JSON.parse()` facade return values are copied into frozen/null-prototype plain data so parsed objects do not carry host prototypes or constructors
+3. production validation-cycle worker cleanup now closes private result ports, destroys captured stdout/stderr streams, and awaits worker termination where required
+4. test-only worker launch helpers mirror the same explicit MessagePort/worker cleanup so complete test commands terminate normally on this Windows host
+5. the previously verified pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, and immutable limits remain in force
 
 OS-level validator confinement was not started.
 
@@ -40,11 +39,22 @@ Allowed builtins remain explicit, but facades no longer return raw host-native a
 - `crypto.createHash()` returns a null-prototype wrapper, not a raw `Hash`
 - hash `digest()` without an encoding returns a private safe byte wrapper, not a raw `Buffer`
 - `fs.readFileSync()` without an encoding returns a safe byte wrapper
+- `fs.realpathSync()` always returns a primitive UTF-8 string; `"buffer"` and `{ encoding: "buffer" }` overload attempts cannot return a raw host `Buffer`
 - `fs.statSync()` and `fs.lstatSync()` return null-prototype copied stat records with reviewed predicate wrappers
 - raw fs streams, file handles, watchers, descriptors, and stream factories are not exposed
 - `buffer.Buffer` returns safe byte wrappers through reviewed constructors
+- `JSON.parse()` returns recursively copied frozen data with null-prototype object records and constructor-hidden arrays
 - `path` exposes only reviewed string/boolean operations and omits object-returning helpers such as `path.parse()`
 - capability wrapper failures expose fixed primitive failures rather than raw host `Error` objects
+
+### Worker Cleanup and Command Termination
+The validation-cycle boundary now performs explicit cleanup on every completion path:
+- the private harness result port removes listeners and closes before completion
+- worker stdout/stderr data listeners are removed and the streams are destroyed
+- `worker.terminate()` is awaited unless the worker has already emitted `exit`
+- the same cleanup discipline is used by the test-only production-worker launcher
+
+This preserves normal completion for the full execution-orchestrator, runtime-integration, and aggregate execution commands on this Windows host. Linux-host termination could not be directly reproduced in this desktop session because WSL has no installed distributions and Docker is unavailable.
 
 ### Same-Realm Intrinsic Hardening Retained
 The production worker still uses `vm.compileFunction`, but it no longer relies on mutable shared intrinsics after validator bytes begin executing.
@@ -94,6 +104,13 @@ The previous Phase 4.1 corrections remain in force:
 
 ## Regressions Added
 New direct production-worker regressions prove:
+- `fs.realpathSync(path)` returns a primitive string
+- `fs.realpathSync(path, "buffer")` cannot return a raw host `Buffer`
+- `fs.realpathSync(path, { encoding: "buffer" })` cannot return a raw host `Buffer`
+- realpath return values do not expose `Buffer.prototype`, the host `Buffer` constructor, or `Buffer.allocUnsafe`
+- JSON facade parsed objects do not expose host prototypes or constructors
+
+Retained direct production-worker regressions prove:
 - replacing `MessagePort.prototype.postMessage` cannot forge success
 - replacing `MessagePort.prototype.close` cannot suppress harness completion
 - a validator whose `validate()` throws remains failed after messaging-prototype attacks
@@ -102,8 +119,6 @@ New direct production-worker regressions prove:
 - crypto hash prototype mutation cannot falsify dependency hash verification
 - `crypto.createHash()`, hash `digest()`, `fs.statSync()`, `fs.readFileSync()`, and `Buffer.from()` expose wrapped/null-prototype values instead of raw host-native objects
 - fs stream/file-handle factories, raw Hmac factories, and object-returning `path.parse()` are not exposed through validator facades
-
-Retained direct production-worker regressions prove:
 - replacing `Promise.prototype.then` cannot bypass `validate()`
 - replacing `Promise.prototype.catch` cannot change rejection handling
 - `validate()` is invoked exactly once before success is possible
@@ -126,9 +141,9 @@ Retained direct production-worker regressions prove:
 - normal authoritative validators still pass
 
 ## Test Totals Observed In This Workspace
-- validator-security: 127/127
+- validator-security: 128/128
 - execution-orchestrator: 56/56
-- execution suite: 323/323
+- execution suite: 324/324
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -144,11 +159,13 @@ Retained direct production-worker regressions prove:
 - execution-orchestrator, runtime-integration, and aggregate execution suite all terminated normally on this Windows host
 
 Host note:
-- WSL has no installed Linux distributions and Docker is not installed in this desktop session, so Linux-host termination could not be directly reproduced here
+- WSL has no installed Linux distributions and Docker is not installed in this desktop session, so Linux-host termination could not be directly reproduced here. This is recorded as a host limitation, not as a claimed Linux result.
 
 ## Additional Confirmations
 - all closure bytes are verified and captured before any validator byte executes
 - no validator source verification occurs after validator execution begins
+- no capability facade overload returns raw host-native authority in the covered paths
+- the `fs.realpathSync()` Buffer-return attack is closed
 - MessagePort prototype mutation cannot alter the harness response
 - capability facades expose no raw mutable host-native return objects capable of changing trusted behavior
 - validator code cannot mutate trusted harness intrinsics in the covered attack paths

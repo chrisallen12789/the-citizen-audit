@@ -49,6 +49,7 @@ const SafeObjectFreeze = Object.freeze;
 const SafeObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 const SafeObjectGetPrototypeOf = Object.getPrototypeOf;
 const SafeObjectHasOwn = Function.call.bind(Object.prototype.hasOwnProperty);
+const SafeObjectKeys = Object.keys;
 const SafeObjectSetPrototypeOf = Object.setPrototypeOf;
 const SafeMapGet = Function.call.bind(Map.prototype.get);
 const SafeMapHas = Function.call.bind(Map.prototype.has);
@@ -174,8 +175,29 @@ function fsReadFileSyncFacade(args) {
   return typeof result === "string" ? result : createSafeBytes(result);
 }
 
+function fsRealpathSyncFacade(args) {
+  return fs.realpathSync(args[0], "utf8");
+}
+
 function fsWriteFileSyncFacade(args) {
   fs.writeFileSync(args[0], unwrapSafeBytes(args[1]), args[2]);
+}
+
+function copyJsonValue(value) {
+  if (value === null || typeof value !== "object") return value;
+  if (SafeArrayIsArray(value)) {
+    const copy = [];
+    for (let index = 0; index < value.length; index += 1) copy[index] = copyJsonValue(value[index]);
+    defineReadOnly(copy, "constructor", undefined);
+    return SafeObjectFreeze(copy);
+  }
+  const copy = SafeObjectCreate(null);
+  const keys = SafeObjectKeys(value);
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    defineReadOnly(copy, key, copyJsonValue(value[key]));
+  }
+  return SafeObjectFreeze(copy);
 }
 
 function cryptoCreateHashFacade(args) {
@@ -213,7 +235,7 @@ const SAFE_BUFFER_FACADE = frozenRecord([
 ]);
 const SAFE_BUFFER_MODULE = frozenRecord([["Buffer", SAFE_BUFFER_FACADE]]);
 const SAFE_JSON_FACADE = frozenRecord([
-  ["parse", safeWrapper((args) => SafeJSONParse(args[0], args[1]))],
+  ["parse", safeWrapper((args) => copyJsonValue(SafeJSONParse(args[0], args[1])))],
   ["stringify", safeWrapper((args) => SafeJSONStringify(args[0], args[1], args[2]))]
 ]);
 const SAFE_FS_FACADE = frozenRecord([
@@ -222,7 +244,7 @@ const SAFE_FS_FACADE = frozenRecord([
   ["writeFileSync", safeWrapper(fsWriteFileSyncFacade)],
   ["lstatSync", safeWrapper((args) => createSafeStats(fs.lstatSync(args[0], args[1])))],
   ["statSync", safeWrapper((args) => createSafeStats(fs.statSync(args[0], args[1])))],
-  ["realpathSync", safeWrapper((args) => fs.realpathSync(args[0], args[1]))],
+  ["realpathSync", safeWrapper(fsRealpathSyncFacade)],
   ["constants", frozenRecord([
     ["O_RDONLY", fs.constants.O_RDONLY],
     ["O_NOFOLLOW", fs.constants.O_NOFOLLOW]
