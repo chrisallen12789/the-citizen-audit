@@ -1,8 +1,8 @@
-# Phase 4.1 - Coverage Matrix for Validator Symbol-Global Checkpoint
+# Phase 4.1 - Coverage Matrix for Validator Durable-Global Checkpoint
 
-Authoritative base: `83852956ac6df1150776b20efbbdf28691456119`
+Authoritative base: `a98587433d38a6eadf252e8f48bd408f36567221`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, and symbol-keyed global dispatcher attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, and symbol-keyed dispatcher attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -32,6 +32,16 @@ No broad capability declarations were added.
 | `Object.getOwnPropertySymbols(globalThis)` exposes raw host object/function | FIXED | symbol-keyed nonprimitive values are neutralized before validator bytes execute |
 | `Reflect.ownKeys(globalThis)` locates Agent/Pool/Client/Dispatcher authority | FIXED | regression scans reflected symbol keys and finds no dispatcher constructors, dispatch methods, factories, maps, callbacks, or manufactured pools |
 | `Symbol.for("undici.globalDispatcher.1")` recovers Agent | FIXED | regression proves the symbol lookup returns no raw dispatcher authority |
+| Inherited symbol authority on the direct host global prototype is reachable | FIXED | validator executes in a null-prototype frozen context and regression proves `Symbol.for("audit.inherited.dispatcher")` exposes no Agent-like object |
+| Inherited symbol authority farther up the host global prototype chain is reachable | FIXED | regression installs Agent-like authority on `Object.prototype` and proves validator global prototype traversal ends at `null` |
+| Inherited accessor lazily returns Agent-like authority | FIXED | regression installs an inherited accessor and proves validator recursive descriptor inspection cannot recover it |
+| Non-configurable inherited symbol descriptor remains reachable | FIXED | regression installs a non-configurable inherited symbol descriptor and proves the detached validator global hides it |
+| Post-lock symbol authority installed by `process.nextTick` is reachable | FIXED | regression schedules a preloaded nextTick addition and proves the frozen validator global cannot see it |
+| Post-lock symbol authority installed by microtask, Promise, or immediate callback is reachable | FIXED | regression schedules `queueMicrotask`, resolved Promise, and `setImmediate` additions and proves none are validator-visible |
+| Primitive-valued symbol can be rewritten to nonprimitive authority after lockdown | FIXED | validator attempts the rewrite and recursive inspection confirms no dispatcher-like value is visible |
+| String-keyed inherited or post-lock authority remains reachable | FIXED | regression installs string-keyed Agent-like globals on the host global/prototype chain and through late callbacks; validator sees none |
+| CommonJS shim exposes host constructors through `require`, `module`, or `exports` | FIXED | worker passes null-prototype `module`/`exports` and a constructor-hidden frozen require function into the validator context |
+| Validator-visible global can accept new properties after lockdown | FIXED | validator asserts `Object.isExtensible(globalThis) === false`, `Object.isFrozen(globalThis) === true`, and `Object.getPrototypeOf(globalThis) === null` |
 | Non-writable/non-configurable symbol-keyed authority cannot be neutralized | FIXED | worker fails closed before validator execution and marker creation |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
@@ -87,17 +97,18 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 133/133 |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 134/134 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
 | repository JavaScript syntax sweep | PASS, 147 tracked `.js` files checked |
 | `npm run runtime:integration:test` | PASS, 28/28, normal exit on this host |
+| `npm run runtime:integration:test` repeated locally | PASS, 3 consecutive 28/28 runs, normal exit on this host |
 | `npm run runtime:isolation:test` | PASS, 48/48 |
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 329/329, normal exit on this host |
+| `npm run execution:test` | PASS, 330/330, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |

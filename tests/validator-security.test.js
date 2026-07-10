@@ -213,6 +213,123 @@ function validatorSourceForValidateBody(body) {
   return `"use strict";\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){${body}}};\n`;
 }
 
+function validatorGlobalAuthorityAuditBody() {
+  return `
+      const problems = [];
+      function add(problem) { problems[problems.length] = problem; }
+      function isObjectLike(value) { return value !== null && (typeof value === "object" || typeof value === "function"); }
+      function keyText(key) { try { return String(key); } catch (error) { return "<key>"; } }
+      function inspectValue(label, value, depth, seen) {
+        if (!isObjectLike(value)) return;
+        for (let index = 0; index < seen.length; index += 1) if (seen[index] === value) return;
+        seen[seen.length] = value;
+        let ctorName = "";
+        let protoCtorName = "";
+        try { ctorName = value.constructor && value.constructor.name; } catch (error) {}
+        try {
+          const proto = Object.getPrototypeOf(value);
+          protoCtorName = proto && proto.constructor && proto.constructor.name;
+        } catch (error) {}
+        const labelLower = String(label).toLowerCase();
+        const names = String(ctorName) + " " + String(protoCtorName);
+        if (/Agent|Pool|Client|Dispatcher/.test(names)) add(label + " exposed dispatcher constructor");
+        try { if (typeof value.dispatch === "function") add(label + " exposed dispatch"); } catch (error) {}
+        if (/factory|callback/.test(labelLower) && typeof value === "function") add(label + " exposed internal function");
+        if (/clients/.test(labelLower) && /Map/.test(names)) add(label + " exposed clients Map");
+        if (/options/.test(labelLower) && isObjectLike(value)) add(label + " exposed options object");
+        if (depth <= 0) return;
+        let keys = [];
+        try { keys = Reflect.ownKeys(value); } catch (error) { return; }
+        for (let index = 0; index < keys.length; index += 1) {
+          const key = keys[index];
+          let descriptor;
+          try { descriptor = Object.getOwnPropertyDescriptor(value, key); } catch (error) { continue; }
+          if (!descriptor) continue;
+          const childLabel = label + "." + keyText(key);
+          if ("get" in descriptor && typeof descriptor.get === "function") inspectValue(childLabel + ".get", descriptor.get, depth - 1, seen);
+          if ("set" in descriptor && typeof descriptor.set === "function") inspectValue(childLabel + ".set", descriptor.set, depth - 1, seen);
+          if ("value" in descriptor) inspectValue(childLabel, descriptor.value, depth - 1, seen);
+        }
+      }
+      function inspectGlobalSurface() {
+        if (Object.getPrototypeOf(globalThis) !== null) add("validator global prototype was not detached");
+        if (Object.isExtensible(globalThis)) add("validator global remained extensible");
+        if (!Object.isFrozen(globalThis)) add("validator global was not frozen");
+        let cursor = globalThis;
+        let depth = 0;
+        const seen = [];
+        while (cursor !== null && depth < 10) {
+          let keys = [];
+          try { keys = Reflect.ownKeys(cursor); } catch (error) { add("Reflect.ownKeys failed at global depth " + depth); break; }
+          for (let index = 0; index < keys.length; index += 1) {
+            const key = keys[index];
+            let descriptor;
+            try { descriptor = Object.getOwnPropertyDescriptor(cursor, key); } catch (error) { continue; }
+            if (!descriptor) continue;
+            const label = "global[" + depth + "]." + keyText(key);
+            if (typeof key === "symbol" && ("get" in descriptor || "set" in descriptor)) add(label + " retained symbol accessor");
+            if ("value" in descriptor) inspectValue(label, descriptor.value, 2, seen);
+            if ("get" in descriptor && typeof descriptor.get === "function") inspectValue(label + ".get", descriptor.get, 1, seen);
+            if ("set" in descriptor && typeof descriptor.set === "function") inspectValue(label + ".set", descriptor.set, 1, seen);
+          }
+          cursor = Object.getPrototypeOf(cursor);
+          depth += 1;
+        }
+        if (depth !== 1) add("validator global prototype chain was reachable");
+      }
+      inspectGlobalSurface();
+      const symbols = [
+        "undici.globalDispatcher.1",
+        "audit.own.dispatcher",
+        "audit.inherited.dispatcher",
+        "audit.object-prototype.dispatcher",
+        "audit.accessor.dispatcher",
+        "audit.nonconfig.inherited.dispatcher",
+        "audit.late.nextTick.dispatcher",
+        "audit.late.microtask.dispatcher",
+        "audit.late.promise.dispatcher",
+        "audit.late.immediate.dispatcher",
+        "audit.primitive.dispatcher"
+      ];
+      for (let index = 0; index < symbols.length; index += 1) {
+        const name = symbols[index];
+        let value;
+        try { value = globalThis[Symbol.for(name)]; } catch (error) { value = undefined; }
+        inspectValue("Symbol.for(" + name + ")", value, 3, []);
+      }
+      const stringKeys = [
+        "auditOwnDispatcher",
+        "auditInheritedDispatcher",
+        "auditObjectPrototypeDispatcher",
+        "auditLateNextTickDispatcher",
+        "auditLateMicrotaskDispatcher",
+        "auditLatePromiseDispatcher",
+        "auditLateImmediateDispatcher"
+      ];
+      for (let index = 0; index < stringKeys.length; index += 1) {
+        const name = stringKeys[index];
+        let value;
+        try { value = globalThis[name]; } catch (error) { value = undefined; }
+        inspectValue(name, value, 3, []);
+      }
+      try { globalThis[Symbol.for("audit.primitive.dispatcher")] = { dispatch:function(){} }; } catch (error) {}
+      inspectValue("rewritten primitive symbol", globalThis[Symbol.for("audit.primitive.dispatcher")], 3, []);
+      try {
+        Object.defineProperty(globalThis, Symbol.for("audit.define.dispatcher"), { value:{dispatch:function(){}}, configurable:true });
+        add("defineProperty accepted a new symbol authority");
+      } catch (error) {}
+      inspectValue("defined symbol authority", globalThis[Symbol.for("audit.define.dispatcher")], 3, []);
+      try { globalThis.auditLateImmediateDispatcher = { dispatch:function(){} }; } catch (error) {}
+      inspectValue("rewritten string authority", globalThis.auditLateImmediateDispatcher, 3, []);
+      try { if (Function("return typeof process")() !== "undefined") add("Function recovered process"); } catch (error) {}
+      try { if (Function("return typeof console")() !== "undefined") add("Function recovered console"); } catch (error) {}
+      try { if (require && require.constructor !== undefined) add("require constructor reachable"); } catch (error) {}
+      try { if (module && module.constructor !== undefined) add("module constructor reachable"); } catch (error) {}
+      try { if (exports && exports.constructor !== undefined) add("exports constructor reachable"); } catch (error) {}
+      return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+    `;
+}
+
 async function withTemporaryProductionValidatorSource(filePath, source, callback) {
   const original = fs.readFileSync(filePath, "utf8");
   let originalMode = null;
@@ -1219,9 +1336,102 @@ test("symbol-keyed globals cannot expose Undici-like host dispatchers", async ()
   );
 });
 
+test("validator global boundary hides inherited and late-installed host authority", async () => {
+  const preloadPath = path.join(scratch, `symbol-inherited-late-agent-preload-${seq++}.js`);
+  writeStrictFile(preloadPath, `
+    class Pool {
+      dispatch() {}
+    }
+    class Client {
+      dispatch() {}
+    }
+    class Dispatcher {
+      dispatch() {}
+    }
+    class Agent {
+      constructor() {
+        this[Symbol("factory")] = function factory() { return new Pool(); };
+        this[Symbol("clients")] = new Map();
+        this[Symbol("options")] = { connect: function connect() {} };
+        this.callbacks = [function callback() {}];
+      }
+      dispatch() {}
+    }
+    function makeAgent() { return new Agent(); }
+    const proto = Object.getPrototypeOf(globalThis);
+    Object.defineProperty(globalThis, Symbol.for("audit.own.dispatcher"), {
+      value: makeAgent(),
+      enumerable: false,
+      configurable: true,
+      writable: true
+    });
+    Object.defineProperty(proto, Symbol.for("audit.inherited.dispatcher"), {
+      value: makeAgent(),
+      enumerable: false,
+      configurable: true,
+      writable: true
+    });
+    Object.defineProperty(Object.prototype, Symbol.for("audit.object-prototype.dispatcher"), {
+      value: makeAgent(),
+      enumerable: false,
+      configurable: false,
+      writable: false
+    });
+    Object.defineProperty(proto, Symbol.for("audit.accessor.dispatcher"), {
+      get() { return makeAgent(); },
+      enumerable: false,
+      configurable: true
+    });
+    Object.defineProperty(proto, Symbol.for("audit.nonconfig.inherited.dispatcher"), {
+      value: makeAgent(),
+      enumerable: false,
+      configurable: false,
+      writable: false
+    });
+    Object.defineProperty(globalThis, Symbol.for("audit.primitive.dispatcher"), {
+      value: "primitive-before-lock",
+      enumerable: false,
+      configurable: true,
+      writable: true
+    });
+    globalThis.auditOwnDispatcher = makeAgent();
+    proto.auditInheritedDispatcher = makeAgent();
+    Object.prototype.auditObjectPrototypeDispatcher = makeAgent();
+    function installLate(kind) {
+      globalThis[Symbol.for("audit.late." + kind + ".dispatcher")] = makeAgent();
+      globalThis["auditLate" + kind[0].toUpperCase() + kind.slice(1) + "Dispatcher"] = makeAgent();
+      try { globalThis[Symbol.for("audit.primitive.dispatcher")] = makeAgent(); } catch (error) {}
+    }
+    process.nextTick(() => installLate("nextTick"));
+    queueMicrotask(() => installLate("microtask"));
+    Promise.resolve().then(() => installLate("promise"));
+    setImmediate(() => installLate("immediate"));
+  `);
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(validatorGlobalAuthorityAuditBody()),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorker({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("bs".repeat(32))
+      }, 1500, { execArgv: ["--require", preloadPath] });
+      assert.equal(outcome.kind, "message");
+      assertNoDirectWorkerMessages(outcome);
+      assert.equal(outcome.stdioBytes, 0);
+      const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+      assert.equal(parsed.status, "passed");
+      assert.deepEqual(parsed.problems, []);
+    }
+  );
+});
+
 test("non-neutralizable symbol-keyed global authority fails closed before validator execution", async () => {
   const preloadPath = path.join(scratch, `symbol-agent-locked-preload-${seq++}.js`);
-  const marker = path.join(scratch, `symbol-agent-locked-marker-${seq++}.txt`);
+  const topLevelMarker = path.join(scratch, `symbol-agent-locked-top-marker-${seq++}.txt`);
+  const validateMarker = path.join(scratch, `symbol-agent-locked-validate-marker-${seq++}.txt`);
   writeStrictFile(preloadPath, `
     class Agent {
       dispatch() {}
@@ -1235,10 +1445,7 @@ test("non-neutralizable symbol-keyed global authority fails closed before valida
   `);
   await withTemporaryProductionValidatorSource(
     PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
-    validatorSourceForValidateBody(`
-      require("node:fs").writeFileSync(${JSON.stringify(marker)}, "validate");
-      return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
-    `),
+    `"use strict";\nconst fs=require("node:fs");\nfs.writeFileSync(${JSON.stringify(topLevelMarker)},"top-level");\nmodule.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){fs.writeFileSync(${JSON.stringify(validateMarker)},"validate"); return {status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};}};\n`,
     async () => {
       const reg = loadValidatorRegistry();
       const outcome = await launchProductionWorker({
@@ -1252,7 +1459,8 @@ test("non-neutralizable symbol-keyed global authority fails closed before valida
       assert.equal(outcome.stdioBytes, 0);
       const envelope = parseTransportedWorkerFailureMessage(outcome.message);
       assert.equal(envelope.code, "WORKER_INTERNAL_FAILURE");
-      assert.equal(fs.existsSync(marker), false);
+      assert.equal(fs.existsSync(topLevelMarker), false);
+      assert.equal(fs.existsSync(validateMarker), false);
     }
   );
 });

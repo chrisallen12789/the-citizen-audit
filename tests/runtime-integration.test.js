@@ -9,7 +9,7 @@ const { recordApprovalDecision } = require("../kernel/approvals/decision-store")
 const { recordTransaction, getTransaction } = require("../kernel/transactions/store");
 const { executeApprovedTransaction } = require("../kernel/execution/orchestrator");
 const { getExecutionAttempt, readExecutionLedger, createExecutionAttempt } = require("../kernel/execution/ledger");
-const { acquireExecutionLock } = require("../kernel/execution/exclusive-boundary");
+const { acquireExecutionLock, releaseExecutionLock } = require("../kernel/execution/exclusive-boundary");
 const { recoverIncompleteExecution } = require("../kernel/execution/startup-recovery");
 
 const { runTransactionalAgent } = require("../kernel/runtime/transactional-runtime");
@@ -62,6 +62,22 @@ function makeFixture(overrides = {}) {
 }
 
 function cleanup(fx) { fs.rmSync(fx.root, { recursive: true, force: true }); }
+function runtimeFailureDetails(label, result, fx) {
+  let ledger = null;
+  try {
+    ledger = readExecutionLedger({ ledgerPath: fx.ledgerPath });
+  } catch (error) {
+    ledger = { error: error && error.message ? error.message : String(error) };
+  }
+  return `${label}: ${JSON.stringify({
+    institutionalResult: result && result.institutionalResult,
+    transactionId: result && result.transactionId,
+    attemptId: result && result.attemptId,
+    problems: result && result.problems,
+    warnings: result && result.warnings,
+    ledger
+  }, null, 2)}`;
+}
 function assertIsolationUnavailable(result) {
   assert.equal(result.institutionalResult, "isolation_unavailable");
 }
@@ -555,24 +571,34 @@ test("recovery barrier blocks runtime execution", async () => {
 // Concurrent runtime executions cannot both mutate.
 test("held execution lock blocks a concurrent runtime run", async () => {
   const fx = makeFixture();
-  const lock = acquireExecutionLock(fx.root, "ATTEMPT-HOLDER-0001");
-  assert.ok(lock);
-  const result = await runTransactionalAgent(baseRun(fx, { runId: "RUN-LOCKED-1" }));
-  assert.notEqual(result.institutionalResult, "committed");
-  assert.ok(!fs.existsSync(fx.targetPath), "no mutation while lock held");
-  cleanup(fx);
+  let lock = null;
+  try {
+    lock = acquireExecutionLock(fx.root, "ATTEMPT-HOLDER-0001");
+    assert.ok(lock);
+    const result = await runTransactionalAgent(baseRun(fx, { runId: "RUN-LOCKED-1" }));
+    assert.notEqual(result.institutionalResult, "committed");
+    assert.ok(!fs.existsSync(fx.targetPath), "no mutation while lock held");
+  } finally {
+    if (lock) {
+      try { releaseExecutionLock(fx.root, lock); } catch (error) {}
+    }
+    cleanup(fx);
+  }
 });
 
 // 24. Duplicate runtime execution cannot commit the same transaction twice.
 test("duplicate runtime execution cannot commit the same transaction twice", async () => {
   const fx = makeFixture();
-  const first = await runTransactionalAgent(baseRun(fx, { runId: "RUN-DUP-1" }));
-  if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(first); cleanup(fx); return; }
-  assert.equal(first.institutionalResult, "committed");
-  // Same runId + identical write set => identical transaction id => second commit is refused.
-  const second = await runTransactionalAgent(baseRun(fx, { runId: "RUN-DUP-1" }));
-  assert.notEqual(second.institutionalResult, "committed");
-  const committed = readExecutionLedger({ ledgerPath: fx.ledgerPath }).committedTransactions;
-  assert.equal(Object.keys(committed).filter((id) => id === first.transactionId).length, 1, "transaction committed exactly once");
-  cleanup(fx);
+  try {
+    const first = await runTransactionalAgent(baseRun(fx, { runId: "RUN-DUP-1" }));
+    if (!ISOLATION_SUPPORTED) { assertIsolationUnavailable(first); return; }
+    assert.equal(first.institutionalResult, "committed", runtimeFailureDetails("first duplicate runtime execution unexpectedly failed", first, fx));
+    // Same runId + identical write set => identical transaction id => second commit is refused.
+    const second = await runTransactionalAgent(baseRun(fx, { runId: "RUN-DUP-1" }));
+    assert.notEqual(second.institutionalResult, "committed");
+    const committed = readExecutionLedger({ ledgerPath: fx.ledgerPath }).committedTransactions;
+    assert.equal(Object.keys(committed).filter((id) => id === first.transactionId).length, 1, "transaction committed exactly once");
+  } finally {
+    cleanup(fx);
+  }
 });

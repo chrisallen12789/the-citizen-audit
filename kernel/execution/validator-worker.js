@@ -26,6 +26,9 @@ const { REVIEWED_VALIDATOR_LIMITS } = require("./validator-limits");
 
 const HOST_PROCESS = process;
 const HOST_GLOBAL = globalThis;
+const SafeVmCreateContext = vm.createContext.bind(vm);
+const SafeVmCompileFunction = vm.compileFunction.bind(vm);
+const SafeVmRunInContext = vm.runInContext.bind(vm);
 const SafeArrayIncludes = Function.call.bind(Array.prototype.includes);
 const SafeArrayIsArray = Array.isArray;
 const SafeArrayJoin = Function.call.bind(Array.prototype.join);
@@ -286,6 +289,54 @@ const ALLOWED_BUILTINS = frozenRecord([
   ["fs", SAFE_FS_FACADE]
 ]);
 const TRANSPORT_PRIMITIVE_TYPES = new Set(["string", "number", "boolean", "bigint", "undefined"]);
+const VALIDATOR_CONTEXT_UNDEFINED_GLOBALS = Object.freeze([
+  "process",
+  "global",
+  "console",
+  "performance",
+  "navigator",
+  "fetch",
+  "WebSocket",
+  "crypto",
+  "structuredClone",
+  "setTimeout",
+  "setInterval",
+  "setImmediate",
+  "clearTimeout",
+  "clearInterval",
+  "clearImmediate",
+  "queueMicrotask",
+  "AbortController",
+  "AbortSignal",
+  "ReadableStream",
+  "ReadableStreamDefaultReader",
+  "ReadableStreamDefaultController",
+  "WritableStream",
+  "WritableStreamDefaultWriter",
+  "WritableStreamDefaultController",
+  "TransformStream",
+  "TextEncoder",
+  "TextDecoder",
+  "TextEncoderStream",
+  "TextDecoderStream",
+  "CompressionStream",
+  "DecompressionStream",
+  "Blob",
+  "File",
+  "FormData",
+  "Headers",
+  "Request",
+  "Response",
+  "MessagePort",
+  "MessageChannel",
+  "BroadcastChannel",
+  "EventTarget",
+  "Event",
+  "MessageEvent",
+  "require",
+  "module",
+  "exports"
+]);
 
 function addIntrinsicTarget(targets, target) {
   if (target && (typeof target === "object" || typeof target === "function")) targets[targets.length] = target;
@@ -446,6 +497,70 @@ function lockValidatorHostAccess() {
   setGlobalValue("Event", undefined);
   setGlobalValue("MessageEvent", undefined);
   lockSymbolKeyedGlobalAuthorities();
+}
+
+function defineValidatorGlobal(context, name, value) {
+  try {
+    SafeObjectDefineProperty(context, name, { value, enumerable: false, writable: false, configurable: false });
+  } catch (error) {
+    throw workerFailure("WORKER_INTERNAL_FAILURE", "validator context global definition failed");
+  }
+}
+
+function createValidatorContext() {
+  if (!vm.constants || !vm.constants.DONT_CONTEXTIFY) {
+    throw workerFailure("WORKER_INTERNAL_FAILURE", "durable validator context is unavailable");
+  }
+  let context;
+  try {
+    context = SafeVmCreateContext(vm.constants.DONT_CONTEXTIFY);
+  } catch (error) {
+    throw workerFailure("WORKER_INTERNAL_FAILURE", "durable validator context creation failed");
+  }
+  defineValidatorGlobal(context, "Buffer", SAFE_BUFFER_FACADE);
+  defineValidatorGlobal(context, "JSON", SAFE_JSON_FACADE);
+  for (let index = 0; index < VALIDATOR_CONTEXT_UNDEFINED_GLOBALS.length; index += 1) {
+    defineValidatorGlobal(context, VALIDATOR_CONTEXT_UNDEFINED_GLOBALS[index], undefined);
+  }
+  try {
+    SafeVmRunInContext(`
+      Object.setPrototypeOf(globalThis, null);
+      Object.freeze(globalThis);
+    `, context);
+  } catch (error) {
+    throw workerFailure("WORKER_INTERNAL_FAILURE", "validator context lockdown failed");
+  }
+  let auditProblems;
+  try {
+    auditProblems = SafeVmRunInContext(`
+      (() => {
+        const problems = [];
+        if (Object.getPrototypeOf(globalThis) !== null) problems[problems.length] = "validator global prototype is not null";
+        if (Object.isExtensible(globalThis)) problems[problems.length] = "validator global is extensible";
+        if (!Object.isFrozen(globalThis)) problems[problems.length] = "validator global is not frozen";
+        const symbols = Object.getOwnPropertySymbols(globalThis);
+        for (const symbol of symbols) {
+          const descriptor = Object.getOwnPropertyDescriptor(globalThis, symbol);
+          if (!descriptor) continue;
+          if ("get" in descriptor || "set" in descriptor) {
+            problems[problems.length] = "validator global symbol accessor remains";
+            continue;
+          }
+          const value = descriptor.value;
+          if (value !== null && (typeof value === "object" || typeof value === "function")) {
+            problems[problems.length] = "validator global symbol nonprimitive remains";
+          }
+        }
+        return problems;
+      })()
+    `, context);
+  } catch (error) {
+    throw workerFailure("WORKER_INTERNAL_FAILURE", "validator context audit failed");
+  }
+  if (!SafeArrayIsArray(auditProblems) || auditProblems.length) {
+    throw workerFailure("WORKER_INTERNAL_FAILURE", "validator context audit rejected global surface");
+  }
+  return context;
 }
 
 class WorkerFailure extends Error {
@@ -614,6 +729,7 @@ function loadClosureEntry(closure) {
   const expected = new Map(); // relPath -> {hash,size,mode,uid,gid,dev,ino,nlink}
   for (const m of closure.modules) SafeMapSet(expected, m.relPath, m);
   const verifiedSources = verifyCompleteClosureSources(ROOT, expected, closure.modules);
+  const validatorContext = createValidatorContext();
   const compiledCache = new Map(); // relPath -> module.exports
 
   function verifyOneModule(relPath) {
@@ -683,22 +799,31 @@ function loadClosureEntry(closure) {
     return ALLOWED_BUILTINS[builtin];
   }
 
+  function createValidatorRequire(fromRel) {
+    const callable = function validatorRequire(spec) {
+      return requireFrom(fromRel, spec);
+    };
+    try { SafeObjectSetPrototypeOf(callable, null); } catch (error) {}
+    defineReadOnly(callable, "constructor", undefined);
+    return SafeObjectFreeze(callable);
+  }
+
   function loadModule(relPath) {
     if (SafeMapHas(compiledCache, relPath)) return SafeMapGet(compiledCache, relPath);
     if (!SafeMapHas(verifiedSources, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module was not captured before execution");
     const source = SafeMapGet(verifiedSources, relPath);
     const module = SafeObjectCreate(null);
-    module["exports"] = SafeObjectCreate(null);
+    SafeObjectDefineProperty(module, "exports", { value: SafeObjectCreate(null), enumerable: true, writable: true, configurable: false });
     SafeMapSet(compiledCache, relPath, module.exports); // seed for cycles
     const absFile = path.join(ROOT, relPath);
     let wrapper;
     try {
-      wrapper = vm.compileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile });
+      wrapper = SafeVmCompileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile, parsingContext: validatorContext });
     } catch (error) {
       throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "validator module compilation failed");
     }
     try {
-      wrapper(module.exports, (spec) => requireFrom(relPath, spec), module, absFile, path.dirname(absFile));
+      wrapper(module.exports, createValidatorRequire(relPath), module, absFile, path.dirname(absFile));
     } catch (error) {
       if (error instanceof WorkerFailure) throw error;
       throw workerFailure("VALIDATOR_THROW");

@@ -9,7 +9,7 @@ const { recordTransaction } = require("../kernel/transactions/store");
 const { computeWriteSetHash } = require("../kernel/transactions/validate");
 const { recordApprovalDecision } = require("../kernel/approvals/decision-store");
 const { executeApprovedTransaction } = require("../kernel/execution/orchestrator");
-const { getExecutionAttempt, createExecutionAttempt, transitionExecutionAttempt } = require("../kernel/execution/ledger");
+const { getExecutionAttempt, readExecutionLedger, createExecutionAttempt, transitionExecutionAttempt } = require("../kernel/execution/ledger");
 const { acquireExecutionLock, readExecutionLock } = require("../kernel/execution/exclusive-boundary");
 const { recoverIncompleteExecution } = require("../kernel/execution/startup-recovery");
 const { loadValidatorRegistry } = require("../kernel/execution/validators");
@@ -104,6 +104,26 @@ function executeWithFault(transactionId, options, onStep) { return loadFaultInje
 
 function cleanup(fixture) {
   fs.rmSync(fixture.root, { recursive: true, force: true });
+}
+
+function executionFailureDetails(label, result, fixture) {
+  let ledger = null;
+  try {
+    ledger = readExecutionLedger({ ledgerPath: fixture.ledgerPath });
+  } catch (error) {
+    ledger = { error: error && error.message ? error.message : String(error) };
+  }
+  return `${label}: ${JSON.stringify({
+    disposition: result && result.disposition,
+    attemptId: result && result.attemptId,
+    transactionId: result && result.transactionId,
+    validatorSetHash: result && result.validatorSetHash,
+    policyHash: result && result.policyHash,
+    problems: result && result.problems,
+    validationResults: result && result.validationResults,
+    operationalWarnings: result && result.operationalWarnings,
+    ledger
+  }, null, 2)}`;
 }
 
 // Build an isolated validator tree with the production baseline validators plus
@@ -217,25 +237,37 @@ test("registered executable identity drift is rejected before mutation", async (
 // 6. Current policy is loaded and bound at execution time.
 test("current policy is loaded and bound at execution time", async () => {
   const fx = makeFixture({ txId: "TX-006" });
-  const result = await executeApprovedTransaction("TX-006", { rootDir: fx.root, ledgerPath: fx.ledgerPath });
-  assert.ok(result.policyHash);
-  assert.equal(getExecutionAttempt(result.attemptId, { ledgerPath: fx.ledgerPath }).policyHash, result.policyHash);
-  cleanup(fx);
+  try {
+    const result = await executeApprovedTransaction("TX-006", { rootDir: fx.root, ledgerPath: fx.ledgerPath });
+    assert.equal(result.disposition, "committed", executionFailureDetails("current-policy execution did not commit", result, fx));
+    assert.ok(result.policyHash);
+    assert.equal(getExecutionAttempt(result.attemptId, { ledgerPath: fx.ledgerPath }).policyHash, result.policyHash);
+  } finally {
+    cleanup(fx);
+  }
 });
 
 // 7. Changed validator registry is loaded and bound at execution time.
 test("changed validator registry is loaded and bound at execution time", async () => {
   const fx = makeFixture({ txId: "TX-007" });
-  const r1 = await executeApprovedTransaction("TX-007", { rootDir: fx.root, ledgerPath: fx.ledgerPath });
-  assert.ok(r1.validatorSetHash);
-  assert.equal(getExecutionAttempt(r1.attemptId, { ledgerPath: fx.ledgerPath }).validatorSetHash, r1.validatorSetHash);
-  // A different validator set yields a different bound hash.
-  const dir = makeValidatorsDir([{ id: "execution-plan", supportedPhases: ["candidate", "post_write"], source: "module.exports={id:'execution-plan',version:'1.0.0',supportedPhases:['candidate','post_write'],validate:()=>({status:'passed',problems:[],warnings:[],checkedObjects:[],checkedPaths:[]})};" }]);
-  const fx2 = makeFixture({ txId: "TX-007B", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["execution-plan"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
-  const r2 = await executeApprovedTransactionForTest("TX-007B", { rootDir: fx2.root, ledgerPath: fx2.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir) });
-  assert.notEqual(r1.validatorSetHash, r2.validatorSetHash);
-  cleanupValidatorsDir(dir);
-  cleanup(fx); cleanup(fx2);
+  let dir = null;
+  let fx2 = null;
+  try {
+    const r1 = await executeApprovedTransaction("TX-007", { rootDir: fx.root, ledgerPath: fx.ledgerPath });
+    assert.equal(r1.disposition, "committed", executionFailureDetails("baseline validator-registry execution did not commit", r1, fx));
+    assert.ok(r1.validatorSetHash);
+    assert.ok(r1.attemptId, executionFailureDetails("baseline validator-registry execution did not return an attempt id", r1, fx));
+    assert.equal(getExecutionAttempt(r1.attemptId, { ledgerPath: fx.ledgerPath }).validatorSetHash, r1.validatorSetHash);
+    // A different validator set yields a different bound hash.
+    dir = makeValidatorsDir([{ id: "execution-plan", supportedPhases: ["candidate", "post_write"], source: "module.exports={id:'execution-plan',version:'1.0.0',supportedPhases:['candidate','post_write'],validate:()=>({status:'passed',problems:[],warnings:[],checkedObjects:[],checkedPaths:[]})};" }]);
+    fx2 = makeFixture({ txId: "TX-007B", policy: { version: "1.0.0", updated: "2026-07-06", requireAffectedObjectCoverage: true, requiredValidators: ["execution-plan"], prohibitedPaths: [], prohibitedPrefixes: ["kernel/"], actions: { write_report: { allowedPaths: [], allowedPrefixes: ["public/data/"], allowDelete: true, semanticValidators: ["write-report-semantics"] } } } });
+    const r2 = await executeApprovedTransactionForTest("TX-007B", { rootDir: fx2.root, ledgerPath: fx2.ledgerPath, validatorsDir: dir, projectRoot: testProjectRoot(dir) });
+    assert.notEqual(r1.validatorSetHash, r2.validatorSetHash);
+  } finally {
+    if (dir) cleanupValidatorsDir(dir);
+    cleanup(fx);
+    if (fx2) cleanup(fx2);
+  }
 });
 
 test("production orchestrator rejects a caller-selected alternate root", async () => {

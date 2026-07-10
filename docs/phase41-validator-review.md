@@ -1,18 +1,20 @@
-# Phase 4.1 - Validator Worker Symbol-Global Review
+# Phase 4.1 - Validator Worker Durable-Global Review
 
-Base checkpoint: `83852956ac6df1150776b20efbbdf28691456119`
+Base checkpoint: `a98587433d38a6eadf252e8f48bd408f36567221`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, and symbol-keyed global dispatcher attacks are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, and symbol-keyed dispatcher attacks are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `83852956ac6df1150776b20efbbdf28691456119` and closes the remaining symbol-keyed default-global authority defect:
+This checkpoint continues from `a98587433d38a6eadf252e8f48bd408f36567221` and closes the remaining validator-visible global authority defects:
 
-1. before any validator byte executes, the worker enumerates symbol-keyed properties on `globalThis`
-2. primitive symbol-keyed values may remain, but symbol-keyed objects, functions, accessors, dispatchers, factories, maps, pools, clients, and equivalent host authority are replaced with `undefined`
-3. if a nonprimitive symbol-keyed global cannot be neutralized, the worker fails closed before validator module loading or `validate()` execution
-4. the regression preloads an Undici-like `Symbol.for("undici.globalDispatcher.1")` Agent object before the production worker entry starts and proves validator code cannot recover it through `Object.getOwnPropertySymbols(globalThis)`, `Reflect.ownKeys(globalThis)`, or `Symbol.for(...)`
-5. a second regression preloads a non-writable/non-configurable Agent object and proves startup fails closed before validator code can write a marker
-6. the previously verified console/stdout lockdown, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
+1. validator modules compile and execute inside a separate `vm` context created with a validator-owned global rather than the worker harness global
+2. before validator compilation, the validator-visible `globalThis` is detached from its prototype chain, frozen, and made non-extensible
+3. reviewed-dangerous named globals and host messaging/network/stdio surfaces are installed as immutable `undefined` bindings inside that context
+4. inherited symbol-keyed and string-keyed host authority on the worker global prototype chain is not visible to validator code
+5. host callbacks scheduled before lockdown cannot reintroduce validator-visible globals after the boundary is frozen
+6. the CommonJS shim passed to validators uses null-prototype `module`/`exports` records and a constructor-hidden `require` function so constructor-chain probes cannot climb back into the harness realm
+7. non-neutralizable host-global symbol authority still fails closed before validator top-level code or `validate()` can execute
+8. the previously verified console/stdout lockdown, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
 
 OS-level validator confinement was not started.
 
@@ -47,7 +49,7 @@ Validator code no longer receives the worker's host `console` object. The global
 Other reviewed-dangerous default globals are also removed from the validator global, including network/fetch surfaces, global web crypto, structured clone, timer callback handles, web streams, abort/event constructors, blob/form/request/response constructors, and messaging constructors. Validators that need reviewed capabilities must use the closure-local builtin facades instead.
 
 ### Symbol-Keyed Global Authority Lockdown
-The worker now audits symbol-keyed globals as a separate authority class:
+The worker still audits symbol-keyed host globals as a fail-closed preflight class:
 - `Object.getOwnPropertySymbols(globalThis)` is captured and used by trusted code before validator execution
 - symbol-keyed primitive values, such as harmless string tags, may remain
 - symbol-keyed objects, functions, accessors, Undici Agent-like dispatchers, raw pools/clients, internal factories, maps, callbacks, and options objects are neutralized before validator code runs
@@ -55,6 +57,15 @@ The worker now audits symbol-keyed globals as a separate authority class:
 - non-writable/non-configurable symbol globals fail worker startup closed before validator module loading
 
 This is intentionally not tied to a single display string such as `Symbol(undici.globalDispatcher.1)`. The lockdown is value-oriented: any symbol-keyed nonprimitive global authority is removed or causes fail-closed startup.
+
+### Durable Validator-Visible Global Boundary
+The symbol preflight is now backed by a durable validator-visible boundary rather than a one-time host-global snapshot:
+- validator code executes in a separate `vm` parsing context
+- `Object.setPrototypeOf(globalThis, null)` removes inherited string-keyed and symbol-keyed authority from the validator global
+- `Object.freeze(globalThis)` makes the validator global non-extensible and prevents post-lock additions or rewrites
+- context self-audit verifies the global prototype is null, the global is frozen/non-extensible, and no symbol-keyed nonprimitive value remains before validator module compilation
+- preloaded `process.nextTick`, `queueMicrotask`, resolved Promise, and `setImmediate` callbacks that add host globals cannot affect the already-detached validator global
+- validator-visible `require`, `module`, and `exports` do not expose host constructors or the harness global through prototype or constructor chains
 
 ### Capability Facade Return Hardening
 Allowed builtins remain explicit, but facades no longer return raw host-native authority objects:
@@ -130,6 +141,14 @@ New direct production-worker regressions prove:
 - `Object.getOwnPropertySymbols(globalThis)` exposes no raw host object or function after a preloaded Agent-like symbol global is scrubbed
 - `Reflect.ownKeys(globalThis)` cannot locate an Undici-like Agent, Pool, Client, Dispatcher, dispatch method, internal factory, clients `Map`, options object, callback function, or manufactured Pool
 - `Symbol.for("undici.globalDispatcher.1")` cannot recover a host Agent-like dispatcher
+- an Agent-like object inherited from the direct host global prototype is invisible to validator code
+- an Agent-like object inherited farther up the host global prototype chain, including `Object.prototype`, is invisible to validator code
+- an inherited accessor returning Agent-like authority is invisible to validator code
+- a non-configurable inherited symbol descriptor is invisible to validator code
+- `process.nextTick`, `queueMicrotask`, Promise, and `setImmediate` late-installed symbol and string global authority is invisible to validator code
+- an existing primitive-valued symbol cannot be rewritten into validator-visible nonprimitive authority after lockdown
+- validator-side recursive inspection confirms the visible global prototype is null and the visible global is frozen/non-extensible
+- `require`, `module`, and `exports` constructor chains cannot recover host authority
 - writable non-configurable symbol-keyed dispatcher globals are neutralized
 - non-writable/non-configurable symbol-keyed dispatcher globals fail closed before validator execution
 - no Agent, Pool, Client, Dispatcher constructor or raw internal factory can be recovered from retained global state
@@ -179,9 +198,9 @@ Retained direct production-worker regressions prove:
 - normal authoritative validators still pass
 
 ## Test Totals Observed In This Workspace
-- validator-security: 133/133
+- validator-security: 134/134
 - execution-orchestrator: 56/56
-- execution suite: 329/329
+- execution suite: 330/330
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -194,7 +213,9 @@ Retained direct production-worker regressions prove:
 - `git diff --check`: passed
 - `git fsck --full`: passed
 - Institutional QA: 159 HTML files passed
-- execution-orchestrator, runtime-integration, and aggregate execution suite all terminated normally on this Windows host
+- execution-orchestrator, runtime-integration, runtime-isolation, fault, and aggregate execution suite all terminated normally on this Windows host
+- runtime-integration completed three consecutive local runs at 28/28
+- the changed-validator-registry binding tests completed five focused local repetitions at 2/2
 
 Host note:
 - WSL has no installed Linux distributions and Docker is not installed in this desktop session, so Linux-host termination could not be directly reproduced here. This is recorded as a host limitation, not as a claimed Linux result.
@@ -202,8 +223,10 @@ Host note:
 ## Additional Confirmations
 - all closure bytes are verified and captured before any validator byte executes
 - no validator source verification occurs after validator execution begins
-- no string-keyed or symbol-keyed default global exposes raw host authority in the covered regression paths
+- no string-keyed or symbol-keyed default global exposes raw host authority in the covered own, inherited, and post-lock regression paths
 - no Undici-like Agent, Pool, Client, Dispatcher, internal factory, clients Map, options object, or callback function is reachable through symbol-keyed global state
+- late host-global additions scheduled before worker startup cannot become validator-visible after the durable global is frozen
+- validator-visible `globalThis` is null-prototype, frozen, and non-extensible before validator module compilation
 - non-neutralizable symbol-keyed authority fails closed before validator execution
 - no raw stdout/stderr `MessagePort` is reachable through the global console object
 - no validator-controlled stdio payload crossed the parent boundary in the reproduced direct-worker attack
