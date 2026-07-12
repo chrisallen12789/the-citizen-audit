@@ -22,8 +22,11 @@ Files:
 | --- | --- | --- |
 | P42-D002 | APPROVED | Project owner approved the documented hostile-validator and arbitrary-native-code threat model on 2026-07-12. [Approval record](phase42-d002-owner-approval.md). |
 | P42-D001 | OPEN | RECOMMENDED: Ubuntu Server 24.04 LTS, amd64, minimal/headless, GA kernel track as the provisional candidate. Final approval requires an Ubuntu 24.04 versus Ubuntu 26.04.1 comparison or a recorded earlier freeze reason. |
+| P42-D003 | OPEN | RECOMMENDED: layered, OS-native Linux confinement under a dedicated external supervisor or launcher, with fail-closed capability verification and mandatory assurance evidence. [Package](phase42-d003-confinement-composition.md). |
 
 P42-D002 is APPROVED as an architecture decision. P42-D001 remains OPEN and provisional. Approval does not authorize implementation or prove mitigation.
+
+P42-D003 remains OPEN pending independent review and explicit project-owner approval. Its package does not resolve P42-D004 through P42-D022. No automatic merge or implementation is authorized.
 
 ## Repository incorporation
 
@@ -83,5 +86,7 @@ Architecture reviewers should answer explicitly:
 1. Use approved P42-D002 as the threat-model input, subject to its reopen triggers.
 2. Select P42-D001 against that threat model and production deployment and operational constraints.
 3. Select P42-D003: a confinement-mechanism composition that maps every accepted requirement to an enforcement point on the later-approved baseline and remains valid under the approved native-code attacker model.
+
+The current P42-D003 package is a RECOMMENDED proposal for that review step, not an approval or implementation authorization.
 
 Implementation must still wait until Phase 4.1 is independently accepted and Phase 4.2 is formally authorized to begin.

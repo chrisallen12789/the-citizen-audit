@@ -27,7 +27,7 @@ P42-D002 was approved by the project owner on 2026-07-12 and is now an architect
 | --- | --- | --- |
 | P42-D002 | Fully hostile/native-code attacker model accepted by the project owner; approval does not prove mitigation or implementation. | APPROVED |
 | P42-D001 | RECOMMENDED provisional Ubuntu Server 24.04 LTS amd64 GA-kernel candidate; compare Ubuntu 24.04 and Ubuntu 26.04.1 before final approval unless an earlier freeze reason is recorded. | OPEN |
-| P42-D003 | Must select a composition capable of enforcing the full threat model on a later-approved Ubuntu profile. | OPEN |
+| P42-D003 | RECOMMENDED layered, OS-native Linux confinement under a dedicated external supervisor or launcher, with fail-closed capability verification and mandatory evidence. Exact mechanisms under P42-D004 through P42-D022 remain unresolved. | OPEN |
 | P42-D004 | Container use remains optional; container-only reasoning is insufficient. | OPEN |
 | P42-D005 | Must establish monotonic non-escalation against native code. | OPEN |
 | P42-D006 | Must expose only immutable, bounded, exact-byte-bound files/workspace. | OPEN |
@@ -107,3 +107,7 @@ Recommended order:
 9. P42-D015 and P42-D016 — CI/development profiles and external review.
 
 No implementation should begin merely because this ordering exists.
+
+## P42-D003 recommendation package
+
+The [P42-D003 confinement-composition package](phase42-d003-confinement-composition.md) maps the approved P42-D002 threat model to the accepted confinement requirements while P42-D001 remains provisional. The recommendation is OPEN, does not mark controls implemented, and requires independent review and explicit project-owner approval.

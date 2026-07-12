@@ -22,7 +22,7 @@ Phase 4.1 remains **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN**
 
 1. Use approved P42-D002 as the threat-model input, subject to its reopen triggers.
 2. Select the production platform under P42-D001 against that threat model and production deployment and operational constraints.
-3. Select the confinement composition under P42-D003 against both decisions.
+3. Independently review the OPEN P42-D003 layered OS-native Linux composition recommendation against both decisions.
 
 ## Document map
 
@@ -32,6 +32,16 @@ Phase 4.1 remains **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN**
 - [Decision-to-requirement mapping](phase42-foundational-decision-mapping.md)
 - [Source register](phase42-foundational-source-register.md)
 - [Documentation handoff](phase42-foundational-decisions-handoff.md)
+- [P42-D003 confinement composition](phase42-d003-confinement-composition.md)
+- [P42-D003 candidate analysis](phase42-d003-candidate-analysis.md)
+- [P42-D003 control boundary map](phase42-d003-control-boundary-map.md)
+- [P42-D003 lifecycle and supervision](phase42-d003-lifecycle-and-supervision.md)
+- [P42-D003 requirement traceability](phase42-d003-requirement-traceability.md)
+- [P42-D003 test and evidence gates](phase42-d003-test-and-evidence-gates.md)
+- [P42-D003 source register](phase42-d003-source-register.md)
+- [P42-D003 open questions and handoff](phase42-d003-open-questions-and-handoff.md)
+
+P42-D003 remains **OPEN — recommendation documented; pending independent review and explicit project-owner approval.** Its package recommends an architecture class and does not resolve P42-D004 through P42-D022 or authorize implementation.
 
 ## Decision posture
 
