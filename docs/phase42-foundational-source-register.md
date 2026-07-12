@@ -50,7 +50,7 @@
 
 ### SRC-UBU-008
 
-**Ubuntu LTS-to-LTS upgrade guidance.** Canonical community guidance states that the supported 24.04-to-26.04 upgrade window follows the initial 26.04 release and is expected with the later supported upgrade path.
+**Ubuntu LTS-to-LTS upgrade guidance.** Ubuntu Community Hub guidance hosted on Canonical infrastructure describes the supported 24.04-to-26.04 upgrade window as following the initial 26.04 release. It is supplementary community guidance, not formal vendor release-policy documentation.
 
 - https://discourse.ubuntu.com/t/best-practice-for-a-successful-release-upgrade-to-26-04/80868
 
@@ -150,3 +150,4 @@
 - Vendor support windows do not replace project-level requalification after updates.
 - Documentation does not establish that a cloud, VM, container, or CI environment exposes the required host privileges or kernel controls.
 - The project must capture exact runtime evidence from the approved profile rather than relying on these webpages during acceptance.
+- SRC-UBU-007 currently states Ubuntu 26.04 support through April 2031, while SRC-UBU-001 currently lists standard security maintenance through May 2031. Reverify the exact authoritative support-end date during the final P42-D001 comparison and approval; this discrepancy does not change the present provisional decision posture.

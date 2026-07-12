@@ -35,7 +35,7 @@ The platform exposes the kernel primitives required to evaluate the accepted Pha
 
 ## Ubuntu 26.04.1 comparison gate
 
-Ubuntu 26.04 LTS was released on April 23, 2026. It is a valid future candidate, but at the time of this packet it has substantially less field and project-specific test history than 24.04. Canonical’s own LTS-to-LTS upgrade guidance places the supported 24.04-to-26.04 upgrade window after the initial release cycle. The project should evaluate 26.04 only after its first point release and after reproducing the complete Phase 4.2 evidence suite on the exact candidate profile. [SRC-UBU-007](phase42-foundational-source-register.md#src-ubu-007), [SRC-UBU-008](phase42-foundational-source-register.md#src-ubu-008)
+Ubuntu 26.04 LTS was released on April 23, 2026. It is a valid future candidate, but at the time of this packet it has substantially less field and project-specific test history than 24.04. Ubuntu Community Hub guidance hosted on Canonical infrastructure is supplementary community guidance about the supported 24.04-to-26.04 upgrade window; it is not formal vendor release-policy documentation. The project should evaluate 26.04 only after its first point release and after reproducing the complete Phase 4.2 evidence suite on the exact candidate profile. [SRC-UBU-007](phase42-foundational-source-register.md#src-ubu-007), [SRC-UBU-008](phase42-foundational-source-register.md#src-ubu-008)
 
 This is a maturity and evidence decision, not a claim that 26.04 is less secure.
 
@@ -124,6 +124,8 @@ Reopen P42-D001 if any of the following occurs:
 
 ## Decision record wording
 
-If approved, record:
+If the required comparison confirms Ubuntu Server 24.04 LTS, record:
 
-> P42-D001 is resolved for the first production profile as Ubuntu Server 24.04 LTS, amd64, minimal/headless, on the Ubuntu GA kernel track. Every supported deployment and acceptance run must bind claims to an exact immutable image, kernel, package, runtime, and policy manifest. Other platforms remain unsupported until separately approved and reproduced.
+> P42-D001 is resolved for the first production profile as Ubuntu Server 24.04 LTS, amd64, minimal/headless, on the Ubuntu GA kernel track. Every supported deployment and acceptance run must bind claims to an exact immutable image, kernel, package, runtime, configuration, and policy manifest. Other platforms remain unsupported until separately approved and reproduced.
+
+If the comparison selects Ubuntu 26.04.1 or another profile, do not use the preceding wording. Record the exact distribution, release, architecture, installation profile, kernel track, image identity, support horizon, and requalification obligations actually approved.
