@@ -6,8 +6,8 @@
 
 | ID | Question and why it matters | Candidate options | Required evidence | Dependency | Owner role | Status | Prohibited premature assumption |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| P42-D001 | Which operating system is the authoritative production baseline? It defines available controls and claims. | Linux profile; another OS; VM-hosted profile. | Supported-host inventory and threat-model review. | Deployment owners. | Architecture owner | OPEN | Linux developer familiarity equals production support. |
-| P42-D002 | What threat model and attacker capabilities are in scope? It determines meaningful guarantees. | Validator-only; local user; supply-chain; service compromise scopes. | Reviewed threat model and asset map. | P42-D001. | Security architecture owner | OPEN | A generic sandbox threat model is sufficient. |
+| P42-D001 | Which operating system is the authoritative production baseline? **RECOMMENDED:** Ubuntu Server 24.04 LTS, amd64, minimal/headless, GA-kernel baseline; exact image, kernel, runtime, package, configuration, and policy-manifest identities must be pinned. This does not approve a container runtime, namespace design, cgroup policy, seccomp policy, service manager, VM, or deployment platform, and does not prove present deployment or confinement. [Recommendation](phase42-d001-production-platform-baseline.md) | Linux profile; another OS; VM-hosted profile. | Supported-host inventory, threat-model review, independent reproduction, and explicit owner approval. | Deployment owners. | Architecture owner | OPEN — recommendation documented; pending independent review and explicit project-owner approval. | Linux developer familiarity equals production support. |
+| P42-D002 | What threat model and attacker capabilities are in scope? **RECOMMENDED:** model the validator as hostile and assume possible arbitrary native-code execution inside its process. Phase 4.1 remains defense in depth, not the Phase 4.2 OS boundary; the host kernel and approved trusted components remain explicit trust assumptions. This threat model is not proof that every listed threat is currently mitigated. [Recommendation](phase42-d002-threat-model.md) | Validator-only; local user; supply-chain; service compromise scopes. | Reviewed threat model and asset map, independent review, and explicit owner approval. | P42-D001. | Security architecture owner | OPEN — recommendation documented; pending independent review and explicit project-owner approval. | A generic sandbox threat model is sufficient. |
 | P42-D003 | Which confinement mechanism combination satisfies the requirements? | Direct OS primitives; namespaces/cgroups/filtering; container; VM; combination. | Requirement-to-control mapping and negative tests. | P42-D001, P42-D002. | Architecture owner | OPEN | A container alone is the approved boundary. |
 | P42-D004 | Is a container runtime a required dependency? It changes TCB and operations. | No container; rootful runtime; rootless runtime; VM image. | Dependency, patching, and lifecycle assessment. | P42-D003. | Platform owner | OPEN | Runtime presence proves isolation. |
 | P42-D005 | Which identity and privilege policy establishes minimum authority before launch and keeps it monotonic for the validator and descendants afterward? | Dedicated account; service manager identity; rootless mapping; VM guest account; no-new-privileges/capability policy; token/impersonation restrictions; reviewed platform-specific combinations. | Launch/descendant privilege census, identity-transition, capability/group, token/impersonation, privileged-helper, and escalation-negative tests. | P42-D001, P42-D003, P42-D010, P42-D021. | Platform security owner | OPEN | A low-privilege starting account alone prevents later escalation. |
@@ -31,6 +31,8 @@
 
 ## Handoff
 
+**REPORTED:** Phase 4.1 remains rejected, and VAL-RESULT-001 remains **OPEN**, as recorded by [the Phase 4.1 assurance index](phase41-assurance-index.md). P42-D001 and P42-D002 remain **OPEN**. Phase 4.2 remains **PLANNED**; no confinement implementation has begun. This integration branch must not be merged automatically. Explicit project-owner approval is still required after independent review. No code or tests changed.
+
 This branch created the following **PLANNED** architecture package:
 
 - [Architecture](phase42-confinement-architecture.md)
@@ -40,6 +42,15 @@ This branch created the following **PLANNED** architecture package:
 - [Resource-budget framework](phase42-resource-budget.md)
 - [Test and evidence plan](phase42-test-and-evidence-plan.md)
 - This decision register and handoff
+
+This integration also adds the following **RECOMMENDED** and still **OPEN** foundational-decision documents:
+
+- [Foundational decisions index](phase42-foundational-decisions-index.md) — packet overview and decision posture.
+- [P42-D001 production platform baseline](phase42-d001-production-platform-baseline.md) — proposed Ubuntu baseline and its nonclaims.
+- [P42-D002 threat model](phase42-d002-threat-model.md) — proposed hostile-validator assumptions, trust boundary, and residual risks.
+- [Decision mapping](phase42-foundational-decision-mapping.md) — conditional links from the proposals to existing decisions and requirements.
+- [Source register](phase42-foundational-source-register.md) — reported primary-source references and limitations.
+- [Foundational decisions handoff](phase42-foundational-decisions-handoff.md) — review posture and follow-up.
 
 The original package started from `ee7434f2dbe76fa5b1de35cbbbde7c0bd29ea4ea`; the first correction revision starts from `08e6991e36c911aee539fe2f72f81137f68d10dd`; the second starts from `8f6bf8ef61c04cb4e099636308174db691f9594c`; this third independent-review revision starts from `5c5f3eff26bf8be43666635716f3d3c0199145ae`. It adds CONF-IPC-001 and P42-D021 for local IPC/cross-attempt isolation; strengthens CONF-IDENTITY-001 and P42-D005 for monotonic privilege; adds CONF-DUMP-001, BUD-DUMP, and P42-D022 for crash-dump and diagnostic-artifact control; and requires concurrent-attempt, privilege non-escalation, and crash-diagnostic evidence. The package remains documentation only; no code or tests are changed. **REPORTED:** Phase 4.1 remains blocked because VAL-RESULT-001 remains OPEN, as recorded by [the Phase 4.1 assurance index](phase41-assurance-index.md). Phase 4.2 remains **PLANNED**. This branch must not be merged automatically. Implementation must not begin until this decision package is reviewed and approved, and all status references must be reconciled after Phase 4.1 changes.
 
