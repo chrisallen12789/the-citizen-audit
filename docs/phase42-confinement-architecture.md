@@ -10,7 +10,7 @@
 
 ## Boundary definition
 
-The intended boundary starts when the execution orchestrator prepares an immutable validation request and asks a supervisor to launch a confined validator process. It ends when an active accountable owner has validated a bounded result, terminated and accounted for the exact process tree, and completed cleanup. If the immediate supervisor or its connection fails, the boundary remains responsible for containment and later reconciliation rather than allowing an unowned validator tree to continue. The supervisor, host operating system, and selected enforcement mechanisms are outside the validator's authority.
+The intended boundary starts when the execution orchestrator prepares an immutable validation request and asks a supervisor to launch a confined validator process. It ends when an active accountable owner has validated a bounded result, terminated and accounted for the exact process tree, and completed cleanup. If the immediate supervisor or its connection fails, the boundary remains responsible for containment and later reconciliation rather than allowing an unowned validator tree to continue. The boundary includes exact attempt-bound local transports and excludes ambient local IPC, host-process, session, and cross-attempt authority; ordinary IP network denial is not evidence of that separate local-IPC control. The supervisor, host operating system, and selected enforcement mechanisms are outside the validator's authority.
 
 | Layer | Intended role | Not equivalent to |
 | --- | --- | --- |
@@ -26,11 +26,11 @@ The details of the process protocol are specified in [the process-supervision co
 
 ### Trusted computing base
 
-The future trusted computing base (TCB) includes the selected host kernel and its configured enforcement features; the process supervisor and execution orchestrator; the executable launcher and its CONF-HANDLE-001 inherited-handle policy; the selected runtime; the approved validator artifact and dependency provenance verifier; the bounded-input and staging verifier; the result parser; the logging/audit sink; and the host account, service manager, watchdog, broker, runtime, or VM owner selected to enforce CONF-SUPERVISOR-001. This is an architectural assumption, not evidence that these components are defect-free.
+The future trusted computing base (TCB) includes the selected host kernel and its configured enforcement features; the process supervisor and execution orchestrator; the executable launcher and its CONF-HANDLE-001 inherited-handle policy; the selected runtime; the approved validator artifact and dependency provenance verifier; the bounded-input and staging verifier; the attempt-bound local-IPC policy; the non-escalating identity policy; the CONF-DUMP-001 dump and diagnostic-artifact policy; the result parser; the logging/audit sink; and the host account, service manager, watchdog, broker, runtime, or VM owner selected to enforce CONF-SUPERVISOR-001. This is an architectural assumption, not evidence that these components are defect-free.
 
 ### Trusted host components
 
-Trusted host components construct the allowlisted environment; validate, safely stage, and bound launch input; bind verification to exact executed bytes; set budgets; construct the exact inherited-handle set; establish durable tree ownership before exposure; start the validator; observe its generation-safe process-tree identity; reconcile after restart; validate bounded output; and clean resources. They retain authority over host credentials, repository state, deployment configuration, audit records, supervisor-owned handles, ownership/policy objects, and all paths outside the future validation workspace. A numeric PID alone is not sufficient evidence of exact process identity.
+Trusted host components construct the allowlisted environment; validate, safely stage, and bound launch input; bind verification to exact executed bytes; set budgets; construct exact inherited-handle and attempt-bound transport sets; establish monotonic least authority and dump policy before execution; establish durable tree ownership before exposure; start the validator; observe its generation-safe process-tree identity; reconcile after restart; validate bounded output; and clean resources. They retain authority over host credentials, repository state, deployment configuration, audit records, supervisor-owned handles, ownership/policy objects, crash-diagnostic artifacts, and all paths outside the future validation workspace. A numeric PID alone is not sufficient evidence of exact process identity.
 
 ### Untrusted validator components
 
@@ -41,16 +41,16 @@ The validator executable, its loaded modules, input-derived data, output, diagno
 ### Launch sequence
 
 1. The orchestrator supplies a request, provenance references, approved policy, and bounded launch-input manifest to the supervisor.
-2. The supervisor validates and accounts for structured input, staged artifacts, configuration, metadata, and transport frames against CONF-INPUT-001, BUD-INPUT, and the OPEN P42-D020 staging policy before launch; it verifies platform identity, executable/dependency provenance, exact-byte binding, staging safety, and all required enforcement capabilities.
+2. The supervisor validates and accounts for structured input, staged artifacts, configuration, metadata, and transport frames against CONF-INPUT-001, BUD-INPUT, and the OPEN P42-D020 staging policy before launch; it verifies platform identity, executable/dependency provenance, exact-byte binding, staging safety, local-IPC isolation, monotonic identity, dump control, and all required enforcement capabilities.
 3. The supervisor creates a unique, bounded validation workspace and immutable configuration, then establishes the reviewed ownership and parent-death/restart-reconciliation arrangement required by CONF-SUPERVISOR-001 before exposing validator execution.
-4. It constructs an allowlisted environment and the CONF-HANDLE-001 exact inherited-handle set, configures the selected candidate enforcement mechanisms, and starts the isolated process with a monitored generation-safe control identity. Human-readable PID data may be recorded, but is not the authoritative identity.
+4. It constructs an allowlisted environment, the CONF-HANDLE-001 exact inherited-handle set, and the CONF-IPC-001 exact attempt-bound input, output, result, and audit transports; it configures the selected candidate enforcement mechanisms, monotonic authority profile, and dump policy, then starts the isolated process with a monitored generation-safe control identity. Human-readable PID data may be recorded, but is not the authoritative identity.
 5. The supervisor records a launch audit event and applies the startup deadline. Failure at any step is governed by CONF-FAILCLOSED-001 in [the confinement requirements](phase42-confinement-requirements.md).
 
 ### Validation sequence
 
-1. The validator receives only the approved input transport and working directory.
-2. The supervisor measures configured budgets and captures bounded stdout, stderr, and structured result transport.
-3. On a parseable result and normal exit, the supervisor verifies that the exact preflight-verified bytes were executed, exit semantics, provenance binding, active ownership, output bounds, and cleanup preconditions before accepting success.
+1. The validator receives only the approved attempt-bound input transport and working directory; ambient local IPC, host-process, session, and cross-attempt channels remain denied.
+2. The supervisor measures configured budgets and captures bounded stdout, stderr, structured result transport, and any approved bounded diagnostic artifact.
+3. On a parseable result and normal exit, the supervisor verifies that the exact preflight-verified bytes were executed, exit semantics, provenance binding, active ownership, approved-channel-only behavior, monotonic authority, dump-policy compliance, output bounds, and cleanup preconditions before accepting success.
 4. A failure, policy breach, malformed result, or missing evidence is categorized deterministically and fails closed.
 
 ### Normal termination
@@ -59,7 +59,7 @@ The validator exits with a defined success or validation-failure code; the super
 
 ### Abnormal termination and cleanup
 
-Startup timeout, validation timeout, crash, signal, resource breach, malformed output, oversized output, or cleanup error triggers containment. The supervisor records the cause, stops input/output transport, requests graceful termination for the configured grace period, forcibly terminates remaining descendants, verifies no residual process or temporary artifact remains within its authority, and reports failure. Cleanup failure is not success; see CONF-CLEANUP-002 in [the confinement requirements](phase42-confinement-requirements.md).
+Startup timeout, validation timeout, crash, signal, resource breach, local-IPC or privilege-policy breach, unauthorized diagnostic artifact or crash handler, malformed output, oversized output, or cleanup error triggers containment. The supervisor records the cause, stops input/output transport, requests graceful termination for the configured grace period, forcibly terminates remaining descendants, verifies no residual process, IPC object, temporary artifact, dump, or crash handler remains within its authority, and reports failure. Cleanup failure is not success; see CONF-CLEANUP-002 in [the confinement requirements](phase42-confinement-requirements.md).
 
 ### Supervision loss and restart reconciliation
 
@@ -67,9 +67,9 @@ Supervisor crash, launcher crash, orchestrator disconnect, controlling-service r
 
 ## Protected host authorities and expected guarantees
 
-Protected authorities include host filesystem paths and repository state; network credentials and host connectivity; inherited environment secrets; open files, directory descriptors, sockets, named pipes, IPC channels, process-control objects, supervisor transports, and audit handles; user/service-account privileges; process creation and descendants; ownership and watchdog policy objects; CPU, memory, storage, descriptor, input, and output capacity; audit log integrity; and validator artifact identity including exact executed bytes.
+Protected authorities include host filesystem paths and repository state; network credentials and host connectivity; inherited environment secrets; open files, directory descriptors, Unix-domain and abstract sockets, named pipes, shared memory, memory-mapped objects, message queues, semaphores, service buses, COM/ALPC or equivalent named objects, process-control/debug/inspection objects, desktop/window-station/clipboard/session channels, runtime inspector ports, supervisor transports, and audit handles; user/service-account privileges, credentials, capabilities, tokens, groups, and elevated-execution rights; process creation and descendants; ownership and watchdog policy objects; CPU, memory, storage, descriptor, input, output, and diagnostic-artifact capacity; audit log integrity; and validator artifact identity including exact executed bytes.
 
-**REQUIRED:** a selected implementation must measurably deny or constrain each authority according to the requirements, including explicit inherited-handle control, bounded and safely staged launch input, exact-byte provenance, default network denial, generation-safe process identity, supervision-loss containment, bounded resources, controlled process trees, restart reconciliation, and fail-closed lifecycle handling. The intended guarantee is limited to the reviewed configuration and stated platform assumptions. It does not guarantee safety against kernel, runtime, supervisor, configuration, or side-channel defects.
+**REQUIRED:** a selected implementation must measurably deny or constrain each authority according to the requirements, including explicit inherited-handle control, attempt-bound local IPC and cross-attempt isolation, bounded and safely staged launch input, exact-byte provenance, default network denial, monotonic privilege, generation-safe process identity, supervision-loss containment, bounded diagnostic artifacts, bounded resources, controlled process trees, restart reconciliation, and fail-closed lifecycle handling. The intended guarantee is limited to the reviewed configuration and stated platform assumptions. It does not guarantee safety against kernel, runtime, supervisor, configuration, or side-channel defects.
 
 ## Assumptions, non-goals, and residual risks
 
