@@ -20,10 +20,10 @@ Files:
 
 | Decision | Current status | Recommendation |
 | --- | --- | --- |
-| P42-D002 | OPEN | RECOMMENDED: fully hostile validator process with possible arbitrary native-code execution; malicious artifacts/input and hostile concurrent/local unprivileged peers in scope. This decision is considered before platform selection. |
+| P42-D002 | APPROVED | Project owner approved the documented hostile-validator and arbitrary-native-code threat model on 2026-07-12. [Approval record](phase42-d002-owner-approval.md). |
 | P42-D001 | OPEN | RECOMMENDED: Ubuntu Server 24.04 LTS, amd64, minimal/headless, GA kernel track as the provisional candidate. Final approval requires an Ubuntu 24.04 versus Ubuntu 26.04.1 comparison or a recorded earlier freeze reason. |
 
-Both decisions remain OPEN. No status should change merely because this packet exists; independent review and explicit project-owner approval remain required.
+P42-D002 is APPROVED as an architecture decision. P42-D001 remains OPEN and provisional. Approval does not authorize implementation or prove mitigation.
 
 ## Repository incorporation
 
@@ -36,14 +36,14 @@ Recommended destination paths:
 - `docs/phase42-foundational-source-register.md`
 - `docs/phase42-foundational-decisions-handoff.md`
 
-This integration updates the P42-D001 and P42-D002 rows in the open-decisions register with repository-relative links while retaining OPEN status. Do not rewrite the other open decisions as if their mechanisms were selected.
+The decision register links P42-D002 to its approved threat model and owner-approval record. P42-D001 remains OPEN. Do not rewrite other open decisions as if their mechanisms were selected.
 
 ## Required reconciliation before independent review
 
 1. Confirm Phase 4.1 status references still state **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN** unless a later independently accepted checkpoint changes that status.
 2. Confirm Phase 4.2 remains **PLANNED** and no implementation claim is introduced.
 3. Confirm the accepted Phase 4.2 architecture requirements remain authoritative where this packet is silent.
-4. Confirm P42-D002 is approved or revised before selecting P42-D001, and select P42-D003 only after both decisions.
+4. Treat approved P42-D002 as an input, preserve its reopen triggers, and select P42-D003 only after independent review and owner action.
 5. Confirm Ubuntu 24.04 LTS is operationally supportable through the intended implementation and review period and complete the Ubuntu 24.04 versus Ubuntu 26.04.1 comparison after 26.04.1 becomes available, unless an earlier freeze reason is recorded.
 6. Confirm the team accepts amd64-only initial production scope.
 7. Confirm the arbitrary-native-code attacker assumption is intentional.
@@ -80,7 +80,7 @@ Architecture reviewers should answer explicitly:
 
 ## Decision order before mechanism selection
 
-1. Approve or revise P42-D002 against the accepted Phase 4.2 architecture, asset and authority inventory, and institutional assurance objectives.
+1. Use approved P42-D002 as the threat-model input, subject to its reopen triggers.
 2. Select P42-D001 against that threat model and production deployment and operational constraints.
 3. Select P42-D003: a confinement-mechanism composition that maps every accepted requirement to an enforcement point on the later-approved baseline and remains valid under the approved native-code attacker model.
 

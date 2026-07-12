@@ -2,11 +2,13 @@
 
 ## Decision status
 
-**OPEN — recommendation documented; pending independent review and explicit project-owner approval.** The **RECOMMENDED** Phase 4.2 threat model is compromise-oriented:
+**APPROVED — project owner, 2026-07-12.** The approval is recorded in the [P42-D002 owner-approval record](phase42-d002-owner-approval.md). The approved Phase 4.2 threat model is compromise-oriented:
 
 > The attacker is assumed to control validator code, dependencies, inputs, staged artifacts, outputs, timing, failure behavior, concurrency, and retries, and may obtain arbitrary native-code execution inside the confined validator process. The OS boundary must still protect the host, supervisor, other attempts, and accepted result path.
 
 This assumption deliberately prevents Phase 4.2 from depending on Phase 4.1 JavaScript-level containment remaining intact. Phase 4.1 remains valuable defense in depth, but the OS boundary must withstand a fully compromised validator process.
+
+Approval accepts this architecture assumption set; it does not prove that controls are implemented, tested, or effective.
 
 **REPORTED:** the supplied source register cites general threat-modeling guidance about defining the system, identifying what can go wrong, selecting responses, and establishing validation evidence. That methodology supports this recommendation; it is not proof that the listed threats are currently mitigated. [SRC-TM-001](phase42-foundational-source-register.md#src-tm-001), [SRC-TM-002](phase42-foundational-source-register.md#src-tm-002)
 

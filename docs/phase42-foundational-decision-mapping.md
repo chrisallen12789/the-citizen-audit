@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This document shows how the **RECOMMENDED** but **OPEN** proposals for P42-D002 and then P42-D001 would constrain the accepted Phase 4.2 architecture if later approved, without selecting implementation mechanisms.
+This document shows how the **APPROVED** P42-D002 threat model and **RECOMMENDED** but **OPEN** P42-D001 platform proposal constrain later Phase 4.2 decisions without selecting implementation mechanisms.
 
-P42-D002 is assessed first against the accepted Phase 4.2 architecture, asset and authority inventory, and institutional assurance objectives. P42-D001 then selects a production platform against that threat model and production deployment and operational constraints. P42-D003 remains the later confinement-composition decision depending on both.
+P42-D002 was approved by the project owner on 2026-07-12 and is now an architecture input, subject to its reopen triggers. P42-D001 remains OPEN. P42-D003 remains the later confinement-composition decision depending on both.
 
 ## Decision effects
 
@@ -25,7 +25,7 @@ P42-D002 is assessed first against the accepted Phase 4.2 architecture, asset an
 
 | Decision | Updated constraint | Status after this packet |
 | --- | --- | --- |
-| P42-D002 | RECOMMENDED fully hostile/native-code attacker model; independent review and explicit owner approval remain required before platform selection. | OPEN |
+| P42-D002 | Fully hostile/native-code attacker model accepted by the project owner; approval does not prove mitigation or implementation. | APPROVED |
 | P42-D001 | RECOMMENDED provisional Ubuntu Server 24.04 LTS amd64 GA-kernel candidate; compare Ubuntu 24.04 and Ubuntu 26.04.1 before final approval unless an earlier freeze reason is recorded. | OPEN |
 | P42-D003 | Must select a composition capable of enforcing the full threat model on a later-approved Ubuntu profile. | OPEN |
 | P42-D004 | Container use remains optional; container-only reasoning is insufficient. | OPEN |
@@ -50,7 +50,7 @@ P42-D002 is assessed first against the accepted Phase 4.2 architecture, asset an
 
 ## Requirement interpretation changes
 
-If P42-D002 is later approved, it changes the interpretation of every Phase 4.2 requirement:
+Because P42-D002 is approved, it changes the interpretation of every Phase 4.2 requirement:
 
 - “validator” means a potentially fully compromised native process, not only JavaScript source;
 - “deny” means kernel/service enforcement against direct syscalls and descendant activity;
@@ -96,7 +96,7 @@ Before any owner decision, reviewers should confirm the threat model first and t
 
 Recommended order:
 
-1. P42-D002 — approve or revise the threat model.
+1. P42-D002 — APPROVED; retain its reopen triggers.
 2. P42-D001 — select the production platform against that threat model.
 3. P42-D003 — select the confinement mechanism composition.
 4. P42-D009, P42-D010, and P42-D019 — supervisor, process identity, ownership, and restart model.
