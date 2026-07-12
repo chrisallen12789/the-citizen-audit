@@ -2,7 +2,7 @@
 
 ## Status and purpose
 
-**PLANNED only.** Phase 4.2 has not started. This document frames later evaluation; it does not select, implement, or approve a confinement technology. Phase 4.1 remains blocked on [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation), independently of this future work.
+**PLANNED only.** Phase 4.2 has not started. This document frames later evaluation; it does not select, implement, or approve a confinement technology. Phase 4.1 remains blocked on [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation), according to an imported independent checkpoint review whose raw record is not contained in this branch, independently of this future work.
 
 JavaScript-level realm controls described in the [assurance case](phase41-assurance-case.md) do not supply OS-level process, filesystem, network, or resource boundaries.
 

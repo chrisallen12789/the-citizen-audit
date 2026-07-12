@@ -2,9 +2,9 @@
 
 ## Current status
 
-Phase 4.1 is **REJECTED** at the reviewed checkpoint `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef` (`Harden validator module cache generations`). It is not an activation or acceptance record.
+Phase 4.1 is **REJECTED** at the reviewed checkpoint `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef` (`Harden validator module cache generations`). The REJECTED status and current blocker were imported from an independent checkpoint review performed outside commit `e0e14e1`. The raw review record is not contained in this documentation branch and must be supplied separately to an external reviewer. This is not an activation or acceptance record.
 
-The governing blocker is **OPEN**: once the exact validator-entry generation used by a validation attempt becomes invalid, that attempt must never be accepted or transported as successful. This is [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation). The repository has module-cache generation controls, but this documentation task did not reproduce evidence that binds an attempt's successful result and durable outcome to a still-valid entry generation.
+The governing blocker is **OPEN**: the imported review reports that the exact validator-entry generation used by a running `validate()` attempt may become invalid during validation, while the worker can still accept and transport that already-running result as success. Once that exact generation becomes invalid, the attempt can never produce accepted success. This is [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation). The repository has module-cache generation controls; this documentation task did not independently reproduce the reported validate-time defect.
 
 Phase 4.1 concerns JavaScript-level validator source, realm, loader, result, and transport controls. [Phase 4.2 OS confinement planning](phase42-os-confinement-planning.md) is future work only; OS-level confinement has not started.
 
@@ -27,7 +27,7 @@ Primary repository evidence remains [the validator review report](phase41-valida
 | --- | --- |
 | **VERIFIED** | Directly supported by repository material inspected for this documentation change, such as a named source path, committed diff, or named regression. It is not a general security proof. |
 | **REPORTED** | Stated by a checkpoint report or matrix but not independently reproduced in this documentation task. |
-| **REJECTED** | Demonstrated insufficient or false for the reviewed checkpoint, or a checkpoint outcome that cannot be treated as complete. Valid sub-improvements may remain. |
+| **REJECTED** | A checkpoint outcome that cannot be treated as complete. Here, the ruling is imported from an independent checkpoint review outside this branch; valid sub-improvements may remain. |
 | **OPEN** | Required property whose proof or implementation remains unresolved. |
 | **PLANNED** | Future work only. |
 | **OUT OF SCOPE** | Deliberately excluded from Phase 4.1. |

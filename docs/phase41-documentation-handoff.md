@@ -12,11 +12,11 @@ This documentation-only branch created a formal Phase 4.1 assurance set:
 - [Phase 4.2 OS confinement planning](phase42-os-confinement-planning.md)
 - This handoff
 
-The authoritative starting commit was `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef`. No production code, tests, existing checkpoint reports, coverage matrices, or external systems were changed by this branch.
+The authoritative starting commit was `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef`. This revision corrects the checkpoint-ancestry table structure, narrows VAL-CACHE-002, separates the reproduced validator-session defect from speculative durable-token designs, documents external provenance for the rejection ruling, and removes any suggestion that behavioral test success was independently reproduced during documentation work. No production code, tests, existing checkpoint reports, coverage matrices, or external systems were changed by this branch.
 
 ## Current Phase 4.1 status
 
-Phase 4.1 remains **REJECTED**. The current blocker is OPEN [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation): once the exact validator-entry generation used by an attempt becomes invalid, the attempt must never be accepted or transported as successful. OS-level confinement has not started and is only PLANNED in [Phase 4.2 planning](phase42-os-confinement-planning.md).
+Phase 4.1 remains **REJECTED**. The ruling and current blocker were imported from an independent checkpoint review performed outside commit `e0e14e1`; its raw record is not in this documentation branch and must be supplied separately to an external reviewer. [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation) is OPEN: a running `validate()` attempt can be invalidated yet still accept and transport its result as success, according to that imported review. Once the exact entry generation becomes invalid, the attempt can never produce accepted success. OS-level confinement has not started and is only PLANNED in [Phase 4.2 planning](phase42-os-confinement-planning.md).
 
 ## Later incorporation
 

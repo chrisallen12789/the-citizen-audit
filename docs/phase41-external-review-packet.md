@@ -4,7 +4,7 @@
 
 The Citizen Audit Execution Engine is a governed execution subsystem. Phase 4.1 focuses on the validator worker: authoritative source selection, closure loading, JavaScript realm/facade restrictions, CommonJS loader behavior, result normalization, and worker transport. The objective of this packet is to enable an independent software-security or runtime reviewer to reproduce, challenge, and classify evidence without relying on chat history or checkpoint prose.
 
-The authoritative review baseline is `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef`. Its branch status is **REJECTED** and PR #21 remains under HOLD under the controlling project status. Do not treat this packet as a request to activate, deploy, or change governance.
+The authoritative repository baseline is `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef`. Its **REJECTED** status and current blocker were imported from an independent checkpoint review performed outside commit `e0e14e1`. The raw review record is not contained in this documentation branch and must be supplied separately to an external reviewer. PR #21 remains under HOLD under the controlling project status. Do not treat this packet as a request to activate, deploy, or change governance.
 
 ## Scope and exclusions
 
@@ -36,15 +36,15 @@ Do not infer a pass result from the reports. They are REPORTED until you execute
 
 ## High-priority questions
 
-1. Does a valid `validatorSetHash` prove the exact validator-entry generation that produced each transported result remains valid at acceptance time?
-2. What occurs if that entry generation becomes invalid between validator execution, private-channel success transport, validation-result persistence, and transition to a successful attempt outcome?
-3. Is a generation token represented in the worker envelope, validation phase, durable result artifact, and execution-attempt ledger transition? If not, can stale success be rejected fail-closed?
+1. Can the exact validator-entry generation used by a running `validate()` call become invalid while that call still reaches successful transport?
+2. Does a worker-side validity check cover synchronous return, Promise/thenable settlement, normalization, and final successful transport?
+3. Would a private entry-generation reference plus a monotonic validity gate provide the required fail-closed behavior? Envelope, durable-artifact, ledger, and orchestrator binding are OPEN optional design questions, not prescribed requirements.
 4. Are `VAL-GENERATION-001` loader protections incorrectly being used as evidence for [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation)?
 5. Do reported realm, loader, channel, result-bound, and cleanup tests reproduce on the intended runtime and platform matrix?
 
 ## Current unresolved issue
 
-[VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation) is OPEN. Once the exact validator-entry generation used by an attempt becomes invalid, that attempt must never be accepted or transported as successful. The current documentation found module-cache generations in the worker and a set hash in attempt bindings, but no established attempt-level generation binding. Treat this as a review blocker.
+[VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation) is OPEN. The imported independent review reports that the exact validator-entry generation used by a running `validate()` attempt may become invalid during validation while the worker still accepts and transports that result as success. Once invalid, that attempt can never produce accepted success. The raw review record is absent from this branch and must be supplied separately. Treat this as a review blocker; do not infer mandatory durable-token architecture from it.
 
 ## Known limitations
 
@@ -54,7 +54,8 @@ The repository reports Windows-host checks and notes that Linux-host termination
 
 - A reproduction record: commit, parent, OS/runtime versions, commands, exit status, and preserved output hashes or logs.
 - An invariant-by-invariant classification using the stable IDs in the [catalog](phase41-invariant-catalog.md).
-- A design analysis of the OPEN attempt-generation/result binding, including whether it is actually absent, insufficient, or demonstrably broken.
+- A design analysis of the OPEN validator-session validity gate, including whether the imported finding reproduces. Treat envelope, durable-artifact, ledger, and orchestrator mechanisms as optional candidates.
+- The separately supplied raw independent checkpoint-review record, or an explicit statement that it was unavailable.
 - Minimal, non-offensive regression recommendations for any confirmed gap, and an explicit statement of assumptions/limitations.
 - A conclusion that distinguishes reviewed evidence from unverified claims. Do not confer acceptance or any certification status.
 
