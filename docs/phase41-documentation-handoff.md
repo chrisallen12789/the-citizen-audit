@@ -12,7 +12,7 @@ This documentation-only branch created a formal Phase 4.1 assurance set:
 - [Phase 4.2 OS confinement planning](phase42-os-confinement-planning.md)
 - This handoff
 
-The authoritative starting commit was `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef`. This revision corrects the checkpoint-ancestry table structure, narrows VAL-CACHE-002, separates the reproduced validator-session defect from speculative durable-token designs, documents external provenance for the rejection ruling, and removes any suggestion that behavioral test success was independently reproduced during documentation work. No production code, tests, existing checkpoint reports, coverage matrices, or external systems were changed by this branch.
+The authoritative starting commit was `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef`. This revision corrects the checkpoint-ancestry table structure, narrows VAL-CACHE-002, separates the imported validator-session defect from speculative durable-token designs, documents external provenance for the rejection ruling, and removes any suggestion that behavioral test success was independently reproduced during documentation work. No production code, tests, existing checkpoint reports, coverage matrices, or external systems were changed by this branch.
 
 ## Current Phase 4.1 status
 
