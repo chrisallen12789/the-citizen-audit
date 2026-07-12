@@ -1,0 +1,39 @@
+# Phase 4.2 process-supervision contract
+
+## Status and scope
+
+**PLANNED.** This is the future contract between the execution orchestrator and the confined validator process. It defines obligations, not protocol code or a final confinement technology. It implements the lifecycle described in [the architecture](phase42-confinement-architecture.md) and is constrained by [the requirements](phase42-confinement-requirements.md).
+
+## Launch contract
+
+The orchestrator supplies: a correlation/attempt identifier; approved validator artifact and dependency provenance references; immutable validation input; platform profile request; resource-budget profile reference; result schema/version; and requested audit classification. The supervisor rejects mutable ambient configuration.
+
+The supervisor shall create an immutable configuration record containing the selected platform profile, enforcement capability checks, workspace identifier, allowlisted environment names, deadlines, budget profile, expected executable identity, and result-transport limits. The validator working directory is the supervisor-owned temporary workspace; host paths are not implicit inputs. Environment construction begins from empty or a reviewed minimal base and adds only allowlisted, non-secret variables. Input and output transport choices are **OPEN** under P42-D012, but must be bounded and attributable to the attempt.
+
+stdout and stderr are diagnostic streams only: they are byte-counted, redacted as needed, and never accepted as structured success. Startup, validation, and shutdown deadlines are separate monotonic timers. Their values are **OPEN** until resource-budget review.
+
+## Lifecycle and terminal handling
+
+| Condition | Supervisor action | Required terminal category |
+| --- | --- | --- |
+| Startup succeeds | Record process identity and begin validation deadline. | RUNNING (internal only) |
+| Normal validator exit with valid result | Verify success proof, terminate/verify tree, clean workspace, emit audit event. | SUCCESS or VALIDATION_FAILURE |
+| Normal exit without valid result | Stop transports, clean workspace, retain bounded diagnostics. | MALFORMED_OUTPUT or MISSING_RESULT |
+| Startup deadline | Stop launch, terminate any started process tree, clean workspace. | STARTUP_TIMEOUT |
+| Validation deadline | Initiate grace-period shutdown then force tree termination if needed. | VALIDATION_TIMEOUT |
+| Shutdown deadline | Force remaining descendants and verify residual state. | SHUTDOWN_TIMEOUT |
+| Signal or crash | Record observed signal/exit status, contain tree, clean workspace. | PROCESS_CRASH or SIGNALLED |
+| Resource or policy breach | Stop acceptance, contain tree, clean workspace. | RESOURCE_LIMIT or POLICY_BREACH |
+| Cleanup verification failure | Escalate within ownership and prevent success. | CLEANUP_FAILURE |
+
+Exit-code interpretation is **OPEN** under P42-D009, but codes must be stable, versioned, and never override supervisor observations. Signals, timeouts, malformed output, and oversized output are supervisor-owned failures, not validator-declared success. An oversized diagnostic stream or structured result invokes CONF-OUTPUT-001 or CONF-OUTPUT-002, respectively, from [the confinement requirements](phase42-confinement-requirements.md).
+
+Child-process handling must enforce CONF-CHILD-001 from [the confinement requirements](phase42-confinement-requirements.md): each descendant is prevented or attributed to a process tree that the supervisor can terminate. Process-tree termination first uses the reviewed graceful action, then forced termination after the configured grace period, followed by residual-process verification.
+
+## Success proof, cleanup, retries, and audit
+
+Before accepting success, the supervisor must prove all of the following: launch controls were active; observed process identity matches the recorded launch; artifact provenance matches the request; validation completed before its deadline; no policy or resource breach occurred; exactly one bounded schema-valid result is correlated to the request; exit semantics match the result; all required audit events were recorded; the process tree is terminated; and cleanup verification succeeded. Any unknown, missing, or contradictory proof fails closed.
+
+Cleanup covers pipes/IPC, process handles, temporary storage, staged inputs, output capture, policy handles, and process-tree state. It applies after success, validation failure, timeout, crash, forced termination, or launch failure. Retries are disabled by default; any future retry must create a fresh workspace and correlation identity, must not reuse an ambiguous result, and is bounded by [the resource budget](phase42-resource-budget.md).
+
+Audit events shall include correlation ID, timestamps, platform/capability profile, provenance identifiers, chosen policy profile, PID/tree identifiers where safe, terminal category, observed exit/signal, byte/resource counters, and cleanup outcome. Event content must be redacted so it does not disclose environment secrets or unbounded validator data. **PROHIBITED CLAIM:** a validator exit code alone proves successful confinement.

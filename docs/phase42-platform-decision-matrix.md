@@ -1,0 +1,32 @@
+# Phase 4.2 platform decision matrix
+
+## Decision posture
+
+**OPEN:** no final implementation technology has been selected. Every mechanism below is **CANDIDATE**. Selection must satisfy [the requirements](phase42-confinement-requirements.md), have evidence prescribed by [the test plan](phase42-test-and-evidence-plan.md), and close the applicable entries in [the decision register](phase42-open-decisions-and-handoff.md). Familiarity or common use is not a selection rationale.
+
+| Candidate mechanism | Isolation strength | Filesystem / network control | Resource / process-tree control | Termination reliability | Operational complexity / portability | Observability / reproducibility | Dependency burden / deployment assumptions | Known gaps | Evidence before selection |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Direct child process with OS primitives | Limited unless combined with policies. | Platform-dependent path and network controls. | rlimits or equivalents may be partial. | Parent-child only unless tree control added. | Lower complexity; semantics differ by OS. | Straightforward PID logging; reproduce per platform. | Native launcher permissions and supported OS APIs. | Does not alone deny all authority. | Negative boundary tests on each supported OS. |
+| Linux namespaces | Stronger separation for selected namespaces. | Mount and network namespaces can constrain views. | PID namespace can scope descendants; budgets need another control. | Depends on launcher and namespace ownership. | Linux-specific and privilege-model sensitive. | Namespace identity can be recorded; image recipe needed. | Supported kernel, configuration, and possibly user namespaces. | Misconfiguration and kernel exposure remain. | Kernel/configuration capture and negative tests. |
+| cgroups | Not a standalone isolation boundary. | No direct filesystem or network policy. | Strong CPU, memory, process-count candidates. | Can support tree accounting. | Linux-specific hierarchy/permissions. | Counters improve observation and reproduction. | cgroup version/delegation assumptions. | Needs complementary process, FS, network controls. | Controlled resource and descendant tests. |
+| seccomp or equivalent syscall filtering | Narrows syscall surface where supported. | Indirect only; policy-dependent. | Not a quota or tree manager. | Filter violation behavior must be verified. | High policy complexity; nonportable. | Filter profile can be versioned. | Kernel ABI and launcher support. | Profile completeness and compatibility risk. | Policy review and syscall-negative evidence. |
+| Container runtime | Packaging and policy carrier, not complete isolation alone. | Can supply mounts/network policies. | May integrate limits and PID controls. | Runtime-specific lifecycle behavior. | Moderate/high operational cost; host-specific. | Image digest and runtime events aid reproduction. | Runtime, daemon/rootless mode, image supply chain. | Runtime and kernel remain in TCB. | Image/provenance, escape-resistant configuration review, lifecycle tests. |
+| Rootless container execution | Reduces some host privilege exposure. | Runtime-dependent. | Runtime-dependent. | User/session lifecycle can complicate cleanup. | Linux-oriented; developer support varies. | User mappings and runtime version must be recorded. | User namespaces and rootless runtime support. | Does not remove kernel/runtime trust. | Identity, mount, network, and cleanup tests. |
+| Dedicated low-privilege service account | Reduces default host authority. | ACL-based only unless combined. | Does not itself budget or tree-control. | OS service controls may assist. | Broadly familiar but OS-specific provisioning. | Identity is easy to audit. | Account lifecycle and secret management. | Account may retain excessive access. | Privilege-negative tests and provisioning review. |
+| Virtual-machine boundary | Stronger host separation candidate. | Guest policy controls its own view. | Guest can enforce budgets; host allocation still needed. | Hypervisor and guest shutdown semantics apply. | Higher complexity and lower local portability. | Immutable image and hypervisor metadata support reproduction. | Hypervisor, guest image, orchestration. | Cost, startup latency, guest escape assumptions. | Guest image, network, resource, and lifecycle evidence. |
+| Combination of mechanisms | Can provide defense in depth. | Can layer mount/network/identity controls. | Can combine cgroups, PID control, and supervisor. | Must specify ordering and ownership. | Highest integration burden; platform-specific. | Cross-layer audit correlation required. | All chosen mechanism dependencies. | Composition mistakes and ambiguous ownership. | End-to-end fault, cleanup, and independent reproduction evidence. |
+
+## Platform comparison
+
+| Platform profile | Status | Candidate behavior to evaluate | Required caution |
+| --- | --- | --- | --- |
+| Linux production baseline | OPEN | Namespaces, cgroups, syscall filtering, service identities, container or VM combinations may be evaluated. | The authoritative distribution, kernel, privilege model, and runtime remain undecided. No Linux command has passed Phase 4.2. |
+| Windows development behavior | OPEN | Native process/job/account controls or a documented VM-based path may be evaluated. | Do not infer equivalence from Linux mechanisms or tests. |
+| macOS development behavior | OPEN | Native process controls or a documented VM-based path may be evaluated. | Do not infer equivalence from Linux mechanisms or tests. |
+| Unsupported or unresolved platforms | OPEN | Refuse launch or label development-only behavior after review. | No confinement claim is permitted without a reviewed profile and evidence. |
+
+## Selection criteria and nonclaims
+
+A selected combination must map every applicable requirement to one or more enforcement points, declare gaps, and demonstrate fail-closed behavior when a control is unavailable. **REQUIRED:** platform identity and deployment assumptions must be evidence artifacts, not undocumented operator knowledge.
+
+**PROHIBITED CLAIM:** containers alone prove security; any one mechanism provides complete isolation; or a development-platform observation certifies production behavior.
