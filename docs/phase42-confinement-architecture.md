@@ -26,11 +26,11 @@ The details of the process protocol are specified in [the process-supervision co
 
 ### Trusted computing base
 
-The future trusted computing base (TCB) includes the selected host kernel and its configured enforcement features; the process supervisor and execution orchestrator; the executable launcher; the selected runtime; the approved validator artifact and dependency provenance verifier; the result parser; the logging/audit sink; and the host account or service manager used to launch the work. This is an architectural assumption, not evidence that these components are defect-free.
+The future trusted computing base (TCB) includes the selected host kernel and its configured enforcement features; the process supervisor and execution orchestrator; the executable launcher and its CONF-HANDLE-001 inherited-handle policy; the selected runtime; the approved validator artifact and dependency provenance verifier; the bounded-input verifier; the result parser; the logging/audit sink; and the host account or service manager used to launch the work. This is an architectural assumption, not evidence that these components are defect-free.
 
 ### Trusted host components
 
-Trusted host components construct the allowlisted environment, bind or stage only approved input, set budgets, start the validator, observe its process tree, validate bounded output, and clean resources. They retain authority over host credentials, repository state, deployment configuration, audit records, and all paths outside the future validation workspace.
+Trusted host components construct the allowlisted environment; validate and bound launch input; bind or stage only approved input; set budgets; construct the exact inherited-handle set; start the validator; observe its generation-safe process-tree identity; validate bounded output; and clean resources. They retain authority over host credentials, repository state, deployment configuration, audit records, supervisor-owned handles, and all paths outside the future validation workspace. A numeric PID alone is not sufficient evidence of exact process identity.
 
 ### Untrusted validator components
 
@@ -40,10 +40,10 @@ The validator executable, its loaded modules, input-derived data, output, diagno
 
 ### Launch sequence
 
-1. The orchestrator supplies a request, provenance references, and approved policy to the supervisor.
-2. The supervisor verifies launch inputs, platform identity, executable/dependency provenance, and all required enforcement capabilities.
+1. The orchestrator supplies a request, provenance references, approved policy, and bounded launch-input manifest to the supervisor.
+2. The supervisor validates and accounts for structured input, staged artifacts, configuration, metadata, and transport frames against CONF-INPUT-001 and BUD-INPUT before launch; it verifies platform identity, executable/dependency provenance, and all required enforcement capabilities.
 3. The supervisor creates a unique, bounded validation workspace and immutable configuration.
-4. It constructs an allowlisted environment, configures the selected candidate enforcement mechanisms, and starts the isolated process with a monitored identity.
+4. It constructs an allowlisted environment and the CONF-HANDLE-001 exact inherited-handle set, configures the selected candidate enforcement mechanisms, and starts the isolated process with a monitored generation-safe control identity. Human-readable PID data may be recorded, but is not the authoritative identity.
 5. The supervisor records a launch audit event and applies the startup deadline. Failure at any step is governed by CONF-FAILCLOSED-001 in [the confinement requirements](phase42-confinement-requirements.md).
 
 ### Validation sequence
@@ -63,9 +63,9 @@ Startup timeout, validation timeout, crash, signal, resource breach, malformed o
 
 ## Protected host authorities and expected guarantees
 
-Protected authorities include host filesystem paths and repository state; network credentials and host connectivity; inherited environment secrets; user/service-account privileges; process creation and descendants; CPU, memory, storage, descriptor, and output capacity; audit log integrity; and validator artifact identity.
+Protected authorities include host filesystem paths and repository state; network credentials and host connectivity; inherited environment secrets; open files, directory descriptors, sockets, named pipes, IPC channels, process-control objects, supervisor transports, and audit handles; user/service-account privileges; process creation and descendants; CPU, memory, storage, descriptor, input, and output capacity; audit log integrity; and validator artifact identity.
 
-**REQUIRED:** a selected implementation must measurably deny or constrain each authority according to the requirements, including default network denial, bounded resources, controlled process trees, and fail-closed lifecycle handling. The intended guarantee is limited to the reviewed configuration and stated platform assumptions. It does not guarantee safety against kernel, runtime, supervisor, configuration, or side-channel defects.
+**REQUIRED:** a selected implementation must measurably deny or constrain each authority according to the requirements, including explicit inherited-handle control, bounded launch input, default network denial, generation-safe process identity, bounded resources, controlled process trees, and fail-closed lifecycle handling. The intended guarantee is limited to the reviewed configuration and stated platform assumptions. It does not guarantee safety against kernel, runtime, supervisor, configuration, or side-channel defects.
 
 ## Assumptions, non-goals, and residual risks
 
