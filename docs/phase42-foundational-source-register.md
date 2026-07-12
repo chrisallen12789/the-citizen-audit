@@ -8,7 +8,7 @@
 
 ### SRC-UBU-001
 
-**Ubuntu release cycle.** Canonical states that Ubuntu LTS releases are issued every two years, receive five years of standard security maintenance, and are recommended for stability and production use.
+**Ubuntu release cycle.** Canonical states that Ubuntu LTS releases are issued every two years, receive five years of standard security maintenance, and are recommended for stability and production use; this records the Ubuntu 24.04 LTS standard-support horizon through 2029.
 
 - https://ubuntu.com/about/release-cycle
 
@@ -44,7 +44,7 @@
 
 ### SRC-UBU-007
 
-**Ubuntu 26.04 LTS release notes.** Records the April 23, 2026 release of Ubuntu 26.04 LTS.
+**Ubuntu 26.04 LTS release notes.** Records the April 23, 2026 release of Ubuntu 26.04 LTS and its standard-support horizon through April 2031.
 
 - https://documentation.ubuntu.com/release-notes/26.04/
 
@@ -53,6 +53,12 @@
 **Ubuntu LTS-to-LTS upgrade guidance.** Canonical community guidance states that the supported 24.04-to-26.04 upgrade window follows the initial 26.04 release and is expected with the later supported upgrade path.
 
 - https://discourse.ubuntu.com/t/best-practice-for-a-successful-release-upgrade-to-26-04/80868
+
+### SRC-UBU-009
+
+**Ubuntu 26.04 release schedule.** Documents the 2026-04-23 Ubuntu 26.04 final release and the scheduled 2026-08-27 Ubuntu 26.04.1 point release.
+
+- https://documentation.ubuntu.com/release-notes/26.04/schedule/
 
 ## Linux and system-service sources
 
@@ -97,6 +103,12 @@
 **systemd resource control.** Documents cgroup-backed service and scope resource controls.
 
 - https://www.freedesktop.org/software/systemd/man/systemd.resource-control.html
+
+### SRC-LNX-008
+
+**Linux namespaces.** The Linux manual page documents namespace isolation of global system resources and the relevant namespace families.
+
+- https://man7.org/linux/man-pages/man7/namespaces.7.html
 
 ## Alternative-platform sources
 

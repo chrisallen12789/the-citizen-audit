@@ -122,12 +122,12 @@ These assumptions define residual risk. They do not turn the TCB into a verified
 
 | ID | Threat | Impact | Required response | Primary Phase 4.2 mappings |
 | --- | --- | --- | --- | --- |
-| TM-T01 | Escape through filesystem access or staged-artifact path confusion. | Host read/write compromise or persistence. | Immutable bounded staging, path/link/special-file rejection, read-only executable view, exact cleanup. | CONF-FS-001/002, CONF-INPUT-001, CONF-TEMP-001, P42-D006, P42-D020 |
+| TM-T01 | Escape through filesystem access or staged-artifact path confusion. | Host read/write compromise or persistence. | Immutable bounded staging, path/link/special-file rejection, read-only executable view, exact cleanup. | CONF-FS-001, CONF-FS-002, CONF-INPUT-001, CONF-TEMP-001, P42-D006, P42-D020 |
 | TM-T02 | Network or local-IPC communication outside approved channels. | Exfiltration, command/control, cross-attempt corruption. | Default deny IP networking and ambient local IPC; exact attempt-bound transport allowlist. | CONF-NET-001, CONF-IPC-001, P42-D007, P42-D021 |
 | TM-T03 | Inherited handle, socket, descriptor, token, or transport authority. | Bypass of later policy. | Exact inherited-handle allowlist and launch refusal on ambiguity. | CONF-HANDLE-001, P42-D017 |
 | TM-T04 | Identity or privilege escalation after launch. | Host or peer compromise. | Least privilege plus monotonic non-escalation for validator and descendants. | CONF-IDENTITY-001, P42-D005 |
-| TM-T05 | Descendant or orphan process survives timeout, crash, or supervisor loss. | Persistence and resource abuse. | Exact tree ownership, parent-death policy, restart reconciliation, force termination, orphan scan. | CONF-CHILD-001, CONF-SUPERVISOR-001, CONF-CLEANUP-001/002, P42-D010, P42-D019 |
-| TM-T06 | CPU, memory, process, descriptor, storage, input, output, or diagnostic exhaustion. | Host denial of service. | Kernel-enforced budgets, preflight bounds, streaming limits, deterministic failure. | CONF-CPU/TIME/MEM/OUTPUT/INPUT/DUMP, P42-D008, P42-D018, P42-D022 |
+| TM-T05 | Descendant or orphan process survives timeout, crash, or supervisor loss. | Persistence and resource abuse. | Exact tree ownership, parent-death policy, restart reconciliation, force termination, orphan scan. | CONF-CHILD-001, CONF-SUPERVISOR-001, CONF-CLEANUP-001, CONF-CLEANUP-002, P42-D010, P42-D019 |
+| TM-T06 | CPU, memory, process, descriptor, storage, input, output, or diagnostic exhaustion. | Host denial of service. | Kernel-enforced budgets, preflight bounds, streaming limits, deterministic failure. | CONF-CPU-001, CONF-TIME-001, CONF-MEM-001, CONF-OUTPUT-001, CONF-OUTPUT-002, CONF-INPUT-001, CONF-DUMP-001, P42-D008, P42-D018, P42-D022 |
 | TM-T07 | Result forgery, ambiguity, replay, cross-attempt confusion, or acceptance after policy breach. | False institutional decision. | Exact attempt identity, bounded schema, mandatory evidence, fail-closed acceptance gate. | CONF-PROC-001, CONF-OUTPUT-002, CONF-OBS-001, CONF-FAILCLOSED-001 |
 | TM-T08 | Time-of-check/time-of-use substitution of executable, dependency, configuration, or staged bytes. | Execution of unverified code. | Bind recorded provenance to exact immutable executed objects. | CONF-PROVENANCE-001, P42-D014 |
 | TM-T09 | Cross-attempt inspection, signaling, debugging, shared-memory, or workspace interference. | Confidentiality/integrity loss. | Per-attempt process, identity, IPC, workspace, and resource separation. | CONF-IPC-001, CONF-FS-001, CONF-PROC-001, P42-D021 |
@@ -135,7 +135,7 @@ These assumptions define residual risk. They do not turn the TCB into a verified
 | TM-T11 | Supervisor/launcher failure leaves an active but unowned validator. | Unobserved execution or forged late success. | External ownership, invalidation on supervision loss, generation-safe reconciliation. | CONF-SUPERVISOR-001, P42-D019 |
 | TM-T12 | Misconfigured or unsupported host silently degrades controls. | False assurance. | Capability preflight and launch refusal; no best-effort fallback for mandatory controls. | CONF-PORTABILITY-001, CONF-FAILCLOSED-001, P42-D001, P42-D015 |
 | TM-T13 | Kernel/runtime/user-space vulnerability exploited from validator. | Boundary bypass or host compromise. | Defense in depth, narrow TCB, patching, syscall/MAC review, and residual-risk disclosure. | P42-D003, P42-D011, P42-D016 |
-| TM-T14 | Covert timing/resource channels between attempts. | Limited information leakage. | Reduce direct channels and resource coupling; document residual covert-channel risk. | CONF-IPC-001, CONF-CPU/MEM/OBS; residual risk |
+| TM-T14 | Covert timing/resource channels between attempts. | Limited information leakage. | Reduce direct channels and resource coupling; document residual covert-channel risk. | CONF-IPC-001, CONF-CPU-001, CONF-MEM-001, CONF-OBS-001; residual risk |
 
 ## Availability scope
 
@@ -183,16 +183,16 @@ No document should describe Phase 4.2 as “secure against arbitrary code” wit
 
 Under this threat model, a future production acceptance run would need to demonstrate that the selected controls prevent arbitrary validator-process behavior from:
 
-1. read or modify unapproved host or peer state;
-2. communicate through unapproved network or local IPC;
-3. acquire additional identity or privilege;
-4. retain inherited ambient authority;
-5. escape exact process-tree ownership;
-6. exceed hard resource and input/output bounds without deterministic termination;
-7. substitute unverified executable or staged bytes;
-8. forge, replay, or cross-bind an accepted result;
-9. persist through processes, files, IPC, dumps, diagnostics, or stale policy state;
-10. produce accepted success after any mandatory control or evidence failure.
+1. reading or modifying unapproved host or peer state;
+2. communicating through unapproved network or local IPC;
+3. acquiring additional identity or privilege;
+4. retaining inherited ambient authority;
+5. escaping exact process-tree ownership;
+6. exceeding hard resource and input/output bounds without deterministic termination;
+7. substituting unverified executable or staged bytes;
+8. forging, replaying, or cross-binding an accepted result;
+9. persisting through processes, files, IPC, dumps, diagnostics, or stale policy state; or
+10. producing accepted success after any mandatory control or evidence failure.
 
 Tests must be reproduced on every claimed supported platform profile. Positive “works normally” tests are insufficient without negative enforcement evidence.
 
@@ -213,6 +213,8 @@ Reopen P42-D002 if the system adds:
 - requirements to resist malicious host administrators or kernel compromise.
 
 The threat model must also be reviewed after a confinement bypass, major runtime/kernel change, or new cross-attempt data path.
+
+Selecting or comparing a different Linux distribution is a P42-D001 platform decision and does not by itself change this P42-D002 threat model.
 
 ## Decision record wording
 

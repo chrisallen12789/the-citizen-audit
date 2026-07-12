@@ -2,7 +2,7 @@
 
 ## Decision status
 
-**OPEN — recommendation documented; pending independent review and explicit project-owner approval.** The recommendation is to use the following as the first authoritative Phase 4.2 production profile if approved:
+**OPEN — Ubuntu Server 24.04 LTS remains the provisional recommended baseline candidate.** Final approval requires an explicit Ubuntu 24.04 versus Ubuntu 26.04.1 comparison after 26.04.1 becomes available, unless the project owner records a concrete operational reason to freeze 24.04 earlier. Independent review and explicit project-owner approval remain required.
 
 > **Ubuntu Server 24.04 LTS (Noble Numbat), amd64, minimal/headless installation, and the Ubuntu GA kernel track.**
 
@@ -12,7 +12,7 @@ The exact image, kernel, runtime, package, configuration, and policy-manifest id
 
 **REPORTED:** the supplied source register records that Canonical documents Ubuntu LTS maintenance, Ubuntu 24.04 release components, and supported security-feature families. Those primary-source facts were not independently re-verified during this integration. They support evaluation of the recommendation; they do not approve a particular control composition. [SRC-UBU-001](phase42-foundational-source-register.md#src-ubu-001), [SRC-UBU-002](phase42-foundational-source-register.md#src-ubu-002), [SRC-UBU-004](phase42-foundational-source-register.md#src-ubu-004), [SRC-UBU-005](phase42-foundational-source-register.md#src-ubu-005)
 
-The platform exposes the kernel primitives required to evaluate the accepted Phase 4.2 requirements, including cgroup v2 resource control, seccomp filtering, `no_new_privs`, PID file descriptors, namespaces, and stackable access-control mechanisms. The existence of those primitives does not prove the future design, but it makes the profile technically capable of supporting a reviewed implementation. [SRC-LNX-001](phase42-foundational-source-register.md#src-lnx-001), [SRC-LNX-002](phase42-foundational-source-register.md#src-lnx-002), [SRC-LNX-003](phase42-foundational-source-register.md#src-lnx-003), [SRC-LNX-004](phase42-foundational-source-register.md#src-lnx-004), [SRC-LNX-005](phase42-foundational-source-register.md#src-lnx-005)
+The platform exposes the kernel primitives required to evaluate the accepted Phase 4.2 requirements, including cgroup v2 resource control, seccomp filtering, `no_new_privs`, PID file descriptors, namespaces, and stackable access-control mechanisms. The existence of those primitives does not prove the future design, but it makes the profile technically capable of supporting a reviewed implementation. [SRC-LNX-001](phase42-foundational-source-register.md#src-lnx-001), [SRC-LNX-002](phase42-foundational-source-register.md#src-lnx-002), [SRC-LNX-003](phase42-foundational-source-register.md#src-lnx-003), [SRC-LNX-004](phase42-foundational-source-register.md#src-lnx-004), [SRC-LNX-005](phase42-foundational-source-register.md#src-lnx-005), [SRC-LNX-008](phase42-foundational-source-register.md#src-lnx-008)
 
 **REPORTED:** the supplied source register records that Ubuntu Server 24.04 defaults to the GA kernel while HWE is optional and that their support windows differ. The **RECOMMENDED** first baseline should therefore remain on the GA kernel track unless a later decision deliberately requalifies an HWE kernel. [SRC-UBU-003](phase42-foundational-source-register.md#src-ubu-003)
 
@@ -25,19 +25,38 @@ The platform exposes the kernel primitives required to evaluate the accepted Pha
 | CPU architecture | amd64 | arm64 and other architectures require separate evidence and approval. |
 | Kernel track | Ubuntu 24.04 GA kernel track, beginning from Linux 6.8 | Do not silently move to HWE, OEM, custom, or provider kernels. Exact package and ABI recorded. |
 | Init/service manager | Later decision | Presence of a service manager is a platform characteristic, not approval of any service-manager-based confinement design. |
-| Mandatory access control | Later decision | AppArmor or another access-control mechanism remains P42-D003/P42-D011; no policy is selected here. |
-| Control groups | Later decision | cgroup mode, placement, controller availability, and policy remain P42-D003/P42-D008. |
-| Network posture | Later decision | Network enforcement remains P42-D007/P42-D003; host firewall defaults are not enough by themselves. |
+| Mandatory access control | Later decision | AppArmor or another access-control mechanism remains P42-D003, P42-D011; no policy is selected here. |
+| Control groups | Later decision | cgroup mode, placement, controller availability, and policy remain P42-D003, P42-D008. |
+| Network posture | Later decision | Network enforcement remains P42-D007, P42-D003; host firewall defaults are not enough by themselves. |
 | Package sources | Prefer Ubuntu `Main` and `Restricted` for TCB packages | Packages outside those components require explicit support and patching review because Canonical documents different support treatment. [SRC-UBU-006](phase42-foundational-source-register.md#src-ubu-006) |
 | Runtime | Exact approved Node.js/runtime artifact, digest, and dependency closure | Version selection remains a separate decision; no ambient “latest” runtime. |
 | Image update policy | Security updates required; every material platform change triggers recorded requalification | Fixed-release backports support stability, but updated bytes must still be captured and retested. [SRC-UBU-006](phase42-foundational-source-register.md#src-ubu-006) |
 | Deployment form | OPEN | Bare metal, VM, and deployment-platform choices remain separate decisions; host assumptions must be stated separately. |
 
-## Why not Ubuntu 26.04 LTS as the first baseline
+## Ubuntu 26.04.1 comparison gate
 
 Ubuntu 26.04 LTS was released on April 23, 2026. It is a valid future candidate, but at the time of this packet it has substantially less field and project-specific test history than 24.04. Canonical’s own LTS-to-LTS upgrade guidance places the supported 24.04-to-26.04 upgrade window after the initial release cycle. The project should evaluate 26.04 only after its first point release and after reproducing the complete Phase 4.2 evidence suite on the exact candidate profile. [SRC-UBU-007](phase42-foundational-source-register.md#src-ubu-007), [SRC-UBU-008](phase42-foundational-source-register.md#src-ubu-008)
 
 This is a maturity and evidence decision, not a claim that 26.04 is less secure.
+
+**REPORTED:** Ubuntu 26.04 LTS was released on 2026-04-23; Ubuntu 26.04.1 is scheduled for 2026-08-27; Ubuntu 26.04 LTS standard support extends through April 2031; and Ubuntu 24.04 LTS standard support extends through 2029. The release schedule is the primary source for the final-release and scheduled point-release dates; community upgrade guidance is not the sole source for the point-release date. [SRC-UBU-001](phase42-foundational-source-register.md#src-ubu-001), [SRC-UBU-007](phase42-foundational-source-register.md#src-ubu-007), [SRC-UBU-009](phase42-foundational-source-register.md#src-ubu-009)
+
+Before any final P42-D001 approval, compare Ubuntu 24.04 and Ubuntu 26.04.1 for:
+
+- remaining standard-support window;
+- GA-kernel capabilities;
+- AppArmor behavior and policy compatibility;
+- cgroup v2 behavior;
+- namespace availability and restrictions;
+- seccomp behavior;
+- pidfd and process-supervision support;
+- systemd behavior;
+- Node.js/runtime support;
+- project operational familiarity;
+- complete Phase 4.2 evidence reproducibility; and
+- migration and requalification cost.
+
+This comparison gate does not automatically recommend or approve Ubuntu 26.04 and does not remove Ubuntu 24.04 as the provisional candidate.
 
 ## Alternatives considered
 
