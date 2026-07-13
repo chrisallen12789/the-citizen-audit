@@ -1,13 +1,22 @@
 # Phase 4.1 - Validator Worker Cross-Realm Boundary Review
 
-Base checkpoint: `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`
-Review commit: `(this checkpoint)`
-Ruling: **HOLD - the failed-cycle-peer defect rejected at `75c5a9f` is corrected in this candidate code line and covered by local regression evidence; Phase 4.1 remains REPORTED as rejected pending independent clean-room acceptance, and OS confinement remains pending by instruction**
+Historical rejected checkpoint: `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`
+Accepted implementation: `ef8d8cef2a82e3a43eee06013500aacae0682d4a` (`fix: rollback failed validator load transactions`)
+Accepted implementation tree: `b945833eb17b9d75111113056ce8cd50b5bf0564`
+Ruling: **ACCEPTED - the project owner accepted Phase 4.1 and authorized `VAL-RESULT-001` as RESOLVED, bound to the exact implementation and independent clean-room evidence below.**
 
-Governance state: `VAL-RESULT-001` remains OPEN; PR #21 remains open, draft, inactive, unmerged, and under HOLD; Issues #9 and #15 remain open; runtime activation and Phase 4.2 implementation remain prohibited. This checkpoint does not authorize merge, push, deployment, or a production-security claim.
+Immutable evidence binding:
+- `phase41-validator-failed-cycle-cache-checkpoint-ef8d8ce.zip` — 4,364,398 bytes; SHA-256 `46f1ea090306816380d282fb73d60e3407a983bcff2d634fb7671ec7acc098ac`
+- `phase41-validator-failed-cycle-cache-ef8d8ce.bundle` — 4,375,400 bytes; SHA-256 `ffb41c0f43f243ad4dbf00a2a598e2484536fd18bc8df8a71370cd076152e54a`
+- `phase41-validator-failed-cycle-cache-75c5a9f-to-ef8d8ce.patch` — 53,903 bytes; SHA-256 `64cd8d7c039f7f871ea40f1b6dc6fbbff4b31065a39aa5862a7a38a10477264a`
+- `phase41-failed-cycle-cache-final-independent-review.txt` — 8,049 bytes; SHA-256 `5b0153e58ad5173f4e1ad6b19036a877235b0e58b7b28ae5b32948c4af691aac`
+
+Governance state: Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED. PR #21 remains open, draft, inactive, unmerged, and under HOLD; Issues #9 and #15 remain open; runtime activation remains prohibited. This acceptance does not authorize merge, push, deployment, a production-security claim, or an absolute-isolation claim.
+
+Phase 4.2 remains PLANNED: `P42-D001` remains OPEN and provisional; `P42-D002` remains APPROVED and bound to its existing immutable content; `P42-D003` remains OPEN and RECOMMENDED. Phase 4.2 implementation remains prohibited pending its separate governance prerequisites and formal authorization. Phase 4.1 acceptance removes the Phase 4.1 rejection as a blocker; it does not authorize Phase 4.2 implementation.
 
 ## Scope
-This checkpoint replaces rejected checkpoint `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`. That checkpoint correctly removed a directly failed module and unwound ordinary failed ancestors, but a completed CommonJS cycle peer could remain cached while retaining a failed participant's provisional exports. This correction addresses that cycle-peer condition without weakening the reviewed require-failure membrane:
+The accepted implementation replaces the historically rejected checkpoint `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`. That historical checkpoint correctly removed a directly failed module and unwound ordinary failed ancestors, but a completed CommonJS cycle peer could remain cached while retaining a failed participant's provisional exports. The accepted correction closes that failed-module and failed-cycle cache condition without weakening the reviewed require-failure membrane:
 
 1. validator modules still compile and execute inside a separate `vm` context with a frozen null-prototype validator global
 2. validator top-level code and `validate()` now receive only validator-realm `module`, `exports`, `require`, builtin facades, validation context objects, arrays, byte wrappers, stat wrappers, hash wrappers, JSON parse results, and dependency return values
@@ -128,7 +137,7 @@ The validation-cycle boundary now performs explicit cleanup on every completion 
 - `worker.terminate()` is awaited unless the worker has already emitted `exit`
 - the same cleanup discipline is used by the test-only production-worker launcher
 
-This preserves normal completion for the full execution-orchestrator, runtime-integration, runtime-isolation, fault, and aggregate execution commands on this Windows host. The required three-run Linux-host sequence is recorded as `NOT LOCAL`: WSL has no installed distribution and Docker is unavailable, so no Windows execution is represented as Linux evidence.
+The independent clean-room review reproduced the required Linux sequence three consecutive times on the accepted implementation: execution-orchestrator 56/56, runtime-integration 28/28, runtime-isolation 48/48, fault 31/31, and aggregate execution 334/334 in each run. All 15 commands terminated normally with exit status zero, zero tracked residue, and zero surviving Node processes. The earlier desktop-host limitation is historical context only and is not an outstanding Linux-evidence condition.
 
 ### Same-Realm Intrinsic Hardening Retained
 The production worker still uses `vm.compileFunction`, but it no longer relies on mutable shared intrinsics after validator bytes begin executing.
@@ -179,7 +188,7 @@ The previous Phase 4.1 corrections remain in force:
 
 ## Regressions Added
 New direct production-worker regressions prove:
-- the exact focused failed-cycle regression fails on rejected parent `75c5a9f` and passes on this candidate correction
+- the exact focused failed-cycle regression fails on historical rejected parent `75c5a9f` and passes on the accepted implementation
 - a two-node `A -> B -> A` cycle cannot retain B after A fails following B's completion; alternating direct A/B retries re-execute both participants every time
 - the two-node failure is repeated across primitive, function, object, nested-object, array, and self-referential partial exports, including explicit `module.exports` reassignment before the back-edge
 - three-node `A -> B -> C -> A` cycles roll back when A, B, or C fails, and repeated direct retries of every participant reinitialize all three
@@ -272,8 +281,8 @@ Retained direct production-worker regressions prove:
 - unsafe registry lookup keys remain rejected
 - normal authoritative validators still pass
 
-## Test Totals Observed In This Workspace
-- focused failed-cycle regression: 1/1 on this candidate; the exact test exits nonzero on rejected parent `75c5a9f`
+## Accepted and Independently Reproduced Evidence
+- focused failed-cycle regression: 1/1 on the accepted implementation; the exact test exits nonzero on historical rejected parent `75c5a9f`
 - validator-security: 138/138
 - execution-orchestrator: 56/56
 - execution suite: 334/334
@@ -289,11 +298,8 @@ Retained direct production-worker regressions prove:
 - `git diff --check`: passed
 - `git fsck --full`: passed
 - Institutional QA: 159 HTML files passed
-- execution-orchestrator, runtime-integration, runtime-isolation, fault, and aggregate execution suite all terminated normally on this Windows host
-- Linux three-run termination reproduction was not local in this desktop session because WSL has no installed distribution and Docker is unavailable
-
-Host note:
-- WSL has no installed Linux distributions and Docker is not installed in this desktop session, so Linux-host termination could not be directly reproduced here. This is recorded as a host limitation, not as a claimed Linux result.
+- independent Linux reproduction: three consecutive runs of execution-orchestrator 56/56, runtime-integration 28/28, runtime-isolation 48/48, fault 31/31, and aggregate execution 334/334; all 15 commands exited zero, terminated normally, and left zero tracked residue and zero surviving Node processes
+- historical local-host note: this desktop session lacked a Linux runtime. That limitation did not produce Linux evidence and is superseded as a current evidence condition by the accepted independent Linux reproduction above.
 
 ## Additional Confirmations
 - no failed initialization participant remains reachable directly or through a cached cycle peer in the focused two- and three-node cases
@@ -337,5 +343,5 @@ The replacement checkpoint patch must be packaged as raw Git output:
 - `git apply --check` verified from the exact parent commit
 - delivered patch bytes verified against a separately regenerated raw `git diff --binary`
 
-## Residual Hold
-This checkpoint intentionally stops before OS-level validator confinement. The failed-cycle-peer defect is corrected in this candidate code line and has local regression evidence, but independent clean-room acceptance has not occurred. Phase 4.1 therefore remains REPORTED as rejected, `VAL-RESULT-001` remains OPEN, runtime activation remains prohibited, and the HOLD stays in place.
+## Residual Constraints and Nonclaims
+The accepted implementation closes the failed-module and failed-cycle cache defects, and the owner decision resolves `VAL-RESULT-001`. This acceptance intentionally does not claim OS-level validator confinement, production security, or absolute isolation. Runtime activation, deployment, merge, and PR or issue state changes remain separately prohibited or unapproved. Phase 4.2 remains PLANNED and its unresolved `P42-D001` and `P42-D003` sequence still requires separate formal authorization.

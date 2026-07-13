@@ -1,6 +1,6 @@
 # Execution Engine v2 Progress
 
-Status: **HOLD — NOT SAFE TO ACTIVATE**
+Status: **ARCHITECTURAL ACTIVATION HOLD — Phase 4.1 is ACCEPTED; runtime activation is not authorized.**
 
 ## Completed foundations
 
@@ -51,11 +51,11 @@ All governed mutation in Phase 3 flows through the Phase 2 exclusive lock,
 pre-state snapshots, mutation journal, rollback, and execution ledger. Phase 3
 adds no direct governed-path writes.
 
-### Phase 4.1 — independent review correction candidate
+### Phase 4.1 — accepted independent-review correction
 
-Phase 4's existing green suite did not lift the HOLD. Independent review reproduced eight blocking failures outside that suite. Phase 4.1 corrects those findings while preserving all Phase 1–3 invariants and the three reviewed Phase 3 hardening corrections.
+Historically, Phase 4's existing green suite did not lift the HOLD and independent review reproduced eight blocking failures outside that suite. The project owner has now ACCEPTED Phase 4.1 and authorized `VAL-RESULT-001` as RESOLVED, bound to implementation `ef8d8cef2a82e3a43eee06013500aacae0682d4a`, tree `b945833eb17b9d75111113056ce8cd50b5bf0564`, and the independent clean-room evidence recorded in `docs/phase41-validator-review.md`. This acceptance closes the Phase 4.1 failed-module and failed-cycle cache defects; it does not authorize activation.
 
-The corrected candidate now includes:
+The accepted correction includes:
 
 - immutable institution-controlled approval decisions bound to exact transaction intent,
 - no caller-supplied functions in production runtime, orchestrator, recovery, rollback, or post-commit paths,
@@ -84,20 +84,21 @@ Local verification observed on July 7, 2026:
 
 Remote verification observed on July 7, 2026: correction implementation head `c154712de4190ca785deda18fc48b32bba8318d5` passed Institutional QA, Execution Engine Tests, and Execution Engine Phase 4. The Phase 4 workflow completed every dedicated syntax, compiler, capability-audit, runtime, isolation, event, tamper, fault-injection, QA, and full-suite step successfully. Green local or remote checks do not authorize activation.
 
-## Still incomplete
+## Still incomplete for activation
 
-Execution Engine v2 remains inactive. Phase 4.1 is a correction candidate, not
-an activation. The following are still required before the engine could be
+Execution Engine v2 remains inactive. Phase 4.1 acceptance is not runtime
+activation. The following are still required before the engine could be
 considered for activation:
 
-- independent architectural and security review of the corrected Phase 4 candidate,
 - deployment-environment certification for the required Linux isolation capabilities,
 - explicit migration of active agent entry points to the transactional runtime,
 - confirmation that no governed mutation route bypasses the orchestrator,
 - satisfaction of issue #9's activation gate,
 - explicit governance approval to lift the architecture hold.
 
-Runtime mutation in the candidate routes through the authoritative orchestrator,
+Phase 4.2 remains PLANNED. `P42-D001` remains OPEN and provisional, `P42-D002` remains APPROVED, and `P42-D003` remains OPEN and RECOMMENDED. Phase 4.2 implementation remains prohibited pending its own separate governance prerequisites and formal authorization; Phase 4.1 acceptance does not grant that authority.
+
+Runtime mutation in the reviewed routes through the authoritative orchestrator,
 and process exit code zero is not interpreted as Institution OS transactional
 success. Only the durable execution ledger can establish a committed institutional
 transaction after activation is separately authorized.

@@ -1,12 +1,12 @@
 # Execution Engine v2 Phase 4.1 — Independent Review Corrections
 
-Status: **HOLD — NOT SAFE TO ACTIVATE**  
+Status: **PHASE 4.1 CORRECTION MAP — Phase 4.1 is ACCEPTED; runtime activation remains prohibited.**
 Pull request: **#21 (draft; do not merge)**  
 Controlling issues: **#9 and #15 remain open**  
 Verified correction base: `abfc0550be9e448dc7973bff286622c58a07fadc`  
 Checkpoint: `checkpoint/phase-4.1-pre-corrections-20260707-abfc055`
 
-This document maps the independent architectural/security review findings to the corrective implementation. Passing tests establish a candidate for another independent review; they do not lift the architecture hold or authorize runtime activation.
+This document maps the historical independent architectural/security review findings to the corrective implementation. Current governance accepts Phase 4.1 and resolves `VAL-RESULT-001`, bound to implementation `ef8d8cef2a82e3a43eee06013500aacae0682d4a`, tree `b945833eb17b9d75111113056ce8cd50b5bf0564`, and the independent clean-room evidence recorded in `docs/phase41-validator-review.md`. That acceptance does not lift the architecture activation hold or authorize runtime activation.
 
 ## 1. In-process callback mutation bypass
 
@@ -226,8 +226,8 @@ The correction implementation head `c154712de4190ca785deda18fc48b32bba8318d5` co
 - Execution Engine Tests: **PASS**
 - Execution Engine Phase 4: **PASS**
 
-The Phase 4 workflow separately completed syntax validation, hardened sandbox-helper compilation, the AST/transitive capability audit and self-tests, runtime integration and isolation suites, event projection, tamper, fault-injection, Institutional QA, and the full Phase 1–4 execution suite. These results establish test evidence only; they do not lift the HOLD or authorize activation.
+The Phase 4 workflow separately completed syntax validation, hardened sandbox-helper compilation, the AST/transitive capability audit and self-tests, runtime integration and isolation suites, event projection, tamper, fault-injection, Institutional QA, and the full Phase 1–4 execution suite. These historical results are test evidence only; they did not independently authorize activation.
 
-## Remaining hold
+## Activation constraints retained
 
-PR #21 must remain draft. Issues #9 and #15 remain open. The runtime remains inactive. Deployment capability certification and another independent architecture/security review remain required before any consideration of activation.
+PR #21 remains open, draft, inactive, and unmerged. Issues #9 and #15 remain open. The runtime remains inactive. Deployment capability certification and separate activation authorization remain required before any consideration of activation. Phase 4.1 acceptance does not authorize Phase 4.2 implementation.

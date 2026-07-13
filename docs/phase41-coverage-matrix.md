@@ -1,10 +1,11 @@
 # Phase 4.1 - Coverage Matrix for Validator Cross-Realm Boundary Checkpoint
 
-Authoritative base: `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`
-Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - the failed-cycle-peer defect rejected at `75c5a9f` is corrected in this candidate code line and locally regression-covered; Phase 4.1 remains REPORTED as rejected and `VAL-RESULT-001` remains OPEN pending independent clean-room acceptance**
+Historical rejected checkpoint: `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`
+Accepted implementation: `ef8d8cef2a82e3a43eee06013500aacae0682d4a`
+Accepted implementation tree: `b945833eb17b9d75111113056ce8cd50b5bf0564`
+Governing ruling: **ACCEPTED - Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED by the project-owner decision bound to the exact implementation, checkpoint package, and independent clean-room review recorded in `docs/phase41-validator-review.md`.**
 
-This checkpoint does not authorize runtime activation, Phase 4.2 implementation, merge, push, deployment, or a production-security claim. PR #21 remains open, draft, inactive, unmerged, and under HOLD; Issues #9 and #15 remain open.
+The accepted implementation closes the failed-module and failed-cycle cache defects. This acceptance does not authorize runtime activation, Phase 4.2 implementation, merge, push, deployment, a production-security claim, or an absolute-isolation claim. PR #21 remains open, draft, inactive, unmerged, and under HOLD; Issues #9 and #15 remain open. Phase 4.2 remains PLANNED; `P42-D001` remains OPEN and provisional, `P42-D002` remains APPROVED, and `P42-D003` remains OPEN and RECOMMENDED.
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -126,7 +127,7 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| focused failed-cycle transaction (`--test-name-pattern="failed CommonJS cycle participants"`) | PASS, 1/1 on this candidate; exact test exits nonzero on rejected parent `75c5a9f` |
+| focused failed-cycle transaction (`--test-name-pattern="failed CommonJS cycle participants"`) | PASS, 1/1 on the accepted implementation; exact test exits nonzero on historical rejected parent `75c5a9f` |
 | `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 138/138 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
@@ -141,9 +142,8 @@ No broad capability declarations were added.
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |
-| Linux-host normal termination reproduction | NOT LOCAL, WSL has no installed distro and Docker is unavailable in this desktop session |
+| independent Linux-host normal termination reproduction | PASS, three consecutive clean-room runs: execution-orchestrator 56/56, runtime-integration 28/28, runtime-isolation 48/48, fault 31/31, and aggregate execution 334/334 each run; all 15 commands exited zero, terminated normally, and left zero tracked residue and zero surviving Node processes |
 
 ## Residual Items Intentionally Not Started Here
 - OS-level validator confinement
-- independent Linux-host termination reproduction, because no Linux runtime is installed locally
 - later confinement and runtime hardening outside this intrinsic-hardening checkpoint
