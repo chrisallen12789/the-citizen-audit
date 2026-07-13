@@ -2,11 +2,11 @@
 
 ## Record definition and status
 
-This document canonically defines **D003-TRACE-DEVICE-001**, a proposed P42-D003 architecture-level traceability record for device and kernel-interface boundary governance.
+This document canonically defines **D003-TRACE-DEVICE-001**, an approved P42-D003 architecture-level traceability record for device and kernel-interface boundary governance.
 
-**OPEN — RECOMMENDED; recommendation documented, pending independent review and explicit project-owner approval.**
+**APPROVED — project-owner approval is bound only to the immutable complete file from commit `d7e6c286cbfc36ecf2c4b6abd1030f285052aee0`: blob `2a807e88df1b2cdf8305efdf1810153385b58f3e`; UTF-8, no-BOM, LF-only bytes `[0, 25588)`; 25,588 bytes; SHA-256 `2a19f430a1bce0cdb17fc00773fea1651c803fb0558ed0c690b499875fd53d53`.**
 
-D003-TRACE-DEVICE-001 is not a `CONF` requirement, a `BUD` resource-budget identifier, a `P42-D` governance decision, an implemented control, or an approved record. It proposes a resolution path for the still-**OPEN** D003-GAP-DEVICE-001. The gap may be recorded as **RESOLVED** only in conditional future wording after this record receives independent review and explicit project-owner approval. Approval of this record would not approve P42-D003.
+D003-TRACE-DEVICE-001 is not a `CONF` requirement, a `BUD` resource-budget identifier, a `P42-D` governance decision, or an implemented control. It is approved only as the architecture-level traceability record bound above. D003-GAP-DEVICE-001 is **RESOLVED** only by that exact immutable approved record. This approval does not approve P42-D003.
 
 Phase 4.1 remains **REPORTED** as rejected, VAL-RESULT-001 remains **OPEN**, Phase 4.2 remains **PLANNED**, P42-D001 remains **OPEN** and provisional, P42-D002 remains **APPROVED** and bound to its immutable approved content, and P42-D003 remains **OPEN** and **RECOMMENDED**. No Phase 4.2 implementation exists, no Phase 4.2 tests have been implemented or run, and implementation remains prohibited while Phase 4.1 is rejected.
 
@@ -111,15 +111,15 @@ Launch must fail closed before untrusted code runs when any required denial cann
 - A necessary device or runtime exception may create authority not fully reducible by one control layer; that exception remains an approval blocker until its cross-layer effects are independently reviewed.
 - Resource timing, device behavior, performance counters, and other permitted observations may retain side channels even after direct host-global control is denied.
 
-## Architecture-record approval blockers and later platform dependencies
+## Approval record and later platform dependencies
 
-This record and D003-GAP-DEVICE-001 remain **OPEN** until all of the following architecture-record blockers are satisfied:
+The project owner approved the immutable record identified above after independent review. The following remain mandatory limitations for final platform and P42-D003 consideration:
 
-1. An independent reviewer verifies that this immutable record covers every required interface and alternate-authority route, assigns explicit enforcement, observation and cleanup ownership, preserves deny-default and fail-closed behavior, maps only exact existing identifiers, and defines complete future evidence obligations.
-2. Every material review finding is closed or explicitly retained for owner disposition, and the reviewer concludes that the proposed architecture-level mapping is sufficient to close the traceability gap without claiming an implemented or qualified platform boundary.
-3. The project owner explicitly approves, revises, or rejects D003-TRACE-DEVICE-001 against the reviewed immutable record.
+1. P42-D001 must approve the authoritative production baseline and the approved invariant must be reconciled to that exact platform.
+2. P42-D005, P42-D006, P42-D010, P42-D011, P42-D015, P42-D017, and P42-D021 must select the detailed policy and every exception must have an immutable exact-profile inventory and disposition.
+3. Required negative, continuity, failure, cleanup, and independent-reproduction evidence must pass before final P42-D003 consideration.
 
-P42-D001 may remain **OPEN** for that architecture-record action. Approval would establish the mandatory architecture invariant and may permit D003-GAP-DEVICE-001 to be recorded as **RESOLVED** by reference to the immutable approved record; it would not approve exact exceptions, mechanisms, a supported platform, implementation, or test results.
+P42-D001 remained **OPEN** for the architecture-record action. The approval establishes only the mandatory architecture invariant and resolves D003-GAP-DEVICE-001 by the immutable approved record; it does not approve exact exceptions, mechanisms, a supported platform, implementation, or test results.
 
 Final P42-D003 and exact-platform acceptance have additional later blockers. P42-D001 must approve the authoritative production baseline; this invariant must be reconciled against that exact distribution, release, architecture, kernel, hardware and device inventory, runtime, service manager, security modules, filesystem set, namespace features, syscall semantics, packages, configuration, and policy manifest; P42-D005, P42-D006, P42-D010, P42-D011, P42-D015, P42-D017, and P42-D021 must select the detailed policy; every exposed interface and exception must have an immutable exact-profile inventory and disposition; required negative, continuity, failure, cleanup, and independent-reproduction evidence must pass; and the reconciled P42-D003 package must receive independent review and explicit P42-D003 owner action. Evidence from a development container, desktop VM, WSL environment, CI label, another Linux release, or another hardware profile cannot be transferred to production by analogy. P42-D003 must remain **OPEN**, and implementation remains prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
@@ -164,4 +164,4 @@ If this record is later approved, any of the following requires it to be reopene
 
 **OUT OF SCOPE:** selecting or implementing exact mechanisms, changing accepted requirements or budgets, approving P42-D001, approving P42-D003, qualifying a platform, running tests, deployment, production support, resistance to a malicious administrator or compromised trusted kernel, and automatic merge.
 
-**PROHIBITED CLAIM:** this record is approved; D003-GAP-DEVICE-001 is currently resolved; P42-D003 is approved; a mount namespace, container, VM, syscall filter, device allowlist, mandatory-access-control policy, low-privilege identity, or read-only view alone is sufficient; denial has been implemented or tested; a platform is supported; no device or kernel interface exists; no side channel remains; Phase 4.2 implementation has begun; or complete isolation or absolute security has been achieved.
+**PROHIBITED CLAIM:** this approval approves P42-D003; a mount namespace, container, VM, syscall filter, device allowlist, mandatory-access-control policy, low-privilege identity, or read-only view alone is sufficient; denial has been implemented or tested; a platform is supported; no device or kernel interface exists; no side channel remains; Phase 4.2 implementation has begun; or complete isolation or absolute security has been achieved.

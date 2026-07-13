@@ -26,7 +26,7 @@ Files:
 
 P42-D002 is APPROVED as an architecture decision. P42-D001 remains OPEN and provisional. Approval does not authorize implementation or prove mitigation.
 
-P42-D003 remains OPEN. Its package may be independently reviewed now, but final project-owner approval must wait for approved P42-D001, exact-platform reconciliation, resolution of D003-GAP-AGG-001 and D003-GAP-DEVICE-001, and independent review of the reconciled package. It does not resolve P42-D004 through P42-D022. No automatic merge or implementation is authorized.
+P42-D003 remains OPEN. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are resolved only by their approved immutable traceability records. Final project-owner approval must still wait for approved P42-D001, exact-platform reconciliation, independent review of the reconciled package, and explicit P42-D003 owner action. It does not resolve P42-D004 through P42-D022. No automatic merge or implementation is authorized.
 
 ## Repository incorporation
 
@@ -91,6 +91,6 @@ Architecture reviewers should answer explicitly:
 6. Resolve P42-D004 through P42-D022 in dependency order.
 7. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
-The current P42-D003 package is a RECOMMENDED proposal that may be reviewed while P42-D001 remains open. It is not eligible for final owner approval until the sequence above and the D003-GAP-AGG-001 and D003-GAP-DEVICE-001 blockers are resolved.
+The current P42-D003 package is a RECOMMENDED proposal that may be reviewed while P42-D001 remains open. Its two D003 gaps are resolved only by their approved immutable traceability records, but it is not eligible for final owner approval until the remaining sequence above is complete.
 
 Implementation must still wait until Phase 4.1 is independently accepted and Phase 4.2 is formally authorized to begin.

@@ -2,9 +2,9 @@
 
 ## Status and authority
 
-**OPEN and RECOMMENDED — recommendation documented; pending independent review and explicit project-owner approval.**
+**APPROVED — project-owner approval is bound only to the immutable D003-TRACE-AGG-001 extraction from commit `d7e6c286cbfc36ecf2c4b6abd1030f285052aee0`: blob `60866c028c06f1b260aa7c6010b5f38851d876af`; UTF-8, no-BOM, LF-only bytes `[720, 31684)`; 30,964 bytes; SHA-256 `c5eeb152a94a8f056506800939b613b52ec58df27687ef2846e3ae2c6ab2ce31`.**
 
-This document supplies a proposed architecture-level traceability record for the aggregate-governance coverage gap defined as [D003-GAP-AGG-001](phase42-d003-requirement-traceability.md#d003-gap-agg-001). It does not alter the accepted [confinement requirements](phase42-confinement-requirements.md) or [resource-budget framework](phase42-resource-budget.md), and it does not create a `CONF`, `BUD`, or `P42-D` identifier. The gap remains **OPEN**. P42-D003 remains **OPEN** and **RECOMMENDED**.
+This document supplies the approved architecture-level traceability record for the aggregate-governance coverage gap defined as [D003-GAP-AGG-001](phase42-d003-requirement-traceability.md#d003-gap-agg-001). It does not alter the accepted [confinement requirements](phase42-confinement-requirements.md) or [resource-budget framework](phase42-resource-budget.md), and it does not create a `CONF`, `BUD`, or `P42-D` identifier. D003-GAP-AGG-001 is **RESOLVED** only by the exact immutable approved extraction above. P42-D003 remains **OPEN** and **RECOMMENDED**.
 
 ## D003-TRACE-AGG-001 — aggregate admission and concurrent-resource governance
 
@@ -217,12 +217,12 @@ These mappings reuse existing identifiers. They do not change their status or te
 
 P42-D001 approval and exact-platform reconciliation remain later dependencies for final P42-D003 approval. P42-D016 supplies the independent-review governance question. Neither is resolved here.
 
-## Approval blockers
+## Approval record and continuing limitations
 
-This record and D003-GAP-AGG-001 remain **OPEN** until all of the following occur:
+The project owner approved the immutable extraction identified above after independent review. The following limitations continue to apply:
 
 - an independent reviewer verifies that the contract covers every mapped requirement, budget, decision, lifecycle state, failure path, trust assumption, and residual risk without silently creating accepted identifiers;
-- the project owner explicitly approves, revises, or rejects an immutable reviewed version of this record;
+- approval is limited to the architecture-level traceability invariant; numeric and exact-platform work remains open;
 - the future approval text identifies what is approved as an architecture invariant and what numeric and exact-platform work remains open;
 - owners and enforcement, observation, durability, cleanup, audit, and recovery boundaries are unambiguous;
 - the evidence prerequisites in the [gap-resolution evidence plan](phase42-d003-gap-resolution-evidence-plan.md) are accepted as future gates, while no test result is claimed here; and
@@ -248,6 +248,6 @@ If this record is later approved, its governance conclusion must be reopened whe
 
 **OUT OF SCOPE:** selecting exact mechanisms, approving numeric limits, approving P42-D001, approving P42-D003, implementing controls, implementing or running tests, qualifying a platform, deploying, merging, or changing accepted requirement and budget text.
 
-**PROHIBITED CLAIM:** this proposal proves aggregate safety, prevents host exhaustion in an implementation, shows that any counter or mechanism works, demonstrates test passage, approves an aggregate profile, resolves D003-GAP-AGG-001, approves this traceability record, approves P42-D003, or authorizes Phase 4.2 implementation.
+**PROHIBITED CLAIM:** this approval proves aggregate safety, prevents host exhaustion in an implementation, shows that any counter or mechanism works, demonstrates test passage, approves an aggregate profile, approves P42-D003, or authorizes Phase 4.2 implementation.
 
 Phase 4.1 remains **REPORTED as rejected**. VAL-RESULT-001 remains **OPEN**. Phase 4.2 remains **PLANNED**. P42-D001 remains **OPEN** and provisional. P42-D002 remains **APPROVED** and bound to its immutable approved content. P42-D003 remains **OPEN** and **RECOMMENDED**. P42-D004 through P42-D022 remain **OPEN**. No Phase 4.2 implementation exists, no Phase 4.2 tests have been implemented or run, and implementation remains prohibited while Phase 4.1 is rejected.

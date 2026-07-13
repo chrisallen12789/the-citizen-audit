@@ -1,14 +1,19 @@
-# Phase 4.2 P42-D003 proposed gap-resolution decision records
+# Phase 4.2 P42-D003 gap-resolution decision records
 
 ## Status and purpose
 
-**OPEN and RECOMMENDED — proposed future approval wording only; pending independent review and explicit project-owner approval.**
+**APPROVED RECORDINGS — the project owner approved D003-TRACE-AGG-001 and D003-TRACE-DEVICE-001 only against their exact immutable source content; their corresponding gaps are RESOLVED by those records.**
 
 This document assembles proposed governance records for the architecture-level traceability proposals referenced below. Their canonical definitions are in [aggregate admission and concurrent-resource governance](phase42-d003-gap-aggregate-governance.md) and [device and kernel-interface boundary governance](phase42-d003-gap-device-kernel-boundary.md#record-definition-and-status). This document references those identifiers; it does not redefine them.
 
-The traceability identifiers are not `CONF` requirements, `BUD` budgets, or `P42-D` governance decisions. They do not alter the accepted [Phase 4.2 confinement requirements](phase42-confinement-requirements.md) or [resource-budget framework](phase42-resource-budget.md). Both traceability records and both corresponding D003 gaps remain **OPEN**. P42-D003 remains **OPEN** and **RECOMMENDED**.
+The traceability identifiers are not `CONF` requirements, `BUD` budgets, or `P42-D` governance decisions. They do not alter the accepted [Phase 4.2 confinement requirements](phase42-confinement-requirements.md) or [resource-budget framework](phase42-resource-budget.md). Both traceability records are **APPROVED** and both corresponding D003 gaps are **RESOLVED** only by their exact immutable approved records. P42-D003 remains **OPEN** and **RECOMMENDED**.
 
-Nothing in this document is present approval. The quoted approval language is conditional text for a later owner action after independent review. No signature, date, approval identity, immutable content identity, or approval conclusion is supplied by this package.
+The quoted approval language below is retained as historical proposed wording. The current approvals are recorded by the following immutable bindings; neither approval authorizes mechanisms, numeric limits, an exact platform, implementation, tests, merge, deployment, P42-D001, or P42-D003.
+
+| Record | Approved immutable source | Resulting status |
+| --- | --- | --- |
+| D003-TRACE-AGG-001 | Commit `d7e6c286cbfc36ecf2c4b6abd1030f285052aee0`; blob `60866c028c06f1b260aa7c6010b5f38851d876af`; UTF-8 no-BOM LF bytes `[720, 31684)`; 30,964 bytes; SHA-256 `c5eeb152a94a8f056506800939b613b52ec58df27687ef2846e3ae2c6ab2ce31`. | **APPROVED**; D003-GAP-AGG-001 **RESOLVED** only by this binding. |
+| D003-TRACE-DEVICE-001 | Commit `d7e6c286cbfc36ecf2c4b6abd1030f285052aee0`; blob `2a807e88df1b2cdf8305efdf1810153385b58f3e`; UTF-8 no-BOM LF bytes `[0, 25588)`; 25,588 bytes; SHA-256 `2a19f430a1bce0cdb17fc00773fea1651c803fb0558ed0c690b499875fd53d53`. | **APPROVED**; D003-GAP-DEVICE-001 **RESOLVED** only by this binding. |
 
 ## Shared governance constraints
 
@@ -25,7 +30,7 @@ Nothing in this document is present approval. The quoted approval language is co
 
 **OPEN and RECOMMENDED — recommendation documented; pending independent review and explicit project-owner approval.**
 
-D003-GAP-AGG-001 remains **OPEN**. This package neither approves the referenced traceability record nor changes the gap status.
+D003-GAP-AGG-001 is **RESOLVED** only by approved immutable D003-TRACE-AGG-001. The quoted language below is retained as historical proposed wording and does not extend the approval.
 
 ### Exact decision question
 
@@ -93,7 +98,7 @@ Any later approval must be reopened if the P42-D002 threat or trust model change
 
 **OPEN and RECOMMENDED — recommendation documented; pending independent review and explicit project-owner approval.**
 
-D003-GAP-DEVICE-001 remains **OPEN**. This package neither approves the referenced traceability record nor changes the gap status.
+D003-GAP-DEVICE-001 is **RESOLVED** only by approved immutable D003-TRACE-DEVICE-001. The quoted language below is retained as historical proposed wording and does not extend the approval.
 
 ### Exact decision question
 
@@ -161,4 +166,4 @@ Any later approval must be reopened if the P42-D002 threat or trust model change
 
 **PROHIBITED CLAIM:** proposed future wording is approval; an independent-review recommendation is owner approval; either traceability proposal currently closes its corresponding gap; either proposal makes P42-D003 approvable without its remaining dependencies; or this package shows confinement, production security, complete isolation, or absolute security.
 
-D003-GAP-AGG-001 remains **OPEN**. D003-GAP-DEVICE-001 remains **OPEN**. P42-D001 remains **OPEN** and provisional. P42-D002 remains **APPROVED** and bound to its immutable approved content. P42-D003 remains **OPEN** and **RECOMMENDED**. P42-D004 through P42-D022 remain **OPEN**. Phase 4.2 remains **PLANNED**. No Phase 4.2 implementation exists, no Phase 4.2 tests have been implemented or run, and this branch must not be merged automatically.
+D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are **RESOLVED** only by their corresponding immutable approved records. P42-D001 remains **OPEN** and provisional. P42-D002 remains **APPROVED** and bound to its immutable approved content. P42-D003 remains **OPEN** and **RECOMMENDED**. P42-D004 through P42-D022 remain **OPEN**. Phase 4.2 remains **PLANNED**. No Phase 4.2 implementation exists, no Phase 4.2 tests have been implemented or run, and this branch must not be merged automatically.

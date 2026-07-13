@@ -7,9 +7,9 @@
 | Source branch | `phase42-d003-confinement-composition` |
 | Starting commit | `b312e25675a11f17df2dbb13640f3168dab4f46d` |
 | Package branch | `phase42-d003-gap-resolution` |
-| Purpose | Propose architecture-level traceability resolutions for aggregate concurrent-resource governance and the device/kernel-interface boundary without altering accepted requirements or budgets, approving a record or decision, or authorizing implementation. |
+| Purpose | Record project-owner approval of architecture-level traceability resolutions for aggregate concurrent-resource governance and the device/kernel-interface boundary without altering accepted requirements or budgets, P42-D001, P42-D003, or implementation authority. |
 
-D003-TRACE-AGG-001 and D003-TRACE-DEVICE-001 are proposed P42-D003 traceability-record references. They are not CONF requirement identifiers, BUD resource-budget identifiers, P42-D governance decisions, implemented controls, or approved records. Both remain **OPEN — RECOMMENDED** pending independent review and explicit project-owner approval.
+D003-TRACE-AGG-001 and D003-TRACE-DEVICE-001 are approved P42-D003 architecture-level traceability-record references. They are not CONF requirement identifiers, BUD resource-budget identifiers, P42-D governance decisions, or implemented controls. Each corresponding D003 gap is **RESOLVED** only by its exact immutable approved record.
 
 ## Files created
 
@@ -24,7 +24,7 @@ Exactly these six documentation files are new in this package:
 
 ## Existing files modified
 
-Exactly these eight existing documentation files are modified to link and reconcile the proposed traceability path while preserving current governance states:
+Exactly these eight existing documentation files are modified to link and reconcile the approved traceability records while preserving current governance states:
 
 1. [P42-D003 confinement-mechanism composition](phase42-d003-confinement-composition.md)
 2. [P42-D003 candidate analysis](phase42-d003-candidate-analysis.md)
@@ -46,40 +46,37 @@ No accepted requirement or resource-budget document, production code, test, sche
 | Phase 4.2 | **PLANNED**. |
 | P42-D001 | **OPEN** and provisional. This package does not approve it. |
 | P42-D002 | **APPROVED** and bound to its immutable approved content. This package does not modify that content or its approval. |
-| P42-D003 | **OPEN — RECOMMENDED**. Neither proposed traceability record resolves or approves P42-D003. |
+| P42-D003 | **OPEN — RECOMMENDED**. Neither traceability-record approval resolves or approves P42-D003. |
 | P42-D004 through P42-D022 | **OPEN**. |
-| D003-GAP-AGG-001 | **OPEN**. It may become **RESOLVED** only through a later immutable approved D003-TRACE-AGG-001 record. |
-| D003-GAP-DEVICE-001 | **OPEN**. It may become **RESOLVED** only through a later immutable approved D003-TRACE-DEVICE-001 record. |
-| D003-TRACE-AGG-001 | **OPEN — RECOMMENDED**; independent review and explicit project-owner approval remain required. |
-| D003-TRACE-DEVICE-001 | **OPEN — RECOMMENDED**; independent review and explicit project-owner approval remain required. |
+| D003-GAP-AGG-001 | **RESOLVED** only by the exact immutable approved D003-TRACE-AGG-001 record. |
+| D003-GAP-DEVICE-001 | **RESOLVED** only by the exact immutable approved D003-TRACE-DEVICE-001 record. |
+| D003-TRACE-AGG-001 | **APPROVED** against commit `d7e6c286cbfc36ecf2c4b6abd1030f285052aee0`, blob `60866c028c06f1b260aa7c6010b5f38851d876af`, bytes `[720, 31684)`, SHA-256 `c5eeb152a94a8f056506800939b613b52ec58df27687ef2846e3ae2c6ab2ce31`. |
+| D003-TRACE-DEVICE-001 | **APPROVED** against commit `d7e6c286cbfc36ecf2c4b6abd1030f285052aee0`, blob `2a807e88df1b2cdf8305efdf1810153385b58f3e`, bytes `[0, 25588)`, SHA-256 `2a19f430a1bce0cdb17fc00773fea1651c803fb0558ed0c690b499875fd53d53`. |
 | Phase 4.2 implementation | Does not exist and remains prohibited while Phase 4.1 is **REPORTED** as rejected. |
 | Phase 4.2 tests | No tests have been implemented or run. |
 | Merge | No automatic merge is authorized. |
 
-The two future gap outcomes above are conditional. Present status for both gaps and both proposed traceability records remains **OPEN**; neither record is **APPROVED**. Approval of one record would address only its corresponding gap; it would not approve the other record or P42-D003 and would not authorize implementation.
+Both approvals are recorded above. Each resolves only its corresponding gap; neither approval approves the other record, P42-D003, P42-D001, implementation, tests, merge, deployment, or Phase 4.2 authorization.
 
 ## Review and approval boundaries
 
-An independent reviewer must evaluate the architecture, exact identifier mappings, failure behavior, evidence sufficiency, cleanup and reconstruction rules, trusted assumptions, residual risks, numeric-limit dependencies, platform dependencies, and prohibited claims. The project owner must then explicitly approve, revise, or reject each proposed traceability record separately. Silence, review completion, package commit, or ZIP delivery is not approval.
+An independent reviewer evaluated the architecture, exact identifier mappings, failure behavior, evidence sufficiency, cleanup and reconstruction rules, trusted assumptions, residual risks, numeric-limit dependencies, platform dependencies, and prohibited claims. The project owner then separately approved each traceability record against its exact immutable source. Silence, review completion, package commit, or ZIP delivery is not approval.
 
-P42-D003 must remain **OPEN** after either or both proposed records are approved. Final P42-D003 consideration continues to require P42-D001 approval, reconciliation against the selected exact platform, independent review of the reconciled composition, and explicit project-owner action. No implementation may begin unless Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+P42-D003 must remain **OPEN** after either or both traceability-record approvals. Final P42-D003 consideration continues to require P42-D001 approval, reconciliation against the selected exact platform, independent review of the reconciled composition, and explicit project-owner action. No implementation may begin unless Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
-## Exact next governance sequence
+## Historical record-approval sequence and remaining governance
 
-1. Independently review this gap-resolution package.
-2. Approve, revise or reject D003-TRACE-AGG-001.
-3. Approve, revise or reject D003-TRACE-DEVICE-001.
-4. If approved, mark the corresponding D003 gaps resolved by reference to the immutable approved records.
-5. Keep P42-D003 OPEN.
-6. Complete P42-D001.
-7. Reconcile P42-D003 against the selected exact platform.
-8. Independently review the reconciled P42-D003 package.
-9. Explicitly approve, revise or reject P42-D003.
-10. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+1. Independent review of this gap-resolution package and explicit owner action on each traceability record are complete.
+2. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are **RESOLVED** only by their respective immutable approved records.
+3. Keep P42-D003 **OPEN**.
+4. Complete and approve P42-D001.
+5. Reconcile P42-D003 against the selected exact platform.
+6. Independently review the reconciled P42-D003 package.
+7. Explicitly approve, revise or reject P42-D003.
+8. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
 ## Nonclaims
 
-- **PROHIBITED CLAIM:** D003-TRACE-AGG-001 or D003-TRACE-DEVICE-001 is approved, accepted, implemented, tested, or sufficient to approve P42-D003.
-- **PROHIBITED CLAIM:** D003-GAP-AGG-001 or D003-GAP-DEVICE-001 is currently resolved.
+- **PROHIBITED CLAIM:** either approved traceability record is implemented, tested, sufficient to approve P42-D003, or approval of a mechanism, platform, numeric limit, merge, deployment, or Phase 4.2 authorization.
 - **PROHIBITED CLAIM:** P42-D001 or P42-D003 is approved.
 - **PROHIBITED CLAIM:** Phase 4.2 implementation or testing has begun, or this branch may be merged automatically.

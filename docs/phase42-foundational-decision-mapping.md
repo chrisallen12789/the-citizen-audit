@@ -108,4 +108,4 @@ No implementation should begin merely because this ordering exists.
 
 ## P42-D003 recommendation package
 
-The [P42-D003 confinement-composition package](phase42-d003-confinement-composition.md) maps the approved P42-D002 threat model to the accepted confinement requirements while P42-D001 remains provisional. The package may be reviewed now, but final P42-D003 owner approval is blocked until P42-D001 is approved, the recommendation is reconfirmed against that exact platform, D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are resolved through approved traceability decisions, and the reconciled package receives independent review.
+The [P42-D003 confinement-composition package](phase42-d003-confinement-composition.md) maps the approved P42-D002 threat model to the accepted confinement requirements while P42-D001 remains provisional. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are resolved only by their approved immutable traceability records. Final P42-D003 owner approval remains blocked until P42-D001 is approved, the recommendation is reconfirmed against that exact platform, and the reconciled package receives independent review and explicit P42-D003 owner action.
