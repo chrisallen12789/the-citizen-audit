@@ -162,7 +162,7 @@ Any later approval must be reopened if the P42-D002 threat or trust model change
 
 ## Package-wide nonclaims and present status
 
-**OUT OF SCOPE:** approval, implementation, completed tests, platform qualification, deployment, merge, or modification of accepted requirements and budgets.
+**OUT OF SCOPE:** approving P42-D001 or P42-D003; approving mechanisms, numeric limits, or an exact platform; implementation; completed tests; platform qualification; deployment; merge; or modification of accepted requirements and budgets.
 
 **PROHIBITED CLAIM:** either approval makes P42-D003 approvable without its remaining dependencies, or this package shows confinement, production security, complete isolation, or absolute security. The two approvals and their corresponding gap resolutions are current only as stated in the immutable bindings above.
 

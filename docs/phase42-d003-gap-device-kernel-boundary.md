@@ -149,7 +149,7 @@ No existing `BUD` identifier expressly governs the complete device and kernel-in
 
 ## Reopen triggers
 
-If this record is later approved, any of the following requires it to be reopened:
+This approved record must be reopened when any of the following occurs:
 
 - a change to P42-D001, P42-D002, P42-D003, an identifier mapped above, or the accepted requirement or resource-budget baseline that changes the boundary;
 - any distribution, kernel, hardware, driver, device inventory, runtime, service manager, security-module, namespace, filesystem, mount, syscall, capability, helper, package, configuration, or policy change that affects exposure or evidence;

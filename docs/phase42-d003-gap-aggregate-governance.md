@@ -228,11 +228,11 @@ The project owner approved the immutable extraction identified above after indep
 - the evidence prerequisites in the [gap-resolution evidence plan](phase42-d003-gap-resolution-evidence-plan.md) are accepted as future gates, while no test result is claimed here; and
 - any requested exception to deterministic refusal, quarantine, protected reserves, generation-safe ownership, or verified-release semantics is either removed or explicitly rejected as incompatible with this recommendation.
 
-Final P42-D003 approval has additional blockers even if this record is later approved: P42-D001 approval, reconciliation against the exact selected platform, resolution of the device and kernel-interface gap through its separately approved immutable record, independent review of the reconciled package, and explicit P42-D003 project-owner approval.
+Both D003-TRACE-AGG-001 and D003-TRACE-DEVICE-001 are already **APPROVED**, and D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are already **RESOLVED** only by their corresponding immutable approved records. The remaining P42-D003 blockers are P42-D001 approval, exact-platform reconciliation, independent review of the reconciled P42-D003 package, and explicit project-owner action on P42-D003.
 
 ## Reopen triggers
 
-If this record is later approved, its governance conclusion must be reopened when:
+This approved record must be reopened when:
 
 - P42-D002 changes the hostile-validator, arbitrary-native-code, trust, or out-of-scope model;
 - the production OS, kernel, runtime, service manager, cgroup or job hierarchy, VM layer, filesystem, quota mechanism, audit sink, deployment topology, or host-sharing model changes;
