@@ -1,8 +1,8 @@
 # Phase 4.1 - Coverage Matrix for Validator Cross-Realm Boundary Checkpoint
 
-Authoritative base: `fd5b8b26bdf8f4b7b6565c8d8347a0b619827bfb`
+Authoritative base: `3ecddc1359fc1285e65ff6b635868b57cdecdd6d`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, and local-require host-exception attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, and failed-module cache-poisoning attacks are locked down; OS confinement still pending by instruction**
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -60,6 +60,10 @@ No broad capability declarations were added.
 | Inherited or post-lock host sentinels are reachable through caught require failures | FIXED | preload installs Agent-like authority on host prototypes and through nextTick, microtask, Promise, and immediate callbacks; caught failures expose none of it |
 | Uncaught local dependency failure leaks host message data | FIXED | direct worker regression proves uncaught dependency failure fails closed with bounded `VALIDATOR_THROW` and no default-channel messages |
 | Local require failure membrane breaks ordinary dependencies | FIXED | regression verifies normal direct dependencies, transitive dependencies, cycles, builtin facades, and dependency export graphs still load as context-native values |
+| Failed direct module remains cached after top-level execution throws | FIXED | repeated top-level and validate-time requires must throw again; a returned provisional export fails the focused lifecycle regression |
+| Failed transitive leaf or incomplete ancestor remains reusable | FIXED | regression retries the failed parent, directly retries the leaf, and repeats both paths; every attempt fails through the reviewed membrane rather than returning partial exports |
+| Failed module exports a reusable primitive, function, object, nested object, array, or cyclic graph | FIXED | every partial-export shape is exercised across multiple retries and remains absent after failure |
+| Cache rollback clears successful unrelated modules or breaks CommonJS cycles | FIXED | successful direct/transitive modules and both cycle participants retain identity; cache deletion uses a captured trusted `Map.prototype.delete` operation |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
 | `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
@@ -114,13 +118,14 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
+| focused failed-module cache lifecycle (`--test-name-pattern="cache lifecycle"`) | PASS, 1/1, normal exit on this host |
 | `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 137/137 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
 | repository JavaScript syntax sweep | PASS, 147 tracked `.js` files checked |
 | `npm run runtime:integration:test` | PASS, 28/28, normal exit on this host |
-| `npm run runtime:integration:test` repeated locally | NOT LOCAL in this checkpoint; previous Linux termination fix is preserved but this Windows desktop session has no Linux runtime |
+| three consecutive clean-checkpoint runs of the exact required five-command set | PASS on Windows: 56/56 orchestrator, 28/28 integration, 48/48 isolation, 31/31 fault, and 333/333 aggregate in every run; all commands exited zero with zero tracked residue and zero new Node processes |
 | `npm run runtime:isolation:test` | PASS, 48/48 |
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |

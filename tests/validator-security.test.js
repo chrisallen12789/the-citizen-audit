@@ -1709,7 +1709,7 @@ module.exports={
   }
 });
 
-test("local require failure membrane exposes no raw host thrown values", async () => {
+test("local require failure membrane and cache lifecycle expose no raw host thrown values or partial exports", async () => {
   const suffix = `require-failure-${seq++}`;
   const preloadPath = path.join(scratch, `${suffix}-preload.js`);
   const hostMarker = path.join(scratch, `${suffix}-host-marker.txt`);
@@ -1725,6 +1725,7 @@ test("local require failure membrane exposes no raw host thrown values", async (
     writeStrictFile(filePath, source);
   };
   const thrownCases = [
+    ["compile-failure", `let require;`],
     ["error", `throw new Error("dependency error");`],
     ["custom-error", `class CustomDependencyError extends Error {}; throw new CustomDependencyError("custom dependency error");`],
     ["aggregate", `throw new AggregateError([new Error("inner")], "aggregate dependency error");`],
@@ -1734,8 +1735,20 @@ test("local require failure membrane exposes no raw host thrown values", async (
     ["object", `throw { label: "plain object", nested: { ok: true } };`],
     ["array", `throw ["array", { nested: true }];`],
     ["proxy", `throw new Proxy({ label: "proxy" }, { get(target, key) { if (key === "message") return "proxy message"; return target[key]; } });`],
+    ["revoked-proxy", `const pair = Proxy.revocable({ label: "revoked" }, {}); pair.revoke(); throw pair.proxy;`],
+    ["malformed-proxy-prototype", `throw new Proxy({}, { getPrototypeOf() { return 1; } });`],
+    ["throwing-proxy-traps", `throw new Proxy({}, { get() { throw new Error("get trap"); }, getPrototypeOf() { throw new Error("prototype trap"); }, ownKeys() { throw new Error("ownKeys trap"); } });`],
     ["accessor", `const thrown = {}; Object.defineProperty(thrown, "message", { get() { require("node:fs").writeFileSync(${JSON.stringify(hostileGetterMarker)}, "accessor-message"); return "accessor"; } }); throw thrown;`],
     ["cause", `throw new Error("outer", { cause: { nested: "cause" } });`],
+    ["callsite", `Error.prepareStackTrace = function(error, sites) { return sites; }; const sites = new Error("callsite").stack; throw sites[0];`],
+    ["promise", `throw Promise.resolve({ authority: function authority(){} });`],
+    ["thenable", `throw { then(resolve) { resolve({ authority: function authority(){} }); } };`],
+    ["export-primitive", `module.exports = 7; throw new Error("after primitive export");`],
+    ["export-function", `module.exports = function partial(){}; throw new Error("after function export");`],
+    ["export-object", `module.exports = { partial: true }; throw new Error("after object export");`],
+    ["export-nested-object", `module.exports = { partial: { nested: true } }; throw new Error("after nested object export");`],
+    ["export-array", `module.exports = ["partial", { nested: true }]; throw new Error("after array export");`],
+    ["export-cycle", `const partial = { label: "partial" }; partial.self = partial; module.exports = partial; throw new Error("after cyclic export");`],
     ["hostile", `const fs = require("node:fs"); const thrown = {}; for (const key of ["toString", "message", "name", "stack"]) Object.defineProperty(thrown, key, { get() { fs.writeFileSync(${JSON.stringify(hostileGetterMarker)}, "getter-" + key); return key === "toString" ? function(){ return "hostile"; } : "hostile"; } }); throw thrown;`]
   ];
   writeStrictFile(preloadPath, `
@@ -1773,6 +1786,8 @@ test("local require failure membrane exposes no raw host thrown values", async (
       writeDep(`top-${label}`, `"use strict";\n${statement}\n`);
       writeDep(`validate-${label}`, `"use strict";\n${statement}\n`);
     }
+    writeDep("top-sloppy-caller", `function outer(){ return inner(); } function inner(){ throw inner.caller; } outer();\n`);
+    writeDep("validate-sloppy-caller", `function outer(){ return inner(); } function inner(){ throw inner.caller; } outer();\n`);
     writeDep("top-transitive-b", `"use strict";\nthrow new Error("top transitive leaf");\n`);
     writeDep("top-transitive-a", `"use strict";\nrequire("./${depName("top-transitive-b")}");\nmodule.exports={unreachable:true};\n`);
     writeDep("validate-transitive-b", `"use strict";\nthrow new Error("validate transitive leaf");\n`);
@@ -1782,12 +1797,14 @@ test("local require failure membrane exposes no raw host thrown values", async (
     writeDep("ok-transitive-a", `"use strict";\nconst b=require("./${depName("ok-transitive-b")}");\nmodule.exports={label:"transitive-a", b};\n`);
     writeDep("cycle-a", `"use strict";\nexports.name="cycle-a"; const b=require("./${depName("cycle-b")}"); exports.fromB=b.name || "pending";\n`);
     writeDep("cycle-b", `"use strict";\nexports.name="cycle-b"; const a=require("./${depName("cycle-a")}"); exports.fromA=a.name || "pending";\n`);
-    const topAttempts = thrownCases.map(([label]) => `attempt("top", ${JSON.stringify(label)}, function(){ require("./${depName(`top-${label}`)}"); });`).join("\n");
-    const validateAttempts = thrownCases.map(([label]) => `attempt("validate", ${JSON.stringify(label)}, function(){ require("./${depName(`validate-${label}`)}"); });`).join("\n");
+    const topAttempts = thrownCases.map(([label]) => [1, 2].map((retry) => `topProblems.push.apply(topProblems, attempt("top", ${JSON.stringify(`${label}-retry-${retry}`)}, function(){ require("./${depName(`top-${label}`)}"); }));`).join("\n")).join("\n");
+    const validateAttempts = thrownCases.map(([label]) => [1, 2, 3].map((retry) => `problems.push.apply(problems, attempt("validate", ${JSON.stringify(`${label}-retry-${retry}`)}, function(){ require("./${depName(`validate-${label}`)}"); }));`).join("\n")).join("\n");
+    const validateTopRetries = thrownCases.map(([label]) => `problems.push.apply(problems, attempt("validate", ${JSON.stringify(`${label}-top-level-retry`)}, function(){ require("./${depName(`top-${label}`)}"); }));`).join("\n");
     await withTemporaryProductionValidatorSource(
       PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
       `"use strict";
 const fs = require("node:fs");
+try { Map.prototype.delete = function(){ return true; }; } catch (error) {}
 const topProblems = [];
 function isObjectLike(value) { return value !== null && (typeof value === "object" || typeof value === "function"); }
 function keyText(key) { try { return String(key); } catch (error) { return "<key>"; } }
@@ -1884,6 +1901,19 @@ function auditCaught(problems, stage, label, caught) {
     try {
       if (Object.getPrototypeOf(caught) !== null) add(problems, stage, label + " caught value did not have a null prototype");
     } catch (error) { add(problems, stage, label + " prototype inspection threw"); }
+    try { if (!Object.isFrozen(caught)) add(problems, stage, label + " caught value was not frozen"); } catch (error) { add(problems, stage, label + " frozen inspection threw"); }
+    try {
+      const keys = Reflect.ownKeys(caught);
+      const expected = ["code", "message", "name"];
+      const actual = keys.filter((key) => typeof key === "string").sort();
+      if (keys.some((key) => typeof key === "symbol") || actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) {
+        add(problems, stage, label + " caught value exposed unreviewed fields");
+      }
+      for (const key of actual) {
+        const descriptor = Object.getOwnPropertyDescriptor(caught, key);
+        if (!descriptor || typeof descriptor.value !== "string" || descriptor.get || descriptor.set) add(problems, stage, label + "." + key + " was not a primitive data field");
+      }
+    } catch (error) { add(problems, stage, label + " primitive-field inspection threw"); }
   }
   tryConstructorEscape(problems, stage, label, caught);
   inspectAuthority(problems, stage, label, caught, []);
@@ -1964,9 +1994,15 @@ function auditNormalDependencies(stage) {
     const transitive = require("./${depName("ok-transitive-a")}");
     const cycleA = require("./${depName("cycle-a")}");
     const cycleB = require("./${depName("cycle-b")}");
+    const directAgain = require("./${depName("ok-direct")}");
+    const transitiveAgain = require("./${depName("ok-transitive-a")}");
+    const cycleAAgain = require("./${depName("cycle-a")}");
+    const cycleBAgain = require("./${depName("cycle-b")}");
     if (direct.label !== "direct") add(problems, stage, "normal direct dependency did not load");
     if (transitive.b.label !== "transitive-b") add(problems, stage, "normal transitive dependency did not load");
     if (cycleA.name !== "cycle-a" || cycleB.name !== "cycle-b") add(problems, stage, "cycle dependency did not load");
+    if (direct !== directAgain || transitive !== transitiveAgain) add(problems, stage, "successfully loaded dependencies were not retained in cache");
+    if (cycleA !== cycleAAgain || cycleB !== cycleBAgain) add(problems, stage, "successful cycle participants were not retained in cache");
     if (require("node:path").posix.join("a", "b") !== "a/b") add(problems, stage, "path builtin failed");
     if (require("node:buffer").Buffer.from("abc").toString("utf8") !== "abc") add(problems, stage, "buffer builtin failed");
     auditValue(problems, stage, "normal direct dependency", direct, []);
@@ -1981,7 +2017,10 @@ function auditNormalDependencies(stage) {
   return problems;
 }
 ${topAttempts}
+topProblems.push.apply(topProblems, attempt("top", "sloppy-caller", function(){ require("./${depName("top-sloppy-caller")}"); }));
 topProblems.push.apply(topProblems, attempt("top", "transitive", function(){ require("./${depName("top-transitive-a")}"); }));
+topProblems.push.apply(topProblems, attempt("top", "transitive-leaf-direct-retry", function(){ require("./${depName("top-transitive-b")}"); }));
+topProblems.push.apply(topProblems, attempt("top", "transitive-parent-second-retry", function(){ require("./${depName("top-transitive-a")}"); }));
 topProblems.push.apply(topProblems, auditBridgeFailures("top"));
 topProblems.push.apply(topProblems, auditNormalDependencies("top"));
 module.exports={
@@ -1991,7 +2030,12 @@ module.exports={
   validate:function(){
     const problems = topProblems.slice();
 ${validateAttempts}
+${validateTopRetries}
+    problems.push.apply(problems, attempt("validate", "sloppy-caller", function(){ require("./${depName("validate-sloppy-caller")}"); }));
     problems.push.apply(problems, attempt("validate", "transitive", function(){ require("./${depName("validate-transitive-a")}"); }));
+    problems.push.apply(problems, attempt("validate", "transitive-leaf-direct-retry", function(){ require("./${depName("validate-transitive-b")}"); }));
+    problems.push.apply(problems, attempt("validate", "transitive-parent-second-retry", function(){ require("./${depName("validate-transitive-a")}"); }));
+    problems.push.apply(problems, attempt("validate", "top-transitive-parent-validate-retry", function(){ require("./${depName("top-transitive-a")}"); }));
     problems.push.apply(problems, auditBridgeFailures("validate"));
     problems.push.apply(problems, auditNormalDependencies("validate"));
     return {status:problems.length ? "failed" : "passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};

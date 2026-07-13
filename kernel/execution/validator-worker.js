@@ -56,6 +56,7 @@ const SafeObjectGetPrototypeOf = Object.getPrototypeOf;
 const SafeObjectHasOwn = Function.call.bind(Object.prototype.hasOwnProperty);
 const SafeObjectKeys = Object.keys;
 const SafeObjectSetPrototypeOf = Object.setPrototypeOf;
+const SafeMapDelete = Function.call.bind(Map.prototype.delete);
 const SafeMapGet = Function.call.bind(Map.prototype.get);
 const SafeMapHas = Function.call.bind(Map.prototype.has);
 const SafeMapSet = Function.call.bind(Map.prototype.set);
@@ -1125,7 +1126,7 @@ function loadClosureEntry(closure) {
   const validatorRuntime = createValidatorContext();
   lockValidatorHostAccess();
   const validatorContext = validatorRuntime.context;
-  const compiledCache = new Map(); // relPath -> module.exports
+  const compiledCache = new Map(); // relPath -> { state: "loading", module } | { state: "loaded", exports }
 
   function verifyOneModule(relPath) {
     const want = SafeMapGet(expected, relPath);
@@ -1224,25 +1225,38 @@ function loadClosureEntry(closure) {
   }
 
   function loadModule(relPath) {
-    if (SafeMapHas(compiledCache, relPath)) return SafeMapGet(compiledCache, relPath);
+    if (SafeMapHas(compiledCache, relPath)) {
+      const cached = SafeMapGet(compiledCache, relPath);
+      if (cached.state === "loading") return cached.module.exports;
+      if (cached.state === "loaded") return cached.exports;
+      throw workerFailure("WORKER_INTERNAL_FAILURE", "validator module cache state is invalid");
+    }
     if (!SafeMapHas(verifiedSources, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module was not captured before execution");
     const source = SafeMapGet(verifiedSources, relPath);
     const module = validatorRuntime.runtime.createModule();
-    SafeMapSet(compiledCache, relPath, module.exports); // seed for cycles
+    const loadingRecord = SafeObjectCreate(null);
+    loadingRecord.state = "loading";
+    loadingRecord.module = module;
+    SafeMapSet(compiledCache, relPath, loadingRecord); // seed only while this module is actively initializing
     const absFile = path.join(ROOT, relPath);
     let wrapper;
     try {
       wrapper = SafeVmCompileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile, parsingContext: validatorContext });
     } catch (error) {
+      SafeMapDelete(compiledCache, relPath);
       throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "validator module compilation failed");
     }
     try {
       wrapper(module.exports, createValidatorRequire(relPath), module, absFile, path.dirname(absFile));
     } catch (error) {
+      SafeMapDelete(compiledCache, relPath);
       if (error instanceof WorkerFailure) throw error;
       throw workerFailure("VALIDATOR_THROW");
     }
-    SafeMapSet(compiledCache, relPath, module.exports);
+    const loadedRecord = SafeObjectCreate(null);
+    loadedRecord.state = "loaded";
+    loadedRecord.exports = module.exports;
+    SafeMapSet(compiledCache, relPath, loadedRecord);
     return module.exports;
   }
 

@@ -1,11 +1,11 @@
 # Phase 4.1 - Validator Worker Cross-Realm Boundary Review
 
-Base checkpoint: `fd5b8b26bdf8f4b7b6565c8d8347a0b619827bfb`
+Base checkpoint: `3ecddc1359fc1285e65ff6b635868b57cdecdd6d`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, and local-require host-exception attacks are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, and failed-module cache-poisoning attacks are locked down; OS confinement still pending by instruction**
 
 ## Scope
-This checkpoint continues from `fd5b8b26bdf8f4b7b6565c8d8347a0b619827bfb` and closes the remaining validator-visible host-realm authority defect:
+This checkpoint continues from rejected checkpoint `3ecddc1359fc1285e65ff6b635868b57cdecdd6d` and corrects the remaining failed-module cache-poisoning defect without weakening its require-failure membrane:
 
 1. validator modules still compile and execute inside a separate `vm` context with a frozen null-prototype validator global
 2. validator top-level code and `validate()` now receive only validator-realm `module`, `exports`, `require`, builtin facades, validation context objects, arrays, byte wrappers, stat wrappers, hash wrappers, JSON parse results, and dependency return values
@@ -15,7 +15,8 @@ This checkpoint continues from `fd5b8b26bdf8f4b7b6565c8d8347a0b619827bfb` and cl
 6. the CommonJS shim is created inside the validator context, so `require.prototype`, callable `.prototype` objects, and constructor-chain probes do not climb back into the harness realm
 7. the validation context is serialized in the harness and parsed inside the validator realm, preventing `Object.getPrototypeOf(context).constructor.constructor(...)` host-global recovery
 8. local dependency load failures are converted at the host/validator boundary into primitive response records; catchable require failures are created inside the validator realm as frozen null-prototype records
-9. the previously verified console/stdout lockdown, durable global freeze, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
+9. closure-local modules now move through explicit absent, loading, and loaded cache states; failed compilation or execution deletes only the active provisional entry, so failed transitive ancestors unwind while successful unrelated modules remain cached
+10. the previously verified console/stdout lockdown, durable global freeze, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
 
 OS-level validator confinement was not started.
 
@@ -90,6 +91,17 @@ The closure-local CommonJS loader is now total at the validator realm boundary:
 
 This covers direct dependencies, transitive dependencies, dependency failures during entry-module top-level execution, dependency failures during `validate()`, ordinary `Error` subclasses, `AggregateError`, strings, symbols, `null`, arrays, proxies, accessor-bearing objects, `Error.cause`, and hostile `toString`/`message`/`name`/`stack` accessors. No original host-created thrown value crosses into validator code.
 
+### Failed Module Cache Lifecycle
+The closure-local CommonJS cache now has an explicit reviewed lifecycle:
+- an absent module has no cache entry
+- a module being compiled or executed has a provisional `loading` record that refers to its live validator-realm module object, preserving CommonJS cycle behavior including `module.exports` reassignment
+- only successful completion replaces that record with `loaded` and retains the final exports
+- compilation failure, top-level execution failure, or a transitive dependency failure deletes the current module's provisional record before propagating the reviewed failure
+- normal stack unwinding therefore deletes a failed leaf and every still-loading ancestor while leaving previously loaded unrelated modules intact
+- every cache operation, including deletion, uses captured call-bound `Map` operations rather than validator-replaceable prototype dispatch
+
+A later `require()` of a failed direct module, failed leaf, or failed ancestor retries initialization. Partial primitive, function, object, nested-object, array, and cyclic-object exports are never returned as successfully loaded values after failure. The cache is not cleared globally, successful modules remain cached, and successful CommonJS cycles remain supported.
+
 ### Capability Facade Return Hardening
 Allowed builtins remain explicit, but facades no longer return raw host-native authority objects:
 - `crypto.createHash()` returns a null-prototype wrapper, not a raw `Hash`
@@ -112,6 +124,8 @@ The validation-cycle boundary now performs explicit cleanup on every completion 
 - the same cleanup discipline is used by the test-only production-worker launcher
 
 This preserves normal completion for the full execution-orchestrator, runtime-integration, runtime-isolation, fault, and aggregate execution commands on this Windows host. Linux-host termination could not be directly reproduced in this desktop session because WSL has no installed distributions and Docker is unavailable.
+
+From the clean committed checkpoint, the exact required command set was also run three consecutive times on this Windows host. Every command terminated with exit status zero, left no tracked residue, and left no new Node process. This is local termination evidence only and is not represented as Linux-host reproduction.
 
 ### Same-Realm Intrinsic Hardening Retained
 The production worker still uses `vm.compileFunction`, but it no longer relies on mutable shared intrinsics after validator bytes begin executing.
@@ -164,6 +178,11 @@ New direct production-worker regressions prove:
 - a declared direct dependency that throws at module top level can be caught by the entry validator without exposing host `WorkerFailure`, host `Error`, host prototypes, host constructors, host globals, inherited Agent-like sentinels, dispatcher functions, factories, callbacks, raw `Map`s, or manufactured pools
 - the same direct dependency failure path remains host-free when caught inside `validate()`
 - transitive dependency failures are membrane-protected both at entry-module top level and during `validate()`
+- failed direct modules throw again on repeated require attempts rather than returning provisional exports; the same top-level failure is retried during `validate()`
+- compilation failures delete the provisional entry and compile again on each later require attempt
+- a failed transitive leaf and every incomplete ancestor are absent on subsequent direct and parent retries, while already completed dependencies retain identity
+- failures after primitive, function, object, nested-object, array, and cyclic-object exports never make those partial values reusable
+- successful direct and transitive dependencies and both participants in a successful CommonJS cycle remain loaded and identity-stable
 - dependency thrown values including `Error`, custom `Error` subclasses, `AggregateError`, strings, symbols, `null`, plain objects, arrays, proxies, accessor objects, `Error` with `cause`, and hostile accessor-bearing objects cannot escape as host-visible authority
 - every catchable require-failure representation is recursively audited across own keys, symbol keys, descriptors, getters, setters, prototype chains, constructor chains, `.stack`, `.cause`, nested objects, functions, arrays, and iterator-like surfaces
 - inherited host sentinels and late-installed host sentinels scheduled by `process.nextTick`, `queueMicrotask`, a resolved Promise, and `setImmediate` remain unreachable through caught require failures
@@ -299,4 +318,4 @@ The replacement checkpoint patch must be packaged as raw Git output:
 - delivered patch bytes verified against a separately regenerated raw `git diff --binary`
 
 ## Residual Hold
-This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, shared-intrinsic, MessagePort prototype, dependency-substitution/hash-prototype, durable-global, cross-realm host-authority, and local-require host-exception defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, shared-intrinsic, MessagePort prototype, dependency-substitution/hash-prototype, durable-global, cross-realm host-authority, local-require host-exception, and failed-module cache-poisoning defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.
