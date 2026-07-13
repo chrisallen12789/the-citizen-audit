@@ -77,6 +77,14 @@ Applicable existing requirements are CONF-CPU-001, CONF-MEM-001, CONF-PROC-001, 
 
 Applicable existing requirements are CONF-FS-001, CONF-FS-002, CONF-HANDLE-001, CONF-IDENTITY-001, CONF-SYSCALL-001, CONF-IPC-001, CONF-PORTABILITY-001, and CONF-FAILCLOSED-001. Applicable open decisions are P42-D005, P42-D006, P42-D010, P42-D011, P42-D015, P42-D017, and P42-D021. These records constrain filesystem, handle, identity, syscall, IPC, portability, and fail-closed behavior, but neither the accepted requirements nor budgets supply a stable identifier that expressly covers the complete device and kernel-interface policy.
 
+## Proposed gap-resolution records
+
+- [D003-TRACE-AGG-001](phase42-d003-gap-aggregate-governance.md) proposes architecture-level traceability for D003-GAP-AGG-001.
+- [D003-TRACE-DEVICE-001](phase42-d003-gap-device-kernel-boundary.md) proposes architecture-level traceability for D003-GAP-DEVICE-001.
+- [Gap-resolution traceability](phase42-d003-gap-resolution-traceability.md) maps both proposals to existing exact identifiers without altering the accepted requirement or budget documents.
+
+Both proposals and both gaps remain OPEN. Only later independent review and explicit owner approval could support conditionally recording a corresponding gap as RESOLVED; P42-D003 would still remain OPEN.
+
 ## Cross-cutting acceptance constraints
 
 - Candidate mechanism examples are not selections. P42-D004 through P42-D022 remain **OPEN**, and this mapping only constrains the evidence and properties their future decisions must satisfy.

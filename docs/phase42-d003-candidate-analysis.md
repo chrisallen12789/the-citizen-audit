@@ -10,6 +10,8 @@ P42-D001 remains **OPEN** and provisional. Every platform-dependent statement in
 
 P42-D003 depends on P42-D001 and P42-D002. Comparison and independent review may proceed now, but final owner approval must wait until P42-D001 is approved and this recommendation is reconfirmed against the exact selected platform profile. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 remain **OPEN** approval blockers and are review-gap identifiers, not accepted CONF or BUD identifiers.
 
+The proposed OPEN resolution records are [D003-TRACE-AGG-001](phase42-d003-gap-aggregate-governance.md) and [D003-TRACE-DEVICE-001](phase42-d003-gap-device-kernel-boundary.md). They provide architecture-level traceability for comparing candidate fit; they do not approve a candidate, resolve either gap, or change the accepted requirements and budgets.
+
 ## Evaluation rule
 
 No candidate is preferred merely because it is common, easy to demonstrate, or described as a sandbox. The evaluation asks whether the complete composition can enforce, observe, and prove every mandatory property while treating the validator as hostile arbitrary native code.

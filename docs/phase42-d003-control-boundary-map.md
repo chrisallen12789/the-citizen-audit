@@ -4,6 +4,8 @@
 
 **OPEN — RECOMMENDED boundary map documented; pending P42-D001 approval, exact-platform reconciliation, resolution of D003-GAP-AGG-001 and D003-GAP-DEVICE-001, independent review, and explicit project-owner approval.**
 
+Proposed traceability for the aggregate and device rows is recorded in [D003-TRACE-AGG-001](phase42-d003-gap-aggregate-governance.md) and [D003-TRACE-DEVICE-001](phase42-d003-gap-device-kernel-boundary.md). Both records remain OPEN and do not replace any accepted CONF, BUD, or P42-D identifier.
+
 This map describes responsibility and evidence for the proposed [P42-D003 composition](phase42-d003-confinement-composition.md). It is not an implementation design, an approval, or proof that any control is available, configured, effective, tested, or deployed.
 
 P42-D002 is **APPROVED** and supplies the hostile-validator and arbitrary-native-code attacker model. P42-D001 and P42-D003 remain **OPEN**. Exact mechanisms remain governed by P42-D004, P42-D005, P42-D006, P42-D007, P42-D008, P42-D009, P42-D010, P42-D011, P42-D012, P42-D013, P42-D014, P42-D015, P42-D016, P42-D017, P42-D018, P42-D019, P42-D020, P42-D021, and P42-D022.

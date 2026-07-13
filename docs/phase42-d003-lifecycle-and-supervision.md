@@ -6,6 +6,8 @@
 
 [P42-D002](phase42-d002-threat-model.md) is **APPROVED** and supplies the hostile-validator and possible arbitrary-native-code attacker model. [P42-D001](phase42-d001-production-platform-baseline.md) remains **OPEN** and provisional; therefore every stage below is distribution-neutral and must be reproduced for each candidate production profile. Final P42-D003 owner approval is blocked until P42-D001 is approved, the recommendation is reconciled against that exact platform, both coverage gaps defined in [the traceability record](phase42-d003-requirement-traceability.md#approved-threat-model-coverage-gaps) are resolved through approved traceability decisions, and the corrected package receives independent review. Phase 4.2 remains **PLANNED**, and implementation remains prohibited while Phase 4.1 is rejected.
 
+The lifecycle's proposed gap-resolution records are [D003-TRACE-AGG-001](phase42-d003-gap-aggregate-governance.md) and [D003-TRACE-DEVICE-001](phase42-d003-gap-device-kernel-boundary.md). Both remain OPEN; reservation release still requires verified cleanup, and unsupported device or aggregate profiles still refuse before untrusted launch.
+
 ## Lifecycle invariants
 
 - The external supervisor or reviewed durable owner is outside the validator trust boundary and remains authoritative for control activation, deadlines, termination, result acceptance, cleanup, and assurance evidence.
