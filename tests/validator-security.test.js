@@ -525,7 +525,7 @@ for (const scenario of [
   },
   {
     name: "top-level rename/unlink/chmod",
-    body: (marker) => `const fs=require("node:fs"); const file=${JSON.stringify(`${os.tmpdir()}\\vsec-target-${process.pid}-${Date.now()}`)}; fs.writeFileSync(file,"x"); fs.renameSync(file,file+".renamed"); fs.chmodSync(file+".renamed",0o600); fs.unlinkSync(file+".renamed"); fs.writeFileSync(${JSON.stringify(marker)},"rename-unlink-chmod");`
+    body: (marker) => `const fs=require("node:fs"); const file=${JSON.stringify(path.join(os.tmpdir(), `vsec-target-${process.pid}-${Date.now()}`))}; fs.writeFileSync(file,"x"); fs.renameSync(file,file+".renamed"); fs.chmodSync(file+".renamed",0o600); fs.unlinkSync(file+".renamed"); fs.writeFileSync(${JSON.stringify(marker)},"rename-unlink-chmod");`
   },
   {
     name: "top-level child_process spawn",
