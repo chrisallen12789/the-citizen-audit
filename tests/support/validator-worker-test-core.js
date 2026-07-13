@@ -4,7 +4,12 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const vm = require("vm");
-const { parentPort, workerData } = require("worker_threads");
+const { MessagePort, parentPort, workerData } = require("worker_threads");
+
+const SafeMessagePortClose = Function.call.bind(MessagePort.prototype.close);
+const SafeMessagePortPostMessage = Function.call.bind(MessagePort.prototype.postMessage);
+const SafeMessagePortRef = Function.call.bind(MessagePort.prototype.ref);
+SafeMessagePortRef(parentPort);
 
 const LIMITS = workerData.limits || {};
 const MAX_RESULT_BYTES = LIMITS.maxResultBytes || 262144;
@@ -80,7 +85,12 @@ function checkedEnvelopeString(envelope) {
 }
 
 function postEnvelope(envelope) {
-  try { parentPort.postMessage(checkedEnvelopeString(envelope)); } catch (error) {}
+  try {
+    SafeMessagePortPostMessage(parentPort, checkedEnvelopeString(envelope));
+  } catch (error) {}
+  finally {
+    try { SafeMessagePortClose(parentPort); } catch (error) {}
+  }
 }
 
 function fail(code, diagnostic) {

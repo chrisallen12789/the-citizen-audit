@@ -126,6 +126,116 @@ function launchProductionWorker(workerPayload, timeoutMs = 1500, workerOptions =
   });
 }
 
+function launchProductionWorkerToNaturalExit(workerPayload, timeoutMs = 1500) {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let resultPort = null;
+    let resultMessage;
+    let hasResultMessage = false;
+    let channelClosed = false;
+    let exitCode;
+    const directMessages = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    const worker = new Worker(PRODUCTION_WORKER_PATH, { workerData: workerPayload, stdout: true, stderr: true });
+    const initialThreadId = worker.threadId;
+    const cleanupStream = (stream) => {
+      if (!stream) return;
+      try { stream.removeAllListeners("data"); } catch (error) {}
+      try { stream.destroy(); } catch (error) {}
+    };
+    const cleanup = () => {
+      if (resultPort) {
+        try { resultPort.removeAllListeners(); } catch (error) {}
+        try { resultPort.close(); } catch (error) {}
+      }
+      cleanupStream(worker.stdout);
+      cleanupStream(worker.stderr);
+    };
+    const maybeFinish = () => {
+      if (settled || !hasResultMessage || !channelClosed || exitCode === undefined) return;
+      settled = true;
+      clearTimeout(timer);
+      cleanup();
+      resolve({
+        kind: "natural-exit",
+        message: resultMessage,
+        directMessages,
+        channelClosed,
+        exitCode,
+        initialThreadId,
+        finalThreadId: worker.threadId,
+        stdoutBytes,
+        stderrBytes,
+        stdioBytes: stdoutBytes + stderrBytes
+      });
+    };
+    const fail = async (error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      cleanup();
+      try { await worker.terminate(); } catch (terminateError) {}
+      reject(error);
+    };
+    const timer = setTimeout(() => {
+      fail(new Error("production validator worker did not close and exit before the lifecycle deadline"));
+    }, timeoutMs);
+    if (worker.stdout) worker.stdout.on("data", (chunk) => { stdoutBytes += chunk.length; });
+    if (worker.stderr) worker.stderr.on("data", (chunk) => { stderrBytes += chunk.length; });
+    worker.on("message", (message) => {
+      if (
+        !resultPort
+        && message
+        && typeof message === "object"
+        && message.type === "validator-harness-channel-v1"
+        && message.port
+        && typeof message.port.on === "function"
+      ) {
+        resultPort = message.port;
+        resultPort.on("message", (messageValue) => {
+          hasResultMessage = true;
+          resultMessage = messageValue;
+          maybeFinish();
+        });
+        resultPort.on("close", () => {
+          channelClosed = true;
+          maybeFinish();
+        });
+        resultPort.start();
+        return;
+      }
+      directMessages[directMessages.length] = message;
+    });
+    worker.on("error", (error) => { fail(error); });
+    worker.on("exit", (code) => {
+      exitCode = code;
+      maybeFinish();
+    });
+  });
+}
+
+function activeWorkerLifecycleHandles() {
+  const counts = { workers: 0, messagePorts: 0 };
+  if (typeof process._getActiveHandles !== "function") return counts;
+  for (const handle of process._getActiveHandles()) {
+    const name = handle && handle.constructor && handle.constructor.name;
+    if (name === "Worker") counts.workers += 1;
+    if (name === "MessagePort") counts.messagePorts += 1;
+  }
+  return counts;
+}
+
+async function waitForNoAdditionalWorkerLifecycleHandles(baseline) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const current = activeWorkerLifecycleHandles();
+    if (current.workers <= baseline.workers && current.messagePorts <= baseline.messagePorts) return current;
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+  const current = activeWorkerLifecycleHandles();
+  assert.fail(`validator lifecycle handles survived cleanup: baseline=${JSON.stringify(baseline)} current=${JSON.stringify(current)}`);
+}
+
 function parseTransportedWorkerEnvelope(message) {
   assert.equal(typeof message, "string");
   assert.ok(Buffer.byteLength(message, "utf8") <= REVIEWED_VALIDATOR_LIMITS.maxResultBytes);
@@ -392,18 +502,111 @@ test("asynchronous hang is terminated and fails closed", async () => {
   assert.equal(phase.status, "failed");
   assert.match(phase.problems.join(" "), /timed out/);
 });
-test("async validator whose event loop drains fails closed (no result)", async () => {
-  const phase = await runOne(makeValidatorModule("return new Promise(function(){});"), {}, 800);
+test("pending validator remains alive until the parent classifies the reviewed timeout", async () => {
+  const phase = await runOne(makeValidatorModule("return new Promise(function(){});"), {}, 300);
   assert.equal(phase.status, "failed");
+  assert.match(phase.problems.join(" "), /VALIDATOR_TIMEOUT: validator timed out/);
+  assert.doesNotMatch(phase.problems.join(" "), /WORKER_INTERNAL_FAILURE/);
 });
 test("worker crash (process.exit during load) fails closed", async () => {
   const id = `crash-${seq++}`;
   const d = rawDescriptor(id, `process.exit(1);\nmodule.exports={id:${JSON.stringify(id)},version:"1.0.0",semantic:false,actions:[],supportedPhases:["candidate"],validate:function(){return {status:"passed",problems:[]};}};`);
-  assert.equal((await runOne(d)).status, "failed");
+  const phase = await runOne(d);
+  assert.equal(phase.status, "failed");
+  assert.match(phase.problems.join(" "), /WORKER_INTERNAL_FAILURE: validator worker exited without a result/);
+  assert.doesNotMatch(phase.problems.join(" "), /VALIDATOR_TIMEOUT/);
 });
 test("worker startup failure (module syntax error) fails closed", async () => {
   const d = rawDescriptor(`synerr-${seq++}`, "this is (((not valid javascript");
   assert.equal((await runOne(d)).status, "failed");
+});
+
+test("production pending Promise reaches deterministic timeout and leaves no lifecycle handles", async () => {
+  const marker = path.join(os.tmpdir(), `vsec-pending-started-${seq++}.txt`);
+  try {
+    fs.rmSync(marker, { force: true });
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      validatorSourceForValidateBody(`require("node:fs").writeFileSync(${JSON.stringify(marker)},"started"); return new Promise(function(){});`),
+      async () => {
+        const reg = loadValidatorRegistry();
+        const baseline = activeWorkerLifecycleHandles();
+        const phase = await require("../kernel/execution/validation-cycle").runValidationPhase(
+          "candidate",
+          ["execution-plan"],
+          authoritativeWorkerContext("timeout-pending"),
+          { timeoutMs: 1000, expectedValidatorSetHash: reg.validatorSetHash }
+        );
+        assert.equal(fs.readFileSync(marker, "utf8"), "started", "validator must start before the deadline");
+        assert.equal(phase.status, "failed");
+        assert.match(phase.problems.join(" "), /VALIDATOR_TIMEOUT: validator timed out/);
+        assert.doesNotMatch(phase.problems.join(" "), /WORKER_INTERNAL_FAILURE/);
+        const after = await waitForNoAdditionalWorkerLifecycleHandles(baseline);
+        assert.ok(after.workers <= baseline.workers);
+        assert.ok(after.messagePorts <= baseline.messagePorts);
+      }
+    );
+  } finally {
+    fs.rmSync(marker, { force: true });
+  }
+});
+
+test("validator-realm prototype replacement cannot suppress timeout enforcement or cleanup", async () => {
+  const marker = path.join(os.tmpdir(), `vsec-timeout-prototype-started-${seq++}.txt`);
+  try {
+    fs.rmSync(marker, { force: true });
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      validatorSourceForValidateBody(`
+        require("node:fs").writeFileSync(${JSON.stringify(marker)},"started");
+        try { const wt=process.getBuiltinModule("worker_threads"); wt.MessagePort.prototype.ref=function(){}; wt.MessagePort.prototype.close=function(){}; } catch (error) {}
+        try { MessagePort.prototype.ref=function(){}; MessagePort.prototype.close=function(){}; } catch (error) {}
+        try { Promise.prototype.then=function(){ return new Promise(function(){}); }; } catch (error) {}
+        return new Promise(function(){});
+      `),
+      async () => {
+        const reg = loadValidatorRegistry();
+        const baseline = activeWorkerLifecycleHandles();
+        const phase = await require("../kernel/execution/validation-cycle").runValidationPhase(
+          "candidate",
+          ["execution-plan"],
+          authoritativeWorkerContext("timeout-prototype"),
+          { timeoutMs: 1000, expectedValidatorSetHash: reg.validatorSetHash }
+        );
+        assert.equal(fs.readFileSync(marker, "utf8"), "started", "validator must execute its mutation attempts");
+        assert.equal(phase.status, "failed");
+        assert.match(phase.problems.join(" "), /VALIDATOR_TIMEOUT: validator timed out/);
+        assert.doesNotMatch(phase.problems.join(" "), /WORKER_INTERNAL_FAILURE/);
+        await waitForNoAdditionalWorkerLifecycleHandles(baseline);
+      }
+    );
+  } finally {
+    fs.rmSync(marker, { force: true });
+  }
+});
+
+test("successful Promise completion closes the private harness channel and worker", async () => {
+  await withTemporaryProductionValidatorSource(
+    PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+    validatorSourceForValidateBody(`return Promise.resolve({status:"passed",problems:[],warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]});`),
+    async () => {
+      const reg = loadValidatorRegistry();
+      const outcome = await launchProductionWorkerToNaturalExit({
+        validatorId: "execution-plan",
+        expectedValidatorSetHash: reg.validatorSetHash,
+        phase: "candidate",
+        context: authoritativeWorkerContext("promise-success")
+      }, 3000);
+      assert.equal(outcome.kind, "natural-exit");
+      assert.equal(parseTransportedWorkerSuccessMessage(outcome.message).status, "passed");
+      assert.deepEqual(outcome.directMessages, []);
+      assert.equal(outcome.channelClosed, true);
+      assert.equal(outcome.exitCode, 0);
+      assert.ok(outcome.initialThreadId > 0);
+      assert.equal(outcome.finalThreadId, -1);
+      assert.equal(outcome.stdioBytes, 0);
+    }
+  );
 });
 
 // WORK UNIT 1 — exact bytes / replacement races

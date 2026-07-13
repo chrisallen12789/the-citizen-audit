@@ -49,6 +49,7 @@ const SafeJSONStringify = JSON.stringify;
 const SafeJSONParse = JSON.parse;
 const SafeMessagePortClose = Function.call.bind(MessagePort.prototype.close);
 const SafeMessagePortPostMessage = Function.call.bind(MessagePort.prototype.postMessage);
+const SafeMessagePortRef = Function.call.bind(MessagePort.prototype.ref);
 const SafeObjectCreate = Object.create;
 const SafeObjectDefineProperty = Object.defineProperty;
 const SafeObjectFreeze = Object.freeze;
@@ -77,6 +78,7 @@ const SAFE_BYTE_VALUES = new WeakMap();
 
 const HARNESS_CHANNEL_TYPE = "validator-harness-channel-v1";
 const { port1: HARNESS_RESULT_PORT, port2: PARENT_RESULT_PORT } = new MessageChannel();
+SafeMessagePortRef(HARNESS_RESULT_PORT);
 SafeMessagePortPostMessage(parentPort, { type: HARNESS_CHANNEL_TYPE, port: PARENT_RESULT_PORT }, [PARENT_RESULT_PORT]);
 try { SafeMessagePortClose(parentPort); } catch (error) {}
 
@@ -1020,8 +1022,10 @@ function checkedEnvelopeString(envelope) {
 function postEnvelope(envelope) {
   try {
     SafeMessagePortPostMessage(HARNESS_RESULT_PORT, checkedEnvelopeString(envelope));
-    SafeMessagePortClose(HARNESS_RESULT_PORT);
   } catch (error) { /* parent gone */ }
+  finally {
+    try { SafeMessagePortClose(HARNESS_RESULT_PORT); } catch (error) {}
+  }
 }
 
 function fail(code, diagnostic) {

@@ -1005,3 +1005,50 @@ for (const scenario of [
     cleanup(fx);
   });
 }
+
+test("pending action semantic validator is deterministically classified across 25 executions", async () => {
+  const marker = path.join(os.tmpdir(), `semantic-timeout-started-${process.pid}-${Date.now()}.txt`);
+  const validatorId = "semantic-timeout-repeat";
+  const dir = makeValidatorsDir([{
+    id: validatorId,
+    semantic: true,
+    actions: ["write_report"],
+    supportedPhases: ["candidate", "post_write"],
+    source: semanticValidatorSource(
+      validatorId,
+      `()=>{require("node:fs").writeFileSync(${JSON.stringify(marker)},"started"); return new Promise(()=>{});}`
+    )
+  }]);
+  try {
+    for (let iteration = 0; iteration < 25; iteration += 1) {
+      const fx = makeFixture({
+        txId: `TX-SEM-TIMEOUT-REPEAT-${iteration}`,
+        policy: semanticPolicy(validatorId)
+      });
+      try {
+        fs.rmSync(marker, { force: true });
+        const result = await executeApprovedTransactionForTest(fx.txId, {
+          rootDir: fx.root,
+          ledgerPath: fx.ledgerPath,
+          validatorsDir: dir,
+          projectRoot: testProjectRoot(dir),
+          timeoutMs: 250
+        });
+        const problems = result.problems.join("\n");
+        assert.equal(fs.readFileSync(marker, "utf8"), "started", `iteration ${iteration} validator did not start`);
+        assert.equal(result.disposition, "rejected", `iteration ${iteration}: ${problems}`);
+        assert.match(problems, /semantic-timeout-repeat: .*VALIDATOR_TIMEOUT: validator timed out/);
+        assert.doesNotMatch(problems, /WORKER_INTERNAL_FAILURE/);
+        assert.equal(result.attemptId, null, `iteration ${iteration} created an execution attempt`);
+        assert.equal(fs.existsSync(fx.targetPath), false, `iteration ${iteration} wrote governed state`);
+      } finally {
+        fs.rmSync(marker, { force: true });
+        cleanup(fx);
+      }
+    }
+  } finally {
+    fs.rmSync(marker, { force: true });
+    cleanupValidatorsDir(dir);
+  }
+  assert.equal(fs.existsSync(marker), false);
+});
