@@ -1738,6 +1738,7 @@ test("local require failure membrane and cache lifecycle expose no raw host thro
     ["revoked-proxy", `const pair = Proxy.revocable({ label: "revoked" }, {}); pair.revoke(); throw pair.proxy;`],
     ["malformed-proxy-prototype", `throw new Proxy({}, { getPrototypeOf() { return 1; } });`],
     ["throwing-proxy-traps", `throw new Proxy({}, { get() { throw new Error("get trap"); }, getPrototypeOf() { throw new Error("prototype trap"); }, ownKeys() { throw new Error("ownKeys trap"); } });`],
+    ["self-throwing-proxy-trap", `let thrown; thrown = new Proxy({}, { getPrototypeOf() { throw thrown; } }); throw thrown;`],
     ["accessor", `const thrown = {}; Object.defineProperty(thrown, "message", { get() { require("node:fs").writeFileSync(${JSON.stringify(hostileGetterMarker)}, "accessor-message"); return "accessor"; } }); throw thrown;`],
     ["cause", `throw new Error("outer", { cause: { nested: "cause" } });`],
     ["callsite", `Error.prepareStackTrace = function(error, sites) { return sites; }; const sites = new Error("callsite").stack; throw sites[0];`],
@@ -2067,6 +2068,180 @@ ${validateTopRetries}
       try { fs.rmSync(filePath, { force: true }); } catch (error) {}
     }
     for (const filePath of [hostMarker, topMarker, validateMarker, hostileGetterMarker]) {
+      try { fs.rmSync(filePath, { force: true }); } catch (error) {}
+    }
+  }
+});
+
+test("failed CommonJS cycle participants roll back atomically while prior and successful loads stay cached", async () => {
+  const suffix = `failed-cycle-${seq++}`;
+  const writtenDeps = [];
+  const depName = (label) => `${suffix}-${label}.js`;
+  const depPath = (label) => path.join(REAL_VALIDATORS, depName(label));
+  const writeDep = (label, source) => {
+    const filePath = depPath(label);
+    writtenDeps[writtenDeps.length] = filePath;
+    writeStrictFile(filePath, source);
+  };
+  const stateRequire = `require("./${depName("state")}")`;
+  const bump = (key) => `state.counts[${JSON.stringify(key)}]=(state.counts[${JSON.stringify(key)}]||0)+1;`;
+  const twoNodeCases = [
+    ["primitive", `exports.before="discarded";module.exports=7;`],
+    ["function", `module.exports=function provisionalFunction(){};`],
+    ["object", `module.exports={shape:"object"};`],
+    ["array", `module.exports=["array",{nested:true}];`],
+    ["nested", `module.exports={shape:{nested:{value:true}}};`],
+    ["self-reference", `const partial={shape:"self-reference"};partial.self=partial;module.exports=partial;`, `let thrown;thrown=new Proxy({}, {getPrototypeOf(){throw thrown;}});throw thrown;`]
+  ];
+  const threeNodeCases = ["a", "b", "c"];
+  const topFailedAttempts = [];
+  const validateFailedAttempts = [];
+  const expectedCounts = [];
+
+  writeDep("state", `"use strict";\nconst counts=Object.create(null);module.exports={counts,token:Object.create(null)};\n`);
+  writeDep("stable", `"use strict";\nconst state=${stateRequire};${bump("stable")}module.exports={label:"stable",token:Object.create(null)};\n`);
+
+  for (const [label, exportAssignment, failureStatement] of twoNodeCases) {
+    const aLabel = `two-${label}-a`;
+    const bLabel = `two-${label}-b`;
+    writeDep(aLabel, `"use strict";\nconst state=${stateRequire};${bump(aLabel)}${exportAssignment}\nrequire("./${depName(bLabel)}");\n${failureStatement || `throw new Error("failed two-node ${label} cycle");`}\n`);
+    writeDep(bLabel, `"use strict";\nconst state=${stateRequire};${bump(bLabel)}module.exports={participant:"b-partial"};\nconst a=require("./${depName(aLabel)}");\nmodule.exports={participant:"b",a};\n`);
+    topFailedAttempts[topFailedAttempts.length] = `expectFailure(${JSON.stringify(`top ${label} A`)},function(){require("./${depName(aLabel)}");});\nexpectFailure(${JSON.stringify(`top ${label} B`)},function(){require("./${depName(bLabel)}");});`;
+    validateFailedAttempts[validateFailedAttempts.length] = `expectFailure(${JSON.stringify(`validate ${label} A 1`)},function(){require("./${depName(aLabel)}");});\nexpectFailure(${JSON.stringify(`validate ${label} B 1`)},function(){require("./${depName(bLabel)}");});\nexpectFailure(${JSON.stringify(`validate ${label} A 2`)},function(){require("./${depName(aLabel)}");});\nexpectFailure(${JSON.stringify(`validate ${label} B 2`)},function(){require("./${depName(bLabel)}");});`;
+    expectedCounts[expectedCounts.length] = `checkCount(${JSON.stringify(aLabel)},6);checkCount(${JSON.stringify(bLabel)},6);`;
+  }
+
+  for (const failedAt of threeNodeCases) {
+    const labels = {
+      a: `three-fail-${failedAt}-a`,
+      b: `three-fail-${failedAt}-b`,
+      c: `three-fail-${failedAt}-c`
+    };
+    writeDep(labels.a, `"use strict";\nconst state=${stateRequire};${bump(labels.a)}module.exports={participant:"a-partial"};\nconst b=require("./${depName(labels.b)}");module.exports={participant:"a",b};${failedAt === "a" ? `throw new Error("failed at three-node A");` : ""}\n`);
+    writeDep(labels.b, `"use strict";\nconst state=${stateRequire};${bump(labels.b)}module.exports={participant:"b-partial"};\nconst c=require("./${depName(labels.c)}");module.exports={participant:"b",c};${failedAt === "b" ? `throw new Error("failed at three-node B");` : ""}\n`);
+    writeDep(labels.c, `"use strict";\nconst state=${stateRequire};${bump(labels.c)}module.exports={participant:"c-partial"};\nconst a=require("./${depName(labels.a)}");module.exports={participant:"c",a};${failedAt === "c" ? `throw new Error("failed at three-node C");` : ""}\n`);
+    topFailedAttempts[topFailedAttempts.length] = `expectFailure(${JSON.stringify(`top three fail ${failedAt} A`)},function(){require("./${depName(labels.a)}");});`;
+    validateFailedAttempts[validateFailedAttempts.length] = `expectFailure(${JSON.stringify(`validate three fail ${failedAt} A 1`)},function(){require("./${depName(labels.a)}");});\nexpectFailure(${JSON.stringify(`validate three fail ${failedAt} B 1`)},function(){require("./${depName(labels.b)}");});\nexpectFailure(${JSON.stringify(`validate three fail ${failedAt} C 1`)},function(){require("./${depName(labels.c)}");});\nexpectFailure(${JSON.stringify(`validate three fail ${failedAt} A 2`)},function(){require("./${depName(labels.a)}");});\nexpectFailure(${JSON.stringify(`validate three fail ${failedAt} B 2`)},function(){require("./${depName(labels.b)}");});\nexpectFailure(${JSON.stringify(`validate three fail ${failedAt} C 2`)},function(){require("./${depName(labels.c)}");});`;
+    expectedCounts[expectedCounts.length] = `checkCount(${JSON.stringify(labels.a)},7);checkCount(${JSON.stringify(labels.b)},7);checkCount(${JSON.stringify(labels.c)},7);`;
+  }
+
+  writeDep("nested-parent", `"use strict";\nconst state=${stateRequire};${bump("nested-parent")}let caught=false;let caughtCode="";\ntry{require("./${depName("nested-child")}");}catch(error){caught=true;caughtCode=error&&error.code;}\nmodule.exports={ok:true,caught,caughtCode,token:Object.create(null)};\n`);
+  writeDep("nested-child", `"use strict";\nconst state=${stateRequire};${bump("nested-child")}require("./${depName("nested-leaf")}");\nthrow new Error("caught nested child failure");\n`);
+  writeDep("nested-leaf", `"use strict";\nconst state=${stateRequire};${bump("nested-leaf")}module.exports={label:"nested-leaf",token:Object.create(null)};\n`);
+
+  writeDep("caught-cycle-parent", `"use strict";\nconst state=${stateRequire};${bump("caught-cycle-parent")}let caught=false;let childReturned=false;let caughtCode="";\ntry{require("./${depName("caught-cycle-b")}");childReturned=true;}catch(error){caught=true;caughtCode=error&&error.code;}\nmodule.exports={ok:true,caught,childReturned,caughtCode,token:Object.create(null)};\n`);
+  writeDep("caught-cycle-b", `"use strict";\nconst state=${stateRequire};${bump("caught-cycle-b")}module.exports={participant:"b-partial"};let caught=false;\ntry{require("./${depName("caught-cycle-c")}");}catch(error){caught=true;}\nmodule.exports={participant:"b-apparent-success",caught};\n`);
+  writeDep("caught-cycle-c", `"use strict";\nconst state=${stateRequire};${bump("caught-cycle-c")}module.exports={participant:"c-partial"};\nrequire("./${depName("caught-cycle-b")}");\nthrow new Error("cycle member failure caught by cycle ancestor");\n`);
+
+  writeDep("success-child", `"use strict";\nconst state=${stateRequire};${bump("success-child")}module.exports={label:"success-child",token:Object.create(null)};\n`);
+  writeDep("success-parent", `"use strict";\nconst state=${stateRequire};${bump("success-parent")}const child=require("./${depName("success-child")}");module.exports={label:"success-parent",child,token:Object.create(null)};\n`);
+  writeDep("success-two-a", `"use strict";\nconst state=${stateRequire};${bump("success-two-a")}module.exports={participant:"a"};const b=require("./${depName("success-two-b")}");module.exports.b=b;\n`);
+  writeDep("success-two-b", `"use strict";\nconst state=${stateRequire};${bump("success-two-b")}module.exports={participant:"b"};const a=require("./${depName("success-two-a")}");module.exports.a=a;\n`);
+  writeDep("success-three-a", `"use strict";\nconst state=${stateRequire};${bump("success-three-a")}module.exports={participant:"a"};const b=require("./${depName("success-three-b")}");module.exports.b=b;\n`);
+  writeDep("success-three-b", `"use strict";\nconst state=${stateRequire};${bump("success-three-b")}module.exports={participant:"b"};const c=require("./${depName("success-three-c")}");module.exports.c=c;\n`);
+  writeDep("success-three-c", `"use strict";\nconst state=${stateRequire};${bump("success-three-c")}module.exports={participant:"c"};const a=require("./${depName("success-three-a")}");module.exports.a=a;\n`);
+
+  try {
+    await withTemporaryProductionValidatorSource(
+      PRODUCTION_EXECUTION_PLAN_VALIDATOR_PATH,
+      `"use strict";
+const problems=[];
+function add(problem){problems[problems.length]=problem;}
+let poisonedPrototypeCalls=0;
+function poisonedPrototypeOperation(){poisonedPrototypeCalls+=1;throw new Error("poisoned prototype operation was called");}
+function replacePrototypeOperation(label,target,key){try{target[key]=poisonedPrototypeOperation;if(target[key]!==poisonedPrototypeOperation)add(label+" was not replaced");}catch(error){add(label+" replacement threw");}}
+replacePrototypeOperation("Map.prototype.delete",Map.prototype,"delete");
+replacePrototypeOperation("Map.prototype.get",Map.prototype,"get");
+replacePrototypeOperation("Map.prototype.has",Map.prototype,"has");
+replacePrototypeOperation("Map.prototype.set",Map.prototype,"set");
+replacePrototypeOperation("Array.prototype.push",Array.prototype,"push");
+replacePrototypeOperation("Array.prototype.pop",Array.prototype,"pop");
+replacePrototypeOperation("Array.prototype iterator",Array.prototype,Symbol.iterator);
+replacePrototypeOperation("Array.prototype.values",Array.prototype,"values");
+replacePrototypeOperation("Array.prototype.keys",Array.prototype,"keys");
+replacePrototypeOperation("Array.prototype.entries",Array.prototype,"entries");
+try{Symbol.iterator=Symbol("validator-replacement-iterator");}catch(error){}
+function auditFailure(label,caught){
+  if(caught===null||(typeof caught!=="object"&&typeof caught!=="function")){add(label+" exposed a non-object failure");return;}
+  try{if(Object.getPrototypeOf(caught)!==null)add(label+" failure prototype was not null");}catch(error){add(label+" failure prototype inspection threw");}
+  try{if(!Object.isFrozen(caught))add(label+" failure was not frozen");}catch(error){add(label+" frozen inspection threw");}
+  let keys=[];try{keys=Reflect.ownKeys(caught);}catch(error){add(label+" ownKeys threw");return;}
+  let names=0;let messages=0;let codes=0;
+  for(let index=0;index<keys.length;index+=1){
+    const key=keys[index];
+    if(typeof key!=="string"){add(label+" exposed a symbol field");continue;}
+    if(key==="name")names+=1;else if(key==="message")messages+=1;else if(key==="code")codes+=1;else add(label+" exposed field "+String(key));
+    const descriptor=Object.getOwnPropertyDescriptor(caught,key);
+    if(!descriptor||typeof descriptor.value!=="string"||descriptor.get!==undefined||descriptor.set!==undefined)add(label+"."+String(key)+" was not a string data field");
+  }
+  if(keys.length!==3||names!==1||messages!==1||codes!==1)add(label+" did not expose exactly name/message/code");
+  if(caught.name!=="ValidatorRequireFailure"||caught.message!=="validator dependency could not be loaded"||caught.code!=="VALIDATOR_THROW")add(label+" failure fields were not the reviewed values");
+  try{if(caught.constructor!==undefined||("stack" in caught)||("cause" in caught))add(label+" exposed constructor, stack, or cause");}catch(error){add(label+" hidden-field inspection threw");}
+}
+function expectFailure(label,fn){try{fn();add(label+" returned failed provisional exports");}catch(error){auditFailure(label,error);}}
+function expectSuccess(label,fn){try{return fn();}catch(error){add(label+" threw");auditFailure(label,error);return null;}}
+const state=${stateRequire};
+function checkCount(key,expected){if(state.counts[key]!==expected)add(key+" initialized "+String(state.counts[key])+" times; expected "+String(expected));}
+const stableTop=expectSuccess("stable preload",function(){return require("./${depName("stable")}");});
+const nestedParentTop=expectSuccess("nested parent",function(){return require("./${depName("nested-parent")}");});
+const nestedParentAgain=expectSuccess("nested parent cached",function(){return require("./${depName("nested-parent")}");});
+if(!nestedParentTop||nestedParentTop!==nestedParentAgain||nestedParentTop.caught!==true||nestedParentTop.caughtCode!=="VALIDATOR_THROW")add("caught nested failure did not leave its successful parent cached");
+const caughtCycleParentTop=expectSuccess("caught cycle parent",function(){return require("./${depName("caught-cycle-parent")}");});
+const caughtCycleParentAgain=expectSuccess("caught cycle parent cached",function(){return require("./${depName("caught-cycle-parent")}");});
+if(!caughtCycleParentTop||caughtCycleParentTop!==caughtCycleParentAgain||caughtCycleParentTop.caught!==true||caughtCycleParentTop.childReturned!==false||caughtCycleParentTop.caughtCode!=="VALIDATOR_THROW")add("caught cycle-member failure committed an invalid participant or displaced its successful caller");
+${topFailedAttempts.join("\n")}
+module.exports={id:"execution-plan",version:"1.0.0",supportedPhases:["candidate","post_write"],validate:function(){
+  if(require("./${depName("state")}")!==state||require("./${depName("stable")}")!==stableTop)add("a module loaded before failed transactions lost its cached identity");
+${validateFailedAttempts.join("\n")}
+  expectFailure("nested child retry 1",function(){require("./${depName("nested-child")}");});
+  expectFailure("nested child retry 2",function(){require("./${depName("nested-child")}");});
+  const nestedLeaf=expectSuccess("nested leaf direct load",function(){return require("./${depName("nested-leaf")}");});
+  const nestedLeafAgain=expectSuccess("nested leaf cached load",function(){return require("./${depName("nested-leaf")}");});
+  if(!nestedLeaf||nestedLeaf!==nestedLeafAgain)add("successful nested leaf was not identity-stable");
+  expectFailure("nested child retry with preloaded leaf",function(){require("./${depName("nested-child")}");});
+  if(require("./${depName("nested-leaf")}")!==nestedLeaf)add("failed child transaction removed a dependency loaded before it began");
+  if(require("./${depName("nested-parent")}")!==nestedParentTop)add("caught nested failure parent was reinitialized");
+  expectFailure("caught cycle B retry 1",function(){require("./${depName("caught-cycle-b")}");});
+  expectFailure("caught cycle C retry 1",function(){require("./${depName("caught-cycle-c")}");});
+  expectFailure("caught cycle B retry 2",function(){require("./${depName("caught-cycle-b")}");});
+  expectFailure("caught cycle C retry 2",function(){require("./${depName("caught-cycle-c")}");});
+  if(require("./${depName("caught-cycle-parent")}")!==caughtCycleParentTop)add("successful caller outside a failed cycle was reinitialized");
+  const successParent=expectSuccess("successful transaction parent",function(){return require("./${depName("success-parent")}");});
+  const successChild=expectSuccess("successful transaction child",function(){return require("./${depName("success-child")}");});
+  if(!successParent||!successChild||successParent.child!==successChild||require("./${depName("success-parent")}")!==successParent||require("./${depName("success-child")}")!==successChild)add("successful non-cycle transaction was not cached identity-stably");
+  const successTwoA=expectSuccess("successful two-cycle A",function(){return require("./${depName("success-two-a")}");});
+  const successTwoB=expectSuccess("successful two-cycle B",function(){return require("./${depName("success-two-b")}");});
+  if(!successTwoA||!successTwoB||successTwoA.b!==successTwoB||successTwoB.a!==successTwoA||require("./${depName("success-two-a")}")!==successTwoA||require("./${depName("success-two-b")}")!==successTwoB)add("successful two-node cycle was not committed identity-stably");
+  const successThreeA=expectSuccess("successful three-cycle A",function(){return require("./${depName("success-three-a")}");});
+  const successThreeB=expectSuccess("successful three-cycle B",function(){return require("./${depName("success-three-b")}");});
+  const successThreeC=expectSuccess("successful three-cycle C",function(){return require("./${depName("success-three-c")}");});
+  if(!successThreeA||!successThreeB||!successThreeC||successThreeA.b!==successThreeB||successThreeB.c!==successThreeC||successThreeC.a!==successThreeA||require("./${depName("success-three-a")}")!==successThreeA||require("./${depName("success-three-b")}")!==successThreeB||require("./${depName("success-three-c")}")!==successThreeC)add("successful three-node cycle was not committed identity-stably");
+${expectedCounts.join("\n")}
+  checkCount("stable",1);checkCount("nested-parent",1);checkCount("nested-child",4);checkCount("nested-leaf",4);
+  checkCount("caught-cycle-parent",1);checkCount("caught-cycle-b",5);checkCount("caught-cycle-c",5);
+  checkCount("success-parent",1);checkCount("success-child",1);checkCount("success-two-a",1);checkCount("success-two-b",1);checkCount("success-three-a",1);checkCount("success-three-b",1);checkCount("success-three-c",1);
+  if(poisonedPrototypeCalls!==0)add("validator-realm prototype replacements participated in cache bookkeeping");
+  return {status:problems.length?"failed":"passed",problems,warnings:[],checkedObjects:["OBJ-1"],checkedPaths:["public/data/report.json"]};
+}};
+`,
+      async () => {
+        const reg = loadValidatorRegistry();
+        const outcome = await launchProductionWorker({
+          validatorId: "execution-plan",
+          expectedValidatorSetHash: reg.validatorSetHash,
+          phase: "candidate",
+          context: authoritativeWorkerContext("ca".repeat(32))
+        }, 6000);
+        assert.equal(outcome.kind, "message");
+        assertNoDirectWorkerMessages(outcome);
+        assert.equal(outcome.stdioBytes, 0);
+        const parsed = parseTransportedWorkerSuccessMessage(outcome.message);
+        assert.equal(parsed.status, "passed", parsed.problems.join("\n"));
+        assert.deepEqual(parsed.problems, []);
+      }
+    );
+  } finally {
+    for (const filePath of writtenDeps) {
       try { fs.rmSync(filePath, { force: true }); } catch (error) {}
     }
   }

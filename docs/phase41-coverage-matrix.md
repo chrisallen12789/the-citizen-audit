@@ -1,8 +1,10 @@
 # Phase 4.1 - Coverage Matrix for Validator Cross-Realm Boundary Checkpoint
 
-Authoritative base: `3ecddc1359fc1285e65ff6b635868b57cdecdd6d`
+Authoritative base: `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`
 Review commit: `(this checkpoint)`
-Governing ruling: **HOLD - production validator source selection, fabricated descriptor execution, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, and failed-module cache-poisoning attacks are locked down; OS confinement still pending by instruction**
+Governing ruling: **HOLD - the failed-cycle-peer defect rejected at `75c5a9f` is corrected in this candidate code line and locally regression-covered; Phase 4.1 remains REPORTED as rejected and `VAL-RESULT-001` remains OPEN pending independent clean-room acceptance**
+
+This checkpoint does not authorize runtime activation, Phase 4.2 implementation, merge, push, deployment, or a production-security claim. PR #21 remains open, draft, inactive, unmerged, and under HOLD; Issues #9 and #15 remain open.
 
 Status legend:
 - **PASS** - executed in this workspace and passed
@@ -63,7 +65,13 @@ No broad capability declarations were added.
 | Failed direct module remains cached after top-level execution throws | FIXED | repeated top-level and validate-time requires must throw again; a returned provisional export fails the focused lifecycle regression |
 | Failed transitive leaf or incomplete ancestor remains reusable | FIXED | regression retries the failed parent, directly retries the leaf, and repeats both paths; every attempt fails through the reviewed membrane rather than returning partial exports |
 | Failed module exports a reusable primitive, function, object, nested object, array, or cyclic graph | FIXED | every partial-export shape is exercised across multiple retries and remains absent after failure |
-| Cache rollback clears successful unrelated modules or breaks CommonJS cycles | FIXED | successful direct/transitive modules and both cycle participants retain identity; cache deletion uses a captured trusted `Map.prototype.delete` operation |
+| Failed cycle peer remains cached with a failed participant's provisional exports | FIXED | focused two-node `A -> B -> A` regression fails on `75c5a9f`; A fails after B completes, and repeated direct A/B retries return only reviewed failures and re-execute both participants |
+| Three-node failed initialization group commits a completed peer | FIXED | `A -> B -> C -> A` is exercised with failure at A, B, and C followed by repeated direct retries of every participant |
+| Cycle ancestor catches participant failure and commits apparent success | FIXED | a failed cycle invalidates the catching cycle ancestor; an uninvolved caller outside the group may catch the reviewed failure and remain cached |
+| Nested rollback removes a successful caller or retains failed descendants | FIXED | per-load savepoints preserve the successful uninvolved caller and preloaded identity while failed nested children and newly loaded descendants retry |
+| Validator prototype or iterator replacement alters transaction rollback | FIXED | focused regression attempts replacement of Map get/has/set/delete, Array push/pop/iterators, and `Symbol.iterator`; captured operations and indexed traversal preserve rollback |
+| Trapful thrown-value inspection bypasses rollback | FIXED | private WeakMap branding classifies worker failures without prototype traversal; a self-rethrowing Proxy is exercised in direct repeated retries and a failed cycle |
+| Cache rollback clears successful unrelated modules or breaks CommonJS cycles | FIXED | preloaded modules and successful ordinary transactions remain cached; successful two- and three-node cycles commit atomically and retain participant/cross-reference identity |
 | `console._stdout` exposes worker stdio `MessagePort` | FIXED | direct production-worker regression proves global `console` is unavailable and parent-side stdio bytes remain 0 |
 | `console._stderr` exposes worker stdio `MessagePort` | FIXED | same regression proves `_stderr` is unavailable |
 | `console.Console` exposes host constructor or streams | FIXED | same regression proves `Console` is unavailable |
@@ -118,19 +126,18 @@ No broad capability declarations were added.
 
 | Suite | Result |
 |---|---|
-| focused failed-module cache lifecycle (`--test-name-pattern="cache lifecycle"`) | PASS, 1/1, normal exit on this host |
-| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 137/137 |
+| focused failed-cycle transaction (`--test-name-pattern="failed CommonJS cycle participants"`) | PASS, 1/1 on this candidate; exact test exits nonzero on rejected parent `75c5a9f` |
+| `node --test --test-concurrency=1 tests/validator-security.test.js` | PASS, 138/138 |
 | `node --test --test-concurrency=1 tests/execution-orchestrator.test.js` | PASS, 56/56, normal exit on this host |
 | `npm run bypass:audit:test` | PASS, 29/29 |
 | `npm run bypass:audit` | PASS, 92/92 owned, 0 unexplained, 0 violations |
 | repository JavaScript syntax sweep | PASS, 147 tracked `.js` files checked |
 | `npm run runtime:integration:test` | PASS, 28/28, normal exit on this host |
-| three consecutive clean-checkpoint runs of the exact required five-command set | PASS on Windows: 56/56 orchestrator, 28/28 integration, 48/48 isolation, 31/31 fault, and 333/333 aggregate in every run; all commands exited zero with zero tracked residue and zero new Node processes |
 | `npm run runtime:isolation:test` | PASS, 48/48 |
 | `npm run fault:test` | PASS, 31/31 |
 | `npm run events:test` | PASS, 7/7 |
 | `npm run archive:manifest:test` | PASS, 36/36 |
-| `npm run execution:test` | PASS, 333/333, normal exit on this host |
+| `npm run execution:test` | PASS, 334/334, normal exit on this host |
 | `npm run qa` | PASS, 159 HTML files |
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |

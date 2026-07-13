@@ -32,6 +32,8 @@ const SafeVmRunInContext = vm.runInContext.bind(vm);
 const SafeArrayIncludes = Function.call.bind(Array.prototype.includes);
 const SafeArrayIsArray = Array.isArray;
 const SafeArrayJoin = Function.call.bind(Array.prototype.join);
+const SafeArrayPop = Function.call.bind(Array.prototype.pop);
+const SafeArrayPush = Function.call.bind(Array.prototype.push);
 const SafeArraySlice = Function.call.bind(Array.prototype.slice);
 const SafeArraySort = Function.call.bind(Array.prototype.sort);
 const SafeBufferAlloc = Buffer.alloc.bind(Buffer);
@@ -957,16 +959,27 @@ function createValidatorContext() {
   return { context, runtime };
 }
 
+const WORKER_FAILURE_METADATA = new WeakMap();
+
 class WorkerFailure extends Error {
   constructor(code, diagnostic) {
     super(code);
     this.failureCode = code;
     this.diagnostic = diagnostic;
+    const metadata = SafeObjectCreate(null);
+    metadata.code = code;
+    metadata.diagnostic = diagnostic;
+    SafeWeakMapSet(WORKER_FAILURE_METADATA, this, metadata);
   }
 }
 
 function workerFailure(code, diagnostic) {
   return new WorkerFailure(code, diagnostic);
+}
+
+function getWorkerFailureMetadata(error) {
+  if (!SafeWeakMapHas(WORKER_FAILURE_METADATA, error)) return null;
+  return SafeWeakMapGet(WORKER_FAILURE_METADATA, error);
 }
 
 function safeFailureCode(code) {
@@ -1016,7 +1029,8 @@ function fail(code, diagnostic) {
 }
 
 function failFromCaught(error, fallbackCode, diagnostic) {
-  if (error instanceof WorkerFailure) return fail(error.failureCode, error.diagnostic);
+  const metadata = getWorkerFailureMetadata(error);
+  if (metadata !== null) return fail(metadata.code, metadata.diagnostic);
   return fail(fallbackCode, diagnostic);
 }
 
@@ -1126,7 +1140,67 @@ function loadClosureEntry(closure) {
   const validatorRuntime = createValidatorContext();
   lockValidatorHostAccess();
   const validatorContext = validatorRuntime.context;
-  const compiledCache = new Map(); // relPath -> { state: "loading", module } | { state: "loaded", exports }
+  const compiledCache = new Map(); // relPath -> one identity-stable load record
+  let activeLoadTransaction = null;
+
+  function createLoadTransaction() {
+    const transaction = SafeObjectCreate(null);
+    transaction.entries = [];
+    transaction.stack = [];
+    return transaction;
+  }
+
+  function trackLoadTransactionEntry(transaction, record) {
+    record.journalIndex = transaction.entries.length;
+    SafeArrayPush(transaction.entries, record);
+  }
+
+  function invalidateLoadTransactionFrom(transaction, rollbackFloor, failureCode) {
+    for (let index = transaction.entries.length - 1; index >= rollbackFloor; index -= 1) {
+      const record = transaction.entries[index];
+      record.valid = false;
+      record.state = "invalid";
+      record.failureCode = safeFailureCode(failureCode);
+      if (!record.executing && SafeMapGet(compiledCache, record.relPath) === record) {
+        SafeMapDelete(compiledCache, record.relPath);
+      }
+    }
+  }
+
+  function markActiveCycle(transaction, ancestor) {
+    let ancestorStackIndex = -1;
+    for (let index = 0; index < transaction.stack.length; index += 1) {
+      if (transaction.stack[index] === ancestor) {
+        ancestorStackIndex = index;
+        break;
+      }
+    }
+    if (ancestorStackIndex < 0) {
+      throw workerFailure("WORKER_INTERNAL_FAILURE", "validator module cache contains a non-active loading entry");
+    }
+    for (let index = ancestorStackIndex; index < transaction.stack.length; index += 1) {
+      const record = transaction.stack[index];
+      if (record.cycleFloor === null || ancestor.journalIndex < record.cycleFloor) {
+        record.cycleFloor = ancestor.journalIndex;
+      }
+    }
+  }
+
+  function commitLoadTransaction(transaction) {
+    for (let index = 0; index < transaction.entries.length; index += 1) {
+      const record = transaction.entries[index];
+      if (!record.valid) continue;
+      if (SafeMapGet(compiledCache, record.relPath) !== record || record.state !== "initialized" || record.executing) {
+        throw workerFailure("WORKER_INTERNAL_FAILURE", "validator load transaction cannot commit an incomplete module");
+      }
+    }
+    for (let index = 0; index < transaction.entries.length; index += 1) {
+      const record = transaction.entries[index];
+      if (!record.valid) continue;
+      record.state = "loaded";
+      record.module = null;
+    }
+  }
 
   function verifyOneModule(relPath) {
     const want = SafeMapGet(expected, relPath);
@@ -1210,13 +1284,17 @@ function loadClosureEntry(closure) {
   }
 
   function requireFailureCode(error) {
-    if (error instanceof WorkerFailure) return error.failureCode;
+    const metadata = getWorkerFailureMetadata(error);
+    if (metadata !== null) return metadata.code;
     return "VALIDATOR_THROW";
   }
 
-  function createValidatorRequire(fromRel) {
+  function createValidatorRequire(fromRel, ownerRecord) {
     return validatorRuntime.runtime.createRequire((spec) => {
       try {
+        if (!ownerRecord.valid) {
+          throw workerFailure(ownerRecord.failureCode, "invalidated validator module attempted to require a dependency");
+        }
         return requireBridgeSuccess(requireFrom(fromRel, spec));
       } catch (error) {
         return requireBridgeFailure(requireFailureCode(error));
@@ -1225,39 +1303,84 @@ function loadClosureEntry(closure) {
   }
 
   function loadModule(relPath) {
-    if (SafeMapHas(compiledCache, relPath)) {
+    if (activeLoadTransaction === null && SafeMapHas(compiledCache, relPath)) {
       const cached = SafeMapGet(compiledCache, relPath);
-      if (cached.state === "loading") return cached.module.exports;
-      if (cached.state === "loaded") return cached.exports;
-      throw workerFailure("WORKER_INTERNAL_FAILURE", "validator module cache state is invalid");
+      if (cached.state === "loaded" && cached.valid) return cached.exports;
+      throw workerFailure("WORKER_INTERNAL_FAILURE", "validator module cache contains a stale provisional entry");
     }
-    if (!SafeMapHas(verifiedSources, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module was not captured before execution");
-    const source = SafeMapGet(verifiedSources, relPath);
-    const module = validatorRuntime.runtime.createModule();
-    const loadingRecord = SafeObjectCreate(null);
-    loadingRecord.state = "loading";
-    loadingRecord.module = module;
-    SafeMapSet(compiledCache, relPath, loadingRecord); // seed only while this module is actively initializing
-    const absFile = path.join(ROOT, relPath);
-    let wrapper;
+    const ownsTransaction = activeLoadTransaction === null;
+    const transaction = ownsTransaction ? createLoadTransaction() : activeLoadTransaction;
+    if (ownsTransaction) activeLoadTransaction = transaction;
+    const savepoint = transaction.entries.length;
+    let cacheRecord = null;
     try {
-      wrapper = SafeVmCompileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile, parsingContext: validatorContext });
+      if (SafeMapHas(compiledCache, relPath)) {
+        const cached = SafeMapGet(compiledCache, relPath);
+        if (cached.state === "loading") {
+          markActiveCycle(transaction, cached);
+          return cached.module.exports;
+        }
+        if (cached.state === "initialized" && cached.valid) return cached.exports;
+        if (cached.state === "loaded") return cached.exports;
+        if (cached.state === "invalid" || !cached.valid) {
+          throw workerFailure(cached.failureCode, "invalidated validator module cannot be reused");
+        }
+        throw workerFailure("WORKER_INTERNAL_FAILURE", "validator module cache state is invalid");
+      }
+      if (!SafeMapHas(verifiedSources, relPath)) throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "closure module was not captured before execution");
+      const source = SafeMapGet(verifiedSources, relPath);
+      const module = validatorRuntime.runtime.createModule();
+      cacheRecord = SafeObjectCreate(null);
+      cacheRecord.relPath = relPath;
+      cacheRecord.state = "loading";
+      cacheRecord.module = module;
+      cacheRecord.exports = null;
+      cacheRecord.valid = true;
+      cacheRecord.executing = false;
+      cacheRecord.cycleFloor = null;
+      cacheRecord.failureCode = "WORKER_INTERNAL_FAILURE";
+      SafeMapSet(compiledCache, relPath, cacheRecord);
+      trackLoadTransactionEntry(transaction, cacheRecord);
+      const absFile = path.join(ROOT, relPath);
+      let wrapper;
+      try {
+        wrapper = SafeVmCompileFunction(source, ["exports", "require", "module", "__filename", "__dirname"], { filename: absFile, parsingContext: validatorContext });
+      } catch (error) {
+        throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "validator module compilation failed");
+      }
+      cacheRecord.executing = true;
+      SafeArrayPush(transaction.stack, cacheRecord);
+      try {
+        wrapper(module.exports, createValidatorRequire(relPath, cacheRecord), module, absFile, path.dirname(absFile));
+      } catch (error) {
+        if (getWorkerFailureMetadata(error) !== null) throw error;
+        throw workerFailure("VALIDATOR_THROW");
+      } finally {
+        SafeArrayPop(transaction.stack);
+        cacheRecord.executing = false;
+        if (!cacheRecord.valid && SafeMapGet(compiledCache, relPath) === cacheRecord) {
+          SafeMapDelete(compiledCache, relPath);
+        }
+      }
+      if (!cacheRecord.valid) {
+        throw workerFailure(cacheRecord.failureCode, "validator module was invalidated by a failed initialization group");
+      }
+      cacheRecord.state = "initialized";
+      cacheRecord.exports = module.exports;
+      if (ownsTransaction) commitLoadTransaction(transaction);
+      return module.exports;
     } catch (error) {
-      SafeMapDelete(compiledCache, relPath);
-      throw workerFailure("CLOSURE_VERIFICATION_FAILURE", "validator module compilation failed");
+      let rollbackFloor = savepoint;
+      if (cacheRecord !== null && cacheRecord.cycleFloor !== null && cacheRecord.cycleFloor < rollbackFloor) {
+        rollbackFloor = cacheRecord.cycleFloor;
+      }
+      const failureCode = requireFailureCode(error);
+      invalidateLoadTransactionFrom(transaction, rollbackFloor, failureCode);
+      if (getWorkerFailureMetadata(error) !== null) throw error;
+      throw workerFailure(failureCode);
+    } finally {
+      if (ownsTransaction) activeLoadTransaction = null;
     }
-    try {
-      wrapper(module.exports, createValidatorRequire(relPath), module, absFile, path.dirname(absFile));
-    } catch (error) {
-      SafeMapDelete(compiledCache, relPath);
-      if (error instanceof WorkerFailure) throw error;
-      throw workerFailure("VALIDATOR_THROW");
-    }
-    const loadedRecord = SafeObjectCreate(null);
-    loadedRecord.state = "loaded";
-    loadedRecord.exports = module.exports;
-    SafeMapSet(compiledCache, relPath, loadedRecord);
-    return module.exports;
   }
 
   return { exports: loadModule(closure.entryRelPath), runtime: validatorRuntime.runtime };

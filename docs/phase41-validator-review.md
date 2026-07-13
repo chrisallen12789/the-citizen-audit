@@ -1,11 +1,13 @@
 # Phase 4.1 - Validator Worker Cross-Realm Boundary Review
 
-Base checkpoint: `3ecddc1359fc1285e65ff6b635868b57cdecdd6d`
+Base checkpoint: `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`
 Review commit: `(this checkpoint)`
-Ruling: **HOLD - production validator source selection, direct worker source bypass, immutable reviewed limits, UTF-8 transport enforcement, private worker channel ownership, shared-intrinsic mutation, MessagePort prototype dispatch, dependency-substitution/hash-prototype, realpath Buffer facade, console/stdout MessagePort, own/inherited/post-lock global authority, symbol-keyed dispatcher, cross-realm host-authority, local-require host-exception, and failed-module cache-poisoning attacks are locked down; OS confinement still pending by instruction**
+Ruling: **HOLD - the failed-cycle-peer defect rejected at `75c5a9f` is corrected in this candidate code line and covered by local regression evidence; Phase 4.1 remains REPORTED as rejected pending independent clean-room acceptance, and OS confinement remains pending by instruction**
+
+Governance state: `VAL-RESULT-001` remains OPEN; PR #21 remains open, draft, inactive, unmerged, and under HOLD; Issues #9 and #15 remain open; runtime activation and Phase 4.2 implementation remain prohibited. This checkpoint does not authorize merge, push, deployment, or a production-security claim.
 
 ## Scope
-This checkpoint continues from rejected checkpoint `3ecddc1359fc1285e65ff6b635868b57cdecdd6d` and corrects the remaining failed-module cache-poisoning defect without weakening its require-failure membrane:
+This checkpoint replaces rejected checkpoint `75c5a9fbdd9c7979bcfa59985b0b55f996cc21c5`. That checkpoint correctly removed a directly failed module and unwound ordinary failed ancestors, but a completed CommonJS cycle peer could remain cached while retaining a failed participant's provisional exports. This correction addresses that cycle-peer condition without weakening the reviewed require-failure membrane:
 
 1. validator modules still compile and execute inside a separate `vm` context with a frozen null-prototype validator global
 2. validator top-level code and `validate()` now receive only validator-realm `module`, `exports`, `require`, builtin facades, validation context objects, arrays, byte wrappers, stat wrappers, hash wrappers, JSON parse results, and dependency return values
@@ -15,7 +17,7 @@ This checkpoint continues from rejected checkpoint `3ecddc1359fc1285e65ff6b63586
 6. the CommonJS shim is created inside the validator context, so `require.prototype`, callable `.prototype` objects, and constructor-chain probes do not climb back into the harness realm
 7. the validation context is serialized in the harness and parsed inside the validator realm, preventing `Object.getPrototypeOf(context).constructor.constructor(...)` host-global recovery
 8. local dependency load failures are converted at the host/validator boundary into primitive response records; catchable require failures are created inside the validator realm as frozen null-prototype records
-9. closure-local modules now move through explicit absent, loading, and loaded cache states; failed compilation or execution deletes only the active provisional entry, so failed transitive ancestors unwind while successful unrelated modules remain cached
+9. closure-local loads now use a bounded outer-load transaction journal, an active execution stack, per-load savepoints, cycle floors, and explicit absent, loading, initialized, loaded, and invalid states; only successful outer-transaction commit promotes valid initialized records to loaded, while failure removes the relevant failed descendants and initialization group
 10. the previously verified console/stdout lockdown, durable global freeze, realpath string-only facade, pre-execution closure capture, MessagePort prototype hardening, crypto Hash wrapper, dependency-substitution protection, bounded transport, source-selection lockdown, immutable limits, and validatorSetHash verification remain in force
 
 OS-level validator confinement was not started.
@@ -94,13 +96,16 @@ This covers direct dependencies, transitive dependencies, dependency failures du
 ### Failed Module Cache Lifecycle
 The closure-local CommonJS cache now has an explicit reviewed lifecycle:
 - an absent module has no cache entry
-- a module being compiled or executed has a provisional `loading` record that refers to its live validator-realm module object, preserving CommonJS cycle behavior including `module.exports` reassignment
-- only successful completion replaces that record with `loaded` and retains the final exports
-- compilation failure, top-level execution failure, or a transitive dependency failure deletes the current module's provisional record before propagating the reviewed failure
-- normal stack unwinding therefore deletes a failed leaf and every still-loading ancestor while leaving previously loaded unrelated modules intact
-- every cache operation, including deletion, uses captured call-bound `Map` operations rather than validator-replaceable prototype dispatch
+- each outermost absent-module load creates one synchronous transaction with an append-only journal and active execution stack; every new identity-stable record is journaled before validator code can observe it
+- a wrapper executing in the validator realm is `loading` and exposes its live validator-realm `module.exports` only to a CommonJS back-edge, preserving reassignment and ordinary cycle semantics
+- a wrapper that returns successfully becomes transaction-local `initialized`, not independently committed; only a successful outer transaction first validates every live journal record and then promotes all valid initialized records to `loaded`
+- each nested load records the current journal length as its rollback savepoint; ordinary nested failure invalidates and removes only records created from that savepoint onward, so an uninvolved caller may catch the reviewed failure and complete
+- a back-edge to a loading ancestor records the earliest cycle journal floor across the active group; participant failure rolls back from that floor even if another peer's wrapper already returned or a cycle ancestor catches the reviewed failure
+- invalid completed records are removed immediately; invalid executing records remain non-exporting tombstones only until their wrappers unwind, cannot issue later dependency loads, cannot be reseeded recursively, and cannot commit
+- records that were loaded before the transaction are never journaled and remain cached with stable identity; no failure clears the complete cache
+- cache lookup and deletion use captured call-bound `Map` operations; journal and stack mutation use captured call-bound `Array.prototype.push` and `Array.prototype.pop`, with indexed traversal rather than validator-controlled iterators
 
-A later `require()` of a failed direct module, failed leaf, or failed ancestor retries initialization. Partial primitive, function, object, nested-object, array, and cyclic-object exports are never returned as successfully loaded values after failure. The cache is not cleared globally, successful modules remain cached, and successful CommonJS cycles remain supported.
+For `A -> B -> A`, where B completes after observing A's provisional exports and A then fails, the transaction removes both A and B. A later direct `require()` of either participant retries initialization. The same behavior is covered for three-node cycles, failure at every participant, repeated alternating retries, `module.exports` reassignment, and primitive, function, object, nested-object, array, and self-referential provisional export shapes. Successful direct and transitive loads and successful two- and three-node CommonJS cycles still commit and retain cross-reference identity.
 
 ### Capability Facade Return Hardening
 Allowed builtins remain explicit, but facades no longer return raw host-native authority objects:
@@ -123,9 +128,7 @@ The validation-cycle boundary now performs explicit cleanup on every completion 
 - `worker.terminate()` is awaited unless the worker has already emitted `exit`
 - the same cleanup discipline is used by the test-only production-worker launcher
 
-This preserves normal completion for the full execution-orchestrator, runtime-integration, runtime-isolation, fault, and aggregate execution commands on this Windows host. Linux-host termination could not be directly reproduced in this desktop session because WSL has no installed distributions and Docker is unavailable.
-
-From the clean committed checkpoint, the exact required command set was also run three consecutive times on this Windows host. Every command terminated with exit status zero, left no tracked residue, and left no new Node process. This is local termination evidence only and is not represented as Linux-host reproduction.
+This preserves normal completion for the full execution-orchestrator, runtime-integration, runtime-isolation, fault, and aggregate execution commands on this Windows host. The required three-run Linux-host sequence is recorded as `NOT LOCAL`: WSL has no installed distribution and Docker is unavailable, so no Windows execution is represented as Linux evidence.
 
 ### Same-Realm Intrinsic Hardening Retained
 The production worker still uses `vm.compileFunction`, but it no longer relies on mutable shared intrinsics after validator bytes begin executing.
@@ -145,6 +148,7 @@ After validator bytes may have executed, the harness avoids mutable receiver syn
 - string checks use captured `String.prototype.startsWith`, `slice`, and `split`
 - buffer operations use captured `Buffer.prototype.subarray` and `toString`
 - map/set operations use captured `Map`/`Set` prototype functions
+- transaction journals and active stacks use captured `Array.prototype.push`/`pop` operations plus indexed traversal; cache transaction operations use captured `Map.prototype.get`/`has`/`set`/`delete`
 - result normalization appends by indexed assignment instead of `Array.prototype.push`
 - normalized problem merging avoids spread/iterator semantics
 - closure dependency resolution avoids post-load iterator dependence where enforcement matters
@@ -175,6 +179,16 @@ The previous Phase 4.1 corrections remain in force:
 
 ## Regressions Added
 New direct production-worker regressions prove:
+- the exact focused failed-cycle regression fails on rejected parent `75c5a9f` and passes on this candidate correction
+- a two-node `A -> B -> A` cycle cannot retain B after A fails following B's completion; alternating direct A/B retries re-execute both participants every time
+- the two-node failure is repeated across primitive, function, object, nested-object, array, and self-referential partial exports, including explicit `module.exports` reassignment before the back-edge
+- three-node `A -> B -> C -> A` cycles roll back when A, B, or C fails, and repeated direct retries of every participant reinitialize all three
+- an ordinary nested child and descendant failure may be caught while its uninvolved parent completes and remains cached; the failed child and descendant retry, and a dependency loaded before a later failed retry remains identity-stable
+- a cycle ancestor that catches another participant's failure is invalidated and cannot commit apparent success, while a caller outside the failed cycle may catch the reviewed failure, complete, and remain cached
+- a module loaded before failed transactions and modules loaded by a successful transaction remain cached; successful two- and three-node cycles commit with stable participant and cross-reference identity
+- validator-realm replacement attempts against `Map.prototype.get`/`has`/`set`/`delete`, `Array.prototype.push`/`pop`, array iterators, and `Symbol.iterator` do not participate in transaction bookkeeping
+- worker failures are classified through a private host WeakMap rather than trapful prototype traversal; a Proxy whose `getPrototypeOf` trap rethrows itself cannot bypass invalidation and is retried in both direct and cyclic failure paths
+- the focused worker produces no direct worker messages and zero stdout/stderr bytes, and every caught dependency failure remains the exact frozen null-prototype `name`/`message`/`code` record
 - a declared direct dependency that throws at module top level can be caught by the entry validator without exposing host `WorkerFailure`, host `Error`, host prototypes, host constructors, host globals, inherited Agent-like sentinels, dispatcher functions, factories, callbacks, raw `Map`s, or manufactured pools
 - the same direct dependency failure path remains host-free when caught inside `validate()`
 - transitive dependency failures are membrane-protected both at entry-module top level and during `validate()`
@@ -259,9 +273,10 @@ Retained direct production-worker regressions prove:
 - normal authoritative validators still pass
 
 ## Test Totals Observed In This Workspace
-- validator-security: 137/137
+- focused failed-cycle regression: 1/1 on this candidate; the exact test exits nonzero on rejected parent `75c5a9f`
+- validator-security: 138/138
 - execution-orchestrator: 56/56
-- execution suite: 333/333
+- execution suite: 334/334
 - runtime-integration: 28/28
 - runtime-isolation: 48/48
 - fault and recovery: 31/31
@@ -281,6 +296,11 @@ Host note:
 - WSL has no installed Linux distributions and Docker is not installed in this desktop session, so Linux-host termination could not be directly reproduced here. This is recorded as a host limitation, not as a claimed Linux result.
 
 ## Additional Confirmations
+- no failed initialization participant remains reachable directly or through a cached cycle peer in the focused two- and three-node cases
+- every invalidated participant is absent after unwind and executes again on direct retry
+- rollback is bounded by the nested savepoint or implicated cycle floor and never clears the complete cache
+- modules loaded before a failed transaction and uninvolved callers that catch a nested failure retain identity
+- successful ordinary transactions and successful two- and three-node cycles remain cached and identity-stable
 - all closure bytes are verified and captured before any validator byte executes
 - no validator source verification occurs after validator execution begins
 - no string-keyed or symbol-keyed default global exposes raw host authority in the covered own, inherited, and post-lock regression paths
@@ -318,4 +338,4 @@ The replacement checkpoint patch must be packaged as raw Git output:
 - delivered patch bytes verified against a separately regenerated raw `git diff --binary`
 
 ## Residual Hold
-This checkpoint intentionally stops before OS-level validator confinement. The source-boundary, production-root, direct-import, fabricated-descriptor execution, direct-worker source, mutable-limit, UTF-8 result-byte, success-transport, failure-transport, worker-channel, shared-intrinsic, MessagePort prototype, dependency-substitution/hash-prototype, durable-global, cross-realm host-authority, local-require host-exception, and failed-module cache-poisoning defects are corrected in this code line, but OS-level validator confinement remains future work and the HOLD stays in place.
+This checkpoint intentionally stops before OS-level validator confinement. The failed-cycle-peer defect is corrected in this candidate code line and has local regression evidence, but independent clean-room acceptance has not occurred. Phase 4.1 therefore remains REPORTED as rejected, `VAL-RESULT-001` remains OPEN, runtime activation remains prohibited, and the HOLD stays in place.
