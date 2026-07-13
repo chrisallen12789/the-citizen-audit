@@ -2,7 +2,7 @@
 
 ## Status and method
 
-This register records sources used to form the **RECOMMENDED** but **OPEN** P42-D003 architecture class. The task used repository records only and did not access or independently recheck any external source. External facts below are therefore **REPORTED** from the existing [foundational source register](phase42-foundational-source-register.md), whose stated review date is 2026-07-12. The repository documents were directly inspected on 2026-07-12.
+This register records sources used to form the **RECOMMENDED** but **OPEN** P42-D003 architecture class. The correction task used repository records and one source record supplied by independent review; Codex did not access or independently recheck any external source. External facts below are therefore **REPORTED** either from the existing [foundational source register](phase42-foundational-source-register.md), whose stated review date is 2026-07-12, or from the explicitly identified independent-review record. The repository documents were directly inspected on 2026-07-12.
 
 A source describing an available mechanism does not establish that the project selected, configured, attached, exercised, or reproduced it correctly. Candidate-specific behavior remains **OPEN** until the exact production profile and mechanism are tested with the evidence in [the P42-D003 test and evidence gates](phase42-d003-test-and-evidence-gates.md).
 
@@ -36,6 +36,14 @@ The stable identifiers and claims in this section are reused from the foundation
 | SRC-UBU-004 | Ubuntu privilege restriction | Canonical | Official Ubuntu security documentation | Ubuntu documents AppArmor as its supported mandatory-access-control mechanism and lists cgroups and filesystem capabilities among privilege-restriction features. | This does not establish the exact policy, mode, attachment, release behavior, or correctness of a project profile. | Not checked externally in this task; REPORTED source-register date 2026-07-12. | REPORTED primary-source fact. |
 | SRC-UBU-005 | Ubuntu security-feature overview | Canonical | Official Ubuntu security documentation | Ubuntu records security-feature availability across releases, supporting later profile comparison and capability probing. | Feature tables do not establish enabled state, operational suitability, policy correctness, or support for a project claim. | Not checked externally in this task; REPORTED source-register date 2026-07-12. | REPORTED primary-source fact. |
 
+## Independent-review supplied source
+
+Codex did not access the external page in this correction task. This record is reproduced from independent review and is used only to support the need for an explicit device and kernel-interface policy; it does not establish that any mechanism or view is configured correctly.
+
+| Stable source ID | Title | Publisher | URL | Source type | Claim supported | Limitation | Date independently checked | Classification |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| SRC-D003-LNX-009 | The /proc Filesystem | Linux kernel documentation | [Kernel documentation](https://docs.kernel.org/filesystems/proc.html) | Official kernel documentation | `/proc` is an interface to kernel internal data structures and can expose information and controls, including interfaces capable of changing certain kernel parameters. | This does not define the project's allowed `/proc` view, prove that mount isolation is sufficient, or cover every device, pseudo-filesystem, syscall, capability, or kernel interface. | 2026-07-12 | REPORTED primary-source fact supplied by independent review. |
+
 ## Project inferences
 
 | Stable source ID | Title | Publisher | Source type | Claim supported | Limitation | Date checked | Classification |
@@ -52,6 +60,7 @@ The repository source register inspected for this task does not contain sufficie
 - a rootless or rootful container runtime;
 - a lightweight VM, microVM, full VM, or hybrid host and guest profile;
 - a complete local-IPC policy for an exact production image;
+- the exact device-object and kernel-interface policy, including the allowed `/dev`, `/proc`, `/sys`, cgroupfs, debugfs, tracefs, securityfs, runtime-control-filesystem, inherited-descriptor, syscall, capability, and mounted-object surfaces;
 - the exact AppArmor or reviewed-equivalent policy and attachment model;
 - namespace, cgroup, systemd, pidfd, seccomp, dump, diagnostic, filesystem, and descriptor interactions on both Ubuntu candidate releases;
 - exact service-manager survival, restart, and reconciliation behavior for the proposed lifecycle;
@@ -67,6 +76,7 @@ Those facts remain **OPEN** and require later primary-source review plus direct 
 4. Treat documented availability as a capability candidate, not evidence of enabled state or correct configuration.
 5. Preserve project inferences as inferences until negative enforcement and independent reproduction evidence support an approval decision.
 6. Do not infer Ubuntu 26.04.1 behavior from Ubuntu 24.04, or the reverse.
+7. Use SRC-D003-LNX-009 only to justify explicit device and kernel-interface policy and evidence; do not treat it as proof that a `/proc` view, mount boundary, device policy, or other mechanism is configured correctly.
 
 ## Nonclaims
 

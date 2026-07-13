@@ -20,13 +20,13 @@ Files:
 
 | Decision | Current status | Recommendation |
 | --- | --- | --- |
-| P42-D002 | APPROVED | Project owner approved the documented hostile-validator and arbitrary-native-code threat model on 2026-07-12. [Approval record](phase42-d002-owner-approval.md). |
+| P42-D002 | APPROVED | Project owner approved the documented hostile-validator and arbitrary-native-code threat model on 2026-07-12. [Approval record](phase42-d002-owner-approval.md). Immutable identity: source `93263dc3790c93465f13107f86448b77255f45c0`, blob `672e3351b4393f3908908903823c3c3931ed883d`, 17,893 bytes, SHA-256 `41129a387636188c70c9a80c44a95c2090279531dc6336864f24562b313b02f8`. |
 | P42-D001 | OPEN | RECOMMENDED: Ubuntu Server 24.04 LTS, amd64, minimal/headless, GA kernel track as the provisional candidate. Final approval requires an Ubuntu 24.04 versus Ubuntu 26.04.1 comparison or a recorded earlier freeze reason. |
 | P42-D003 | OPEN | RECOMMENDED: layered, OS-native Linux confinement under a dedicated external supervisor or launcher, with fail-closed capability verification and mandatory assurance evidence. [Package](phase42-d003-confinement-composition.md). |
 
 P42-D002 is APPROVED as an architecture decision. P42-D001 remains OPEN and provisional. Approval does not authorize implementation or prove mitigation.
 
-P42-D003 remains OPEN pending independent review and explicit project-owner approval. Its package does not resolve P42-D004 through P42-D022. No automatic merge or implementation is authorized.
+P42-D003 remains OPEN. Its package may be independently reviewed now, but final project-owner approval must wait for approved P42-D001, exact-platform reconciliation, resolution of D003-GAP-AGG-001 and D003-GAP-DEVICE-001, and independent review of the reconciled package. It does not resolve P42-D004 through P42-D022. No automatic merge or implementation is authorized.
 
 ## Repository incorporation
 
@@ -46,7 +46,7 @@ The decision register links P42-D002 to its approved threat model and owner-appr
 1. Confirm Phase 4.1 status references still state **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN** unless a later independently accepted checkpoint changes that status.
 2. Confirm Phase 4.2 remains **PLANNED** and no implementation claim is introduced.
 3. Confirm the accepted Phase 4.2 architecture requirements remain authoritative where this packet is silent.
-4. Treat approved P42-D002 as an input, preserve its reopen triggers, and select P42-D003 only after independent review and owner action.
+4. Treat approved P42-D002 as an immutable input, complete P42-D001 first, and do not submit P42-D003 for final owner approval until exact-platform reconciliation, gap resolution, and independent review are complete.
 5. Confirm Ubuntu 24.04 LTS is operationally supportable through the intended implementation and review period and complete the Ubuntu 24.04 versus Ubuntu 26.04.1 comparison after 26.04.1 becomes available, unless an earlier freeze reason is recorded.
 6. Confirm the team accepts amd64-only initial production scope.
 7. Confirm the arbitrary-native-code attacker assumption is intentional.
@@ -83,10 +83,14 @@ Architecture reviewers should answer explicitly:
 
 ## Decision order before mechanism selection
 
-1. Use approved P42-D002 as the threat-model input, subject to its reopen triggers.
-2. Select P42-D001 against that threat model and production deployment and operational constraints.
-3. Select P42-D003: a confinement-mechanism composition that maps every accepted requirement to an enforcement point on the later-approved baseline and remains valid under the approved native-code attacker model.
+1. Retain approved P42-D002, subject to its exact approved scope and reopen triggers.
+2. Complete and approve P42-D001.
+3. Reconfirm the P42-D003 recommendation against the exact P42-D001 platform profile.
+4. Independently review the reconciled P42-D003 package.
+5. Explicitly approve, revise, or reject P42-D003.
+6. Resolve P42-D004 through P42-D022 in dependency order.
+7. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
-The current P42-D003 package is a RECOMMENDED proposal for that review step, not an approval or implementation authorization.
+The current P42-D003 package is a RECOMMENDED proposal that may be reviewed while P42-D001 remains open. It is not eligible for final owner approval until the sequence above and the D003-GAP-AGG-001 and D003-GAP-DEVICE-001 blockers are resolved.
 
 Implementation must still wait until Phase 4.1 is independently accepted and Phase 4.2 is formally authorized to begin.

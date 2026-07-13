@@ -4,6 +4,8 @@
 
 **APPROVED — project owner, 2026-07-12.** The approval is recorded in the [P42-D002 owner-approval record](phase42-d002-owner-approval.md). The approved Phase 4.2 threat model is compromise-oriented:
 
+The immutable approval binds to source commit `93263dc3790c93465f13107f86448b77255f45c0`, path `docs/phase42-d002-threat-model.md`, Git blob `672e3351b4393f3908908903823c3c3931ed883d`, 17,893 object bytes, and SHA-256 `41129a387636188c70c9a80c44a95c2090279531dc6336864f24562b313b02f8`. Later approval metadata does not broaden that approved substance.
+
 > The attacker is assumed to control validator code, dependencies, inputs, staged artifacts, outputs, timing, failure behavior, concurrency, and retries, and may obtain arbitrary native-code execution inside the confined validator process. The OS boundary must still protect the host, supervisor, other attempts, and accepted result path.
 
 This assumption deliberately prevents Phase 4.2 from depending on Phase 4.1 JavaScript-level containment remaining intact. Phase 4.1 remains valuable defense in depth, but the OS boundary must withstand a fully compromised validator process.

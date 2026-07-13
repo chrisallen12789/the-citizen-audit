@@ -4,6 +4,8 @@
 
 P42-D002 is **APPROVED** by the project owner as of 2026-07-12. P42-D001 remains **OPEN** and provisionally **RECOMMENDED** pending its required platform comparison and explicit owner approval.
 
+The P42-D002 approval is immutably bound to source commit `93263dc3790c93465f13107f86448b77255f45c0`, path `docs/phase42-d002-threat-model.md`, Git blob `672e3351b4393f3908908903823c3c3931ed883d`, 17,893 bytes, and SHA-256 `41129a387636188c70c9a80c44a95c2090279531dc6336864f24562b313b02f8`.
+
 - **P42-D002:** APPROVED threat model and attacker capabilities;
 - **P42-D001:** authoritative production operating-system baseline.
 
@@ -20,9 +22,13 @@ Phase 4.1 remains **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN**
 
 ## Decision order
 
-1. Use approved P42-D002 as the threat-model input, subject to its reopen triggers.
-2. Select the production platform under P42-D001 against that threat model and production deployment and operational constraints.
-3. Independently review the OPEN P42-D003 layered OS-native Linux composition recommendation against both decisions.
+1. Retain approved P42-D002, subject to its exact approved scope and reopen triggers.
+2. Complete and approve P42-D001.
+3. Reconfirm the P42-D003 recommendation against the exact P42-D001 platform profile.
+4. Independently review the reconciled P42-D003 package.
+5. Explicitly approve, revise, or reject P42-D003.
+6. Resolve P42-D004 through P42-D022 in dependency order.
+7. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
 ## Document map
 
@@ -41,7 +47,7 @@ Phase 4.1 remains **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN**
 - [P42-D003 source register](phase42-d003-source-register.md)
 - [P42-D003 open questions and handoff](phase42-d003-open-questions-and-handoff.md)
 
-P42-D003 remains **OPEN — recommendation documented; pending independent review and explicit project-owner approval.** Its package recommends an architecture class and does not resolve P42-D004 through P42-D022 or authorize implementation.
+P42-D003 remains **OPEN — recommendation documented.** The package may be independently reviewed while P42-D001 remains OPEN, but final P42-D003 owner approval is blocked until P42-D001 is approved, the recommendation is reconfirmed against the exact selected platform, both OPEN D003 review gaps are resolved, and the reconciled package receives independent review. The package does not resolve P42-D004 through P42-D022 or authorize implementation.
 
 ## Decision posture
 
@@ -49,7 +55,7 @@ P42-D002 is **APPROVED** as an architecture decision. P42-D001 remains **RECOMME
 
 **REPORTED:** the supplied source register records primary-source references for platform facts and methodology. This integration did not independently re-verify those external sources; the recommendations and project inferences are distinct from those reported facts.
 
-Approval of P42-D001 and P42-D002 does **not** approve:
+Approval of P42-D002, and any later approval of P42-D001, does **not** by itself approve:
 
 - a container runtime;
 - namespaces, cgroups, seccomp, AppArmor, Landlock, systemd sandboxing, or a VM as the final mechanism;

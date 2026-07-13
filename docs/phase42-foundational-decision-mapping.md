@@ -96,18 +96,16 @@ Before any owner decision, reviewers should confirm the threat model first and t
 
 Recommended order:
 
-1. P42-D002 — APPROVED; retain its reopen triggers.
-2. P42-D001 — select the production platform against that threat model.
-3. P42-D003 — select the confinement mechanism composition.
-4. P42-D009, P42-D010, and P42-D019 — supervisor, process identity, ownership, and restart model.
-5. P42-D005, P42-D017, and P42-D021 — identity, inherited handles, and local IPC isolation.
-6. P42-D006, P42-D014, P42-D018, and P42-D020 — immutable staging, provenance, and input bounds.
-7. P42-D007, P42-D008, P42-D011, and P42-D022 — network, resources, syscall surface, and diagnostics.
-8. P42-D012 and P42-D013 — transports, environment, logging, and retention.
-9. P42-D015 and P42-D016 — CI/development profiles and external review.
+1. Retain approved P42-D002, subject to its exact approved scope and reopen triggers.
+2. Complete and approve P42-D001.
+3. Reconfirm the P42-D003 recommendation against the exact P42-D001 platform profile.
+4. Independently review the reconciled P42-D003 package.
+5. Explicitly approve, revise, or reject P42-D003.
+6. Resolve P42-D004 through P42-D022 in dependency order.
+7. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
 No implementation should begin merely because this ordering exists.
 
 ## P42-D003 recommendation package
 
-The [P42-D003 confinement-composition package](phase42-d003-confinement-composition.md) maps the approved P42-D002 threat model to the accepted confinement requirements while P42-D001 remains provisional. The recommendation is OPEN, does not mark controls implemented, and requires independent review and explicit project-owner approval.
+The [P42-D003 confinement-composition package](phase42-d003-confinement-composition.md) maps the approved P42-D002 threat model to the accepted confinement requirements while P42-D001 remains provisional. The package may be reviewed now, but final P42-D003 owner approval is blocked until P42-D001 is approved, the recommendation is reconfirmed against that exact platform, D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are resolved through approved traceability decisions, and the reconciled package receives independent review.
