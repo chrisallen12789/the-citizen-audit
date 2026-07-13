@@ -194,7 +194,22 @@ The following are **PROHIBITED CLAIMS** for this package:
 
 ## Proposed future approval wording
 
-The authoritative governance sequence is: retain approved P42-D002; complete and approve P42-D001; reconfirm this recommendation against the exact selected P42-D001 platform; independently review the reconciled package; explicitly approve, revise, or reject P42-D003; resolve P42-D004 through P42-D022 in dependency order; and keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+The authoritative governance sequence is:
+
+1. Retain approved P42-D002.
+2. Independently review the D003 gap-resolution package.
+3. Explicitly approve, revise, or reject D003-TRACE-AGG-001.
+4. Explicitly approve, revise, or reject D003-TRACE-DEVICE-001.
+5. If a traceability record is approved, mark only its corresponding D003 gap **RESOLVED** by reference to the exact immutable approved record.
+6. Keep P42-D003 **OPEN**.
+7. Complete and approve P42-D001.
+8. Reconfirm and reconcile the P42-D003 recommendation, including both traceability records and their dispositions, against the exact selected P42-D001 platform.
+9. Independently review the reconciled P42-D003 package.
+10. Explicitly approve, revise, or reject P42-D003.
+11. Resolve P42-D004 through P42-D022 in dependency order.
+12. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+
+Independent review alone does not approve either traceability record. P42-D001 may remain **OPEN** while the two architecture-level traceability records are reviewed and acted upon. Owner approval of one record resolves only its corresponding gap, and approval of both records does not approve P42-D003. No gap may be marked **RESOLVED** before its corresponding immutable record receives independent review and explicit owner approval. No implementation is authorized.
 
 P42-D003 cannot be owner-approved until P42-D001 is approved, the recommendation is reconciled against the exact selected platform profile, D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are resolved through approved traceability decisions, the corrected package receives independent review, and the project owner explicitly approves P42-D003. If and only if those prerequisites and required evidence support the recommendation, a future approval record could state:
 
