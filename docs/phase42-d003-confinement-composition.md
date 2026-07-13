@@ -2,7 +2,7 @@
 
 ## Decision status
 
-**OPEN — RECOMMENDED layered OS-native Linux confinement composition documented; pending P42-D001 approval, exact-platform reconciliation, resolution of the two OPEN review gaps, independent review, and explicit project-owner approval.**
+**OPEN — RECOMMENDED layered OS-native Linux confinement composition documented; pending P42-D001 approval, exact-platform reconciliation, independent review of the reconciled package, and explicit project-owner approval. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are already RESOLVED only by their approved immutable traceability records.**
 
 This document proposes an architecture class. It does not approve P42-D003, select the exact mechanisms governed by P42-D004, P42-D005, P42-D006, P42-D007, P42-D008, P42-D009, P42-D010, P42-D011, P42-D012, P42-D013, P42-D014, P42-D015, P42-D016, P42-D017, P42-D018, P42-D019, P42-D020, P42-D021, or P42-D022, authorize implementation, or establish that confinement exists.
 
@@ -192,24 +192,21 @@ The following are **PROHIBITED CLAIMS** for this package:
 - CI, external certification, or independent reproduction has already validated the design.
 - Complete isolation or absolute security has been achieved.
 
-## Proposed future approval wording
+## Remaining governance sequence and future P42-D003 approval wording
 
 The authoritative governance sequence is:
 
 1. Retain approved P42-D002.
-2. Independently review the D003 gap-resolution package.
-3. Explicitly approve, revise, or reject D003-TRACE-AGG-001.
-4. Explicitly approve, revise, or reject D003-TRACE-DEVICE-001.
-5. If a traceability record is approved, mark only its corresponding D003 gap **RESOLVED** by reference to the exact immutable approved record.
-6. Keep P42-D003 **OPEN**.
-7. Complete and approve P42-D001.
-8. Reconfirm and reconcile the P42-D003 recommendation, including both traceability records and their dispositions, against the exact selected P42-D001 platform.
-9. Independently review the reconciled P42-D003 package.
-10. Explicitly approve, revise, or reject P42-D003.
-11. Resolve P42-D004 through P42-D022 in dependency order.
-12. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+2. Retain the two exact immutable traceability-record approvals and corresponding gap resolutions.
+3. Keep P42-D003 **OPEN**.
+4. Complete and approve P42-D001.
+5. Reconfirm and reconcile P42-D003, including both approved traceability records, against the exact selected P42-D001 platform.
+6. Independently review the reconciled P42-D003 package.
+7. Explicitly approve, revise, or reject P42-D003.
+8. Resolve P42-D004 through P42-D022 in dependency order.
+9. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
-Independent review alone does not approve either traceability record. P42-D001 may remain **OPEN** while the two architecture-level traceability records are reviewed and acted upon. Owner approval of one record resolves only its corresponding gap, and approval of both records does not approve P42-D003. No gap may be marked **RESOLVED** before its corresponding immutable record receives independent review and explicit owner approval. No implementation is authorized.
+Independent review and explicit owner action on both traceability records are complete. Their two immutable approvals resolve only their corresponding gaps and do not approve P42-D003. No implementation is authorized.
 
 P42-D003 cannot be owner-approved until P42-D001 is approved, the recommendation is reconciled against the exact selected platform profile, the reconciled package receives independent review, and the project owner explicitly approves P42-D003. The two traceability approvals do not remove any of those blockers. If and only if those prerequisites and required evidence support the recommendation, a future approval record could state:
 

@@ -144,7 +144,7 @@ A service manager is a strong candidate for durable ownership, but no exact serv
 
 The full composition must be independently reconstructed and reproduced before platform support can be claimed. Exact mechanisms remain subject to P42-D004, P42-D005, P42-D006, P42-D007, P42-D008, P42-D009, P42-D010, P42-D011, P42-D012, P42-D013, P42-D014, P42-D015, P42-D016, P42-D017, P42-D018, P42-D019, P42-D020, P42-D021, and P42-D022.
 
-P42-D003 cannot be owner-approved until P42-D001 is approved, the recommendation is reconciled against the exact selected platform profile, D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are resolved through approved traceability decisions, the corrected package receives independent review, and the project owner explicitly approves P42-D003. Approval of P42-D002, and any later approval of P42-D001, does not by itself approve P42-D003.
+P42-D003 cannot be owner-approved until P42-D001 is approved, the recommendation is reconciled against the exact selected platform profile, the reconciled package receives independent review, and the project owner explicitly approves P42-D003. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are already resolved only by their approved immutable traceability records. Approval of P42-D002, and any later approval of P42-D001, does not by itself approve P42-D003.
 
 ## Nonclaims
 

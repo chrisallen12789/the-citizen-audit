@@ -10,7 +10,7 @@ This map describes responsibility and evidence for the proposed [P42-D003 compos
 
 P42-D002 is **APPROVED** and supplies the hostile-validator and arbitrary-native-code attacker model. P42-D001 and P42-D003 remain **OPEN**. Exact mechanisms remain governed by P42-D004, P42-D005, P42-D006, P42-D007, P42-D008, P42-D009, P42-D010, P42-D011, P42-D012, P42-D013, P42-D014, P42-D015, P42-D016, P42-D017, P42-D018, P42-D019, P42-D020, P42-D021, and P42-D022.
 
-This map may be reviewed while P42-D001 is open, but it cannot support final P42-D003 owner approval until P42-D001 is approved, the recommendation is reconfirmed against the exact selected platform, both OPEN review gaps are resolved through approved traceability decisions, and the reconciled package is independently reviewed.
+This map may be reviewed while P42-D001 is open, but it cannot support final P42-D003 owner approval until P42-D001 is approved, the recommendation is reconfirmed against the exact selected platform, and the reconciled package is independently reviewed. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are already resolved only by their approved immutable traceability records.
 
 **JavaScript-level controls are defense in depth and are not the Phase 4.2 security boundary.** The validator runtime cannot authoritatively enforce or attest the controls that restrict it. The Phase 4.2 boundary is the composition of external ownership and kernel-enforced controls, with evidence collected outside validator authority.
 

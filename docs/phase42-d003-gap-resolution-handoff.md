@@ -64,16 +64,17 @@ An independent reviewer evaluated the architecture, exact identifier mappings, f
 
 P42-D003 must remain **OPEN** after either or both traceability-record approvals. Final P42-D003 consideration continues to require P42-D001 approval, reconciliation against the selected exact platform, independent review of the reconciled composition, and explicit project-owner action. No implementation may begin unless Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
-## Historical record-approval sequence and remaining governance
+## Remaining governance sequence
 
-1. Independent review of this gap-resolution package and explicit owner action on each traceability record are complete.
-2. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are **RESOLVED** only by their respective immutable approved records.
+1. Retain approved P42-D002.
+2. Retain the two exact immutable traceability-record approvals and corresponding gap resolutions.
 3. Keep P42-D003 **OPEN**.
 4. Complete and approve P42-D001.
-5. Reconcile P42-D003 against the selected exact platform.
+5. Reconfirm and reconcile P42-D003, including both approved traceability records, against the exact selected P42-D001 platform.
 6. Independently review the reconciled P42-D003 package.
-7. Explicitly approve, revise or reject P42-D003.
-8. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+7. Explicitly approve, revise, or reject P42-D003.
+8. Resolve P42-D004 through P42-D022 in dependency order.
+9. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
 
 ## Nonclaims
 

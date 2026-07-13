@@ -4,7 +4,7 @@
 
 **APPROVED RECORDINGS — the project owner approved D003-TRACE-AGG-001 and D003-TRACE-DEVICE-001 only against their exact immutable source content; their corresponding gaps are RESOLVED by those records.**
 
-This document assembles proposed governance records for the architecture-level traceability proposals referenced below. Their canonical definitions are in [aggregate admission and concurrent-resource governance](phase42-d003-gap-aggregate-governance.md) and [device and kernel-interface boundary governance](phase42-d003-gap-device-kernel-boundary.md#record-definition-and-status). This document references those identifiers; it does not redefine them.
+This document records the current approvals for the architecture-level traceability records referenced below and retains clearly marked superseded preapproval draft text for provenance. Their canonical definitions are in [aggregate admission and concurrent-resource governance](phase42-d003-gap-aggregate-governance.md) and [device and kernel-interface boundary governance](phase42-d003-gap-device-kernel-boundary.md#record-definition-and-status). This document references those identifiers; it does not redefine them.
 
 The traceability identifiers are not `CONF` requirements, `BUD` budgets, or `P42-D` governance decisions. They do not alter the accepted [Phase 4.2 confinement requirements](phase42-confinement-requirements.md) or [resource-budget framework](phase42-resource-budget.md). Both traceability records are **APPROVED** and both corresponding D003 gaps are **RESOLVED** only by their exact immutable approved records. P42-D003 remains **OPEN** and **RECOMMENDED**.
 
@@ -17,20 +17,20 @@ The quoted approval language below is retained as historical proposed wording. T
 
 ## Shared governance constraints
 
-- Approval of either referenced traceability record would accept an architecture-level mapping and its governance invariants only. It would not approve numeric limits, mechanisms, configurations, platform support, implementation, test results, deployment, or P42-D003.
-- A future approval must identify the exact immutable reviewed record, the independent review and its disposition, the approving project owner, the approval date, retained assumptions and residual risks, and every condition or exception.
+- Each recorded approval accepts only an architecture-level mapping and its governance invariants. It does not approve numeric limits, mechanisms, configurations, platform support, implementation, test results, deployment, or P42-D003.
+- Each approval is bound to the exact immutable reviewed record and retains its independent-review disposition, approving project-owner action, assumptions, residual risks, conditions, and exceptions.
 - P42-D001 remains **OPEN** and provisional. Its later approval and exact-platform reconciliation remain mandatory before final P42-D003 approval.
 - P42-D002 remains **APPROVED** and bound to its immutable approved content. The hostile-validator and arbitrary-native-code model, trusted assumptions, out-of-scope conditions, residual risks, acceptance implications, and reopen triggers remain controlling inputs.
-- P42-D003 remains **OPEN** after either or both traceability records receive any future owner action. Final P42-D003 approval still requires P42-D001 approval, reconciliation against the exact selected platform, independent review of the reconciled package, and explicit P42-D003 project-owner approval.
+- P42-D003 remains **OPEN** after both traceability-record approvals. Final P42-D003 approval still requires P42-D001 approval, reconciliation against the exact selected platform, independent review of the reconciled package, and explicit P42-D003 project-owner approval.
 - Phase 4.1 remains **REPORTED as rejected**, VAL-RESULT-001 remains **OPEN**, and Phase 4.2 remains **PLANNED**. Implementation remains prohibited while Phase 4.1 is rejected.
 
-## Proposed future approval record referencing D003-TRACE-AGG-001
+## D003-TRACE-AGG-001 approval record and superseded preapproval draft
 
-### Current status
+### Approval status
 
-**OPEN and RECOMMENDED — recommendation documented; pending independent review and explicit project-owner approval.**
+**APPROVED — only against the immutable binding recorded above. D003-GAP-AGG-001 is RESOLVED only by that approved record.**
 
-D003-GAP-AGG-001 is **RESOLVED** only by approved immutable D003-TRACE-AGG-001. The quoted language below is retained as historical proposed wording and does not extend the approval.
+All remaining subsections in this section are **SUPERSEDED HISTORICAL PREAPPROVAL DRAFT TEXT** retained for provenance. They do not describe current record or gap status and do not extend the approval.
 
 ### Exact decision question
 
@@ -49,11 +49,11 @@ This proposed action accepts an architecture contract and mapping. Exact numeric
 - Deterministic fail-closed admission, lifecycle charging, release, quarantine, restart reconstruction, mandatory evidence, trusted assumptions, residual risks, and reopen triggers.
 - Proposed mapping to the exact existing `CONF`, `BUD`, and `P42-D` identifiers listed in the referenced aggregate record and [gap-resolution traceability](phase42-d003-gap-resolution-traceability.md).
 
-### Nonclaims
+### Superseded historical nonclaims
 
 **OUT OF SCOPE:** choosing or configuring cgroups, service managers, job objects, quotas, containers, VMs, supervisors, ledgers, audit sinks, numeric limits, or any other mechanism; qualifying an exact platform; implementing or testing controls.
 
-**PROHIBITED CLAIM:** this record has been approved, aggregate exhaustion is prevented by an implementation, any numeric profile is safe, any test has passed, D003-GAP-AGG-001 is closed, P42-D003 is approved, or Phase 4.2 implementation is authorized.
+**HISTORICAL DRAFT NONCLAIM:** approval does not prove aggregate exhaustion is prevented by an implementation, any numeric profile is safe, or any test has passed; it does not approve P42-D003 or authorize Phase 4.2 implementation.
 
 ### Dependencies
 
@@ -82,7 +82,7 @@ The reviewer must be independent of the record authoring and future implementati
 
 Only an explicit project-owner action against the exact independently reviewed immutable record can approve it. Silence, merge, commit existence, ZIP distribution, reviewer recommendation, approval of P42-D002, or approval of another traceability record is not owner approval. Any revision after review requires a new immutable identity and review disposition before action.
 
-### Proposed conditional future approval wording
+### Superseded historical draft approval wording
 
 > If an independent reviewer has accepted the exact immutable aggregate-governance record, all material review findings are closed or explicitly retained by the project owner, and the project owner expressly elects to approve it, the owner may record: “D003-TRACE-AGG-001 is **APPROVED** as the architecture-level aggregate-admission and concurrent-resource-governance traceability record, subject to its trusted assumptions, residual risks, unresolved numeric and platform-specific work, evidence prerequisites, and reopen triggers. D003-GAP-AGG-001 is **RESOLVED** by reference to this exact immutable approved record. This action does not approve numeric limits, a mechanism, an exact platform, implementation, test results, P42-D001, or P42-D003.”
 
@@ -92,13 +92,13 @@ Only an explicit project-owner action against the exact independently reviewed i
 
 Any later approval must be reopened if the P42-D002 threat or trust model changes; the OS, kernel, runtime, service manager, ownership layer, deployment topology, host-sharing model, accounting or enforcement primitive, audit sink, ledger, or recovery design changes; a new resource or backlog class appears; numeric budgets or concurrency change; descendant or state attribution fails; an overcommit, ledger race, protected-reserve breach, cleanup leak, stale release, quarantine error, restart-reconstruction ambiguity, or nondeterministic refusal is observed; mandatory evidence becomes incomplete or validator-controlled; or an exact platform requires weakening a governing invariant.
 
-## Proposed future approval record referencing D003-TRACE-DEVICE-001
+## D003-TRACE-DEVICE-001 approval record and superseded preapproval draft
 
-### Current status
+### Approval status
 
-**OPEN and RECOMMENDED — recommendation documented; pending independent review and explicit project-owner approval.**
+**APPROVED — only against the immutable binding recorded above. D003-GAP-DEVICE-001 is RESOLVED only by that approved record.**
 
-D003-GAP-DEVICE-001 is **RESOLVED** only by approved immutable D003-TRACE-DEVICE-001. The quoted language below is retained as historical proposed wording and does not extend the approval.
+All remaining subsections in this section are **SUPERSEDED HISTORICAL PREAPPROVAL DRAFT TEXT** retained for provenance. They do not describe current record or gap status and do not extend the approval.
 
 ### Exact decision question
 
@@ -118,11 +118,11 @@ This proposed action accepts an architecture contract and mapping. Exact devices
 - Inventory, minimum allowlisting, read-only and immutable posture where feasible, host-global mutation denial, fail-closed capability validation, cleanup, residual scans, evidence, assumptions, risks, platform dependencies, blockers, and reopen triggers.
 - Proposed mapping to CONF-FS-001, CONF-FS-002, CONF-HANDLE-001, CONF-IDENTITY-001, CONF-SYSCALL-001, CONF-IPC-001, CONF-PORTABILITY-001, CONF-FAILCLOSED-001, P42-D005, P42-D006, P42-D010, P42-D011, P42-D015, P42-D017, and P42-D021.
 
-### Nonclaims
+### Superseded historical nonclaims
 
 **OUT OF SCOPE:** selecting or configuring exact mounts, devices, namespaces, identities, syscall filters, capability sets, descriptor-closing primitives, mandatory-access-control rules, containers, VMs, brokers, or host policy; qualifying an exact platform; implementing or testing controls.
 
-**PROHIBITED CLAIM:** this record has been approved, a path allowlist or read-only mount alone proves the boundary, every kernel interface is inventoried in an implementation, any platform is supported, any test has passed, D003-GAP-DEVICE-001 is closed, P42-D003 is approved, or Phase 4.2 implementation is authorized.
+**HISTORICAL DRAFT NONCLAIM:** approval does not prove a path allowlist or read-only mount alone establishes the boundary, every kernel interface is inventoried in an implementation, any platform is supported, or any test has passed; it does not approve P42-D003 or authorize Phase 4.2 implementation.
 
 ### Dependencies
 
@@ -150,7 +150,7 @@ The reviewer must be independent of the record authoring and future implementati
 
 Only an explicit project-owner action against the exact independently reviewed immutable record can approve it. Silence, merge, commit existence, ZIP distribution, reviewer recommendation, approval of P42-D002, or approval of the aggregate traceability record is not owner approval. Any revision after review requires a new immutable identity and review disposition before action.
 
-### Proposed conditional future approval wording
+### Superseded historical draft approval wording
 
 > If an independent reviewer has accepted the exact immutable device and kernel-interface governance record, all material review findings are closed or explicitly retained by the project owner, and the project owner expressly elects to approve it, the owner may record: “D003-TRACE-DEVICE-001 is **APPROVED** as the architecture-level device and kernel-interface boundary traceability record, subject to its trusted assumptions, residual risks, platform dependencies, exact-profile inventory and exception work, evidence prerequisites, and reopen triggers. D003-GAP-DEVICE-001 is **RESOLVED** by reference to this exact immutable approved record. This action does not approve an exact device or interface allowlist, a mechanism, an exact platform, implementation, test results, P42-D001, or P42-D003.”
 
@@ -164,6 +164,6 @@ Any later approval must be reopened if the P42-D002 threat or trust model change
 
 **OUT OF SCOPE:** approval, implementation, completed tests, platform qualification, deployment, merge, or modification of accepted requirements and budgets.
 
-**PROHIBITED CLAIM:** proposed future wording is approval; an independent-review recommendation is owner approval; either traceability proposal currently closes its corresponding gap; either proposal makes P42-D003 approvable without its remaining dependencies; or this package shows confinement, production security, complete isolation, or absolute security.
+**PROHIBITED CLAIM:** either approval makes P42-D003 approvable without its remaining dependencies, or this package shows confinement, production security, complete isolation, or absolute security. The two approvals and their corresponding gap resolutions are current only as stated in the immutable bindings above.
 
 D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are **RESOLVED** only by their corresponding immutable approved records. P42-D001 remains **OPEN** and provisional. P42-D002 remains **APPROVED** and bound to its immutable approved content. P42-D003 remains **OPEN** and **RECOMMENDED**. P42-D004 through P42-D022 remain **OPEN**. Phase 4.2 remains **PLANNED**. No Phase 4.2 implementation exists, no Phase 4.2 tests have been implemented or run, and this branch must not be merged automatically.

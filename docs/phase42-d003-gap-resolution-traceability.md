@@ -8,7 +8,7 @@ This document references the approved records [D003-TRACE-AGG-001](phase42-d003-
 
 These records do not alter the accepted [Phase 4.2 confinement requirements](phase42-confinement-requirements.md) or [resource-budget framework](phase42-resource-budget.md). They supply approved architecture-level traceability from existing identifiers to the two resolved review gaps. Their approval does not make P42-D003 approved. Implementation still requires later detailed decisions, Phase 4.1 acceptance, and formal Phase 4.2 authorization.
 
-Where the detailed mapping tables retain the phrase `proposed mapping OPEN`, it is an explicitly historical preapproval label for the mapping analysis; it is not the current status of either traceability record or gap. The current record and gap statuses are the APPROVED and RESOLVED statuses stated above and in the approval bindings.
+Where the detailed mapping tables retain the phrases `proposed mapping OPEN` or `owner approval`, they are explicitly historical preapproval labels for mapping analysis; they are not the current status of either traceability record or gap. The current record and gap statuses are the APPROVED and RESOLVED statuses stated above and in the approval bindings.
 
 P42-D001 remains **OPEN** and provisional. P42-D002 remains **APPROVED** and bound to its immutable approved content. P42-D003 remains **OPEN** and **RECOMMENDED**. Phase 4.1 remains **REPORTED** as rejected, VAL-RESULT-001 remains **OPEN**, Phase 4.2 remains **PLANNED**, and no Phase 4.2 implementation or completed test is claimed.
 
@@ -68,7 +68,7 @@ No accepted `BUD` identifier expressly covers maximum concurrent attempts, super
 
 | Exact identifier | Existing decision summary | Contribution to gap resolution | Remaining ambiguity | Evidence needed | Approval dependency | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| P42-D003 | Selects the confinement-mechanism composition for the approved hostile-validator model. | Makes aggregate admission and concurrent-resource governance a mandatory composition property. | The composition, both gap records, exact mechanisms, and platform reconciliation remain unapproved. | Complete mapped evidence, both gap reviews, exact-profile reconciliation, and independent review. | P42-D001, P42-D002, both approved traceability records, and explicit P42-D003 owner action. | **OPEN — RECOMMENDED**; mapping **OPEN**. |
+| P42-D003 | Selects the confinement-mechanism composition for the approved hostile-validator model. | Makes aggregate admission and concurrent-resource governance a mandatory composition property. | The composition, exact mechanisms, numeric limits, and platform reconciliation remain unapproved. | Complete mapped evidence, exact-profile reconciliation, and independent review of the reconciled package. | P42-D001, P42-D002, both approved traceability records, and explicit P42-D003 owner action. | **OPEN — RECOMMENDED**; mapping **OPEN**. |
 | P42-D008 | Selects CPU, memory, count, descriptor, and storage enforcement. | Must establish per-attempt and aggregate hard controls, counters, reserve, admission, and breach response. | Mechanisms, values, aggregation semantics, and unsupported-profile behavior remain unknown. | Concurrent controlled exhaustion, attribution, refusal, breach response, and reserve evidence. | P42-D001, P42-D003, and owner approval of D003-TRACE-AGG-001. | **OPEN** decision; proposed mapping **OPEN**. |
 | P42-D009 | Selects the owner of deadlines, exit taxonomy, retries, and termination grace. | Must own admission sequencing, retry amplification, cancellation backlog, and deterministic terminal ledger transitions. | Division among orchestrator, supervisor, launcher, service manager, and durable owner remains unknown. | Fault timelines, concurrent retries and cancellation, terminal categories, and reservation state transitions. | P42-D003 and owner approval of D003-TRACE-AGG-001. | **OPEN** decision; proposed mapping **OPEN**. |
 | P42-D010 | Selects generation-safe process-tree identity and control. | Binds descendants and resource charges to exact attempt generations and prevents stale release or misattribution. | Exact control identity, tree membership, and ledger integration remain unknown. | PID-reuse, stale control, descendants, orphaning, attribution, and terminal census. | P42-D001, P42-D003, and owner approval of D003-TRACE-AGG-001. | **OPEN** decision; proposed mapping **OPEN**. |
@@ -81,7 +81,7 @@ No accepted `BUD` identifier expressly covers maximum concurrent attempts, super
 
 ## Device traceability mapping for D003-TRACE-DEVICE-001
 
-The proposed device and kernel-interface record maps the complete deny-default boundary to existing filesystem, handle, identity, syscall, IPC, portability, fail-closed, and detailed-decision hooks. The mapping does not create a new accepted requirement or prove that any exact platform satisfies it.
+The approved device and kernel-interface record maps the complete deny-default boundary to existing filesystem, handle, identity, syscall, IPC, portability, fail-closed, and detailed-decision hooks. The mapping does not create a new accepted requirement or prove that any exact platform satisfies it.
 
 ### Existing confinement requirements
 
@@ -123,4 +123,4 @@ Neither gap resolution approves P42-D003. P42-D003 must remain **OPEN** until P4
 
 **OUT OF SCOPE:** changing accepted requirements or budgets, selecting numeric limits, selecting exact mechanisms, qualifying a platform, implementation, testing, deployment, automatic merge, approving P42-D001, or approving P42-D003.
 
-**PROHIBITED CLAIM:** either proposed record is approved; either D003 gap is currently resolved; any mapped source identifier now has a new meaning or status; P42-D003 is approved; controls exist or tests passed; a mechanism or platform is sufficient or supported; Phase 4.2 implementation has begun; or complete isolation or absolute security has been achieved.
+**PROHIBITED CLAIM:** either approved record changes any mapped source identifier's meaning or status, approves P42-D003, proves controls exist or tests passed, establishes a sufficient or supported mechanism or platform, authorizes Phase 4.2 implementation, or demonstrates complete isolation or absolute security.

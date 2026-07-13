@@ -2,7 +2,7 @@
 
 ## Status and purpose
 
-**PLANNED.** P42-D003 is **OPEN** with a **RECOMMENDED** architecture class pending independent review and explicit project-owner approval. This document defines future evidence gates; no test was implemented or run in this task, and no result is **VERIFIED** by this document.
+**PLANNED.** P42-D003 is **OPEN** with a **RECOMMENDED** architecture class pending P42-D001 approval, exact-platform reconciliation, independent review of the reconciled package, and explicit project-owner approval. The two approved immutable traceability records already resolve their corresponding gaps. This document defines future evidence gates; no test was implemented or run in this task, and no result is **VERIFIED** by this document.
 
 The gates refine the accepted [Phase 4.2 test and evidence plan](phase42-test-and-evidence-plan.md) for the proposed composition. They trace to the accepted [confinement requirements](phase42-confinement-requirements.md), [resource-budget framework](phase42-resource-budget.md), approved [P42-D002 threat model](phase42-d002-threat-model.md), and open [decision register](phase42-open-decisions-and-handoff.md).
 
@@ -10,7 +10,7 @@ Evidence must be produced from the exact claimed platform profile. It must disti
 
 ## Gate posture
 
-Before P42-D003 can be approved, P42-D001 must be approved, the recommendation must be reconciled against its exact selected platform profile, both approved-threat-model coverage gaps must be resolved through approved traceability decisions, and an independent reviewer must confirm that the corrected composition maps every applicable requirement to an enforcement owner, a failure behavior, and a reproducible evidence family. The project owner must then explicitly approve, revise, or reject P42-D003. Any future approval would accept an architecture decision only; it would not prove implementation.
+The two approved-threat-model coverage gaps have been resolved only by their corresponding approved immutable traceability records. Before P42-D003 can be approved, P42-D001 must be approved, the recommendation must be reconciled against its exact selected platform profile, and an independent reviewer must confirm that the reconciled composition maps every applicable requirement to an enforcement owner, a failure behavior, and a reproducible evidence family. The project owner must then explicitly approve, revise, or reject P42-D003. Any future approval would accept an architecture decision only; it would not prove implementation.
 
 Before any later implementation or platform-support claim can be accepted, every applicable family below must produce the mandatory evidence on every claimed profile, from a restored clean state, with independent reproduction. A missing control, probe, observation hook, cleanup proof, or mandatory assurance record prevents success acceptance. An unsupported profile must refuse launch. Exact policy and numeric values remain **OPEN** under the cited decisions and budget records.
 
