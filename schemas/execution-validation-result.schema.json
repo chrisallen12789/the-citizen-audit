@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/execution-validation-result.schema.json",
+  "title": "Institution OS Execution Validation Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "attemptId",
+    "transactionId",
+    "planHash",
+    "candidate",
+    "postWrite",
+    "validationResultHash"
+  ],
+  "properties": {
+    "version": { "const": "1.0.0" },
+    "attemptId": { "type": "string", "pattern": "^ATTEMPT-[A-Z0-9][A-Z0-9-]{2,63}$" },
+    "transactionId": { "type": "string", "pattern": "^TX-[A-Z0-9][A-Z0-9-]{2,63}$" },
+    "planHash": { "$ref": "#/$defs/sha256" },
+    "candidate": { "$ref": "#/$defs/phase" },
+    "postWrite": { "$ref": "#/$defs/phase" },
+    "validationResultHash": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "stringList": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "validatorId",
+        "validatorVersion",
+        "phase",
+        "status",
+        "problems",
+        "warnings",
+        "checkedObjects",
+        "checkedPaths",
+        "resultHash"
+      ],
+      "properties": {
+        "validatorId": { "type": "string" },
+        "validatorVersion": { "type": "string" },
+        "phase": { "enum": ["candidate", "post_write"] },
+        "status": { "enum": ["passed", "failed"] },
+        "problems": { "$ref": "#/$defs/stringList" },
+        "warnings": { "$ref": "#/$defs/stringList" },
+        "checkedObjects": { "$ref": "#/$defs/stringList" },
+        "checkedPaths": { "$ref": "#/$defs/stringList" },
+        "resultHash": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "results"],
+      "properties": {
+        "passed": { "type": "boolean" },
+        "results": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/result" }
+        }
+      }
+    }
+  }
+}
