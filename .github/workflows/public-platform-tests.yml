@@ -1,0 +1,47 @@
+name: Public Platform Tests
+
+on:
+  push:
+    paths:
+      - "platform/**"
+      - "schemas/platform-*.schema.json"
+      - "scripts/platform/**"
+      - "scripts/validate-platform-records.js"
+      - "tests/platform-*.test.js"
+      - "tests/helpers/platform-*.js"
+      - "tests/helpers/sample-*.js"
+      - "package.json"
+      - ".github/workflows/public-platform-tests.yml"
+  pull_request:
+    paths:
+      - "platform/**"
+      - "schemas/platform-*.schema.json"
+      - "scripts/platform/**"
+      - "scripts/validate-platform-records.js"
+      - "tests/platform-*.test.js"
+      - "tests/helpers/platform-*.js"
+      - "tests/helpers/sample-*.js"
+      - "package.json"
+      - ".github/workflows/public-platform-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  platform-foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Syntax check platform scripts
+        shell: bash
+        run: |
+          find scripts/platform -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+          node --check scripts/validate-platform-records.js
+      - name: Validate records and run platform tests
+        run: npm run platform:check

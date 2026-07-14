@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "values": [
+    "typographical",
+    "citation",
+    "calculation",
+    "factual",
+    "methodological",
+    "finding_level",
+    "conclusion_level",
+    "withdrawal"
+  ]
+}

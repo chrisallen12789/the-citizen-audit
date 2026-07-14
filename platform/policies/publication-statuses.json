@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "values": [
+    "proposed",
+    "researching",
+    "evidence_incomplete",
+    "internal_review",
+    "open_for_challenge",
+    "published_with_limitations",
+    "published",
+    "correction_pending",
+    "corrected",
+    "superseded",
+    "withdrawn"
+  ]
+}

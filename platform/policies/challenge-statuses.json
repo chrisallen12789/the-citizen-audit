@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "values": [
+    "received",
+    "screening",
+    "under_review",
+    "evidence_requested",
+    "accepted",
+    "partially_accepted",
+    "rejected_with_explanation",
+    "correction_issued",
+    "closed_without_action"
+  ]
+}
