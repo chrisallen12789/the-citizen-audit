@@ -16,9 +16,20 @@ const archiveManifestPath = path.join(root, "docs", "archive_manifest.csv");
 const authoritativeArchiveManifestPath = path.join(root, "docs", "archive_manifest_authoritative.csv");
 const archiveManifestConfigPath = path.join(root, "scripts", "archive-manifest-config.json");
 
+function compareCodePoints(a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+function normalizeRelativePath(value) {
+  return value.replace(/\\/g, "/");
+}
+
 function walk(dir) {
   const results = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+  const entries = fs
+    .readdirSync(dir, { withFileTypes: true })
+    .sort((a, b) => compareCodePoints(a.name, b.name));
+  for (const entry of entries) {
     const next = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...walk(next));
@@ -146,7 +157,7 @@ const strictMetaFiles = new Set([
 
 for (const filePath of htmlFiles) {
   const html = fs.readFileSync(filePath, "utf8");
-  const relative = path.relative(root, filePath);
+  const relative = normalizeRelativePath(path.relative(root, filePath));
   if (!html.includes("<title>")) {
     problems.push(`${relative}: missing <title>`);
   }
@@ -477,6 +488,7 @@ if (fs.existsSync(archiveManifestPath) && fs.existsSync(archiveManifestConfigPat
 
 const generatedSectionFiles = fs
   .readdirSync(path.join(publicDir, "audit"))
+  .sort(compareCodePoints)
   .filter((name) => /^section-\d+.*\.html$/.test(name));
 const modeledSections = publication.sections.filter((section) => /^Section \d+$/.test(section.id));
 const expectedHtmlFiles = new Set([
@@ -493,7 +505,7 @@ const expectedHtmlFiles = new Set([
 ]);
 
 for (const filePath of htmlFiles) {
-  const relative = path.relative(root, filePath).replace(/\\/g, "/");
+  const relative = normalizeRelativePath(path.relative(root, filePath));
   if (!expectedHtmlFiles.has(relative)) {
     problems.push(`${relative}: unexpected public HTML artifact`);
   }
@@ -688,7 +700,9 @@ if (appendixBHtml) {
   }
 }
 
-for (const [claimId, refs] of Object.entries(crossReferences.claims || {})) {
+for (const [claimId, refs] of Object.entries(crossReferences.claims || {}).sort(([a], [b]) =>
+  compareCodePoints(a, b)
+)) {
   if (!claimIds.has(claimId)) {
     problems.push(`cross references: unknown claim ${claimId}`);
   }
@@ -901,7 +915,7 @@ for (const [relative, html] of [
 
 if (problems.length) {
   console.error("QA failed:");
-  for (const problem of problems) {
+  for (const problem of [...problems].sort(compareCodePoints)) {
     console.error(`- ${problem}`);
   }
   process.exit(1);
