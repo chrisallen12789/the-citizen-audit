@@ -1,5 +1,8 @@
 name: Institutional QA
 
+# The inherited 37-diagnostic QA baseline remains unresolved. QA must exit 1,
+# and the fixed count and payload hash below are regression controls, not a
+# waiver or resolution of any diagnostic.
 on:
   push:
     branches:
@@ -8,6 +11,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   institutional-qa:
     runs-on: ubuntu-latest
@@ -15,6 +21,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -24,6 +32,36 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      # These Git-object guards bind the independently accepted QA
+      # implementation and exact expected list. Any legitimate future change
+      # requires a separately reviewed workflow update.
+      - name: Bind accepted QA implementation and baseline test
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_qa_blob="c5ee6c9b819b58c5acfd7477e5d95a658717d7f0"
+          expected_test_blob="7d285d0cfd2f0c8af125f7ff4ba3dd024ba0e0e0"
+
+          if ! actual_qa_blob="$(git rev-parse 'HEAD:scripts/qa.js' 2>/dev/null)"; then
+            echo "::error::Accepted QA implementation path is missing from HEAD"
+            exit 1
+          fi
+          if [[ "$actual_qa_blob" != "$expected_qa_blob" ]]; then
+            echo "::error::Accepted QA implementation blob changed: expected $expected_qa_blob, got $actual_qa_blob"
+            exit 1
+          fi
+
+          if ! actual_test_blob="$(git rev-parse 'HEAD:tests/qa-ordering.test.js' 2>/dev/null)"; then
+            echo "::error::Accepted QA baseline-test path is missing from HEAD"
+            exit 1
+          fi
+          if [[ "$actual_test_blob" != "$expected_test_blob" ]]; then
+            echo "::error::Accepted QA baseline-test blob changed: expected $expected_test_blob, got $actual_test_blob"
+            exit 1
+          fi
+
+          echo "Accepted QA implementation and baseline-test blobs verified."
 
       - name: Export ADS records
         run: npm run ads:export
@@ -36,5 +74,126 @@ jobs:
         env:
           CANONICAL_PDF_PATH: public/downloads/the-citizen-audit-v1.0.pdf
 
-      - name: Run institutional QA
-        run: npm run qa
+      - name: Validate reader-output freshness
+        run: |
+          npm run reader:freshness -- \
+            --canonical-pdf public/downloads/the-citizen-audit-v1.0.pdf
+
+      - name: Capture raw institutional QA result
+        id: capture_qa
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          npm run --silent qa > qa.stdout 2> qa.stderr
+          qa_status=$?
+          set -e
+
+          echo "::group::Raw QA stdout"
+          cat qa.stdout
+          echo "::endgroup::"
+
+          echo "::group::Raw QA stderr"
+          cat qa.stderr >&2
+          echo "::endgroup::"
+
+          printf 'exit_code=%s\n' "$qa_status" >> "$GITHUB_OUTPUT"
+
+          # The capture step exits zero only so the mandatory enforcement step
+          # can evaluate the expected nonzero QA result.
+          exit 0
+
+      - name: Enforce exact unresolved QA baseline
+        shell: bash
+        env:
+          QA_EXIT_CODE: ${{ steps.capture_qa.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const crypto = require("node:crypto");
+          const fs = require("node:fs");
+
+          const EXPECTED_COUNT = 37;
+          const EXPECTED_HASH = "b6984c73241b51af52307eb56049109a68ac2b68ceaaab4c592330da82209ff0";
+          const HEADER = "QA failed:\n";
+          const compareCodePoints = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
+          function fail(message) {
+            console.error(`QA baseline enforcement failed: ${message}`);
+            process.exit(1);
+          }
+
+          const rawStatus = process.env.QA_EXIT_CODE || "";
+          if (!/^(0|[1-9][0-9]*)$/.test(rawStatus)) {
+            fail(`missing or malformed captured exit code: ${JSON.stringify(rawStatus)}`);
+          }
+          const status = Number(rawStatus);
+          if (status !== 1) {
+            fail(`expected QA exit code 1, got ${status}`);
+          }
+
+          const stdout = fs.readFileSync("qa.stdout");
+          if (stdout.length !== 0) {
+            fail(`expected empty stdout, got ${stdout.length} bytes`);
+          }
+
+          const rawStderr = fs.readFileSync("qa.stderr", "utf8");
+          const normalizedStderr = rawStderr.replace(/\r\n/g, "\n");
+          if (normalizedStderr.includes("\r")) {
+            fail("stderr contains a CR byte outside a CRLF sequence");
+          }
+          if (!normalizedStderr.startsWith(HEADER)) {
+            fail("stderr is missing the exact 'QA failed:' header");
+          }
+
+          const payload = normalizedStderr.slice(HEADER.length);
+          if (!payload.endsWith("\n") || payload.endsWith("\n\n")) {
+            fail("canonical payload must end with exactly one final LF");
+          }
+
+          const lines = payload.slice(0, -1).split("\n");
+          if (lines.length !== EXPECTED_COUNT) {
+            fail(`expected ${EXPECTED_COUNT} diagnostics, got ${lines.length}`);
+          }
+          if (lines.some((line) => !line.startsWith("- "))) {
+            fail("every canonical payload line must be a diagnostic beginning with '- '");
+          }
+          if (lines.some((line) => line.includes("\\"))) {
+            fail("canonical diagnostics must use forward-slash paths");
+          }
+
+          const sorted = [...lines].sort(compareCodePoints);
+          if (lines.some((line, index) => line !== sorted[index])) {
+            fail("canonical diagnostics are not in explicit code-point order");
+          }
+
+          const canonicalPayload = `${lines.join("\n")}\n`;
+          if (payload !== canonicalPayload) {
+            fail("canonical payload contains malformed or additional output");
+          }
+          if (normalizedStderr !== `${HEADER}${canonicalPayload}`) {
+            fail("normalized stderr contains output outside the exact header and canonical payload");
+          }
+
+          const actualHash = crypto
+            .createHash("sha256")
+            .update(canonicalPayload, "utf8")
+            .digest("hex");
+          if (actualHash !== EXPECTED_HASH) {
+            fail(`canonical payload SHA-256 changed: expected ${EXPECTED_HASH}, got ${actualHash}`);
+          }
+
+          console.log(`Unresolved QA regression baseline verified: exit=1, diagnostics=${EXPECTED_COUNT}, sha256=${actualHash}`);
+          NODE
+
+      - name: Run accepted deterministic QA baseline test
+        run: node --test --test-concurrency=1 tests/qa-ordering.test.js
+
+      - name: Run approved Release 0.3 test set
+        run: |
+          node --test --test-concurrency=1 \
+            tests/appendix-b-restoration.test.js \
+            tests/audit-reader-navigation.test.js \
+            tests/figure-metadata-tables.test.js \
+            tests/qa-ordering.test.js \
+            tests/reader-output-freshness.test.js

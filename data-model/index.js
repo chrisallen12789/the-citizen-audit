@@ -6,9 +6,13 @@ const decisionsRaw = require("./decisions");
 const openQuestionsRaw = require("./open-questions");
 const releases = require("./releases");
 const glossary = require("./glossary");
+const appendixB = require("./appendix-b");
+const auditReader = require("./audit-reader");
 const sectionContent = require("./section-content");
 const pagesRaw = require("./pages");
 const researchState = require("./research-state");
+const figureMetadata = require("./figure-metadata");
+const auditReaderTables = require("./audit-reader-tables");
 
 function unique(values) {
   return [...new Set(values)];
@@ -306,10 +310,14 @@ module.exports = {
   pages,
   releases,
   glossary,
+  appendixB,
+  auditReader,
+  auditContents: auditReader.contents,
   researchState,
+  figureMetadata,
+  auditReaderTables,
   crossReferences,
   primaryAudit: auditsEnriched[0] || null,
-  transparencyScorecard: glossary.transparencyScorecard || [],
   sectionRecords: sections.map(toLegacySectionRecord),
   traceClaims: claims.map(toLegacyClaim),
   maps: {

@@ -5,8 +5,13 @@ const {
   renderContentBlock,
   renderRecordLinks
 } = require("./shared");
+const { createAuditReaderRenderer } = require("./audit-reader");
+const { createFigureMetadataRenderer } = require("./figure-metadata");
 
 function createSectionRenderer(publication, relationships) {
+  const { renderReaderLayout, renderCanonicalityNotice } = createAuditReaderRenderer(publication);
+  const { renderAfterSectionBlock } = createFigureMetadataRenderer(publication);
+
   function renderSectionActions(section) {
     const links = [];
     if (section.previousSectionId) {
@@ -24,7 +29,7 @@ function createSectionRenderer(publication, relationships) {
   function groupSectionBlocks(contentBlocks) {
     const groups = [];
     let current = null;
-    for (const block of contentBlocks) {
+    for (const [index, block] of contentBlocks.entries()) {
       if (block.type === "heading") {
         current = {
           heading: block.text,
@@ -37,7 +42,7 @@ function createSectionRenderer(publication, relationships) {
         current = { heading: "", blocks: [] };
         groups.push(current);
       }
-      current.blocks.push(block);
+      current.blocks.push({ block, index });
     }
     return groups;
   }
@@ -87,31 +92,50 @@ function createSectionRenderer(publication, relationships) {
       .map(
         (group) => `<section class="panel">
           ${group.heading ? `<h2>${escapeHtml(group.heading)}</h2>` : ""}
-          ${group.blocks.map(renderContentBlock).join("")}
+          ${group.blocks
+            .map(({ block, index }) => `${renderContentBlock(block)}${renderAfterSectionBlock(section.id, index)}`)
+            .join("")}
         </section>`
       )
       .join("");
   }
 
+  function renderSectionReaderContext(section) {
+    if (!section.readerContext) {
+      return "";
+    }
+
+    const headingId = `${section.slug}-reader-context-heading`;
+    return `<aside class="panel reader-web-context" data-reader-context="web-only" aria-labelledby="${escapeHtml(
+      headingId
+    )}">
+        <h2 id="${escapeHtml(headingId)}">${escapeHtml(section.readerContext.heading)}</h2>
+        ${section.readerContext.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("\n        ")}
+      </aside>`;
+  }
+
   function renderSectionPage(section) {
-    const body = `<div class="sr-only" data-generated-source="section-model" data-section-id="${escapeHtml(
-      section.id
-    )}"></div>
+    const readerContext = renderSectionReaderContext(section);
+    const readerBody = `${renderCanonicalityNotice()}${readerContext ? `\n      ${readerContext}` : ""}
       ${renderSectionActions(section)}
       ${renderSectionVerificationPanel(section)}
       ${renderSectionClaimsPanel(section)}
       ${renderSectionContent(section)}`;
+    const body = `<div class="sr-only" data-generated-source="section-model" data-section-id="${escapeHtml(
+      section.id
+    )}"></div>${renderReaderLayout(section.id, readerBody)}`;
 
     return layout({
       title: `${section.id} - ${section.title} | The Citizen Audit`,
-      description: `Canonical ${section.id} web conversion for The Citizen Audit v1.0.`,
+      description: `Structured web reader conversion of ${section.id} from The Citizen Audit v1.0; the PDF remains canonical.`,
       eyebrow: `${section.id} - Version 1.0 LOCKED`,
       heading: section.title,
       lede: section.summary,
       body,
       footerLabel: `${section.id} - ${section.title}`,
       canonicalPath: section.url,
-      ogType: "article"
+      ogType: "article",
+      stylesheets: ["/audit-reader.css"]
     });
   }
 

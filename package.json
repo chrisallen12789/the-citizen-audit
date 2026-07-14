@@ -36,6 +36,7 @@
     "archive:manifest:test": "node --test tests/archive-manifest-generator.test.js tests/archive-assistant-validation.test.js tests/archive-assistant-export.test.js tests/archive-assistant-helper.test.js tests/archive-assistant-wayback.test.js",
     "archive:serve": "node scripts/archive-assistant-serve.js",
     "build:publication": "node scripts/build-publication-assets.js",
+    "reader:freshness": "node scripts/reader-output-freshness.js",
     "qa": "node scripts/qa.js",
     "release:rc": "node scripts/release-candidate.js",
     "archive:hash": "node scripts/archive-batch.js",

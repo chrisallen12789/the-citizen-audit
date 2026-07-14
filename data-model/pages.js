@@ -3,6 +3,7 @@ const claims = require("./claims");
 const sources = require("./sources");
 const decisions = require("./decisions");
 const openQuestions = require("./open-questions");
+const auditReader = require("./audit-reader");
 
 const allSectionIds = sections
   .filter((section) => section.id !== "Repository assets")
@@ -28,13 +29,11 @@ const correctionMailto =
 const reviewMailto =
   "mailto:review@thecitizenaudit.org?subject=Citizen%20Audit%20Formal%20Review";
 
-const sectionTocEntries = sections
-  .filter((section) => /^Section \d+$/.test(section.id) || /^Appendix /.test(section.id))
-  .map((section) => ({
-    href: section.url,
-    label: /^Section \d+$/.test(section.id) ? section.id : section.id.replace("Appendix ", "Appendix "),
-    detail: section.title
-  }));
+const sectionTocEntries = auditReader.contents.map((entry) => ({
+  href: entry.route,
+  label: entry.label,
+  detail: entry.title
+}));
 
 module.exports = [
   {
@@ -133,6 +132,9 @@ module.exports = [
     relatedDecisionIds: allDecisionIds,
     relatedOpenQuestionIds: allOpenQuestionIds,
     contentBlocks: [
+      {
+        type: "readerCanonicalityNotice"
+      },
       {
         type: "actions",
         links: [
@@ -1149,6 +1151,9 @@ module.exports = [
     relatedOpenQuestionIds: allOpenQuestionIds,
     contentBlocks: [
       {
+        type: "readerCanonicalityNotice"
+      },
+      {
         type: "actions",
         links: [
           { label: "Open question pages", href: "/open-questions.html", variant: "primary" },
@@ -1163,7 +1168,7 @@ module.exports = [
   {
     id: "PAGE-APPENDIX-B",
     title: "Appendix B | The Citizen Audit",
-    heading: "Appendix B - Transparency Scorecard",
+    heading: "Appendix B",
     slug: "appendix-b-transparency-scorecard",
     url: "/audit/appendix-b-transparency-scorecard.html",
     description: "Appendix B transparency scorecard for The Citizen Audit.",
@@ -1178,6 +1183,9 @@ module.exports = [
     relatedDecisionIds: allDecisionIds,
     relatedOpenQuestionIds: allOpenQuestionIds,
     contentBlocks: [
+      {
+        type: "readerCanonicalityNotice"
+      },
       {
         type: "actions",
         links: [
