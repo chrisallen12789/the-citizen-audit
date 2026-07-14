@@ -345,3 +345,29 @@ The replacement checkpoint patch must be packaged as raw Git output:
 
 ## Residual Constraints and Nonclaims
 The accepted implementation closes the failed-module and failed-cycle cache defects, and the owner decision resolves `VAL-RESULT-001`. This acceptance intentionally does not claim OS-level validator confinement, production security, or absolute isolation. Runtime activation, deployment, merge, and PR or issue state changes remain separately prohibited or unapproved. Phase 4.2 remains PLANNED and its unresolved `P42-D001` and `P42-D003` sequence still requires separate formal authorization.
+
+## Post-Acceptance CI Corrections and Final-Head Evidence
+
+This addendum supplements the original Phase 4.1 acceptance decision; it does not erase, replace, or rewrite that decision. The accepted implementation remains `ef8d8cef2a82e3a43eee06013500aacae0682d4a`, with accepted implementation tree `b945833eb17b9d75111113056ce8cd50b5bf0564`, and the acceptance-recording commit remains `d0fb89f1ba1b22199a2fecec060c1ef6f7265ab9`.
+
+The accepted post-acceptance correction chain is:
+
+- `44f166a59735c7c4b6f1237a58951875c42a0ca8` (`test: use portable validator temp path`), whose direct parent is `d0fb89f1ba1b22199a2fecec060c1ef6f7265ab9`. It corrected a Windows-specific temporary-path construction in `tests/validator-security.test.js`, changed no production file, independently reproduced the parent failure as `EACCES` under non-root Linux, and passed the replacement focused test.
+- `e29bd44ce3e83eabc45d3a619dec689d43ccb317` (`fix: keep validator worker alive through timeout`), whose direct parent is `44f166a59735c7c4b6f1237a58951875c42a0ca8`. A permanently pending validator Promise could previously permit worker exit before the parent deadline, nondeterministically producing `WORKER_INTERNAL_FAILURE` rather than `VALIDATOR_TIMEOUT`. The correction captures trusted `MessagePort` ref/close operations and keeps the private result port referenced through reviewed completion or parent timeout. Genuine premature worker exits remain `WORKER_INTERNAL_FAILURE`, and no trusted harness object is exposed to validator code.
+
+Independent-review evidence packages:
+
+- `phase41-ci-path-portability-review.zip` — 4,401,359 bytes; SHA-256 `2a7446304d62b51c10415ce59e24b686f3793c366bf2797647bf8e4b32302bf2`
+- `phase41-ci-path-portability.bundle` — 4,424,638 bytes; SHA-256 `3261aa66fedbb2dcf1b312df0d4fa87d36e437463ea03996c70ca667795d356f`
+- `phase41-ci-path-portability.patch` — 1,108 bytes; SHA-256 `fe3a1f775ef4d73f4e6caac054314e788f1b583aa3a45ae1ea29463ab9a24ad9`
+- `phase41-ci-path-portability-final-independent-review.txt` — 3,895 bytes; SHA-256 `1731aa09aea97499d8e3f4992f3691abc19cf8a7e23e8e09f17261ded55160d5`
+- `phase41-validator-timeout-lifecycle-review.zip` — 4,440,130 bytes; SHA-256 `eb012936e5984ae99b4c0b21d55ec6d67e68490f8fc26648fea34d7f26de481a`
+- `phase41-validator-timeout-lifecycle.bundle` — 4,428,740 bytes; SHA-256 `5da3ed8e586082e2f61774ad9e20a0839b0a591ca8c4025dd580fb304d9e6cb7`
+- `phase41-validator-timeout-lifecycle.patch` — 16,276 bytes; SHA-256 `666ea304242d8534fa2dfb73f44b8ae88e0f94ee772c2970db60104514af2c44`
+- `phase41-validator-timeout-lifecycle-final-independent-review.txt` — 8,262 bytes; SHA-256 `5d587722acdfcffdb6b1f9ce78367a9fba4ab829bba8263aab4317c990e4877b`
+
+Independent Linux evidence at `e29bd44ce3e83eabc45d3a619dec689d43ccb317` recorded pending-validator repetitions 25/25, execution-orchestrator 57/57, validator-security 141/141, and aggregate execution 338/338. Every pending validator was classified `VALIDATOR_TIMEOUT`; the repetition produced zero `WORKER_INTERNAL_FAILURE` results, zero execution attempts, zero governed writes, zero surviving Node processes, zero temporary validator artifacts, and a clean worktree.
+
+`e29bd44ce3e83eabc45d3a619dec689d43ccb317` is the final reviewed PR/code head before this documentation addendum, with final reviewed code tree `f38602d44fbe1f7b4d33d246050f5480165d3dbe`. All three GitHub Actions workflows completed successfully on that exact head: Institutional QA run `29289106527`, Execution Engine Tests run `29289106533`, and Execution Engine Phase 4 run `29289106585`.
+
+Phase 4.1 remains ACCEPTED and `VAL-RESULT-001` remains RESOLVED. PR #21 remains open, draft, inactive, unmerged, and under HOLD; Issues #9 and #15 remain open; runtime activation and deployment remain prohibited. No production-security or absolute-isolation claim is authorized. Phase 4.2 remains PLANNED: `P42-D001` is OPEN and provisional, `P42-D002` is APPROVED, and `P42-D003` is OPEN and RECOMMENDED. Phase 4.2 implementation remains prohibited, and this addendum authorizes neither merge nor activation.

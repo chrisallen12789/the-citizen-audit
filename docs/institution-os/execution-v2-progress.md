@@ -69,6 +69,12 @@ The accepted correction includes:
 
 The detailed one-to-one correction map is recorded in `docs/institution-os/execution-v2-phase-4.1-corrections.md`.
 
+### Post-acceptance final-head corrections
+
+The accepted implementation and its acceptance decision remain distinct from the accepted post-acceptance correction chain. `44f166a59735c7c4b6f1237a58951875c42a0ca8` corrected a Windows-specific temporary path in the `rename/unlink/chmod` security regression without changing production files. `e29bd44ce3e83eabc45d3a619dec689d43ccb317` corrected the worker timeout lifecycle so a permanently pending semantic validator remains alive through the parent deadline and deterministically yields `VALIDATOR_TIMEOUT`; genuine premature worker exits remain `WORKER_INTERNAL_FAILURE`.
+
+`e29bd44ce3e83eabc45d3a619dec689d43ccb317` is the final reviewed code head before this documentation addendum, with code tree `f38602d44fbe1f7b4d33d246050f5480165d3dbe`. The accepted implementation remains `ef8d8cef2a82e3a43eee06013500aacae0682d4a`, tree `b945833eb17b9d75111113056ce8cd50b5bf0564`; the acceptance-recording commit remains `d0fb89f1ba1b22199a2fecec060c1ef6f7265ab9`.
+
 ## Verification evidence
 
 Local verification observed on July 7, 2026:
@@ -83,6 +89,10 @@ Local verification observed on July 7, 2026:
 - Institutional QA: passed for 159 HTML files.
 
 Remote verification observed on July 7, 2026: correction implementation head `c154712de4190ca785deda18fc48b32bba8318d5` passed Institutional QA, Execution Engine Tests, and Execution Engine Phase 4. The Phase 4 workflow completed every dedicated syntax, compiler, capability-audit, runtime, isolation, event, tamper, fault-injection, QA, and full-suite step successfully. Green local or remote checks do not authorize activation.
+
+Final independent Linux verification at `e29bd44ce3e83eabc45d3a619dec689d43ccb317` recorded pending-validator repetitions 25/25, execution-orchestrator 57/57, validator-security 141/141, and aggregate execution 338/338. Every pending validator was `VALIDATOR_TIMEOUT`; there were zero `WORKER_INTERNAL_FAILURE` results in the repetition, zero execution attempts, zero governed writes, zero surviving Node processes, zero temporary validator artifacts, and a clean worktree.
+
+Exact-head GitHub Actions verification observed on July 13, 2026 completed successfully for `e29bd44ce3e83eabc45d3a619dec689d43ccb317`: Institutional QA run `29289106527`, Execution Engine Tests run `29289106533`, and Execution Engine Phase 4 run `29289106585`. This green evidence does not authorize activation, deployment, merge, or removal of the HOLD.
 
 ## Still incomplete for activation
 

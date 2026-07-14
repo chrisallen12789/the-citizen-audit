@@ -122,6 +122,15 @@ No broad capability declarations were added.
 | Immutable lookup can expose inherited Object prototype values or unsafe ids | FIXED | own-property/null-prototype lookup and unsafe-id regressions remain green |
 | Closure implementation identity is bound to metadata-only bytes | FIXED | regression proves the recorded loader hash equals `registry-core.js` and mutating that identity changes `validatorSetHash` |
 | Replacement checkpoint patch can be rejected because of BOM or CRLF conversion | FIXED | packaging uses raw Git diff bytes and verifies no BOM, LF-only newlines, and `git apply --check` from the exact parent |
+| Rename/unlink/chmod regression builds a Windows-only temporary path | FIXED | portable OS temporary-path construction uses `path.join(os.tmpdir(), ...)`; the target is inside the operating-system temporary directory on Windows and POSIX systems |
+| Permanently pending semantic validator Promise exits before the parent deadline | FIXED | private result-port ref remains live until reviewed completion or parent timeout; pending validation deterministically returns `VALIDATOR_TIMEOUT` |
+| Repeated short-timeout pending validation becomes nondeterministic | FIXED | 25/25 independent Linux repetitions return `VALIDATOR_TIMEOUT`, with zero `WORKER_INTERNAL_FAILURE`, execution attempts, or governed writes |
+| Worker or private MessagePort cleanup leaks resources | FIXED | trusted MessagePort ref/post/close operations are captured; completed and parent-timeout paths close the port, with zero surviving Node processes and zero temporary validator artifacts |
+| Promise resolves before deadline | FIXED | production lifecycle regression proves a resolving validator completes normally before the timeout |
+| Promise rejects before deadline | FIXED | production lifecycle regression normalizes an in-deadline rejection as `VALIDATOR_REJECTION` |
+| Synchronous validator throw is misclassified | FIXED | production lifecycle regression preserves `VALIDATOR_THROW` for synchronous throw |
+| Genuine worker exit is rewritten as timeout | FIXED | premature worker exit remains `WORKER_INTERNAL_FAILURE` |
+| Validator-realm prototype replacement suppresses timeout or cleanup | FIXED | MessagePort/prototype-resistance regression preserves the parent deadline and trusted cleanup operations |
 
 ## Suites Run For This Checkpoint
 
@@ -143,6 +152,12 @@ No broad capability declarations were added.
 | `git diff --check` | PASS |
 | `git fsck --full` | PASS |
 | independent Linux-host normal termination reproduction | PASS, three consecutive clean-room runs: execution-orchestrator 56/56, runtime-integration 28/28, runtime-isolation 48/48, fault 31/31, and aggregate execution 334/334 each run; all 15 commands exited zero, terminated normally, and left zero tracked residue and zero surviving Node processes |
+| post-acceptance portability focused regression | PASS, independently reproduced parent `EACCES` under non-root Linux; replacement focused test passed on the portable path construction |
+| final reviewed head pending-validator repetitions | PASS, 25/25 at `e29bd44ce3e83eabc45d3a619dec689d43ccb317`; every result `VALIDATOR_TIMEOUT`, zero `WORKER_INTERNAL_FAILURE`, execution attempts, governed writes, surviving Node processes, and temporary validator artifacts |
+| final reviewed head execution-orchestrator | PASS, 57/57 at `e29bd44ce3e83eabc45d3a619dec689d43ccb317` |
+| final reviewed head validator-security | PASS, 141/141 at `e29bd44ce3e83eabc45d3a619dec689d43ccb317` |
+| final reviewed head aggregate execution | PASS, 338/338 at `e29bd44ce3e83eabc45d3a619dec689d43ccb317` |
+| final reviewed head GitHub Actions | PASS, Institutional QA `29289106527`, Execution Engine Tests `29289106533`, and Execution Engine Phase 4 `29289106585` all concluded success on `e29bd44ce3e83eabc45d3a619dec689d43ccb317` |
 
 ## Residual Items Intentionally Not Started Here
 - OS-level validator confinement
