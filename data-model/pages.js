@@ -3,6 +3,7 @@ const claims = require("./claims");
 const sources = require("./sources");
 const decisions = require("./decisions");
 const openQuestions = require("./open-questions");
+const appendixB = require("./appendix-b");
 
 const allSectionIds = sections
   .filter((section) => section.id !== "Repository assets")
@@ -1163,7 +1164,7 @@ module.exports = [
   {
     id: "PAGE-APPENDIX-B",
     title: "Appendix B | The Citizen Audit",
-    heading: "Appendix B - Transparency Scorecard",
+    heading: "Appendix B",
     slug: "appendix-b-transparency-scorecard",
     url: "/audit/appendix-b-transparency-scorecard.html",
     description: "Appendix B transparency scorecard for The Citizen Audit.",
@@ -1178,6 +1179,13 @@ module.exports = [
     relatedDecisionIds: allDecisionIds,
     relatedOpenQuestionIds: allOpenQuestionIds,
     contentBlocks: [
+      {
+        type: "canonicalPdfNotice",
+        text:
+          "The Citizen Audit v1.0 PDF remains the canonical publication. This page is a structured reader conversion of Appendix B provided for navigation and inspection.",
+        href: "/downloads/the-citizen-audit-v1.0.pdf",
+        label: "Open the canonical PDF"
+      },
       {
         type: "actions",
         links: [

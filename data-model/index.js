@@ -6,6 +6,7 @@ const decisionsRaw = require("./decisions");
 const openQuestionsRaw = require("./open-questions");
 const releases = require("./releases");
 const glossary = require("./glossary");
+const appendixB = require("./appendix-b");
 const sectionContent = require("./section-content");
 const pagesRaw = require("./pages");
 const researchState = require("./research-state");
@@ -306,10 +307,10 @@ module.exports = {
   pages,
   releases,
   glossary,
+  appendixB,
   researchState,
   crossReferences,
   primaryAudit: auditsEnriched[0] || null,
-  transparencyScorecard: glossary.transparencyScorecard || [],
   sectionRecords: sections.map(toLegacySectionRecord),
   traceClaims: claims.map(toLegacyClaim),
   maps: {

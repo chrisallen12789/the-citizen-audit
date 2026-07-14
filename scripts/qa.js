@@ -682,8 +682,8 @@ if (appendixAHtml) {
   }
 }
 if (appendixBHtml) {
-  const appendixBRowCount = [...appendixBHtml.matchAll(/<tr>/g)].length - 1;
-  if (appendixBRowCount !== publication.transparencyScorecard.length) {
+  const appendixBRowCount = [...appendixBHtml.matchAll(/data-scorecard-row=/g)].length;
+  if (appendixBRowCount !== publication.appendixB.rows.length) {
     problems.push("Appendix B disagrees with transparency scorecard data");
   }
 }

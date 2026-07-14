@@ -316,25 +316,79 @@ function createPageRenderer(publication) {
   }
 
   function renderAppendixTransparency() {
-    const rows = publication.transparencyScorecard
+    const appendix = publication.appendixB;
+
+    function renderSegments(segments) {
+      return segments
+        .map((segment) => {
+          const text = escapeHtml(segment.text);
+          return segment.emphasis === "strong" ? `<strong>${text}</strong>` : text;
+        })
+        .join(" ");
+    }
+
+    function renderCell(row, key) {
+      let value = escapeHtml(row[key]);
+      for (const term of row.italics?.[key] || []) {
+        const escapedTerm = escapeHtml(term);
+        value = value.replace(escapedTerm, `<em>${escapedTerm}</em>`);
+      }
+      const emphasis = row.emphasis?.[key];
+      if (emphasis === "all") {
+        return `<strong>${value}</strong>`;
+      }
+      if (emphasis?.startsWith("prefix:")) {
+        const prefix = escapeHtml(emphasis.slice("prefix:".length));
+        return value.replace(prefix, `<strong>${prefix}</strong>`);
+      }
+      return value;
+    }
+
+    const categoryItems = appendix.categories
       .map(
-        (item) => `<tr>
-          <td>${escapeHtml(item.area)}</td>
-          <td>${escapeHtml(item.section)}</td>
-          <td>${escapeHtml(item.transparency)}</td>
-          <td>${escapeHtml(item.measurable)}</td>
-          <td>${escapeHtml(item.limitation)}</td>
+        (category) =>
+          `<li><strong>${escapeHtml(category.label)}</strong> — ${escapeHtml(category.description)}</li>`
+      )
+      .join("");
+    const headerCells = appendix.columns
+      .map((column) => `<th scope="col">${escapeHtml(column.label)}</th>`)
+      .join("");
+    const rows = appendix.rows
+      .map(
+        (row) => `<tr data-scorecard-row="${escapeHtml(row.key)}">
+          <th scope="row">${renderCell(row, "program")}</th>
+          ${appendix.columns
+            .slice(1)
+            .map((column) => `<td>${renderCell(row, column.key)}</td>`)
+            .join("")}
         </tr>`
       )
       .join("");
-    return `<section class="panel">
-        <h2>Transparency scorecard</h2>
-        <p>The scorecard summarizes how far the current public record goes in the converted sections already present in the repository. It distinguishes measurable lanes from lanes that remain bounded by missing public breakouts.</p>
-        <table data-appendix-source="transparency-scorecard">
-          <tr><th>Area</th><th>Section</th><th>Transparency</th><th>What is measurable</th><th>Main limitation</th></tr>
-          ${rows}
-        </table>
+
+    return `<section class="panel appendix-scorecard" id="transparency-scorecard">
+        <h2>${escapeHtml(appendix.title)}</h2>
+        <p>${renderSegments(appendix.introduction)}</p>
+        <h2>${escapeHtml(appendix.categoriesHeading)}</h2>
+        <ol>${categoryItems}</ol>
+        <h2 id="appendix-b-scorecard-heading">${escapeHtml(appendix.scorecardHeading)}</h2>
+        <div class="appendix-scorecard-scroll" role="region" aria-labelledby="appendix-b-scorecard-heading" tabindex="0" style="max-width:100%;overflow-x:auto">
+          <table class="appendix-scorecard-table" data-appendix-source="transparency-scorecard" style="display:table;min-width:880px;overflow:visible">
+            <caption>${escapeHtml(appendix.caption)}</caption>
+            <thead><tr>${headerCells}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <h2>${escapeHtml(appendix.netFindingHeading)}</h2>
+        <p>${renderSegments(appendix.netFinding)}</p>
+        <p>${renderSegments(appendix.closing)}</p>
       </section>`;
+  }
+
+  function renderCanonicalPdfNotice(block) {
+    return `<aside class="panel appendix-canonical-notice" aria-label="Canonical publication notice">
+        <p>${escapeHtml(block.text)}</p>
+        <p><a href="${escapeHtml(block.href)}">${escapeHtml(block.label)}</a></p>
+      </aside>`;
   }
 
   function renderPublicationPageBlock(block, context) {
@@ -373,6 +427,8 @@ function createPageRenderer(publication) {
         return renderAppendixOpenQuestions();
       case "appendixTransparencyScorecard":
         return renderAppendixTransparency();
+      case "canonicalPdfNotice":
+        return renderCanonicalPdfNotice(block);
       default:
         return "";
     }
