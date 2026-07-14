@@ -100,8 +100,23 @@ function createSectionRenderer(publication, relationships) {
       .join("");
   }
 
+  function renderSectionReaderContext(section) {
+    if (!section.readerContext) {
+      return "";
+    }
+
+    const headingId = `${section.slug}-reader-context-heading`;
+    return `<aside class="panel reader-web-context" data-reader-context="web-only" aria-labelledby="${escapeHtml(
+      headingId
+    )}">
+        <h2 id="${escapeHtml(headingId)}">${escapeHtml(section.readerContext.heading)}</h2>
+        ${section.readerContext.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("\n        ")}
+      </aside>`;
+  }
+
   function renderSectionPage(section) {
-    const readerBody = `${renderCanonicalityNotice()}
+    const readerContext = renderSectionReaderContext(section);
+    const readerBody = `${renderCanonicalityNotice()}${readerContext ? `\n      ${readerContext}` : ""}
       ${renderSectionActions(section)}
       ${renderSectionVerificationPanel(section)}
       ${renderSectionClaimsPanel(section)}

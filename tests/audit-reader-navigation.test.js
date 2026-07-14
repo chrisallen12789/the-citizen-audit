@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
@@ -36,6 +37,13 @@ const readerOutputs = [...sectionOutputs, ...appendixOutputs];
 const auditIndexHtml = renderPublicationPage(auditPage);
 const canonicalNotice =
   "The Citizen Audit v1.0 PDF remains the canonical publication. These web pages are a structured reader conversion provided for navigation and inspection.";
+const section16ReaderContext = {
+  heading: "Web reader context — not part of the locked Section 16 text",
+  paragraphs: [
+    "This web-only note explains the reader layout. On this page, the converted Section 16 text begins at “1. Original research question” below. If this web reader differs from the locked Version 1.0 PDF, the PDF controls.",
+    "The navigation, trace panels, and linked records are reader aids. They do not add or revise a conclusion, number, figure, Source ID, confidence, limitation, or evidence. They do not reconcile or sum figures on incompatible fiscal or accounting bases."
+  ]
+};
 
 function publicPathForRoute(route) {
   const pathname = route.split(/[?#]/, 1)[0];
@@ -115,6 +123,74 @@ test("audit index and all 18 reader pages use the approved visible canonicality 
       output.stableId
     );
   }
+});
+
+test("Section 16 renders one exact web-only reader context before every reader aid and locked block", () => {
+  const sectionsWithContext = numberedSections.filter((section) => section.readerContext);
+  assert.deepEqual(sectionsWithContext.map((section) => section.id), ["Section 16"]);
+
+  const output = sectionOutputs.find((item) => item.stableId === "Section 16");
+  assert.deepEqual(output.section.readerContext, section16ReaderContext);
+  assert.equal(count(output.html, /data-reader-context="web-only"/g), 1);
+  assert.equal(count(output.html, new RegExp(section16ReaderContext.heading, "g")), 1);
+  for (const paragraph of section16ReaderContext.paragraphs) {
+    assert.equal(count(output.html, new RegExp(paragraph.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")), 1);
+  }
+
+  const headingId = "section-16-final-argument-reader-context-heading";
+  assert.ok(
+    output.html.includes(
+      `<aside class="panel reader-web-context" data-reader-context="web-only" aria-labelledby="${headingId}">`
+    )
+  );
+  assert.ok(output.html.includes(`<h2 id="${headingId}">${section16ReaderContext.heading}</h2>`));
+
+  const canonicalIndex = output.html.indexOf(canonicalNotice);
+  const contextIndex = output.html.indexOf('data-reader-context="web-only"');
+  const actionsIndex = output.html.indexOf('<div class="actions">', contextIndex);
+  const verificationIndex = output.html.indexOf('<section class="panel verification">', contextIndex);
+  const claimsIndex = output.html.indexOf("<h2>Claims In This Section</h2>", contextIndex);
+  const lockedIndex = output.html.indexOf("<h2>1. Original research question</h2>", contextIndex);
+  assert.ok(canonicalIndex < contextIndex);
+  assert.ok(contextIndex < actionsIndex);
+  assert.ok(actionsIndex < verificationIndex);
+  assert.ok(verificationIndex < claimsIndex);
+  assert.ok(claimsIndex < lockedIndex);
+
+  assert.equal(count(output.html, /<h2>1\. Original research question<\/h2>/g), 1);
+  assert.equal(count(output.html, /aria-current="page"/g), 1);
+  assert.ok(output.html.includes('data-audit-contents-entry="Section 16">\n            <a href="/audit/section-16-final-argument.html" aria-current="page"'));
+  assert.ok(output.html.includes('<a class="button" href="/audit/section-15-what-is-missing.html">Previous</a>'));
+  assert.ok(output.html.includes('<a class="button" href="/audit.html">Audit Index</a>'));
+  assert.doesNotMatch(output.html, />Next<\/a>/);
+  assert.equal(count(output.html, new RegExp(canonicalNotice, "g")), 1);
+  assert.equal(count(output.html, /href="\/downloads\/the-citizen-audit-v1\.0\.pdf"/g), 1);
+  assert.ok(output.html.includes('<link rel="canonical" href="https://thecitizenaudit.org/audit/section-16-final-argument.html">'));
+
+  for (const other of sectionOutputs.filter((item) => item.stableId !== "Section 16")) {
+    assert.equal(count(other.html, /data-reader-context="web-only"/g), 0, other.stableId);
+  }
+});
+
+test("Section 16 locked content and evidentiary boundaries remain unchanged", () => {
+  const section16 = numberedSections.find((section) => section.id === "Section 16");
+  assert.deepEqual(section16.contentBlocks, rawSectionContent["Section 16"]);
+  assert.equal(section16.contentBlocks[0].type, "heading");
+  assert.equal(section16.contentBlocks[0].text, "1. Original research question");
+  assert.deepEqual(section16.claimIds, ["C-018"]);
+  assert.equal(publication.claims.filter((claim) => claim.sectionId === "Section 16").length, 1);
+
+  const normalizedSectionContent = fs
+    .readFileSync(path.join(root, "data-model", "section-content.js"), "utf8")
+    .replace(/\r\n/g, "\n");
+  assert.equal(
+    crypto.createHash("sha256").update(Buffer.from(normalizedSectionContent, "utf8")).digest("hex"),
+    "35e320ae7c75c652c37461502aea2c35cf14a13c36d55e3b9b368e50a98bf291"
+  );
+
+  const contextText = [section16.readerContext.heading, ...section16.readerContext.paragraphs].join(" ");
+  assert.doesNotMatch(contextText, /\$|≈|\b[ACDS]-\d+\b|blended grand total/i);
+  assert.equal(publication.figureMetadata.filter((figure) => figure.sectionId === "Section 16").length, 0);
 });
 
 test("section descriptions use the approved wording and SEO canonical links remain exact", () => {
@@ -210,4 +286,6 @@ test("reader CSS defines the desktop sticky layout and bounded 360px mobile beha
   assert.match(css, /\.audit-contents > summary\s*{[^}]*display:\s*list-item/s);
   assert.match(css, /overflow-wrap:\s*anywhere/);
   assert.match(css, /summary:focus-visible/);
+  assert.match(css, /\.reader-web-context\s*{[^}]*border:\s*1px dashed[^}]*max-width:\s*100%[^}]*min-width:\s*0/s);
+  assert.doesNotMatch(css, /\.reader-web-context\s*{[^}]*solid var\(--blue\)/s);
 });

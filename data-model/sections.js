@@ -629,6 +629,13 @@ module.exports = [
     "slug": "section-16-final-argument",
     "url": "/audit/section-16-final-argument.html",
     "summary": "Closing synthesis bounded by the same evidence and basis-separation rules as the rest of Version 1.0.",
+    "readerContext": {
+      "heading": "Web reader context — not part of the locked Section 16 text",
+      "paragraphs": [
+        "This web-only note explains the reader layout. On this page, the converted Section 16 text begins at “1. Original research question” below. If this web reader differs from the locked Version 1.0 PDF, the PDF controls.",
+        "The navigation, trace panels, and linked records are reader aids. They do not add or revise a conclusion, number, figure, Source ID, confidence, limitation, or evidence. They do not reconcile or sum figures on incompatible fiscal or accounting bases."
+      ]
+    },
     "claimIds": [
       "C-018"
     ],
