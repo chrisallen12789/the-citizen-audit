@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0.0",
+  "tiers": [
+    {
+      "id": "A",
+      "label": "Tier A",
+      "meaning": "Primary authoritative record, such as enacted law, official financial statement, agency dataset, court filing, or contract record."
+    },
+    {
+      "id": "B",
+      "label": "Tier B",
+      "meaning": "Official analysis or oversight record, such as an Inspector General, GAO, CRS, or formal legislative report."
+    },
+    {
+      "id": "C",
+      "label": "Tier C",
+      "meaning": "Credible secondary research or reporting used for context or corroboration."
+    },
+    {
+      "id": "D",
+      "label": "Tier D",
+      "meaning": "Contextual, disputed, incomplete, or unverified material that cannot independently support a material finding."
+    }
+  ],
+  "publicationRule": "A material published finding must not rely solely on Tier D evidence."
+}

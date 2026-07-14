@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0.0",
+  "statuses": [
+    { "id": "received", "label": "Received", "meaning": "The submission was received but not yet screened." },
+    { "id": "screening", "label": "Screening", "meaning": "The submission is being classified as a challenge, clarification, duplicate, unsupported opinion, or abuse." },
+    { "id": "under_review", "label": "Under review", "meaning": "The challenge is being evaluated against the published record and supplied evidence." },
+    { "id": "evidence_requested", "label": "Evidence requested", "meaning": "More evidence or clarification has been requested from the challenger." },
+    { "id": "accepted", "label": "Accepted", "meaning": "The challenge was accepted and requires action or correction." },
+    { "id": "partially_accepted", "label": "Partially accepted", "meaning": "Part of the challenge was accepted and part was rejected or unresolved." },
+    { "id": "rejected_with_explanation", "label": "Rejected with explanation", "meaning": "The challenge was rejected and a public explanation is required." },
+    { "id": "correction_issued", "label": "Correction issued", "meaning": "The challenge resulted in a published correction." },
+    { "id": "closed_without_action", "label": "Closed without action", "meaning": "The matter was closed without changing the public record." }
+  ],
+  "rule": "A challenge record must not directly modify the challenged audit, finding, source, calculation, methodology, correction, or release."
+}

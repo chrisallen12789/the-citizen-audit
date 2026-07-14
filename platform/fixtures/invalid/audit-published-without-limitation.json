@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "auditId": "TCA-VA-2026-002",
+  "slug": "invalid-missing-limitation",
+  "title": "Invalid Missing Limitation Fixture",
+  "question": "Does the schema reject a published-with-limitations audit without a limitation summary?",
+  "status": "published_with_limitations",
+  "currentVersion": "1.0",
+  "currentReleaseId": "REL-TCA-VA-2026-002-V1.0",
+  "institutionIds": ["INST-VA"],
+  "methodologyId": "METHOD-001-V1.2",
+  "confidence": "moderate",
+  "confidenceRationale": "This fixture is intentionally invalid.",
+  "evidenceCoverage": "partially_evidenced",
+  "findingIds": [],
+  "sourceIds": [],
+  "createdAt": "2026-06-01T00:00:00Z",
+  "publishedAt": "2026-07-01T00:00:00Z",
+  "updatedAt": "2026-07-01T00:00:00Z"
+}

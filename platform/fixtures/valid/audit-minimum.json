@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "auditId": "TCA-VA-2026-001",
+  "slug": "where-the-va-medical-dollar-goes",
+  "title": "Where the Veterans Affairs Medical Dollar Goes",
+  "question": "Of every federal dollar appropriated to the Department of Veterans Affairs for fiscal year 2027, how much can be traced to major service, benefit, administrative, and unresolved categories?",
+  "status": "published_with_limitations",
+  "currentVersion": "1.0",
+  "currentReleaseId": "REL-TCA-VA-2026-001-V1.0",
+  "institutionIds": ["INST-VA"],
+  "subjectTags": ["veterans", "federal-spending"],
+  "period": {
+    "type": "fiscal_year",
+    "start": "2026-10-01",
+    "end": "2027-09-30",
+    "label": "Fiscal Year 2027"
+  },
+  "methodologyId": "METHOD-001-V1.2",
+  "confidence": "moderate",
+  "confidenceRationale": "Core budget figures are sourced from authoritative records, while downstream allocation limits remain visible.",
+  "evidenceCoverage": "substantially_evidenced",
+  "limitationSummary": "Some downstream allocations cannot be traced from currently available public records.",
+  "findingIds": ["TCA-VA-2026-001-F01"],
+  "unknownIds": ["UNK-000001"],
+  "calculationIds": ["CALC-000001"],
+  "sourceIds": ["SRC-000001"],
+  "challengeIds": [],
+  "correctionIds": [],
+  "releaseIds": ["REL-TCA-VA-2026-001-V1.0"],
+  "createdAt": "2026-06-01T00:00:00Z",
+  "publishedAt": "2026-07-01T00:00:00Z",
+  "updatedAt": "2026-07-01T00:00:00Z"
+}

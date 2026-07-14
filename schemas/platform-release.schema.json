@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/platform-release.schema.json",
+  "title": "Citizen Audit Platform Release Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "releaseId",
+    "auditId",
+    "version",
+    "status",
+    "methodologyId",
+    "releasedAt",
+    "recordSnapshotHash",
+    "artifactIds",
+    "fileManifestArtifactId",
+    "publicationGateResults",
+    "authorizedBy"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "releaseId": { "type": "string", "pattern": "^REL-TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}-V[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "auditId": { "type": "string", "pattern": "^TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}$" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "status": { "enum": ["open_for_challenge", "published_with_limitations", "published", "corrected", "superseded", "withdrawn"] },
+    "methodologyId": { "type": "string", "pattern": "^METHOD-[0-9]{3}-V[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "releasedAt": { "type": "string", "format": "date-time" },
+    "recordSnapshotHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "artifactIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^ART-[0-9]{6}$" }
+    },
+    "fileManifestArtifactId": { "type": "string", "pattern": "^ART-[0-9]{6}$" },
+    "supersedesReleaseId": { "type": ["string", "null"], "pattern": "^REL-TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}-V[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "supersededByReleaseId": { "type": ["string", "null"], "pattern": "^REL-TCA-[A-Z0-9]+-[0-9]{4}-[0-9]{3}-V[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "correctionIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^COR-[0-9]{4}-[0-9]{6}$" }
+    },
+    "publicationGateResults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gate", "status"],
+        "properties": {
+          "gate": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["passed", "failed", "waived_with_reason"] },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "authorizedBy": { "type": "string", "minLength": 1 }
+  }
+}

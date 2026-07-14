@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thecitizenaudit.org/schemas/platform-institution.schema.json",
+  "title": "Citizen Audit Platform Institution Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "institutionId", "officialName", "commonName", "institutionType", "jurisdiction", "status"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "institutionId": { "type": "string", "pattern": "^INST-[A-Z0-9-]+$" },
+    "officialName": { "type": "string", "minLength": 1 },
+    "commonName": { "type": "string", "minLength": 1 },
+    "institutionType": { "enum": ["agency", "department", "program", "office", "organization", "court", "legislature", "other"] },
+    "parentInstitutionId": { "type": "string", "pattern": "^INST-[A-Z0-9-]+$" },
+    "jurisdiction": { "type": "string", "minLength": 1 },
+    "website": { "type": "string", "format": "uri" },
+    "status": { "enum": ["active", "inactive", "renamed", "merged", "superseded"] }
+  }
+}

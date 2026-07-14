@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "types": [
+    "public_report",
+    "publication_package",
+    "source_manifest",
+    "findings_export",
+    "calculation_export",
+    "methodology",
+    "decision_log",
+    "correction_history",
+    "hash_manifest",
+    "preserved_source"
+  ],
+  "rule": "Every artifact referenced by a published release must include a SHA-256 hash, byte size, media type, and public path."
+}
