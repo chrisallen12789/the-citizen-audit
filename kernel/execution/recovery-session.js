@@ -15,23 +15,29 @@ const {
   manifestPath
 } = require("./recovery-store");
 const { appendMutationRecord } = require("./mutation-journal");
+const { readRuntimeIsolationBarrier } = require("./runtime-isolation-barrier");
 const {
   getExecutionAttempt,
   listExecutionAttempts,
   transitionExecutionAttempt
 } = require("./ledger");
 
-function invokeHook(options, point, context = {}) {
-  if (typeof options.onStep === "function") options.onStep(point, context);
-}
-
-function assertNoRecoveryBarrier(ledgerPath) {
+function assertNoRecoveryBarrier(ledgerPath, options = {}) {
   const barriers = listExecutionAttempts({ ledgerPath }).filter((attempt) => attempt.state === "recovery_required");
   if (barriers.length) {
     const error = new Error(`Execution is blocked by recovery_required attempt(s): ${barriers.map((item) => item.id).join(", ")}.`);
     error.code = "EXECUTION_RECOVERY_REQUIRED";
     error.attempts = barriers.map((item) => item.id);
     throw error;
+  }
+  if (options.rootDir) {
+    const runtimeBarrier = readRuntimeIsolationBarrier(options.rootDir);
+    if (runtimeBarrier) {
+      const error = new Error(`Execution is blocked by runtime isolation recovery barrier from ${runtimeBarrier.runId}.`);
+      error.code = "EXECUTION_RECOVERY_REQUIRED";
+      error.runtimeIsolationBarrier = runtimeBarrier;
+      throw error;
+    }
   }
 }
 
@@ -73,23 +79,20 @@ function missingParentDirectories(rootDir, relativePath) {
   return missing.reverse();
 }
 
-function createPlannedParents(rootDir, planned, options = {}) {
+function createPlannedParents(rootDir, planned) {
   for (const relative of planned) {
     ensureDirectory(institutionDirectory(rootDir, relative));
-    invokeHook(options, "after_parent_created", { path: relative });
   }
 }
 
 function beginRecoveryAttempt(rootDir, attemptId, writes, options = {}) {
   const ledgerPath = options.ledgerPath;
-  assertNoRecoveryBarrier(ledgerPath);
+  assertNoRecoveryBarrier(ledgerPath, { rootDir });
   const attempt = getExecutionAttempt(attemptId, { ledgerPath });
   if (attempt.state !== "prepared") throw new Error(`Recovery preparation requires prepared attempt state: ${attempt.state}.`);
   const lock = acquireExecutionLock(rootDir, attemptId, options.lock || {});
-  invokeHook(options, "after_lock", { attemptId, lock });
   try {
     const manifest = createPreStateManifest(rootDir, attemptId, writes, { createdAt: options.createdAt });
-    invokeHook(options, "after_manifest", { attemptId, manifest });
     transitionExecutionAttempt(attemptId, "recovery_persisted", {
       preStateManifestHash: manifest.manifestHash
     }, {
@@ -97,7 +100,6 @@ function beginRecoveryAttempt(rootDir, attemptId, writes, options = {}) {
       transitionedAt: options.transitionedAt,
       recordedAt: options.recordedAt
     });
-    invokeHook(options, "after_recovery_persisted", { attemptId, manifest });
     return Object.freeze({ rootDir, attemptId, writes: writes.map((write) => ({ ...write })), manifest, lock, ledgerPath });
   } catch (error) {
     if (!fs.existsSync(manifestPath(rootDir, attemptId))) releaseExecutionLock(rootDir, lock);
@@ -114,7 +116,6 @@ function applyJournaledWrites(session, options = {}) {
     transitionedAt: options.transitionedAt,
     recordedAt: options.recordedAt
   });
-  invokeHook(options, "after_state_applying", { attemptId });
 
   for (let index = 0; index < writes.length; index += 1) {
     const write = writes[index];
@@ -130,9 +131,8 @@ function applyJournaledWrites(session, options = {}) {
       plannedParentDirectories,
       contentHash: bytes ? sha256(bytes) : null
     }, { recordedAt: options.recordedAt });
-    invokeHook(options, "after_operation_started", { attemptId, operationId, write });
 
-    createPlannedParents(rootDir, plannedParentDirectories, options);
+    createPlannedParents(rootDir, plannedParentDirectories);
     const target = institutionFile(rootDir, write.path);
     if (write.operation === "write") {
       const manifestEntry = manifest.entries[index];
@@ -140,7 +140,6 @@ function applyJournaledWrites(session, options = {}) {
     } else if (fs.existsSync(target)) {
       unlinkDurable(target);
     }
-    invokeHook(options, "after_materialized", { attemptId, operationId, write });
     appendMutationRecord(rootDir, attemptId, {
       recordType: "mutation.operation.completed",
       operationId,
@@ -148,7 +147,6 @@ function applyJournaledWrites(session, options = {}) {
       operation: write.operation,
       path: write.path
     }, { recordedAt: options.recordedAt });
-    invokeHook(options, "after_operation_completed", { attemptId, operationId, write });
   }
   return getExecutionAttempt(attemptId, { ledgerPath });
 }

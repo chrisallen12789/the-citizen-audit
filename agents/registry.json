@@ -27,7 +27,13 @@
         "weaken authority rules",
         "change claims or evidence",
         "override human approval requirements"
-      ]
+      ],
+      "runtime": {
+        "executable": "node",
+        "arguments": [
+          "guardians/constitution/check.js"
+        ]
+      }
     },
     {
       "id": "AGENT-REPAIR",
@@ -57,7 +63,13 @@
         "delete failing records",
         "weaken QA gates",
         "change publication readiness conclusions"
-      ]
+      ],
+      "runtime": {
+        "executable": "node",
+        "arguments": [
+          "scripts/repair-agent.js"
+        ]
+      }
     },
     {
       "id": "AGENT-SOURCE-STEWARD",
@@ -81,7 +93,13 @@
         "mark a source verified without evidence",
         "replace a source without review",
         "change source health to pass QA"
-      ]
+      ],
+      "runtime": {
+        "executable": "node",
+        "arguments": [
+          "scripts/source-steward-agent.js"
+        ]
+      }
     },
     {
       "id": "AGENT-ADS-STEWARD",
@@ -107,7 +125,13 @@
         "change permanent IDs after assignment",
         "delete ADS records",
         "silently rewrite audit history"
-      ]
+      ],
+      "runtime": {
+        "executable": "node",
+        "arguments": [
+          "scripts/ads-steward-agent.js"
+        ]
+      }
     },
     {
       "id": "AGENT-PUBLICATION-BUILDER",
@@ -132,7 +156,13 @@
       "forbiddenActions": [
         "edit source data to satisfy generated outputs",
         "weaken generated page checks"
-      ]
+      ],
+      "runtime": {
+        "executable": "node",
+        "arguments": [
+          "scripts/publication-builder-agent.js"
+        ]
+      }
     },
     {
       "id": "AGENT-RELEASE-STEWARD",
@@ -157,7 +187,13 @@
         "change readiness gates",
         "modify evidence to satisfy release",
         "change publication readiness conclusions"
-      ]
+      ],
+      "runtime": {
+        "executable": "node",
+        "arguments": [
+          "scripts/release-steward-agent.js"
+        ]
+      }
     },
     {
       "id": "AGENT-CONTENT-HYGIENE",
@@ -182,7 +218,13 @@
         "simplify legal language without review",
         "change claims or evidence descriptions",
         "modify truth-bearing records"
-      ]
+      ],
+      "runtime": {
+        "executable": "node",
+        "arguments": [
+          "scripts/content-hygiene-agent.js"
+        ]
+      }
     },
     {
       "id": "AGENT-CHALLENGE-INTAKE",

@@ -1,10 +1,98 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "validators": [
     {
       "id": "execution-plan",
       "module": "execution-plan.js",
-      "description": "Validates that execution retains a declared write set, affected objects, and a deterministic write-set hash."
+      "version": "1.0.0",
+      "supportedPhases": [
+        "candidate",
+        "post_write"
+      ],
+      "description": "Proves the deterministic plan matches the approved transaction and write-set hash."
+    },
+    {
+      "id": "exact-materialization",
+      "module": "exact-materialization.js",
+      "version": "1.0.0",
+      "supportedPhases": [
+        "post_write"
+      ],
+      "description": "Verifies live state exactly matches the declared write set and that no undeclared path was mutated."
+    },
+    {
+      "id": "institution-registry",
+      "module": "institution-registry.js",
+      "version": "1.0.0",
+      "supportedPhases": [
+        "post_write"
+      ],
+      "description": "Validates the institution registry invariant under the governed root."
+    },
+    {
+      "id": "dependency-graph",
+      "module": "dependency-graph.js",
+      "version": "1.0.0",
+      "supportedPhases": [
+        "post_write"
+      ],
+      "description": "Validates dependency reference resolution and rejects dependency cycles."
+    },
+    {
+      "id": "write-report-semantics",
+      "module": "write-report-semantics.js",
+      "version": "1.0.0",
+      "semantic": true,
+      "actions": [
+        "write_report"
+      ],
+      "supportedPhases": [
+        "candidate",
+        "post_write"
+      ],
+      "description": "Action-specific semantic validation for write_report."
+    },
+    {
+      "id": "derived-files-semantics",
+      "module": "derived-files-semantics.js",
+      "version": "1.0.0",
+      "semantic": true,
+      "actions": [
+        "regenerate_derived_files"
+      ],
+      "supportedPhases": [
+        "candidate",
+        "post_write"
+      ],
+      "description": "Action-specific semantic validation for regenerate_derived_files."
+    },
+    {
+      "id": "ads-records-semantics",
+      "module": "ads-records-semantics.js",
+      "version": "1.0.0",
+      "semantic": true,
+      "actions": [
+        "export_ads_records"
+      ],
+      "supportedPhases": [
+        "candidate",
+        "post_write"
+      ],
+      "description": "Action-specific semantic validation for export_ads_records."
+    },
+    {
+      "id": "sort-registry-semantics",
+      "module": "sort-registry-semantics.js",
+      "version": "1.0.0",
+      "semantic": true,
+      "actions": [
+        "sort_registry"
+      ],
+      "supportedPhases": [
+        "candidate",
+        "post_write"
+      ],
+      "description": "Action-specific semantic validation for sort_registry."
     }
   ]
 }

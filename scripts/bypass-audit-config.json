@@ -1,0 +1,912 @@
+{
+  "version": "3.0.0",
+  "categories": {
+    "1": "governed mutation routed through the orchestrator",
+    "2": "isolated workspace mutation",
+    "3": "generated public-output mutation outside governed records",
+    "4": "test-only mutation",
+    "5": "recovery or execution infrastructure",
+    "6": "unacceptable bypass requiring removal or refactoring"
+  },
+  "governedRecordPrefixes": [
+    "kernel/registry/",
+    "kernel/transactions/",
+    "kernel/execution/state/",
+    "kernel/permissions/",
+    "kernel/authority/",
+    "schemas/",
+    "audits/",
+    "institution/",
+    "docs/adr/",
+    "docs/institution-os/"
+  ],
+  "classifications": [
+    {
+      "path": "guardians/constitution/check.js",
+      "category": 3,
+      "justification": "Constitution guardian reads governed records and writes only a generated report file (docs/agent-reports/).",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/approvals/decision-store.js",
+      "category": 5,
+      "justification": "Immutable institution-controlled approval-decision record store with exclusive creation and authority verification.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/approvals/recovery-decision-store.js",
+      "category": 5,
+      "justification": "Immutable authorized recovery-decision record store with exclusive creation and authority verification.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/events/projection.js",
+      "category": 5,
+      "justification": "Canonical schema-validated execution-event projection derived from the verified execution ledger; never writes events.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/events/validate.js",
+      "category": 5,
+      "justification": "Strict execution-event schema and deterministic identity validator.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/artifact-vault.js",
+      "category": 5,
+      "justification": "Execution artifact path confinement and read support within reviewed execution state.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/candidate-state.js",
+      "category": 5,
+      "justification": "Read-only candidate-state materialization used by validators; transitive capability is inherited from reviewed execution helpers.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/durable-io.js",
+      "category": 5,
+      "justification": "Phase 2 durable IO primitive: atomic same-directory replace, fsync, and durable unlink used exclusively by the execution/recovery layer.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/exclusive-boundary.js",
+      "category": 5,
+      "justification": "Phase 2 exclusive execution lock (O_EXCL create/unlink). The sanctioned mutual-exclusion mechanism.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/file-state.js",
+      "category": 5,
+      "justification": "Execution file-state helper within the governed execution layer.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/ledger.js",
+      "category": 5,
+      "justification": "Authoritative hash-chained execution ledger and deterministic transaction disposition replay.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/move-file.js",
+      "category": 5,
+      "justification": "Execution infrastructure rename helper used inside the governed mutation path.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/mutation-journal.js",
+      "category": 5,
+      "justification": "Append-only mutation journal within the exclusive execution boundary.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/orchestrator-core.js",
+      "category": 1,
+      "justification": "Internal authoritative execution core behind the production orchestrator wrapper and test harness; all durable mutation remains delegated to reviewed Phase 2 primitives.",
+      "capabilities": [
+        "durableStateMutation",
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/execution/parent-directories.js",
+      "category": 5,
+      "justification": "Path parent validation and execution directory helper within the governed boundary.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/path-safety.js",
+      "category": 5,
+      "justification": "Path confinement helper within the governed execution layer.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/plan.js",
+      "category": 5,
+      "justification": "Deterministic execution plan builder; transitive capability is inherited from reviewed execution helpers.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/pre-state-manifest.js",
+      "category": 5,
+      "justification": "Phase 2 recovery infrastructure that durably records the canonical pre-state manifest before governed mutation.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/preserve-artifact.js",
+      "category": 5,
+      "justification": "Phase 2 recovery infrastructure that durably preserves execution artifacts in the institution-controlled execution state store.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/recovery-paths.js",
+      "category": 5,
+      "justification": "Path derivation for reviewed recovery state.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/recovery-session.js",
+      "category": 5,
+      "justification": "Phase 2 governed mutation session that applies journaled writes and enforces durable recovery barriers.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/execution/rollback-result-store.js",
+      "category": 5,
+      "justification": "Phase 2 recovery infrastructure that durably records rollback verification results.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/rollback.js",
+      "category": 5,
+      "justification": "Phase 2 rollback restores pre-state through durable IO within the governed recovery layer.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/execution/runtime-isolation-barrier.js",
+      "category": 5,
+      "justification": "Phase 4 recovery infrastructure that durably records an unproven runtime-isolation restoration and blocks later runtime or direct orchestrator execution.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/runtime-isolation-recovery.js",
+      "category": 5,
+      "justification": "Authorized recovery operation that verifies the restoration manifest, appends clearance evidence, then removes the barrier.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/snapshot-blob-store.js",
+      "category": 5,
+      "justification": "Phase 2 content-addressed snapshot storage used only by recovery and rollback.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/snapshots.js",
+      "category": 5,
+      "justification": "Snapshot helper for reviewed recovery operations.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/startup-recovery.js",
+      "category": 5,
+      "justification": "Phase 2 startup reconciliation of interrupted attempts through the recovery layer.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/execution/validation-cycle.js",
+      "category": 5,
+      "justification": "Approved validator execution boundary: constructs a terminable worker_threads.Worker per validator with a hard timeout and reconstructs a serializable context. No governed mutation; the sole worker-execution site for validators.",
+      "capabilities": [
+        "durableStateMutation",
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/execution/validation-result-store.js",
+      "category": 5,
+      "justification": "Phase 3 execution infrastructure that durably records validation artifacts bound to committed ledger transitions.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/validation-results.js",
+      "category": 5,
+      "justification": "Validation result normalization within the execution layer.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/validators/ads-records-semantics.js",
+      "category": 5,
+      "justification": "Action-specific ADS semantic validator.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/validators/derived-files-semantics.js",
+      "category": 5,
+      "justification": "Action-specific derived-file semantic validator.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/validators/exact-materialization.js",
+      "category": 5,
+      "justification": "Post-write exact materialization validator.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/validators/registry-core.js",
+      "category": 5,
+      "justification": "Internal source-boundary validator registry core that statically inspects verified module bytes, builds reviewed closures, and exposes immutable descriptor lookups.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/validators/sort-registry-semantics.js",
+      "category": 5,
+      "justification": "Action-specific registry sorting semantic validator.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/validators/write-report-semantics.js",
+      "category": 5,
+      "justification": "Action-specific report semantic validator.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/execution/write-file.js",
+      "category": 5,
+      "justification": "Execution infrastructure wrapper for governed writes; callers remain inside the authoritative execution path.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/executive/status.js",
+      "category": 3,
+      "justification": "Writes a generated executive status output; reads governed records but does not mutate them.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/lib/append-only-log.js",
+      "category": 5,
+      "justification": "Hash-chained append-only log primitive backing the execution ledger, mutation journal, and transaction log.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/runtime/agent-registry.js",
+      "category": 5,
+      "justification": "Authoritative registered executable resolver and digest verifier.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/runtime/agent-workspace.js",
+      "category": 2,
+      "justification": "Creates and cleans disposable writable agent workspaces outside the live institution root and copies only declared regular-file inputs.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/runtime/governed-tree-guard.js",
+      "category": 5,
+      "justification": "Defense-in-depth recovery guard that snapshots, detects, restores, and verifies security-critical governed-tree state after isolated agent execution.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/runtime/isolation-adapter.js",
+      "category": 2,
+      "justification": "The sole approved production agent-execution adapter. It probes Linux namespace/chroot/seccomp capability, builds the reviewed sandbox launcher, exposes only a disposable workspace, and does not mount the live institution root.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "kernel/runtime/proposed-writes.js",
+      "category": 5,
+      "justification": "Strict isolated workspace proposal parser and path validator.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/runtime/run-transactional.js",
+      "category": 1,
+      "justification": "Production CLI that passes only identifiers to the transactional runtime.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/runtime/run.js",
+      "category": 3,
+      "justification": "Legacy diagnostic/dry-run runtime. Active agent execution is permanently disabled and no child-process spawn path or override flag remains.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "kernel/runtime/sandbox-exec.c",
+      "category": 2,
+      "justification": "Static sandbox launcher used only by the approved isolation adapter. It drops capabilities, sets no-new-privileges, installs a seccomp filter blocking mount/namespace/root-escape syscalls, and executes the agent from /workspace.",
+      "capabilities": []
+    },
+    {
+      "path": "kernel/runtime/transaction-intent.js",
+      "category": 1,
+      "justification": "Records only an exact approved transaction bound to an authoritative decision record.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/runtime/transactional-runtime.js",
+      "category": 1,
+      "justification": "Authoritative runtime integration layer: converts isolated agent output to transaction intent and invokes executeApprovedTransaction; it has no direct governed mutation path.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/transactions/store.js",
+      "category": 5,
+      "justification": "Authoritative append-only transaction record store.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/transactions/validate.js",
+      "category": 5,
+      "justification": "Strict transaction validator and write-set hash implementation.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "memory/export.js",
+      "category": 3,
+      "justification": "Writes a generated memory export output; does not mutate governed records.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "memory/status.js",
+      "category": 3,
+      "justification": "Writes a generated memory status report; does not mutate governed records.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "proposals/status.js",
+      "category": 3,
+      "justification": "Writes a generated proposals status output; does not mutate governed records.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/ads-steward-agent.js",
+      "category": 3,
+      "justification": "Writes generated ADS export/report outputs under public/ and docs/agent-reports/; no governed-record mutation.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "scripts/archive-assistant-launch.js",
+      "category": 3,
+      "justification": "Operational tooling that launches a local archive assistant process; no governed-record mutation.",
+      "capabilities": [
+        "processExecution"
+      ]
+    },
+    {
+      "path": "scripts/archive-batch.js",
+      "category": 3,
+      "justification": "Writes a generated archive manifest output.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/archive-manifest-generator.js",
+      "category": 3,
+      "justification": "Generates archive manifest output files; not a governed record.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/build-publication-assets.js",
+      "category": 3,
+      "justification": "Publication generator producing public/ assets; generated output outside governed records.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/build/finalize.js",
+      "category": 3,
+      "justification": "Publication build finalize step writing generated public/ output.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/build/io.js",
+      "category": 3,
+      "justification": "Publication build IO helper writing generated public/ output.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/build/qa-status.js",
+      "category": 3,
+      "justification": "Writes generated QA status into public data outputs; not a governed record.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/bypass-audit.js",
+      "category": 3,
+      "justification": "This audit tool writes a generated report to docs/bypass-audit-report.json (outside governed records).",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/content-hygiene-agent.js",
+      "category": 3,
+      "justification": "Legacy agent writing only a generated report; no governed-record mutation.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/export-ads.js",
+      "category": 3,
+      "justification": "Exports ADS records to public/data generated output.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/extract-section-content.js",
+      "category": 3,
+      "justification": "Generates a derived section-content data file; generated output.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/project-execution-events.js",
+      "category": 3,
+      "justification": "Read-only CLI projection of canonical execution events.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/publication-builder-agent.js",
+      "category": 3,
+      "justification": "Generates public publication assets under public/; generated output outside governed records.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "scripts/qa.js",
+      "category": 3,
+      "justification": "Institutional QA: reads records, spawns validate-ads, and writes generated QA status into public data outputs.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "scripts/release-candidate.js",
+      "category": 3,
+      "justification": "Assembles a release candidate under release/ and public/data generated outputs.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "scripts/release-steward-agent.js",
+      "category": 3,
+      "justification": "Reads governed records for release checks and writes only a generated report; no governed-record mutation.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "scripts/repair-agent.js",
+      "category": 3,
+      "justification": "Legacy analysis agent that writes only a generated report (docs/agent-reports/). Migrating to the transactional runtime is future work; it does not mutate governed records.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "scripts/source-steward-agent.js",
+      "category": 3,
+      "justification": "Legacy agent writing only a generated report; no governed-record mutation.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "tests/archive-manifest-generator.test.js",
+      "category": 4,
+      "justification": "Test-only mutation in temporary directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "tests/bypass-audit.test.js",
+      "category": 4,
+      "justification": "Adversarial bypass-audit tests that create mutation-capable fixture files only in temporary directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "tests/event-projection.test.js",
+      "category": 4,
+      "justification": "Phase 4 event-projection tests; test-only mutation in temporary directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "tests/execution-ledger.test.js",
+      "category": 4,
+      "justification": "Test-only mutation in temporary directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "tests/execution-orchestrator.test.js",
+      "category": 4,
+      "justification": "Test-only mutation in temporary directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "tests/execution-recovery.test.js",
+      "category": 4,
+      "justification": "Test-only mutation in temporary directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "tests/runtime-integration.test.js",
+      "category": 4,
+      "justification": "Phase 4 runtime integration tests; test-only mutation in temporary directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "tests/runtime-isolation-recovery.test.js",
+      "category": 4,
+      "justification": "Authorized runtime-isolation recovery and barrier-clearance adversarial tests using temporary institution roots.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ],
+      "reviewedDynamicRequire": true
+    },
+    {
+      "path": "tests/runtime-isolation.test.js",
+      "category": 4,
+      "justification": "Adversarial isolation and restoration tests using temporary institution roots.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "tests/support/orchestrator-fault-adapter.js",
+      "category": 4,
+      "justification": "Test-only fault-injection adapter that reloads execution modules under controlled dependency replacement; not reachable from production entry points.",
+      "capabilities": [
+        "durableStateMutation"
+      ],
+      "reviewedDynamicRequire": true
+    },
+    {
+      "path": "tests/support/orchestrator-test-harness.js",
+      "category": 4,
+      "justification": "Test-only execution harness exposing alternate validator-root support for fixtures; not exported through production orchestrator entry points.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "tests/support/validation-cycle-test-core.js",
+      "category": 4,
+      "justification": "Test-only descriptor-driven validator execution harness used to exercise fabricated closures and fail-closed worker behavior outside the production import surface.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "tests/support/validator-worker-test-core.js",
+      "category": 4,
+      "justification": "Test-only worker entry that accepts fabricated closure and contract material for adversarial validator execution regressions; never imported by production code.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "tests/support/validator-test-harness.js",
+      "category": 4,
+      "justification": "Test-only validator-registry harness exposing alternate validator roots for fixtures; not exported through production validator entry points.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "tests/support/validator-registry-test-core.js",
+      "category": 4,
+      "justification": "Test-only validator-registry implementation that constructs fixture descriptors for alternate validator roots; not imported by production modules.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "tests/support/validator-closure-test-core.js",
+      "category": 4,
+      "justification": "Test-only configurable validator-closure builder used to exercise alternate validator roots and entry sources; not imported by production modules.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation"
+      ]
+    },
+    {
+      "path": "scripts/deployment-certify.js",
+      "category": 3,
+      "justification": "Deployment-certification harness (diagnostic). Spawns capability probes (unshare/gcc/file/ldd) and compiles the reviewed sandbox helper; writes certification reports under docs/certification/ and temporary directories only. No governed-record mutation; not reachable from any production runtime entry point.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "tests/deployment-certify.test.js",
+      "category": 4,
+      "justification": "Test-only: exercises the certification harness ruling logic and schema on synthetic and live check lists.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    },
+    {
+      "path": "tests/validator-security.test.js",
+      "category": 4,
+      "justification": "Test-only: adversarial validator result-handling and registry-integrity regressions on temporary validator directories.",
+      "capabilities": [
+        "durableStateMutation",
+        "eventWriting",
+        "filesystemMutation",
+        "processExecution",
+        "transactionRecording"
+      ]
+    },
+    {
+      "path": "kernel/execution/validator-worker.js",
+      "category": 5,
+      "justification": "Validator execution worker: executes ONLY verified closure bytes via an in-memory module system (vm.compileFunction, static builtin allowlist, no path-require fallback). Reads each closure module through a single O_NOFOLLOW read-only descriptor (fstat+read+hash on the same fd) and verifies the bound manifest (hash/size/mode/uid/gid/dev/ino/nlink) before executing; the read-only fs.open* primitives are modeled by the audit as filesystem/durable capabilities though no governed state is mutated.",
+      "capabilities": [
+        "durableStateMutation",
+        "filesystemMutation",
+        "processExecution"
+      ]
+    }
+  ],
+  "inventory": "AST/import analysis with transitive capability ownership; unknown or unowned capabilities fail closed."
+}

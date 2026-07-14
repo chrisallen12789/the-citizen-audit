@@ -1,62 +1,15 @@
 {
-  "version": "1.0.0",
-  "updated": "2026-07-05",
+  "version": "2.0.0",
+  "updated": "2026-07-07",
+  "authority": "Execution events are deterministic, schema-validated projections of the hash-chained execution ledger. No independent event writer exists.",
   "eventTypes": [
-    {
-      "type": "agent.started",
-      "description": "An agent began execution."
-    },
-    {
-      "type": "agent.completed",
-      "description": "An agent completed execution."
-    },
-    {
-      "type": "agent.failed",
-      "description": "An agent stopped with unresolved failures."
-    },
-    {
-      "type": "report.created",
-      "description": "An agent or service created an institutional report."
-    },
-    {
-      "type": "ads.exported",
-      "description": "ADS records were exported from canonical data."
-    },
-    {
-      "type": "ads.validation.passed",
-      "description": "ADS validation completed successfully."
-    },
-    {
-      "type": "ads.validation.failed",
-      "description": "ADS validation failed."
-    },
-    {
-      "type": "publication.built",
-      "description": "Generated publication assets were rebuilt."
-    },
-    {
-      "type": "qa.passed",
-      "description": "Institutional QA passed."
-    },
-    {
-      "type": "qa.failed",
-      "description": "Institutional QA failed."
-    },
-    {
-      "type": "source.health.warning",
-      "description": "A source stewardship check found a source risk."
-    },
-    {
-      "type": "challenge.received",
-      "description": "A public challenge or correction request was received."
-    },
-    {
-      "type": "release.candidate.created",
-      "description": "A release candidate was created."
-    },
-    {
-      "type": "human.approval.required",
-      "description": "A proposed action requires human approval under authority rules."
-    }
+    "execution.attempt.created",
+    "execution.attempt.recovery_persisted",
+    "execution.attempt.applying",
+    "execution.attempt.validating",
+    "execution.attempt.committed",
+    "execution.attempt.rolling_back",
+    "execution.attempt.rolled_back",
+    "execution.attempt.recovery_required"
   ]
 }

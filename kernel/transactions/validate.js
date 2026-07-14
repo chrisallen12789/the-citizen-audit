@@ -7,6 +7,8 @@ const ACTOR_TYPES = new Set(["human", "agent", "system", "external"]);
 const WRITE_OPERATIONS = new Set(["write", "delete"]);
 const TOP_LEVEL_FIELDS = new Set(["id", "version", "status", "action", "actor", "requestedAt", "approval", "authorityEvaluation", "affectedObjects", "proposedWrites", "metadata", "writeSetHash"]);
 const WRITE_FIELDS = new Set(["operation", "path", "content", "encoding", "contentHash"]);
+const APPROVAL_FIELDS = new Set(["approvedBy", "approvedAt", "decisionId", "approverAuthority", "decisionRecordHash"]);
+const HASH_PATTERN = /^[0-9a-f]{64}$/;
 
 function isIsoDate(value) {
   return typeof value === "string" && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString() === value;
@@ -69,9 +71,12 @@ function validateTransaction(transaction) {
     if (!transaction.approval || typeof transaction.approval !== "object" || Array.isArray(transaction.approval)) {
       problems.push("Approved transaction requires approval metadata.");
     } else {
+      for (const key of Object.keys(transaction.approval)) if (!APPROVAL_FIELDS.has(key)) problems.push(`Transaction approval contains undeclared field: ${key}.`);
       validateActor(transaction.approval.approvedBy, "Transaction approval.approvedBy", problems);
       if (!isIsoDate(transaction.approval.approvedAt)) problems.push("Transaction approval.approvedAt must be an ISO timestamp.");
       if (typeof transaction.approval.decisionId !== "string" || !transaction.approval.decisionId.trim()) problems.push("Transaction approval.decisionId is required.");
+      if (typeof transaction.approval.approverAuthority !== "string" || !transaction.approval.approverAuthority.trim()) problems.push("Transaction approval.approverAuthority is required.");
+      if (!HASH_PATTERN.test(transaction.approval.decisionRecordHash || "")) problems.push("Transaction approval.decisionRecordHash must be a SHA-256 hash.");
     }
   }
 

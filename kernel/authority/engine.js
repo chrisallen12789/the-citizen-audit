@@ -2,20 +2,33 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..", "..");
-const registryPath = path.join(root, "agents", "registry.json");
-const rulesPath = path.join(root, "kernel", "permissions", "rules.json");
-const levelsPath = path.join(root, "kernel", "permissions", "authority-levels.json");
+
+function authorityPaths(rootDir) {
+  return {
+    registryPath: path.join(rootDir, "agents", "registry.json"),
+    rulesPath: path.join(rootDir, "kernel", "permissions", "rules.json"),
+    levelsPath: path.join(rootDir, "kernel", "permissions", "authority-levels.json")
+  };
+}
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function loadAuthorityState() {
+// Load authority state from an explicit institution root. Phase 3 re-evaluates
+// current authority at execution time against the governed root, and binds a
+// canonical hash of this state into the execution attempt.
+function loadAuthorityStateAtRoot(rootDir) {
+  const paths = authorityPaths(rootDir);
   return {
-    registry: readJson(registryPath),
-    rules: readJson(rulesPath),
-    levels: readJson(levelsPath)
+    registry: readJson(paths.registryPath),
+    rules: readJson(paths.rulesPath),
+    levels: readJson(paths.levelsPath)
   };
+}
+
+function loadAuthorityState() {
+  return loadAuthorityStateAtRoot(root);
 }
 
 function findAgent(state, agentId) {
@@ -98,11 +111,15 @@ function evaluateAuthority(agent, rule, action) {
   };
 }
 
-function checkAction(agentId, action) {
-  const state = loadAuthorityState();
+function checkActionAtRoot(rootDir, agentId, action) {
+  const state = loadAuthorityStateAtRoot(rootDir);
   const agent = findAgent(state, agentId);
   const rule = findRule(state, action);
   return evaluateAuthority(agent, rule, action);
+}
+
+function checkAction(agentId, action) {
+  return checkActionAtRoot(root, agentId, action);
 }
 
 function listAuthorityProblems() {
@@ -139,8 +156,10 @@ function listAuthorityProblems() {
 
 module.exports = {
   checkAction,
+  checkActionAtRoot,
   listAuthorityProblems,
-  loadAuthorityState
+  loadAuthorityState,
+  loadAuthorityStateAtRoot
 };
 
 if (require.main === module) {

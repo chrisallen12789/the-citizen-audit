@@ -20,6 +20,7 @@ function attemptStateDirectory(rootDir, attemptId) {
 }
 function manifestPath(rootDir, attemptId) { return path.join(attemptStateDirectory(rootDir, attemptId), "manifest.json"); }
 function rollbackResultPath(rootDir, attemptId) { return path.join(attemptStateDirectory(rootDir, attemptId), "rollback.json"); }
+function validationResultPath(rootDir, attemptId) { return path.join(attemptStateDirectory(rootDir, attemptId), "validation.json"); }
 function blobRoot(rootDir) { return path.join(defaultExecutionStateRoot(rootDir), "blobs"); }
 function blobPath(rootDir, hash) { return path.join(blobRoot(rootDir), hash); }
 function journalPath(rootDir, attemptId) { return path.join(attemptStateDirectory(rootDir, attemptId), "journal.jsonl"); }
@@ -32,5 +33,6 @@ module.exports = {
   blobRoot,
   journalPath,
   manifestPath,
-  rollbackResultPath
+  rollbackResultPath,
+  validationResultPath
 };

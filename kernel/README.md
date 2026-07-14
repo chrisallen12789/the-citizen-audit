@@ -36,28 +36,21 @@ Direct script usage:
 
 ```bash
 node kernel/runtime/status.js
-node kernel/runtime/run.js AGENT-REPAIR
-node kernel/runtime/run.js --all
 node kernel/runtime/run.js --all --dry-run
+node kernel/runtime/run-transactional.js --run RUN-ID --agent AGENT-ID --action ACTION --object OBJECT-ID [--decision DECISION-ID]
 ```
 
 When wired through `package.json`, these map to:
 
 ```bash
 npm run kernel:status
-npm run kernel:run -- AGENT-REPAIR
-npm run kernel:run-all
 npm run kernel:run-all:dry
+npm run runtime:transactional -- --run RUN-ID --agent AGENT-ID --action ACTION --object OBJECT-ID [--decision DECISION-ID]
 ```
 
 ## Runtime outputs
 
-The kernel writes:
-
-```text
-kernel/events/log.jsonl
-docs/agent-reports/kernel-dashboard.md
-```
+The active legacy runtime writes no governed state and executes no agents. Execution events are generated only as deterministic, schema-validated projections of the authoritative execution ledger. Transactional runtime output is captured in an isolated disposable workspace and can reach governed state only through the authoritative orchestrator.
 
 ## Target structure
 
