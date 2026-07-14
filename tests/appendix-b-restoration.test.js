@@ -82,7 +82,7 @@ test("Appendix B includes canonical notice, PDF link, stable anchor, and route",
   assert.equal(appendixPage.url, "/audit/appendix-b-transparency-scorecard.html");
   assert.ok(
     html.includes(
-      "The Citizen Audit v1.0 PDF remains the canonical publication. This page is a structured reader conversion of Appendix B provided for navigation and inspection."
+      "The Citizen Audit v1.0 PDF remains the canonical publication. These web pages are a structured reader conversion provided for navigation and inspection."
     )
   );
   assert.ok(html.includes('href="/downloads/the-citizen-audit-v1.0.pdf"'));

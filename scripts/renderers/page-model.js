@@ -8,8 +8,11 @@ const {
   renderSearchFilter,
   renderTable
 } = require("./shared");
+const { createAuditReaderRenderer } = require("./audit-reader");
 
 function createPageRenderer(publication) {
+  const { renderReaderLayout, renderCanonicalityNotice } = createAuditReaderRenderer(publication);
+
   function renderSourceIndexRows() {
     return publication.sources
       .map(
@@ -384,13 +387,6 @@ function createPageRenderer(publication) {
       </section>`;
   }
 
-  function renderCanonicalPdfNotice(block) {
-    return `<aside class="panel appendix-canonical-notice" aria-label="Canonical publication notice">
-        <p>${escapeHtml(block.text)}</p>
-        <p><a href="${escapeHtml(block.href)}">${escapeHtml(block.label)}</a></p>
-      </aside>`;
-  }
-
   function renderPublicationPageBlock(block, context) {
     switch (block.type) {
       case "actions":
@@ -427,19 +423,26 @@ function createPageRenderer(publication) {
         return renderAppendixOpenQuestions();
       case "appendixTransparencyScorecard":
         return renderAppendixTransparency();
-      case "canonicalPdfNotice":
-        return renderCanonicalPdfNotice(block);
+      case "readerCanonicalityNotice":
+        return renderCanonicalityNotice();
       default:
         return "";
     }
   }
 
   function renderPublicationPage(page, context = {}) {
+    const renderedBlocks = page.contentBlocks
+      .map((block) => renderPublicationPageBlock(block, context))
+      .join("");
+    const appendixStableId =
+      page.id === "PAGE-APPENDIX-A" ? "Appendix A" : page.id === "PAGE-APPENDIX-B" ? "Appendix B" : null;
+    const readerBody = appendixStableId
+      ? renderReaderLayout(appendixStableId, renderedBlocks)
+      : renderedBlocks;
     const body = `<div class="sr-only" data-generated-source="page-model" data-page-id="${escapeHtml(
       page.id
-    )}"></div>${page.contentBlocks
-      .map((block) => renderPublicationPageBlock(block, context))
-      .join("")}`;
+    )}"></div>${readerBody}`;
+    const isAuditReaderPage = page.id === "PAGE-AUDIT" || Boolean(appendixStableId);
 
     return layout({
       title: page.title,
@@ -449,7 +452,8 @@ function createPageRenderer(publication) {
       lede: page.lede,
       body,
       footerLabel: page.footerLabel || page.heading,
-      canonicalPath: page.url
+      canonicalPath: page.url,
+      stylesheets: isAuditReaderPage ? ["/audit-reader.css"] : []
     });
   }
 

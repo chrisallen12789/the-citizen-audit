@@ -7,6 +7,7 @@ const openQuestionsRaw = require("./open-questions");
 const releases = require("./releases");
 const glossary = require("./glossary");
 const appendixB = require("./appendix-b");
+const auditReader = require("./audit-reader");
 const sectionContent = require("./section-content");
 const pagesRaw = require("./pages");
 const researchState = require("./research-state");
@@ -308,6 +309,8 @@ module.exports = {
   releases,
   glossary,
   appendixB,
+  auditReader,
+  auditContents: auditReader.contents,
   researchState,
   crossReferences,
   primaryAudit: auditsEnriched[0] || null,

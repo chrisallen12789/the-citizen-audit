@@ -3,7 +3,7 @@ const claims = require("./claims");
 const sources = require("./sources");
 const decisions = require("./decisions");
 const openQuestions = require("./open-questions");
-const appendixB = require("./appendix-b");
+const auditReader = require("./audit-reader");
 
 const allSectionIds = sections
   .filter((section) => section.id !== "Repository assets")
@@ -29,13 +29,11 @@ const correctionMailto =
 const reviewMailto =
   "mailto:review@thecitizenaudit.org?subject=Citizen%20Audit%20Formal%20Review";
 
-const sectionTocEntries = sections
-  .filter((section) => /^Section \d+$/.test(section.id) || /^Appendix /.test(section.id))
-  .map((section) => ({
-    href: section.url,
-    label: /^Section \d+$/.test(section.id) ? section.id : section.id.replace("Appendix ", "Appendix "),
-    detail: section.title
-  }));
+const sectionTocEntries = auditReader.contents.map((entry) => ({
+  href: entry.route,
+  label: entry.label,
+  detail: entry.title
+}));
 
 module.exports = [
   {
@@ -134,6 +132,9 @@ module.exports = [
     relatedDecisionIds: allDecisionIds,
     relatedOpenQuestionIds: allOpenQuestionIds,
     contentBlocks: [
+      {
+        type: "readerCanonicalityNotice"
+      },
       {
         type: "actions",
         links: [
@@ -1150,6 +1151,9 @@ module.exports = [
     relatedOpenQuestionIds: allOpenQuestionIds,
     contentBlocks: [
       {
+        type: "readerCanonicalityNotice"
+      },
+      {
         type: "actions",
         links: [
           { label: "Open question pages", href: "/open-questions.html", variant: "primary" },
@@ -1180,11 +1184,7 @@ module.exports = [
     relatedOpenQuestionIds: allOpenQuestionIds,
     contentBlocks: [
       {
-        type: "canonicalPdfNotice",
-        text:
-          "The Citizen Audit v1.0 PDF remains the canonical publication. This page is a structured reader conversion of Appendix B provided for navigation and inspection.",
-        href: "/downloads/the-citizen-audit-v1.0.pdf",
-        label: "Open the canonical PDF"
+        type: "readerCanonicalityNotice"
       },
       {
         type: "actions",

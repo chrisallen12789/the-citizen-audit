@@ -88,7 +88,8 @@ function layout({
   footerLabel,
   canonicalPath = "/",
   ogType = "website",
-  socialImagePath = "/og-image.png"
+  socialImagePath = "/og-image.png",
+  stylesheets = []
 }) {
   const canonicalUrl = absoluteUrl(canonicalPath);
   const socialImageUrl = absoluteUrl(socialImagePath);
@@ -118,7 +119,11 @@ function layout({
   <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css">${
+    stylesheets.length
+      ? `\n  ${stylesheets.map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`).join("\n  ")}`
+      : ""
+  }
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>

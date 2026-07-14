@@ -5,8 +5,11 @@ const {
   renderContentBlock,
   renderRecordLinks
 } = require("./shared");
+const { createAuditReaderRenderer } = require("./audit-reader");
 
 function createSectionRenderer(publication, relationships) {
+  const { renderReaderLayout, renderCanonicalityNotice } = createAuditReaderRenderer(publication);
+
   function renderSectionActions(section) {
     const links = [];
     if (section.previousSectionId) {
@@ -94,24 +97,26 @@ function createSectionRenderer(publication, relationships) {
   }
 
   function renderSectionPage(section) {
-    const body = `<div class="sr-only" data-generated-source="section-model" data-section-id="${escapeHtml(
-      section.id
-    )}"></div>
+    const readerBody = `${renderCanonicalityNotice()}
       ${renderSectionActions(section)}
       ${renderSectionVerificationPanel(section)}
       ${renderSectionClaimsPanel(section)}
       ${renderSectionContent(section)}`;
+    const body = `<div class="sr-only" data-generated-source="section-model" data-section-id="${escapeHtml(
+      section.id
+    )}"></div>${renderReaderLayout(section.id, readerBody)}`;
 
     return layout({
       title: `${section.id} - ${section.title} | The Citizen Audit`,
-      description: `Canonical ${section.id} web conversion for The Citizen Audit v1.0.`,
+      description: `Structured web reader conversion of ${section.id} from The Citizen Audit v1.0; the PDF remains canonical.`,
       eyebrow: `${section.id} - Version 1.0 LOCKED`,
       heading: section.title,
       lede: section.summary,
       body,
       footerLabel: `${section.id} - ${section.title}`,
       canonicalPath: section.url,
-      ogType: "article"
+      ogType: "article",
+      stylesheets: ["/audit-reader.css"]
     });
   }
 
