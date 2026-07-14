@@ -6,9 +6,11 @@ const {
   renderRecordLinks
 } = require("./shared");
 const { createAuditReaderRenderer } = require("./audit-reader");
+const { createFigureMetadataRenderer } = require("./figure-metadata");
 
 function createSectionRenderer(publication, relationships) {
   const { renderReaderLayout, renderCanonicalityNotice } = createAuditReaderRenderer(publication);
+  const { renderAfterSectionBlock } = createFigureMetadataRenderer(publication);
 
   function renderSectionActions(section) {
     const links = [];
@@ -27,7 +29,7 @@ function createSectionRenderer(publication, relationships) {
   function groupSectionBlocks(contentBlocks) {
     const groups = [];
     let current = null;
-    for (const block of contentBlocks) {
+    for (const [index, block] of contentBlocks.entries()) {
       if (block.type === "heading") {
         current = {
           heading: block.text,
@@ -40,7 +42,7 @@ function createSectionRenderer(publication, relationships) {
         current = { heading: "", blocks: [] };
         groups.push(current);
       }
-      current.blocks.push(block);
+      current.blocks.push({ block, index });
     }
     return groups;
   }
@@ -90,7 +92,9 @@ function createSectionRenderer(publication, relationships) {
       .map(
         (group) => `<section class="panel">
           ${group.heading ? `<h2>${escapeHtml(group.heading)}</h2>` : ""}
-          ${group.blocks.map(renderContentBlock).join("")}
+          ${group.blocks
+            .map(({ block, index }) => `${renderContentBlock(block)}${renderAfterSectionBlock(section.id, index)}`)
+            .join("")}
         </section>`
       )
       .join("");

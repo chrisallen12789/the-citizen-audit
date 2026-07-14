@@ -11,6 +11,8 @@ const auditReader = require("./audit-reader");
 const sectionContent = require("./section-content");
 const pagesRaw = require("./pages");
 const researchState = require("./research-state");
+const figureMetadata = require("./figure-metadata");
+const auditReaderTables = require("./audit-reader-tables");
 
 function unique(values) {
   return [...new Set(values)];
@@ -312,6 +314,8 @@ module.exports = {
   auditReader,
   auditContents: auditReader.contents,
   researchState,
+  figureMetadata,
+  auditReaderTables,
   crossReferences,
   primaryAudit: auditsEnriched[0] || null,
   sectionRecords: sections.map(toLegacySectionRecord),

@@ -9,9 +9,11 @@ const {
   renderTable
 } = require("./shared");
 const { createAuditReaderRenderer } = require("./audit-reader");
+const { createFigureMetadataRenderer } = require("./figure-metadata");
 
 function createPageRenderer(publication) {
   const { renderReaderLayout, renderCanonicalityNotice } = createAuditReaderRenderer(publication);
+  const { renderAfterPageBlock } = createFigureMetadataRenderer(publication);
 
   function renderSourceIndexRows() {
     return publication.sources
@@ -432,7 +434,10 @@ function createPageRenderer(publication) {
 
   function renderPublicationPage(page, context = {}) {
     const renderedBlocks = page.contentBlocks
-      .map((block) => renderPublicationPageBlock(block, context))
+      .map(
+        (block) =>
+          `${renderPublicationPageBlock(block, context)}${renderAfterPageBlock(page.id, block.type)}`
+      )
       .join("");
     const appendixStableId =
       page.id === "PAGE-APPENDIX-A" ? "Appendix A" : page.id === "PAGE-APPENDIX-B" ? "Appendix B" : null;
