@@ -1,5 +1,7 @@
 # P42-D003 — control boundary map
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Status and interpretation
 
 **OPEN — RECOMMENDED boundary map documented; pending P42-D001 approval, exact-platform reconciliation, independent review of the reconciled P42-D003 package, and explicit P42-D003 project-owner approval. D003-GAP-AGG-001 and D003-GAP-DEVICE-001 are resolved by their approved immutable traceability records.**

@@ -1,5 +1,7 @@
 # P42-D003 gap-resolution evidence plan
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Status and scope
 
 **PLANNED.** This document specifies future evidence needed to evaluate the proposed aggregate-governance and device/kernel-boundary traceability records. It does not implement a test, report a test result, approve either record, resolve either review gap, or approve P42-D003.

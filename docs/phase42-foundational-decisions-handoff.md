@@ -43,7 +43,7 @@ The decision register links P42-D002 to its approved threat model and owner-appr
 
 ## Required reconciliation before independent review
 
-1. Confirm Phase 4.1 status references still state **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN** unless a later independently accepted checkpoint changes that status.
+1. Confirm [current external Phase 4.1 governance](phase42-governance-status-reconciliation.md): Phase 4.1 is **ACCEPTED** and `VAL-RESULT-001` is **RESOLVED**.
 2. Confirm Phase 4.2 remains **PLANNED** and no implementation claim is introduced.
 3. Confirm the accepted Phase 4.2 architecture requirements remain authoritative where this packet is silent.
 4. Treat approved P42-D002 as an immutable input, complete P42-D001 first, and do not submit P42-D003 for final owner approval until exact-platform reconciliation, gap resolution, and independent review are complete.
@@ -89,8 +89,8 @@ Architecture reviewers should answer explicitly:
 4. Independently review the reconciled P42-D003 package.
 5. Explicitly approve, revise, or reject P42-D003.
 6. Resolve P42-D004 through P42-D022 in dependency order.
-7. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+7. Keep implementation prohibited until Phase 4.2 is formally authorized.
 
 The current P42-D003 package is a RECOMMENDED proposal that may be reviewed while P42-D001 remains open. Its two D003 gaps are resolved only by their approved immutable traceability records, but it is not eligible for final owner approval until the remaining sequence above is complete.
 
-Implementation must still wait until Phase 4.1 is independently accepted and Phase 4.2 is formally authorized to begin.
+Implementation remains prohibited until Phase 4.2 is formally authorized.

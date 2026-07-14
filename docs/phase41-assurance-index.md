@@ -1,10 +1,12 @@
 # Phase 4.1 assurance index
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). The checkpoint narrative below is retained as historical evidence and is superseded only as a current-state assertion.
+
 ## Current status
 
 Phase 4.1 is **REJECTED** at the reviewed checkpoint `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef` (`Harden validator module cache generations`). The REJECTED status and current blocker were imported from an independent checkpoint review performed outside commit `e0e14e1`. The raw review record is not contained in this documentation branch and must be supplied separately to an external reviewer. This is not an activation or acceptance record.
 
-The governing blocker is **OPEN**: the imported review reports that the exact validator-entry generation used by a running `validate()` attempt may become invalid during validation, while the worker can still accept and transport that already-running result as success. Once that exact generation becomes invalid, the attempt can never produce accepted success. This is [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation). The repository has module-cache generation controls; this documentation task did not independently reproduce the reported validate-time defect.
+The governing blocker is **OPEN**: the imported review reports that the exact validator-entry generation used by a running `validate()` attempt may become invalid during validation, while the worker can still accept and transport that already-running result as success. Once that exact generation becomes invalid, the attempt can never produce accepted success. This is [VAL-RESULT-001](phase41-invariant-catalog.md). The repository has module-cache generation controls; this documentation task did not independently reproduce the reported validate-time defect.
 
 Phase 4.1 concerns JavaScript-level validator source, realm, loader, result, and transport controls. [Phase 4.2 OS confinement planning](phase42-os-confinement-planning.md) is future work only; OS-level confinement has not started.
 

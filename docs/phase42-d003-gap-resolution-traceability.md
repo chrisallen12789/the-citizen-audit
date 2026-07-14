@@ -1,5 +1,7 @@
 # Phase 4.2 P42-D003 gap-resolution traceability
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Status and use
 
 **APPROVED — D003-TRACE-AGG-001 and D003-TRACE-DEVICE-001 are approved only against their separately recorded immutable source content; both corresponding D003 gaps are RESOLVED by those exact approved records.**

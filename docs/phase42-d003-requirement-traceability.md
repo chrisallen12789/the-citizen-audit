@@ -1,5 +1,7 @@
 # P42-D003 requirement and resource-budget traceability
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Status and method
 
 **P42-D003: OPEN — RECOMMENDED mapping documented; pending independent review and explicit project-owner approval.** This traceability record enumerates the exact stable identifiers defined in [the accepted Phase 4.2 confinement requirements](phase42-confinement-requirements.md) and [the resource-budget framework](phase42-resource-budget.md). It recommends control classes for future evaluation; it does not approve mechanisms, values, implementation, testing, or platform support.

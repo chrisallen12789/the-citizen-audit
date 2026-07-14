@@ -1,5 +1,7 @@
 # Phase 4.2 P42-D003 test and evidence gates
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Status and purpose
 
 **PLANNED.** P42-D003 is **OPEN** with a **RECOMMENDED** architecture class pending P42-D001 approval, exact-platform reconciliation, independent review of the reconciled package, and explicit project-owner approval. The two approved immutable traceability records already resolve their corresponding gaps. This document defines future evidence gates; no test was implemented or run in this task, and no result is **VERIFIED** by this document.

@@ -1,5 +1,7 @@
 # P42-D003 — confinement candidate analysis
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Status and purpose
 
 **OPEN — RECOMMENDED architecture class documented; all compared mechanisms remain CANDIDATE and pending P42-D001 approval, exact-platform reconciliation, review-gap resolution, independent review, and explicit project-owner approval.**

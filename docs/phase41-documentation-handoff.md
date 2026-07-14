@@ -1,5 +1,7 @@
 # Phase 4.1 documentation handoff
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). The checkpoint narrative below is retained as historical evidence and is superseded only as a current-state assertion.
+
 ## What this branch created
 
 This documentation-only branch created a formal Phase 4.1 assurance set:
@@ -16,7 +18,7 @@ The authoritative starting commit was `e0e14e199c86a7a1e24ece8edd7d8f1090e735ef`
 
 ## Current Phase 4.1 status
 
-Phase 4.1 remains **REJECTED**. The ruling and current blocker were imported from an independent checkpoint review performed outside commit `e0e14e1`; its raw record is not in this documentation branch and must be supplied separately to an external reviewer. [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation) is OPEN: a running `validate()` attempt can be invalidated yet still accept and transport its result as success, according to that imported review. Once the exact entry generation becomes invalid, the attempt can never produce accepted success. OS-level confinement has not started and is only PLANNED in [Phase 4.2 planning](phase42-os-confinement-planning.md).
+Phase 4.1 remains **REJECTED**. The ruling and current blocker were imported from an independent checkpoint review performed outside commit `e0e14e1`; its raw record is not in this documentation branch and must be supplied separately to an external reviewer. [VAL-RESULT-001](phase41-invariant-catalog.md) is OPEN: a running `validate()` attempt can be invalidated yet still accept and transport its result as success, according to that imported review. Once the exact entry generation becomes invalid, the attempt can never produce accepted success. OS-level confinement has not started and is only PLANNED in [Phase 4.2 planning](phase42-os-confinement-planning.md).
 
 ## Later incorporation
 

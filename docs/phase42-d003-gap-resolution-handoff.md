@@ -41,8 +41,8 @@ No accepted requirement or resource-budget document, production code, test, sche
 
 | Item | Status preserved by this package |
 | --- | --- |
-| Phase 4.1 | **REPORTED** as rejected. |
-| VAL-RESULT-001 | **OPEN**. |
+| Phase 4.1 | **ACCEPTED**, as reconciled in [the governance-status record](phase42-governance-status-reconciliation.md). |
+| VAL-RESULT-001 | **RESOLVED**, as reconciled in [the governance-status record](phase42-governance-status-reconciliation.md). |
 | Phase 4.2 | **PLANNED**. |
 | P42-D001 | **OPEN** and provisional. This package does not approve it. |
 | P42-D002 | **APPROVED** and bound to its immutable approved content. This package does not modify that content or its approval. |
@@ -52,7 +52,7 @@ No accepted requirement or resource-budget document, production code, test, sche
 | D003-GAP-DEVICE-001 | **RESOLVED** only by the exact immutable approved D003-TRACE-DEVICE-001 record. |
 | D003-TRACE-AGG-001 | **APPROVED** against commit `d7e6c286cbfc36ecf2c4b6abd1030f285052aee0`, blob `60866c028c06f1b260aa7c6010b5f38851d876af`, bytes `[720, 31684)`, SHA-256 `c5eeb152a94a8f056506800939b613b52ec58df27687ef2846e3ae2c6ab2ce31`. |
 | D003-TRACE-DEVICE-001 | **APPROVED** against commit `d7e6c286cbfc36ecf2c4b6abd1030f285052aee0`, blob `2a807e88df1b2cdf8305efdf1810153385b58f3e`, bytes `[0, 25588)`, SHA-256 `2a19f430a1bce0cdb17fc00773fea1651c803fb0558ed0c690b499875fd53d53`. |
-| Phase 4.2 implementation | Does not exist and remains prohibited while Phase 4.1 is **REPORTED** as rejected. |
+| Phase 4.2 implementation | Does not exist and remains prohibited pending Phase 4.2 authorization. |
 | Phase 4.2 tests | No tests have been implemented or run. |
 | Merge | No automatic merge is authorized. |
 
@@ -62,7 +62,7 @@ Both approvals are recorded above. Each resolves only its corresponding gap; nei
 
 An independent reviewer evaluated the architecture, exact identifier mappings, failure behavior, evidence sufficiency, cleanup and reconstruction rules, trusted assumptions, residual risks, numeric-limit dependencies, platform dependencies, and prohibited claims. The project owner then separately approved each traceability record against its exact immutable source. Silence, review completion, package commit, or ZIP delivery is not approval.
 
-P42-D003 must remain **OPEN** after either or both traceability-record approvals. Final P42-D003 consideration continues to require P42-D001 approval, reconciliation against the selected exact platform, independent review of the reconciled composition, and explicit project-owner action. No implementation may begin unless Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+P42-D003 must remain **OPEN** after either or both traceability-record approvals. Final P42-D003 consideration continues to require P42-D001 approval, reconciliation against the selected exact platform, independent review of the reconciled composition, and explicit project-owner action. No implementation may begin unless Phase 4.2 is formally authorized.
 
 ## Remaining governance sequence
 
@@ -74,7 +74,7 @@ P42-D003 must remain **OPEN** after either or both traceability-record approvals
 6. Independently review the reconciled P42-D003 package.
 7. Explicitly approve, revise, or reject P42-D003.
 8. Resolve P42-D004 through P42-D022 in dependency order.
-9. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+9. Keep implementation prohibited until Phase 4.2 is formally authorized.
 
 ## Nonclaims
 

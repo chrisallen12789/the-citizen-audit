@@ -1,5 +1,7 @@
 # P42-D003 recommended lifecycle and supervision model
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Decision posture
 
 **P42-D003: OPEN — RECOMMENDED lifecycle documented; pending independent review and explicit project-owner approval.** This document defines a future supervision lifecycle for the layered, OS-native Linux confinement composition proposed by P42-D003. It is architecture guidance, not a launcher protocol or an implementation specification.

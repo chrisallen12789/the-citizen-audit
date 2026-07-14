@@ -1,5 +1,7 @@
 # Phase 4.2 foundational decision mapping
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Purpose
 
 This document shows how the **APPROVED** P42-D002 threat model and **RECOMMENDED** but **OPEN** P42-D001 platform proposal constrain later Phase 4.2 decisions without selecting implementation mechanisms.

@@ -1,10 +1,12 @@
 # Phase 4.2 OS-confinement architecture
 
+> **Current-status notice:** [Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Pre-acceptance status statements below are historical and are superseded only as current-state assertions. Phase 4.2 remains PLANNED; no implementation, merge, deployment, or runtime activation is authorized.
+
 ## Status and objective
 
 **PLANNED.** This architecture defines the future OS-level confinement boundary around the validator worker for The Citizen Audit Execution Engine. It is a design and acceptance package, not an implementation record. The governing requirements are in [the confinement requirements](phase42-confinement-requirements.md), candidate approaches are compared in [the platform decision matrix](phase42-platform-decision-matrix.md), and unresolved choices are recorded in [the handoff register](phase42-open-decisions-and-handoff.md).
 
-**VERIFIED:** the repository contains the high-level [Phase 4.2 planning foundation](phase42-os-confinement-planning.md) and the [Phase 4.1 assurance case](phase41-assurance-case.md). **REPORTED:** Phase 4.1 is rejected with [VAL-RESULT-001](phase41-invariant-catalog.md#val-result-001-attempt-success-is-bound-to-a-valid-validator-entry-generation) OPEN. This package does not alter that status.
+**VERIFIED:** the repository contains the high-level [Phase 4.2 planning foundation](phase42-os-confinement-planning.md) and the [Phase 4.1 assurance case](phase41-assurance-case.md). **REPORTED:** Phase 4.1 is rejected with [VAL-RESULT-001](phase41-invariant-catalog.md) OPEN. This package does not alter that status.
 
 **PROHIBITED CLAIM:** this document must not be read to say that OS confinement exists, has been tested, is accepted, or is approved for deployment.
 

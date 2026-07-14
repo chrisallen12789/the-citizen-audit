@@ -93,8 +93,7 @@ Until all blockers are resolved and that action occurs:
 - P42-D003 remains **OPEN** and only **RECOMMENDED**;
 - P42-D001 remains **OPEN** and provisional;
 - P42-D002 remains **APPROVED** subject to its reopen triggers;
-- Phase 4.1 remains **REPORTED as rejected**;
-- VAL-RESULT-001 remains **OPEN**;
+- Phase 4.1 is **ACCEPTED** and `VAL-RESULT-001` is **RESOLVED**, as recorded by [the governance-status reconciliation](phase42-governance-status-reconciliation.md);
 - Phase 4.2 remains **PLANNED**;
 - no Phase 4.2 implementation, testing, deployment, or production-support claim is authorized;
 - this branch must not be merged automatically.
@@ -111,7 +110,7 @@ This is the authoritative governance sequence for the package:
 6. Independently review the reconciled P42-D003 package.
 7. Explicitly approve, revise, or reject P42-D003.
 8. Resolve P42-D004 through P42-D022 in dependency order.
-9. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+9. Keep implementation prohibited until Phase 4.2 is formally authorized.
 
 Independent review and explicit owner action on both traceability records are complete. The immutable approvals resolve only their corresponding gaps and do not approve P42-D003. No implementation is authorized.
 

@@ -11,7 +11,7 @@ The P42-D002 approval is immutably bound to source commit `93263dc3790c93465f131
 
 It does not start Phase 4.2 implementation, approve a confinement mechanism, close any Phase 4.1 blocker, or certify a production deployment.
 
-Phase 4.1 remains **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN**. Phase 4.2 remains **PLANNED**.
+[Phase 4.1 is ACCEPTED and `VAL-RESULT-001` is RESOLVED](phase42-governance-status-reconciliation.md). Phase 4.2 remains **PLANNED**.
 
 ## Recommended decisions
 
@@ -28,7 +28,7 @@ Phase 4.1 remains **REPORTED as rejected** and `VAL-RESULT-001` remains **OPEN**
 4. Independently review the reconciled P42-D003 package.
 5. Explicitly approve, revise, or reject P42-D003.
 6. Resolve P42-D004 through P42-D022 in dependency order.
-7. Keep implementation prohibited until Phase 4.1 is accepted and Phase 4.2 is formally authorized.
+7. Keep implementation prohibited until Phase 4.2 is formally authorized.
 
 ## Document map
 
